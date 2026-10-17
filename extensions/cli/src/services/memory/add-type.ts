@@ -7,7 +7,7 @@ import { assertPrivateIgnored } from "./ignore.js";
 import { AGENTS_FILE_NAME, assertScopePath, isFile, isScope, readText, rejectLegacy, resolveTarget, } from "./paths.js";
 import { readIndexTemplate } from "./templates.js";
 import { ensureTypeGitignore, findGitRoot, indexFileName, layerTypeSpecs, typeIndexTemplateName, validateTypeName, } from "./types.js";
-import { ensureAgentsPointer, ensureHarnessReadme, registerMaterial } from "../harness-index.js";
+import { ensureScopeReadme, ensureScopeReadmePointer, linkScopeReadme } from "../init/service.js";
 import { refreshIndex, typeIndexNode } from "./entries.js";
 export interface AddMemoryTypeOptions {
     targetDir: string;
@@ -45,7 +45,7 @@ export async function addMemoryType(options: AddMemoryTypeOptions) {
     if (gitignore)
         assertPrivateIgnored(root ?? target, [file], [dirname(file)]);
     const service = memoryNodes(target);
-    await ensureHarnessReadme(target, service);
+    await ensureScopeReadme(target, service);
     const entryPath = prepareMemoryWrite(target, file);
     const node = await service.get(entryPath);
     const existed = !!node;
@@ -56,12 +56,13 @@ export async function addMemoryType(options: AddMemoryTypeOptions) {
             writable: String(writable),
             format,
         })), { indexGroup: "local" });
-    await registerMaterial(target, { id: file, name: indexName, description }, service);
+    else
+        await linkScopeReadme(target, { id: file, name: indexName, description }, service);
     await refreshIndex(target, name, service);
     const agents = assertScopePath(join(target, AGENTS_FILE_NAME), target);
     const entry = (await service.get(prepareMemoryWrite(target, agents), AgentsNode))!;
     const before = entry.body;
-    await ensureAgentsPointer(target, service);
+    await ensureScopeReadmePointer(target, service);
     const after = (await service.get(prepareMemoryWrite(target, agents), AgentsNode))!.body;
     const gitignoreAction = gitignore
         ? root

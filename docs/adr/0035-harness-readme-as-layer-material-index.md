@@ -20,7 +20,7 @@ status: accepted
 4. **`.harness/README.md` 是标准组织清单**：形态为普通 `ReadmeNode`，使用 `project-entries-local` / `project-entries-descendants`；给人看的说明与 entries 可同文件。无 YAML frontmatter。
 5. **`edges init` 保证文件存在**：对 edges 作用域，`edges init` 须确保 `.harness/README.md` 存在；之后本层材料只通过该 README 登记，不再直接往 `AGENTS.md` 本层挂材料条目。
 6. **迁移既有链接**：已有 `AGENTS.md` 本层里指向各材料的链接，迁入对应作用域的 `.harness/README.md`；迁完后 `AGENTS.md` 本层不再保留这些材料条目（无双写过渡态）。
-7. **`--super` 优先挂载 harness 入口 README**：有材料时，优先挂载 harness 入口 README 并从它展开——真系统视角为 `<scope>/.harness/README.md`；在 `--super` 视图下，若该材料存在则为作用域根上的 `README.md`（与挂载表里 `readme` 材料对应）。若该入口 README 不存在，再回退为当前做法：按 `harness-materials.json` 把已有材料文件扁平挂上。**今天** `--super` 并不优先 README，而是一律从 `harness-materials.json` 扁平挂载；本 ADR 改变这一行为。
+7. **`--super` 优先挂载 `.harness/README.md`**：该文件存在时只挂它，并从它的 entries 展开。不存在时回退为按 `harness-materials.json` 扁平挂已有材料。不把作用域根 `README.md` 当作中间优先层（评审确认：根 README 往往是对外门面，不是这份组织清单）。
 8. **实现状态**：Domain / Service / CLI 已按本 Decision 落地。`edges init` 保证 edges 作用域存在 `.harness/README.md`，本层材料登记走该 README，既有 harness 材料链接已从 AGENTS 本层迁走，`--super` 优先挂载入口 README。术语见 `CONTEXT.md`。实施步骤见 `docs/superpowers/plans/2026-10-18-harness-readme-layer-index.md`。
 
 ## Considered Options
@@ -34,7 +34,7 @@ status: accepted
 
 ## Consequences
 
-- 已落地：`edges init` 对 edges 作用域创建或保留 `.harness/README.md`（标准 `ReadmeNode`，无 YAML frontmatter），并把新的看板 / 类型索引导记到该 README。AGENTS 本层写入单条「本层 harness 材料索引」。`--super` 的挂载顺序是：存在 `<scope>/.harness/README.md` 时只挂它并展开；否则存在作用域根 `README.md`（`readme` 材料的 super 落点）时只挂它并展开；两者都没有时，仍按 `harness-materials.json` 扁平挂已有材料。两边都存在时挂 `.harness/README.md`，因为本仓根 README 是对外门面，不是材料索引。
+- 已落地：`edges init` 对 edges 作用域创建或保留 `.harness/README.md`（普通 `ReadmeNode`，无 YAML frontmatter）。新建的 notes/projects 与类型索引由 `NodeService` 的 physicalParent 登记到这份 README；tasks 看板仍由 init 显式挂上（NodeService 跳过这块看板）。AGENTS 本层写入单条「本层 harness 材料索引」。没有单独的 harness-index 模块。`--super` 仅在 `<scope>/.harness/README.md` 存在时挂它并展开，否则按 `harness-materials.json` 扁平挂载。
 - 已迁移：各 `isScope` 目录里、位于该作用域 `.harness/` 下的本层材料链接，已移入对应 `.harness/README.md`，并从不在 AGENTS 本层双写。下层系统入口、Compose block、本层硬约束的位置不变。不是 harness 材料的本层链接留在 AGENTS（例如根上的 `README.md` / `CONTEXT.md` / `docs/adr/` 导航，`notes/` 下的内容 `INDEX.md`，`.harness/tasks` 的 `tech-reading/AGENTS.md`）。gitignore 掉、检出里不存在的 `memory/users` 链接仍保留在索引上，不把缺文件当成可删除。
 - 未改：`extensions/skills/project-memory-init` 的 PROTOCOL、LAYOUT 与 `AGENTS.tmpl.md` 仍按旧形状描述「本层链到各类型 README」。模板里的类型行继续给 `indexFiles()` / `seedDescription()` 提供说明；CLI 写入新 AGENTS 时会去掉这些行，只留指针。不合并 `layout.ts` 与 `harness-materials.json`，不改 ADR 0034，不做 `@path` 展开。
 - 与 Letta / Devin「索引在 harness 内」、以及 Compose 外部库自带索引文件的形状对齐；Agent 与人只需记「材料索引在 `.harness/README.md`」。

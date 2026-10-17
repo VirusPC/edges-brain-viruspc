@@ -94,27 +94,6 @@ test("--super prefers .harness/README.md and does not flat-mount other materials
   assert.ok(!rel.includes("README.md"));
 });
 
-test("--super with only the scope README expands that file instead of flat-mounting siblings", async (t) => {
-  const root = fs.mkdtempSync(path.join(fs.realpathSync(tmpdir()), "super-readme-"));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  fs.mkdirSync(path.join(root, "tasks"), { recursive: true });
-  fs.mkdirSync(path.join(root, "notes"), { recursive: true });
-  fs.writeFileSync(path.join(root, "tasks/README.md"), "# Tasks\n");
-  fs.writeFileSync(path.join(root, "notes/README.md"), "# Notes\n");
-  fs.writeFileSync(
-    path.join(root, "README.md"),
-    "# Root\n\n<!-- project-entries-local:start -->\n## 本层内容\n\n- [Tasks](tasks/README.md)\n<!-- project-entries-local:end -->\n",
-  );
-  const service = new NodeService({ managedRoot: root });
-  const nodes = await service.list(root, { super: true });
-  assert.deepEqual(nodes[0]!.children.map((child) => child.id), [
-    path.join(root, "README.md"),
-  ]);
-  const rel = nodes.map((node) => path.relative(root, node.path));
-  assert.ok(rel.includes(path.join("tasks", "README.md")));
-  assert.ok(!rel.includes(path.join("notes", "README.md")));
-});
-
 test("--super falls back to flat harness-materials mounts when no index README exists", async (t) => {
   const root = fs.mkdtempSync(path.join(fs.realpathSync(tmpdir()), "super-flat-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

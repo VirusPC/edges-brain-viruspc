@@ -41,16 +41,16 @@ export const TYPE_MATERIAL_IDS: Readonly<Record<string, string>> = {
   referenced: "skills.referenced",
 };
 
+/** AGENTS 本层指向 `.harness/README.md` 的那条组成。 */
+export const SCOPE_README_ENTRY_NAME = "本层 harness 材料索引";
+export const SCOPE_README_ENTRY_DESCRIPTION =
+  "本层 harness 材料的组织清单。各材料只在这里登记。";
+
 export type HarnessBoardModule = {
   module: "notes" | "projects" | "tasks";
   materialId: string;
   title: string;
   description: string;
-  /**
-   * scope-agents: NodeService hangs the README on the harness index when it exists.
-   * manual-agents: NodeService skips the tasks board; init still links it on the index.
-   */
-  registration: "scope-agents" | "manual-agents";
   body?: string;
 };
 
@@ -61,7 +61,6 @@ export const HARNESS_BOARD_MODULES: readonly HarnessBoardModule[] = [
     materialId: "tasks",
     title: "Tasks",
     description: "任务看板。",
-    registration: "manual-agents",
     body: "# Tasks\n\n<!-- project-entries-local:start -->\n## 本层内容\n<!-- project-entries-local:end -->\n",
   },
   {
@@ -69,14 +68,12 @@ export const HARNESS_BOARD_MODULES: readonly HarnessBoardModule[] = [
     materialId: "projects",
     title: "projects",
     description: "项目内容叶子的组织清单。",
-    registration: "scope-agents",
   },
   {
     module: "notes",
     materialId: "notes",
     title: "notes",
     description: "笔记内容叶子的组织清单。",
-    registration: "scope-agents",
   },
 ];
 

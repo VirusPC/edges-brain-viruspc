@@ -25,11 +25,11 @@ import {
 } from "./paths.js";
 import {
   layerTypeSpecs,
+  layerReadmePaths,
   selectedLocalBlock,
   localOwnershipPaths,
 } from "./types.js";
-import { materialOwnershipPaths } from "../../domain/harness-index.js";
-import { ensureHarnessReadme, registerMaterial } from "../harness-index.js";
+import { ensureScopeReadme, linkScopeReadme } from "../init/service.js";
 import {
   classifyAgentsSource,
   classifyAgentsFile,
@@ -212,8 +212,7 @@ export function collectFindings(root: string): MemoryFinding[] {
           finding("outdated-local", agents, root, "Missing type list"),
         );
       else {
-        const registered =
-          materialOwnershipPaths(owner) ?? localOwnershipPaths(owner, text);
+        const registered = layerReadmePaths(owner) ?? localOwnershipPaths(owner, text);
         for (const spec of specs)
           if (!registered.has(canonicalPath(join(owner, spec.indexFile))))
             findings.push(
@@ -377,20 +376,6 @@ export async function applyFindings(
       const action = await syncTargetAgents(owner, root, service);
       if (action !== "preserved")
         repaired.push(`${action}-agents: ${relativeOrName(owner, root)}`);
-      await ensureHarnessReadme(owner, service);
-      for (const spec of specs) {
-        const id = join(owner, spec.indexFile);
-        if (!fs.existsSync(id)) continue;
-        await registerMaterial(
-          owner,
-          {
-            id,
-            name: spec.indexFile,
-            description: spec.description || spec.name,
-          },
-          service,
-        );
-      }
       for (const spec of specs)
         try {
           if (blockedBy(dirname(join(owner, spec.indexFile)), invalid))
@@ -401,6 +386,20 @@ export async function applyFindings(
         } catch {
           /* Keep old index on failed scan. */
         }
+      await ensureScopeReadme(owner, service);
+      for (const spec of specs) {
+        const id = join(owner, spec.indexFile);
+        if (!fs.existsSync(id)) continue;
+        await linkScopeReadme(
+          owner,
+          {
+            id,
+            name: spec.indexFile,
+            description: spec.description || spec.name,
+          },
+          service,
+        );
+      }
     } catch {
       /* Unsafe owners remain reported by the second scan. */
     }

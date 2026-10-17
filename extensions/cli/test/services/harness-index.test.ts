@@ -7,8 +7,8 @@ import path from "node:path";
 import { AgentsNode } from "../../src/domain/models/internal/agents-node.js";
 import { ReadmeNode } from "../../src/domain/models/readme/readme-node.js";
 import { initScope } from "../../src/services/init/service.js";
-import { migrateScopeMaterialIndex } from "../../src/services/harness-index.js";
-import { HARNESS_INDEX_NAME } from "../../src/domain/harness-index.js";
+import { migrateScopeMaterialIndex } from "../../src/services/init/migrate-scope-readme.js";
+import { SCOPE_README_ENTRY_NAME } from "../../src/services/init/modules.js";
 
 async function scope(t: test.TestContext) {
   const root = await mkdtemp(path.join(tmpdir(), "edges-hidx-"));
@@ -34,7 +34,7 @@ test("edges init ensures .harness/README.md and a single AGENTS local pointer", 
     agents.localChildren.map((child) => path.relative(root, child.id)),
     [".harness/README.md"],
   );
-  assert.equal(agents.localChildren[0]?.name, HARNESS_INDEX_NAME);
+  assert.equal(agents.localChildren[0]?.name, SCOPE_README_ENTRY_NAME);
   assert.equal(
     agents.localChildren.some((child) => child.id.endsWith(".harness/notes/README.md")),
     false,

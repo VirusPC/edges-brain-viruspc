@@ -7,7 +7,7 @@
  */
 import path from "node:path";
 import { discoverScopes, isScope } from "../extensions/cli/src/services/scope.js";
-import { harnessIndexDrift, migrateScopeMaterialIndex } from "../extensions/cli/src/services/harness-index.js";
+import { migrateScopeMaterialIndex } from "../extensions/cli/src/services/init/migrate-scope-readme.js";
 
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
@@ -22,16 +22,16 @@ const scopes = discoverScopes(root).filter((dir) => {
 
 let pending = 0;
 for (const scope of scopes) {
-  const drift = harnessIndexDrift(scope);
-  if (!drift.moves.length && !drift.needsReadme && !drift.needsPointer) continue;
+  const plan = await migrateScopeMaterialIndex(scope, { write: false });
+  if (!plan.moved.length && !plan.createdReadme && !plan.addedPointer) continue;
   pending += 1;
   const rel = path.relative(root, scope) || ".";
   console.log(
-    `${rel}: readme=${drift.needsReadme ? "create" : "keep"} pointer=${drift.needsPointer ? "add" : "keep"} moves=${drift.moves.length}`,
+    `${rel}: readme=${plan.createdReadme ? "create" : "keep"} pointer=${plan.addedPointer ? "add" : "keep"} moves=${plan.moved.length}`,
   );
-  for (const id of drift.moves) console.log(`  - ${path.relative(root, id)}`);
+  for (const id of plan.moved) console.log(`  - ${path.relative(root, id)}`);
   if (apply) await migrateScopeMaterialIndex(scope);
 }
 
-if (!pending) console.log("No harness-index drift.");
+if (!pending) console.log("No scope README drift.");
 else if (!apply) console.log(`\n${pending} scope(s) would change. Re-run with --apply to write.`);

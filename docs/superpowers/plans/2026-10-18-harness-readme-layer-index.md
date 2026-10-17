@@ -10,6 +10,12 @@
 
 **Spec:** `docs/adr/0035-harness-readme-as-layer-material-index.md`
 
+## 评审简化（已落地）
+
+- `--super` 不再有「作用域根 `README.md`」中间层：只有 `.harness/README.md`，否则扁平挂载。
+- 删除 `harness-index.ts`。`.harness/README.md` 就是普通 `ReadmeNode`。保证文件与 AGENTS 指针在 `init/service.ts`；`--super` 优先挂载在 `super-root.ts`；迁移在 `scripts/migrate-harness-readme-index.mts`（写入函数在 `init/migrate-scope-readme.ts`，供 init 与脚本共用）。`migrateScopeMaterialIndex` 只在 `initScope` 末尾调用一次。
+- 删除未使用的 `upsertLocalTypeLine` 与 `HarnessBoardModule.registration`。
+
 ## Global Constraints
 
 - 只对 `isScope` 为真的目录生效（`extensions/cli/src/services/scope.ts`：`AGENTS.md` 能解析成带 edges XML 标记的 `AgentsNode`）。

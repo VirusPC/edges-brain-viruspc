@@ -152,7 +152,7 @@ test("reviewed restored owners adopt and register their types with only expected
     );
   }
 });
-test("existing type files still require a harness-index edge rather than a descendant or prose reference", async (t) => {
+test("existing type files still require a .harness/README.md edge rather than a descendant or prose reference", async (t) => {
   const root = fixture(t);
   await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
   const line =

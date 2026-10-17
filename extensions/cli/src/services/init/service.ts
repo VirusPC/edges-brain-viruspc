@@ -1,15 +1,9 @@
 import { existsSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
-import {
-  ensureAgentsPointer,
-  ensureHarnessReadme,
-  migrateScopeMaterialIndex,
-  registerMaterial,
-} from "../harness-index.js";
 import { AgentsNode } from "../../domain/models/internal/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
-import type { ChildGroup } from "../../domain/models/core/types.js";
+import type { ChildGroup, NodeReference } from "../../domain/models/core/types.js";
 import { parseDocument } from "../../utils/markdown/document.js";
 import { NodeService } from "../node/node-service.js";
 import {
@@ -48,11 +42,14 @@ import {
   HARNESS_BOARD_MODULES,
   INIT_MODULE_NAMES,
   MODULE_RUN_ORDER,
+  SCOPE_README_ENTRY_DESCRIPTION,
+  SCOPE_README_ENTRY_NAME,
   TYPE_MATERIAL_IDS,
   harnessBoardSeed,
   type HarnessBoardModule,
   type InitModuleName,
 } from "./modules.js";
+import { migrateScopeMaterialIndex } from "./migrate-scope-readme.js";
 
 export type { InitMemoryOptions };
 
@@ -65,6 +62,78 @@ export interface InitScopeOptions {
   modules?: readonly string[];
   memoryTypes?: readonly string[];
   skillTypes?: readonly string[];
+}
+
+function scopeReadmePath(scopeDir: string): string {
+  return placeHarnessMaterial(scopeDir, "readme").absPath;
+}
+
+function scopeReadmeSeed(): string {
+  return `# ${SCOPE_README_ENTRY_NAME}\n\n<!-- project-entries-local:start -->\n## 本层内容\n\n<!-- project-entries-local:end -->\n`;
+}
+
+/** `.harness/README.md` is an ordinary ReadmeNode. No YAML frontmatter. */
+export async function ensureScopeReadme(scopeDir: string, service: NodeService): Promise<void> {
+  const file = scopeReadmePath(scopeDir);
+  if (existsSync(file)) return;
+  await service.create(new ReadmeNode(file), { body: scopeReadmeSeed() });
+}
+
+export async function ensureScopeReadmePointer(scopeDir: string, service: NodeService): Promise<void> {
+  const agents = await service.get(join(scopeDir, AGENTS_FILE_NAME), AgentsNode);
+  if (!agents) return;
+  const readme = scopeReadmePath(scopeDir);
+  if (agents.localChildren.some((child) => child.id === readme)) return;
+  await service.update(agents, {
+    localChildren: [
+      ...agents.localChildren,
+      {
+        id: readme,
+        name: SCOPE_README_ENTRY_NAME,
+        description: SCOPE_README_ENTRY_DESCRIPTION,
+      },
+    ],
+    descendantChildren: [...agents.descendantChildren],
+  });
+}
+
+/**
+ * Add a child on `.harness/README.md` when NodeService will not.
+ * Notes, projects, and type indexes register through physicalParent on create.
+ * The tasks board is skipped there, and repairs link an existing file.
+ */
+export async function linkScopeReadme(
+  scopeDir: string,
+  reference: NodeReference,
+  service: NodeService,
+): Promise<void> {
+  await ensureScopeReadme(scopeDir, service);
+  const file = scopeReadmePath(scopeDir);
+  const node = await service.get(file, ReadmeNode);
+  if (!node) throw new Error(`Missing scope README: ${file}`);
+  const existing = node.localChildren.find((child) => child.id === reference.id);
+  if (!existing) {
+    await service.update(node, {
+      localChildren: [...node.localChildren, reference],
+      descendantChildren: [...node.descendantChildren],
+    });
+    return;
+  }
+  const name = existing.name ?? reference.name;
+  const description = existing.description ?? reference.description;
+  if (name === existing.name && description === existing.description) return;
+  await service.update(node, {
+    localChildren: node.localChildren.map((child) =>
+      child.id === reference.id
+        ? {
+            ...child,
+            ...(name === undefined ? {} : { name }),
+            ...(description === undefined ? {} : { description }),
+          }
+        : child,
+    ),
+    descendantChildren: [...node.descendantChildren],
+  });
 }
 
 function indexPathForSpec(target: string, spec: TypeSpec): string {
@@ -109,18 +178,21 @@ async function ensureHarnessBoards(
 ): Promise<{ created: string[]; preserved: string[] }> {
   const created: string[] = [];
   const preserved: string[] = [];
-  await ensureHarnessReadme(target, service);
+  await ensureScopeReadme(target, service);
   for (const board of HARNESS_BOARD_MODULES) {
     if (!modules.includes(board.module)) continue;
     const absPath = placeHarnessMaterial(target, board.materialId).absPath;
     const rel = relative(target, absPath);
     if ((await ensureHarnessBoard(target, board, service)) === "created") created.push(rel);
     else preserved.push(rel);
-    await registerMaterial(target, {
-      id: absPath,
-      name: board.title,
-      description: board.description,
-    }, service);
+    // NodeService skips the tasks board. Link that README here.
+    if (board.materialId === "tasks") {
+      await linkScopeReadme(target, {
+        id: absPath,
+        name: board.title,
+        description: board.description,
+      }, service);
+    }
   }
   return { created, preserved };
 }
@@ -237,7 +309,7 @@ async function runTypeInit(
     }
   }
   const service = memoryNodes(target);
-  await ensureHarnessReadme(target, service);
+  await ensureScopeReadme(target, service);
   const created: string[] = [];
   const preserved: string[] = [];
   const diagnostics: { code: string; type: string; message: string }[] = [];
@@ -266,11 +338,6 @@ async function runTypeInit(
       );
       created.push(spec.indexFile);
     }
-    await registerMaterial(target, {
-      id: file,
-      name: spec.indexFile,
-      description: spec.description || spec.name,
-    }, service);
   }
   for (const name of specs.keys()) {
     try {
@@ -284,8 +351,7 @@ async function runTypeInit(
     }
   }
   const agentsAction = await syncTargetAgents(target, root, service);
-  await ensureAgentsPointer(target, service);
-  await migrateScopeMaterialIndex(target, service);
+  await ensureScopeReadmePointer(target, service);
   if (
     target !== root &&
     existsSync(join(root, AGENTS_FILE_NAME)) &&
@@ -337,9 +403,9 @@ async function ensureScopeEntry(options: InitMemoryOptions) {
     }
   }
   const service = memoryNodes(target);
-  await ensureHarnessReadme(target, service);
+  await ensureScopeReadme(target, service);
   const agentsAction = await syncTargetAgents(target, root, service);
-  await ensureAgentsPointer(target, service);
+  await ensureScopeReadmePointer(target, service);
   const [indexAction, indexEntry, indexDescription] = await syncIndexEntry(
     anchor,
     target,
