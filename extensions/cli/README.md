@@ -12,16 +12,23 @@
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm --filter edges-cli exec tsx src/index.ts --help
+pnpm --filter @viruspc/edges exec tsx src/index.ts --help
 
 # 构建本地可执行产物
-pnpm --filter edges-cli build
+pnpm --filter @viruspc/edges build
 node extensions/cli/dist/index.js --help
 ```
 
-开发时可以通过 tsx 直接运行源码；需要 Schema 的命令先运行 `build:schemas`，需要审阅页的命令先构建审阅应用。`pnpm --filter edges-cli dev --help` 会先生成 Schema。
+开发时可以通过 tsx 直接运行源码；需要 Schema 的命令先运行 `build:schemas`，需要审阅页的命令先构建审阅应用。`pnpm --filter @viruspc/edges dev --help` 会先生成 Schema。
 
-包名为 `edges-cli`，命令名只有 `edges`。当前包设为 private，尚未发布到 npm；package.json 的 bin 指向本地 `dist/index.js`。`prepack` 会执行完整构建，`pnpm --filter edges-cli pack` 可生成包含代码、Schema、审阅页资产和 Memory 模板的本地安装包。只有 build 或 prepack 成功后，编译后的命令才可用。
+公开包名是 `@viruspc/edges`，命令名只有 `edges`。另一台装了 Node.js 22 的机器上：
+
+```bash
+npm install -g @viruspc/edges
+edges --help
+```
+
+`package.json` 的 bin 指向 `dist/index.js`。`prepack` 会执行完整构建，把审阅页编好的 HTML/JS/CSS、Schema 和 Memory 模板放进 `dist`。`tasks-review-app` 只在本仓构建时使用，不单独发布；安装包里没有它的 React 源码，也没有 `workspace:` 依赖。发布到 npm 用 `pnpm --filter @viruspc/edges publish`（`publishConfig.access` 为 `public`）。不要用 `npm publish` 或 `npm pack`：npm 不会去掉 workspace 协议。本仓打本地安装包仍是 `pnpm --filter @viruspc/edges pack`。只有 build 或 prepack 成功后，编译后的命令才可用。
 
 直接运行 `edges` 而不带子命令会返回用法错误；没有 `edges-note` 别名，也没有根命令默认写入笔记的行为。
 
@@ -268,7 +275,7 @@ init 管理客户端配置，publish/rm 调用预览服务并返回 JSON。serve
 ```bash
 edges schema list
 edges schema get task-doc/v1 > /tmp/task-doc.schema.json
-pnpm --filter edges-cli run build:schemas
+pnpm --filter @viruspc/edges run build:schemas
 ```
 
 list 返回已打包合同的 key/id/title/description，get 返回完整 draft-07 JSON Schema。它们不依赖内容作用域、不读 stdin，不在运行时生成 Schema；缺少构建产物应重新 build 或安装。成功 stdout 只有 JSON，错误写 stderr 并返回非零状态。
@@ -290,10 +297,10 @@ TaskDoc 要求 name、description、metadata、body，拒绝未知顶层字段�
 ## 开发与验证
 
 ```bash
-pnpm --filter edges-cli exec tsc --noEmit
-pnpm --filter edges-cli test
-pnpm --filter edges-cli build
-pnpm --filter edges-cli run dev:tasks-review-app
+pnpm --filter @viruspc/edges exec tsc --noEmit
+pnpm --filter @viruspc/edges test
+pnpm --filter @viruspc/edges build
+pnpm --filter @viruspc/edges run dev:tasks-review-app
 ```
 
 test 会准备 Schema 和审阅页后执行 CLI 回归；build 清理 dist、生成 Schema、构建审阅应用、编译 TS 并复制 Memory 模板。包测试还会在仓库外仅安装生产依赖，验证编译产物可用。局部测试若直接运行，需自行准备对应资产。
@@ -303,9 +310,9 @@ test 会准备 Schema 和审阅页后执行 CLI 回归；build 清理 dist、生
 旧 task-projects 区块需要独立迁移，普通任务写入不会自动转换。先预览选定范围，再明确执行：
 
 ```bash
-pnpm --filter edges-cli exec tsx ../../scripts/migrate-agents-indexes.mts \
+pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-agents-indexes.mts \
   --root /absolute/scope --check
-pnpm --filter edges-cli exec tsx ../../scripts/migrate-agents-indexes.mts \
+pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-agents-indexes.mts \
   --root /absolute/scope --write
 ```
 

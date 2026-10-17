@@ -25,7 +25,7 @@ Phone review needs a **reachable** `EDGES_ARTIFACTS_BASE_URL` (ECS / public host
 
 ```bash
 # 1. Create ~/.config/edges/artifacts.env (local token + base URL)
-pnpm --filter edges-cli exec tsx src/index.ts artifacts init
+pnpm --filter @viruspc/edges exec tsx src/index.ts artifacts init
 
 # 2. Start this service with the printed token
 EDGES_ARTIFACTS_TOKEN=… \
@@ -33,8 +33,8 @@ EDGES_ARTIFACTS_BASE_URL=http://127.0.0.1:8787 \
 pnpm --filter edges-artifacts-preview dev
 
 # 3. Publish a file or directory; stdout JSON includes url
-pnpm --filter edges-cli exec tsx src/index.ts artifacts publish /tmp/review.html
-pnpm --filter edges-cli exec tsx src/index.ts artifacts rm <id-or-url>
+pnpm --filter @viruspc/edges exec tsx src/index.ts artifacts publish /tmp/review.html
+pnpm --filter @viruspc/edges exec tsx src/index.ts artifacts rm <id-or-url>
 ```
 
 After `pnpm --filter edges-artifacts-preview build`, `start` runs `node dist/index.js`. Root scripts: `pnpm dev:artifacts` / `pnpm start:artifacts`.

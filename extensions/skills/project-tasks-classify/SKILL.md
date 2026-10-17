@@ -25,7 +25,7 @@ version: 1.3.0
 1. **读已有质心。** 在仓库根：
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts --scope "$SCOPE" tasks project list
+pnpm --filter @viruspc/edges exec tsx src/index.ts --scope "$SCOPE" tasks project list
 ```
 
 已 build 时把 `tsx src/index.ts` 换成 `node dist/index.js`。解析 stdout JSON：`command` 为 `project.list`，`projects[].project|title|description` 是用户已设的质心（slug + 标题 + 描述）。若 `_default` 还没有 AGENTS.md，这条命令会 bootstrap 元数据，**不会**搬 Task 文件。
@@ -33,7 +33,7 @@ pnpm --filter edges-cli exec tsx src/index.ts --scope "$SCOPE" tasks project lis
 2. **读整板 Task。**
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts --scope "$SCOPE" tasks list
+pnpm --filter @viruspc/edges exec tsx src/index.ts --scope "$SCOPE" tasks list
 ```
 
 对需要正文的行再 `tasks get <stem>`。必须包含所有 project，禁止 `list --project default` 当作唯一输入。
@@ -48,14 +48,14 @@ pnpm --filter edges-cli exec tsx src/index.ts --scope "$SCOPE" tasks list
    2. 渲染（`--from` 必填；省略 `--out` 则写 OS 临时 HTML；**不要** `--open` / `--mode`，命令不会打开浏览器）：
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts --scope "$SCOPE" tasks project review-page --from /tmp/suggestions.json
+pnpm --filter @viruspc/edges exec tsx src/index.ts --scope "$SCOPE" tasks project review-page --from /tmp/suggestions.json
 ```
 
    3. 解析 stdout JSON：`status` 为 `success`，`command` 为 `project.review-page`，读出绝对路径 `path`（另有 `groupCount` / `itemCount`）。`review-page` 仍只渲染，不要把 publish 并进这条命令。
    4. 若人需要可达 URL（手机 / 另一台机器），再发布，不要假定 localhost：
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts artifacts publish <绝对 HTML 路径>
+pnpm --filter @viruspc/edges exec tsx src/index.ts artifacts publish <绝对 HTML 路径>
 ```
 
       若这条预览的来源是看板 Task，再加上 `--from-type task --from-id <stem> --task-project <slug>`（`from.id` 是 task stem）。没有 Task 关联就不要带 `from` 相关 flag。不要用 `--from-name` / `--task-stem`，也不要写 `--from-type skill`。解析 stdout：`command` 为 `artifacts.publish`，把 `url` 给人。告诉人用 **系统浏览器**（Chrome / Safari / Firefox）打开该 URL。手机必须用 ECS / 公开的 `EDGES_ARTIFACTS_BASE_URL`，不能给 `localhost`。未 `edges artifacts init`、或服务没起来时，说明缺口，不要手搓上传。不要用聊天 HTML 预览当闸门——Grok Bot 预览里拖拽不可靠，见 `notes/2026-09-17--Grok-Bot-HTML预览拖拽异常.md`。本步不实现审阅结果回传 Agent 客户端。
@@ -77,14 +77,14 @@ pnpm --filter edges-cli exec tsx src/index.ts artifacts publish <绝对 HTML 路
    - 每个还不在 `project list` 里的 `suggested`（且不是 `default`）：先问人要 title 与 description，再
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts --scope "$SCOPE" tasks project create <slug> --title "<title>" --description "<description>"
+pnpm --filter @viruspc/edges exec tsx src/index.ts --scope "$SCOPE" tasks project create <slug> --title "<title>" --description "<description>"
 ```
 
      不要自动批量编造 description，不要一次 create 未经人确认的一串 project。
    - 再对 `suggested !== current` 的每一行：
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts --scope "$SCOPE" tasks update <stem> --project <suggested>
+pnpm --filter @viruspc/edges exec tsx src/index.ts --scope "$SCOPE" tasks update <stem> --project <suggested>
 ```
 
    - `keep` 或 `suggested === current`：不写盘。

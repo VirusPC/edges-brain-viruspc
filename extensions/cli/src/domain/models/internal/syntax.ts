@@ -168,7 +168,7 @@ export class InternalSyntax {
   }
   serialize(content: SyntaxContent): string {
     if (/<!-- task-projects:(?:start|end) -->/.test(this.#source))
-      throw new Error("migration-required: run pnpm --filter edges-cli exec tsx ../../scripts/migrate-agents-indexes.mts --root /absolute/scope --write");
+      throw new Error("migration-required: run pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-agents-indexes.mts --root /absolute/scope --write");
     const originalConstraints = this.#model.constraints;
     const used = new Set<number>();
     const constraints = content.constraints.map((value) => {

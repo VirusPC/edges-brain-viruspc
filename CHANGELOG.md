@@ -31,7 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **周复盘和日复盘有单独目录：** 阶段性回看写在 `retrospectives/`。周复盘是 `retrospectives/weekly/<周一日期>--周复盘/INDEX.md`，一级标题下用二级标题写六节：范围、本该怎样、实际怎样、为什么、下次做什么、建议补充内容清单。日复盘是 `retrospectives/daily/<日期>--日复盘/INDEX.md`，必写范围与建议补充内容清单，同样用二级标题。命名，以及 Memory / Skill / Note / Task / `AGENTS.md` 硬约束候选的去向，在 `retrospectives/README.md`。根 README 的目录表和本层内容列入了这个目录。
 
-- **README 改为对外门面：** 根 README 现在先回答外部访客「这是什么、能不能拿去用」：标语「harness 任何目录。你的大脑，也是一个目录。」、六条要点、一张知识闭环图、照着就能跑通的快速开始（本地打包安装 `edges` CLI 后对任意仓库执行 `edges init`），以及本仓的目录地图。原来写在 README 里的内容标准下放到所属目录：Edge 准入与演化在 `edges/README.md`，归档与附件规则在新的 `archive/README.md`；原「理念」「系统实现」原文保存在 `docs/architecture.md`。
+- **一行安装 edges 命令：** 在装了 Node.js 22 的机器上执行 `npm install -g @viruspc/edges`，然后 `edges --help`。命令名仍是 `edges`。`edges init` 与 `edges memory remember` 不需要克隆本仓。审阅页随安装包 `dist` 里编好的 HTML/JS/CSS 走，不另发 `tasks-review-app`。仓库里开发用 `pnpm --filter @viruspc/edges`；已发布条目里的 `pnpm --filter edges-cli` 现在也写成这个名字。发到 npm 用 `pnpm --filter @viruspc/edges publish`（`publishConfig.access` 为 `public`）。1.3.0 里「包保持 private、不发布」已经不再适用。
+
+- **README 改为对外门面：** 根 README 现在先回答外部访客「这是什么、能不能拿去用」：标语「harness 任何目录。你的大脑，也是一个目录。」、六条要点、一张知识闭环图、照着就能跑通的快速开始（`npm install -g @viruspc/edges` 后对任意仓库执行 `edges init`），以及本仓的目录地图。原来写在 README 里的内容标准下放到所属目录：Edge 准入与演化在 `edges/README.md`，归档与附件规则在新的 `archive/README.md`；原「理念」「系统实现」原文保存在 `docs/architecture.md`。
 
 ### 任务看板与项目
 
@@ -104,8 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 笔记入库与能力面
 
 - **任务人审后落库：** 新增 `conversation-to-tasks`（`extensions/skills/conversation-to-tasks`），从对话整理任务草稿，正文按背景 → 目标 → 动作 → 完成标准组织，使用中文栏名。背景和目标必填，动作和完成标准可选；完成标准可在 `grill-with-docs` 后补齐。通过 `edges tasks create` 或 `edges tasks update` 落库，可以在对话确认后写入，也可以写在独立分支上提 PR 审阅。
-- **CLI 目录改名：** 多命令 CLI 的代码目录从 `extensions/clis` 改为 `extensions/cli`，引用旧路径的本地脚本需要同步调整。npm 包名仍为 `edges-cli`，二进制仍为 `edges`，`pnpm --filter edges-cli` 和命令行为不变。
-- **明确本地 CLI 使用方式：** 文档明确 `edges-cli` 保持 `private`，不发布到 npm registry。日常可用 `pnpm --filter edges-cli exec tsx src/index.ts` 运行；本地 `edges` 二进制来自 `dist/index.js`，需先让 `pnpm --filter edges-cli build` 成功，`prepack` 会运行同一构建流程。
+- **CLI 目录改名：** 多命令 CLI 的代码目录从 `extensions/clis` 改为 `extensions/cli`，引用旧路径的本地脚本需要同步调整。当时 npm 包名仍为 `edges-cli`，二进制仍为 `edges`，`pnpm --filter edges-cli` 和命令行为不变。（现行包名是 `@viruspc/edges`，见 Unreleased「一行安装 edges 命令」。）
+- **明确本地 CLI 使用方式：** 当时文档写明包名 `edges-cli` 保持 `private`，不发布到 npm registry。日常可用 `pnpm --filter edges-cli exec tsx src/index.ts` 运行；本地 `edges` 二进制来自 `dist/index.js`，需先让 `pnpm --filter edges-cli build` 成功，`prepack` 会运行同一构建流程。（此条已过时：见上方 Unreleased「一行安装 edges 命令」。现行包名是 `@viruspc/edges`，可以发布到 npm。）
 
 ### 文档与系统
 

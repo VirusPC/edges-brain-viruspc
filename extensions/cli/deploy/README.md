@@ -9,10 +9,10 @@ This is generated HTML only. It is not Artifacts (`publish` / UUID / TTL) and no
 After `git fetch` / `reset --hard origin/main`, the existing `.github/workflows/deploy.yml` job always runs. Two gitignored build outputs must exist before generate: the Vite review shell under `extensions/cli/src/commands/tasks/project/assets/review-page/`, and the schema artifacts under `extensions/cli/dist/schemas/`. `generate-tasks-site.ts` validates each task `doc` with that schema. It does not generate the schema itself.
 
 ```bash
-pnpm install --frozen-lockfile --filter edges-cli... --filter tasks-review-app...
+pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...
 pnpm --filter tasks-review-app run build
-pnpm --filter edges-cli run build:schemas
-pnpm --filter edges-cli exec -- tsx scripts/generate-tasks-site.ts \
+pnpm --filter @viruspc/edges run build:schemas
+pnpm --filter @viruspc/edges exec -- tsx scripts/generate-tasks-site.ts \
   --scope "$PWD" --purpose all --out "$PWD/tasks/_site/index.html"
 ```
 
@@ -20,12 +20,12 @@ From a checkout with PATH already set (same as the Action):
 
 ```bash
 pnpm --filter tasks-review-app run build
-pnpm --filter edges-cli run build:schemas
-pnpm --filter edges-cli exec -- tsx scripts/generate-tasks-site.ts \
+pnpm --filter @viruspc/edges run build:schemas
+pnpm --filter @viruspc/edges exec -- tsx scripts/generate-tasks-site.ts \
   --scope "$PWD" --purpose all --out "$PWD/tasks/_site/index.html"
 ```
 
-If dependencies are missing, `pnpm install --frozen-lockfile --filter edges-cli... --filter tasks-review-app...`, then `pnpm --filter tasks-review-app run build` and `pnpm --filter edges-cli run build:schemas`. The Vite files and `dist/schemas/` are gitignored and are not in the git checkout. Output HTML is gitignored (`tasks/_site/`). A failed generate fails the Action; nginx keeps serving the last good `index.html` until the next success. `edges artifacts server install` / `restart` do not read these schema files. `deploy/bootstrap.sh` only wraps those two server commands.
+If dependencies are missing, `pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...`, then `pnpm --filter tasks-review-app run build` and `pnpm --filter @viruspc/edges run build:schemas`. The Vite files and `dist/schemas/` are gitignored and are not in the git checkout. Output HTML is gitignored (`tasks/_site/`). A failed generate fails the Action; nginx keeps serving the last good `index.html` until the next success. `edges artifacts server install` / `restart` do not read these schema files. `deploy/bootstrap.sh` only wraps those two server commands.
 
 `--scope "$PWD" --purpose all` gathers the root and actual descendant scopes, including domain and maintenance tasks. Public `/tasks/` remains one aggregated board.
 
@@ -63,4 +63,4 @@ curl -fsS https://edges.viruspc.tech/health
 
 ## PATH on ECS
 
-Generate uses the just-pulled tree via `pnpm --filter edges-cli exec -- tsx`. The deploy job hoists `~/.local/share/pnpm`, `~/.local/bin`, `/usr/local/bin`, and optional nvm so this does not depend on the artifacts env file.
+Generate uses the just-pulled tree via `pnpm --filter @viruspc/edges exec -- tsx`. The deploy job hoists `~/.local/share/pnpm`, `~/.local/bin`, `/usr/local/bin`, and optional nvm so this does not depend on the artifacts env file.

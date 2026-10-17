@@ -66,7 +66,7 @@ metadata:
 
 - README「怎么做到的」一节（核心架构设计思想）以后再补，取材自 `docs/architecture.md`。
 - `posts/README.md` 仍写旧路径 `knowledge/posts/`，受 posts 硬约束只能由用户手改。
-- CLI 发布到 npm 见任务卡 `.harness/tasks/edges-extensions/backlog/2026-09-14--edges-CLI发布成package`；发布后把快速开始换成一行 npm 命令。
+- CLI 发布到 npm 见任务卡 `.harness/tasks/edges-extensions/backlog/2026-09-14--edges-CLI发布成package`。2026-10-18 起快速开始的 CLI 安装是 `npm install -g @viruspc/edges`；registry 上的 `npm publish` 仍等人确认。
 - 团队这一层、其他仓库的 code agent 接入大脑 harness、`--super` 跨多个仓库、personal agent 云端同步私密内容，见 ADR 0032 的 Consequences。
 
 **Why:** 用户 2026-10-08 在 README 顶部加了 comment「为任意工作空间，补充自进化系统」，随后在 grill 中逐步确认：通用优先、外部访客为读者、README 只做门面，并把模型收敛为「任何目录都能配 harness，大脑也是一个目录，经验按谁 × 在哪沉淀」。原 README 约 22KB 并承担规范真源，外部访客读到第三屏仍不知道这是什么、怎么上手。

@@ -18,7 +18,7 @@ metadata:
 
 **How to apply:**
 - 改 glossary、部署链或看板入口时按 ADR 0021 / 0022 / 0023 与 CONTEXT 术语 `/tasks/` 持久看板站 / 分组列表 schema（edges.tasks.grouped） / 审阅壳 / Task Doc / Artifacts 预览服务。
-- 生成前先 `pnpm install --frozen-lockfile --filter edges-cli... --filter tasks-review-app...`、`pnpm --filter tasks-review-app run build`（审阅壳 gitignore，必须在盒上现编）与 `pnpm --filter edges-cli run build:schemas`（`extensions/cli/dist/schemas/` gitignore；审阅页校验任务 doc 时读取，运行时不现生成），再 `pnpm --filter edges-cli exec -- tsx scripts/generate-tasks-site.ts --scope "$PWD" --purpose all --out "$PWD/tasks/_site/index.html"`（默认相对路径 `tasks/_site/index.html`，gitignored）。`deploy.yml` 在 `reset --hard origin/main` 之后始终这么做；失败则整次 SSH 失败。不要把 generate 绑在 artifacts env 上。
+- 生成前先 `pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...`、`pnpm --filter tasks-review-app run build`（审阅壳 gitignore，必须在盒上现编）与 `pnpm --filter @viruspc/edges run build:schemas`（`extensions/cli/dist/schemas/` gitignore；审阅页校验任务 doc 时读取，运行时不现生成），再 `pnpm --filter @viruspc/edges exec -- tsx scripts/generate-tasks-site.ts --scope "$PWD" --purpose all --out "$PWD/tasks/_site/index.html"`（默认相对路径 `tasks/_site/index.html`，gitignored）。`deploy.yml` 在 `reset --hard origin/main` 之后始终这么做；失败则整次 SSH 失败。不要把 generate 绑在 artifacts env 上。
 - nginx：一次性 `sudo bash extensions/cli/deploy/setup-nginx-tasks.sh`，snippet 是 `extensions/cli/deploy/nginx-tasks.conf`（装到 `/etc/nginx/snippets/edges-tasks.conf`）。Action 不跑 setup-nginx。只认 `teaching.conf` + `/teaching/`。
 - review-page 仍只渲染（ADR 0012）。不要为 `/tasks/` 另做一壳。grouped item 的可选 `doc` 经薄映射进入审阅页；页只读页内 JSON。
 - 顶栏字面筛选与不窄于 `md` 的三栏交互按 ADR 0022。窄于 `md` 的纵向长滚动与「移到项目…」按 ADR 0023。语义检索、写回、鉴权仍是各自 backlog。

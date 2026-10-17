@@ -8,30 +8,57 @@ import test from 'node:test';
 async function files(directory: string): Promise<string[]> {
   const result: string[] = [];
   for (const entry of await readdir(directory, {withFileTypes:true})) {
+    if (entry.name === 'node_modules') continue;
     if (entry.isDirectory()) result.push(...(await files(path.join(directory,entry.name))).map(file => `${entry.name}/${file}`));
     else result.push(entry.name);
   }
   return result;
 }
 
-test('packed CLI works outside repo with production dependencies and fails clearly for missing artifacts', { timeout: 180000 }, async () => {
+test('packed CLI works outside repo with production dependencies and fails clearly for missing artifacts', { timeout: 240000 }, async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'edges-schema-package-'));
   try {
     execFileSync('pnpm', ['pack','--pack-destination',directory], {cwd: new URL('../../', import.meta.url), stdio:'pipe'});
-    const archive = (await readdir(directory)).find(file => file.endsWith('.tgz'))!;
+    const archiveName = (await readdir(directory)).find(file => file.endsWith('.tgz'))!;
+    const archive = path.join(directory, archiveName);
+    const packedManifest = JSON.parse(execFileSync('tar', ['-xOf', archive, 'package/package.json'], {encoding:'utf8'}));
+    assert.equal(packedManifest.name, '@viruspc/edges');
+    assert.equal(packedManifest.version, '0.1.0');
+    assert.equal(packedManifest.private, undefined);
+    assert.equal(packedManifest.bin?.edges, './dist/index.js');
+    assert.equal(packedManifest.publishConfig?.access, 'public');
+    assert.equal(JSON.stringify(packedManifest).includes('workspace:'), false);
+    for (const field of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
+      assert.equal(packedManifest[field]?.['tasks-review-app'], undefined);
+    }
+    assert.equal(packedManifest.dependencies?.react, undefined);
     const installation = path.join(directory,'installation');
     await mkdir(installation);
-    execFileSync('npm',['install','--prefix',installation,'--omit=dev','--ignore-scripts','--no-audit','--no-fund',path.join(directory,archive)], {stdio:'pipe'});
-    const packageDir = path.join(installation,'node_modules/edges-cli');
+    execFileSync('npm',['install','-g','--prefix',installation,'--omit=dev','--ignore-scripts','--no-audit','--no-fund',archive], {stdio:'pipe'});
+    const packageRoot = execFileSync('npm', ['root', '-g', '--prefix', installation], {encoding:'utf8'}).trim();
+    const packageDir = path.join(packageRoot, '@viruspc/edges');
     const inventory = await files(packageDir);
     assert.equal(inventory.some(file => file.startsWith('src/') || file.startsWith('scripts/') || (file.endsWith('.ts') && !file.endsWith('.d.ts'))),false);
     assert.ok(inventory.includes('dist/schemas/task-doc.v1.json'));
     assert.ok(inventory.includes('dist/schemas/manifest.json'));
     assert.ok(inventory.includes('dist/commands/tasks/project/assets/review-page/review.js'));
+    assert.equal(inventory.some(file => file.endsWith('.tsx')), false);
     assert.ok(inventory.some(file => file.startsWith('dist/assets/memory/templates/')));
-    const installed = await readdir(path.join(installation,'node_modules'));
+    const installed = await readdir(path.join(packageDir, 'node_modules'));
     assert.ok(installed.includes('ajv') && installed.includes('ajv-formats'));
     assert.equal(installed.includes('ts-json-schema-generator') || installed.includes('tsx') || installed.includes('tasks-review-app'), false);
+    const bin = path.join(installation, 'bin', 'edges');
+    const help = spawnSync(bin, ['--help'], {cwd: directory, encoding:'utf8'});
+    assert.equal(help.status, 0, help.stderr);
+    assert.match(help.stdout, /\bedges\b/);
+    const repo = path.join(directory, 'repo');
+    await mkdir(repo);
+    execFileSync('git', ['init'], {cwd: repo, stdio:'pipe'});
+    const smoke = (args: string[]) => spawnSync(bin, args, {cwd: repo, encoding:'utf8', env:{...process.env, EDGES_SCOPE: repo}});
+    const init = smoke(['init', '--target-dir', repo]);
+    assert.equal(init.status, 0, init.stderr + init.stdout);
+    const remembered = smoke(['memory', 'remember', '--target-dir', repo, '--type', 'project', '--slug', 'smoke_publish', '--title', 'Smoke', '--description', 'Packed CLI can remember', '--content', 'Packed install wrote this entry.', '--username', 'edges smoke', '--email', 'edges-smoke@example.com']);
+    assert.equal(remembered.status, 0, remembered.stderr + remembered.stdout);
     const invoke = (...argv: string[]) => spawnSync(process.execPath,[path.join(packageDir,'dist/index.js'),...argv], {cwd: directory, encoding:'utf8', env:{...process.env, EDGES_SCOPE:'/invalid'}});
     const list = invoke('schema','list');
     assert.equal(list.status,0,list.stderr); assert.equal(list.stderr,'');

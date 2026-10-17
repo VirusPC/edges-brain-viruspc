@@ -5,7 +5,7 @@ const directory = new URL('../../dist/schemas/', import.meta.url);
 
 function readArtifact(file: string): string {
   try { return readFileSync(new URL(file, directory), 'utf8'); }
-  catch { throw new Error('Schema artifact missing or unreadable. Rebuild with pnpm --filter edges-cli run build:schemas or reinstall edges-cli.'); }
+  catch { throw new Error('Schema artifact missing or unreadable. Rebuild with pnpm --filter @viruspc/edges run build:schemas or reinstall @viruspc/edges.'); }
 }
 
 export function readSchemaManifest(): SchemaManifestEntry[] {

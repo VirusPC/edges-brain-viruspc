@@ -19,7 +19,7 @@ test("deploy sudo only runs the root-owned site-layout entry after /tasks/ gener
 });
 
 test("deploy builds schema artifacts before generating /tasks/ and before the tsx CLI fallback", () => {
-  const schemasAt = deploy.indexOf("pnpm --filter edges-cli run build:schemas");
+  const schemasAt = deploy.indexOf("pnpm --filter @viruspc/edges run build:schemas");
   const generateAt = deploy.indexOf("scripts/generate-tasks-site.ts");
   const tsxCliAt = deploy.indexOf("tsx src/index.ts artifacts server install");
   assert.ok(schemasAt >= 0, "deploy.yml must run edges-cli build:schemas");

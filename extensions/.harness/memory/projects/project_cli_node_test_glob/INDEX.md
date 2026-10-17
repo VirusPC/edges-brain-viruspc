@@ -14,7 +14,7 @@ metadata:
 跑 `extensions/cli` 的 `node:test` + `tsx` 套件时，用 `node --test --import tsx './test/**/*.test.ts'`，不要用目录参数 `test`。已验证于 2026-09-16（Node 22.14 + tsx 4.21）。
 
 **Why:**
-`node --test --import tsx test` 在该组合下把 `test/` 当成 ESM 模块解析，报 `ERR_MODULE_NOT_FOUND` for `test/index.json`，`pnpm --filter edges-cli test` 无法跑递归套件。ADR 0009 实现计划仍写着旧命令；实现 PR 已把 `package.json` `"test"` 改成 glob。
+`node --test --import tsx test` 在该组合下把 `test/` 当成 ESM 模块解析，报 `ERR_MODULE_NOT_FOUND` for `test/index.json`，`pnpm --filter @viruspc/edges test` 无法跑递归套件。ADR 0009 实现计划仍写着旧命令；实现 PR 已把 `package.json` `"test"` 改成 glob。
 
 **How to apply:**
 - 改 `extensions/cli/package.json` `"test"` 或写计划里的测试命令时，保持 glob，不要为了「跟旧计划字面一致」改回 `node --test --import tsx test`。

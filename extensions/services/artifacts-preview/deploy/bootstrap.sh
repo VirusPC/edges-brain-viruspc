@@ -38,12 +38,12 @@ run_edges() {
   if command -v edges >/dev/null 2>&1; then
     edges "$@"
   else
-    pnpm --filter edges-cli exec -- tsx src/index.ts "$@"
+    pnpm --filter @viruspc/edges exec -- tsx src/index.ts "$@"
   fi
 }
 
 if ! command -v edges >/dev/null 2>&1; then
-  pnpm install --frozen-lockfile --filter edges-cli...
+  pnpm install --frozen-lockfile --filter @viruspc/edges...
 fi
 
 run_edges artifacts server install
