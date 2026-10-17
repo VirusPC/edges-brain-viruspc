@@ -22,17 +22,7 @@ Edges 是什么、怎么用看 [README.md](README.md)；内容标准看所属目
 ## 本层系统维护信息
 下面这些是索引，不是正文。按条目说明挑要读的，再打开对应内容。
 
-- [.harness/memory/users/README.md](.harness/memory/users/README.md) — 绑定本仓库、不宜公开的个人材料（个人偏好、凭据与密钥）。本机文件，不进 git。
-- [.harness/memory/feedbacks/README.md](.harness/memory/feedbacks/README.md) — 用户的纠正、确认过的做法与必须遵守的禁止模式。
-- [.harness/memory/projects/README.md](.harness/memory/projects/README.md) — 进行中的工作、关键时间点，无法从代码或 git 历史推导的决策，以及项目内的规范。兜底：对不上更具体类型时走这里。
-- [.harness/memory/references/README.md](.harness/memory/references/README.md) — 需求文档、设计稿、接口文档、监控面板等外部资料。
-- [.harness/skills/managed/README.md](.harness/skills/managed/README.md) — 从会话里沉淀出来的可复用流程，动手前先看本层有没有现成的。
-- [.harness/skills/referenced/README.md](.harness/skills/referenced/README.md) — 本层 `.agents/skills/` 下人写或装入的标准技能，工具只索引不改写。
-- [.harness/evaluation/README.md](<.harness/evaluation/README.md>) — 根作用域的评测维护模块，评测整套 Edges。
-- [根维护任务](<.harness/tasks/README.md>) — 根维护任务入口。
-- [.harness/projects/README.md](<.harness/projects/README.md>) — 项目内容叶子的组织清单。
-- [.harness/notes/README.md](<.harness/notes/README.md>) — 笔记内容叶子的组织清单。
-- [观测职责与资料](<.harness/observation/README.md>) — 观测职责与资料入口。
+- [本层 harness 材料索引](<.harness/README.md>) — 本层 harness 材料的组织清单。各材料只在这里登记。
 - [目录与内容说明](<README.md>) — 目录与内容说明入口。
 - [领域术语](<CONTEXT.md>) — 领域术语入口。
 - [架构决策](<docs/adr/>) — 架构决策入口。

@@ -212,8 +212,8 @@ export class NodeService {
     return node;
   }
   /**
-   * Runtime-only super entry for this scope: mounts harness-materials README
-   * paths that exist under the scope harness root (empty mounts allowed).
+   * Runtime-only super entry for this scope. Mounts the harness entry README
+   * when it exists; otherwise flat harness-materials paths (empty allowed).
    */
   #superRoot(scopePath: string): SuperAgentsNode {
     return createSuperAgentsNode(scopePath);

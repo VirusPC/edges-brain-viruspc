@@ -75,10 +75,9 @@ test("init writes README type indexes with project-entries markers", async (t) =
     assert.doesNotMatch(text, /project-memory-entries/);
   }
   assert.equal(existsSync(join(dir, ".harness/memory/projects/AGENTS.md")), false);
-  assert.match(
-    read(dir, AGENTS_FILE_NAME),
-    /\]\(\.harness\/memory\/projects\/README\.md\)/,
-  );
+  assert.match(read(dir, AGENTS_FILE_NAME), /\]\(\.harness\/README\.md\)/);
+  assert.match(read(dir, ".harness/README.md"), /memory\/projects\/README\.md/);
+  assert.doesNotMatch(read(dir, AGENTS_FILE_NAME), /memory\/projects\/README\.md/);
   assert.deepEqual(
     layerTypeSpecs(dir).map((s) => [s.name, s.indexFile]),
     [
@@ -136,7 +135,9 @@ test("add-type creates a README index and links it from layer AGENTS", async (t)
   const text = read(dir, ".harness/memory/docs/README.md");
   assert.match(text, /<!-- project-memory-type:start -->\nname: docs/);
   assert.match(text, /<!-- project-entries-local:start -->/);
-  assert.match(
+  assert.match(read(dir, AGENTS_FILE_NAME), /\]\(\.harness\/README\.md\)/);
+  assert.match(read(dir, ".harness/README.md"), /memory\/docs\/README\.md/);
+  assert.doesNotMatch(
     read(dir, AGENTS_FILE_NAME),
     /\]\(<?\.harness\/memory\/docs\/README\.md>?\)/,
   );
@@ -189,12 +190,11 @@ format: ordinary
 `;
   rmSync(join(base, "README.md"));
   writeFileSync(join(base, "AGENTS.md"), legacy);
-  const agents = join(dir, AGENTS_FILE_NAME);
   writeFileSync(
-    agents,
-    read(dir, AGENTS_FILE_NAME).replace(
-      /\(\.harness\/memory\/projects\/README\.md\)/g,
-      "(.harness/memory/projects/AGENTS.md)",
+    join(dir, ".harness/README.md"),
+    read(dir, ".harness/README.md").replaceAll(
+      "memory/projects/README.md",
+      "memory/projects/AGENTS.md",
     ),
   );
   assert.deepEqual(

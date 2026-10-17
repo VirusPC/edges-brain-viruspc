@@ -36,6 +36,11 @@ import {
   legacyTypeIndexRelpath,
 } from "./paths.js";
 import { ENTRY_LINE_TEMPLATE, renderLine } from "./templates.js";
+import {
+  HARNESS_INDEX_DESCRIPTION,
+  HARNESS_INDEX_NAME,
+  materialOwnershipPaths,
+} from "../../domain/harness-index.js";
 export const MEMORY_TYPE_NAMES = [
   "user",
   "feedback",
@@ -166,7 +171,7 @@ export function layerTypeSpecs(target: string): TypeSpec[] {
     string,
     { module: "memory" | "skills"; dirname: string }
   >();
-  for (const file of localOwnershipPaths(target)) {
+  for (const file of materialOwnershipPaths(target) ?? localOwnershipPaths(target)) {
     const rel = relative(canonicalPath(target), file);
     const [harness, module, directory, entry, ...rest] = rel.split("/");
     if (
@@ -302,17 +307,15 @@ export function upsertLocalTypeLine(
     block.replace(LOCAL_END, () => `${line}\n${LOCAL_END}`),
   );
 }
-export function selectedLocalBlock(specs: TypeSpec[]): string {
+/** AGENTS 本层只留材料索引指针。类型行登记在 `.harness/README.md`，不写进这个区块。 */
+export function selectedLocalBlock(_specs: TypeSpec[] = []): string {
   let block = buildLocalBlock().replace(
     /^- \[.*\]\(\.harness\/.*\).*\n?/gm,
     "",
   );
-  for (const spec of specs)
-    block = upsertLocalTypeLine(
-      block,
-      spec.indexFile,
-      spec.description || spec.name,
-    );
+  const line = `- [${HARNESS_INDEX_NAME}](.harness/README.md) — ${HARNESS_INDEX_DESCRIPTION}`;
+  if (!block.includes("](.harness/README.md)") && !block.includes("](<.harness/README.md>)"))
+    block = block.replace(LOCAL_END, () => `${line}\n${LOCAL_END}`);
   return block;
 }
 

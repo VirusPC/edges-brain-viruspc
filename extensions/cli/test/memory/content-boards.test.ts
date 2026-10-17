@@ -33,7 +33,9 @@ test("memory init recommends projects and notes and does not write their harness
     assert.equal(existsSync(path.join(root, rel)), false, rel);
   }
   const agents = await readFile(path.join(root, "AGENTS.md"), "utf8");
-  assert.match(agents, /\.harness\/memory\/projects\/README\.md/);
+  assert.match(agents, /\.harness\/README\.md/);
+  assert.doesNotMatch(agents, /\.harness\/memory\/projects\/README\.md/);
   assert.doesNotMatch(agents, /\.harness\/projects\/README\.md/);
   assert.doesNotMatch(agents, /\.harness\/notes\/README\.md/);
+  assert.match(await readFile(path.join(root, ".harness/README.md"), "utf8"), /memory\/projects\/README\.md/);
 });

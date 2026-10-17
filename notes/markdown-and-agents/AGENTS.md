@@ -11,3 +11,9 @@
 	5. 展开方法保持一致：问题背景 => 核心思想 => 具体案例（重点考虑 Claude Code 和 OpenClaw）=> 行动指南 => 下一章引子。
 	6. 最后展望时，要额外写清仍然存在的问题，例如多 agent 兼容、知识腐化、配置组合选择、如何把个人知识沉淀成团队知识。
 	7. 最后总结时，要给出mermaid图
+
+<!-- project-harness-local:start -->
+## 本层系统维护信息
+
+- [本层 harness 材料索引](<.harness/README.md>) — 本层 harness 材料的组织清单。各材料只在这里登记。
+<!-- project-harness-local:end -->

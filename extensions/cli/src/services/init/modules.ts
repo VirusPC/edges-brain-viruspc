@@ -47,8 +47,8 @@ export type HarnessBoardModule = {
   title: string;
   description: string;
   /**
-   * scope-agents: NodeService hangs the README on the scope AGENTS.
-   * manual-agents: NodeService skips the tasks board, so init links it itself.
+   * scope-agents: NodeService hangs the README on the harness index when it exists.
+   * manual-agents: NodeService skips the tasks board; init still links it on the index.
    */
   registration: "scope-agents" | "manual-agents";
   body?: string;

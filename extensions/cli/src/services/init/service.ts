@@ -1,6 +1,12 @@
 import { existsSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
+import {
+  ensureAgentsPointer,
+  ensureHarnessReadme,
+  migrateScopeMaterialIndex,
+  registerMaterial,
+} from "../harness-index.js";
 import { AgentsNode } from "../../domain/models/internal/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import type { ChildGroup } from "../../domain/models/core/types.js";
@@ -96,16 +102,6 @@ async function ensureHarnessBoard(
   return "created";
 }
 
-/** NodeService does not hang the tasks board. Init registers only that file. */
-async function hangBoard(target: string, absPath: string, service: NodeService): Promise<void> {
-  const owner = await service.get(join(target, AGENTS_FILE_NAME), AgentsNode);
-  if (!owner || owner.children.some((ref) => ref.id === absPath)) return;
-  await service.update(owner, {
-    localChildren: [...owner.localChildren, { id: absPath }],
-    descendantChildren: [...owner.descendantChildren],
-  });
-}
-
 async function ensureHarnessBoards(
   target: string,
   modules: readonly string[],
@@ -113,13 +109,18 @@ async function ensureHarnessBoards(
 ): Promise<{ created: string[]; preserved: string[] }> {
   const created: string[] = [];
   const preserved: string[] = [];
+  await ensureHarnessReadme(target, service);
   for (const board of HARNESS_BOARD_MODULES) {
     if (!modules.includes(board.module)) continue;
     const absPath = placeHarnessMaterial(target, board.materialId).absPath;
     const rel = relative(target, absPath);
     if ((await ensureHarnessBoard(target, board, service)) === "created") created.push(rel);
     else preserved.push(rel);
-    if (board.registration === "manual-agents") await hangBoard(target, absPath, service);
+    await registerMaterial(target, {
+      id: absPath,
+      name: board.title,
+      description: board.description,
+    }, service);
   }
   return { created, preserved };
 }
@@ -236,6 +237,7 @@ async function runTypeInit(
     }
   }
   const service = memoryNodes(target);
+  await ensureHarnessReadme(target, service);
   const created: string[] = [];
   const preserved: string[] = [];
   const diagnostics: { code: string; type: string; message: string }[] = [];
@@ -264,6 +266,11 @@ async function runTypeInit(
       );
       created.push(spec.indexFile);
     }
+    await registerMaterial(target, {
+      id: file,
+      name: spec.indexFile,
+      description: spec.description || spec.name,
+    }, service);
   }
   for (const name of specs.keys()) {
     try {
@@ -277,6 +284,8 @@ async function runTypeInit(
     }
   }
   const agentsAction = await syncTargetAgents(target, root, service);
+  await ensureAgentsPointer(target, service);
+  await migrateScopeMaterialIndex(target, service);
   if (
     target !== root &&
     existsSync(join(root, AGENTS_FILE_NAME)) &&
@@ -328,7 +337,9 @@ async function ensureScopeEntry(options: InitMemoryOptions) {
     }
   }
   const service = memoryNodes(target);
+  await ensureHarnessReadme(target, service);
   const agentsAction = await syncTargetAgents(target, root, service);
+  await ensureAgentsPointer(target, service);
   const [indexAction, indexEntry, indexDescription] = await syncIndexEntry(
     anchor,
     target,
@@ -394,6 +405,7 @@ export async function initScope(options: InitScopeOptions) {
     created = [...created, ...boards.created];
     preserved = [...preserved, ...boards.preserved];
   }
+  await migrateScopeMaterialIndex(scope.targetDir);
   return {
     ...(typeResult ?? {}),
     targetDir: scope.targetDir,
