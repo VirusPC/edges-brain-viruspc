@@ -63,6 +63,10 @@ export class BaseNode<
   get children(): readonly Readonly<NodeReference>[] {
     return [];
   }
+  /** Compose-block edges. Undefined when this node has no compose section. */
+  get composeChildren(): readonly Readonly<NodeReference>[] | undefined {
+    return undefined;
+  }
   /** Composite nodes (AgentsNode, ReadmeNode) override; other nodes own no composition. */
   addChild(_group: ChildGroup, _reference: NodeReference): this {
     throw new Error(`${this.path}: node does not own composition; cannot add child.`);

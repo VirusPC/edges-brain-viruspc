@@ -11,7 +11,7 @@ Model 表达一个文件系统节点的身份、内容、关系与自身行为�
 1. **递归系统二：** 系统入口是 `AGENTS.md`，带组成登记。CLI **默认**从 scope 下真 `AGENTS.md` 出发，只做该系统的**系统二**操作。经登记可达才算节点。
 2. **组成边 ≠ 维护边：** `harness` 不进 `children`。默认遍历不跟随 harness。
 3. **同目录双文件：登记分工，不是 traverse 并边：** 若同时存在 `AGENTS.md` 与 `README.md`，系统一孩子只挂在 README 的 `project-entries-*`；AGENTS 的 `project-harness-*` 只挂系统二材料与下级 AGENTS。持久化上互不为对方的 child。从真 AGENTS 出发**到不了** README 上的 tasks/notes 是预期。
-4. **`traverse` 单系统：** 只走一个入口的 `children`。多个系统由 Service 层的 [`system-roots.ts`](../../services/node/system-roots.ts) 收集带 `project-harness` 的 `AGENTS.md`，并由 [`system-forest-service.ts`](../../services/node/system-forest-service.ts) 拼成森林。收集、判定和 `independent` / `innermost` 见 [CLI README](../../../README.md#多个系统拼成森林)。
+4. **`traverse` 单系统：** 只走一个入口的 `children`，并沿该入口 Compose block 的边进入登记目录的 `AGENTS.md`，再继续走那边的 `children`。多个系统由 Service 层的 [`system-roots.ts`](../../services/node/system-roots.ts) 收集带 `project-harness` 的 `AGENTS.md`，并由 [`system-forest-service.ts`](../../services/node/system-forest-service.ts) 拼成森林。收集、判定和 `independent` / `innermost` 见 [CLI README](../../../README.md#多个系统拼成森林)。
 5. **仓库可视为个人系统二 + `SuperAgentsNode`：** 整仓可当作上一级主体（如个人）的系统二；向上建虚拟 `SuperAgentsNode`。当前 scope 目录就是这个超节点的 `.harness`，材料路径是 scope 加上 `harness-materials.json` 里的 path（`tasks/README.md` → `<scope>/tasks/README.md`）。scope 自己的维护目录仍是 `<scope>/.harness`，由真 `AGENTS.md` 走，超节点不再往下找一层。traverse Super 时当作普通 `AgentsNode`，只走 `children`，不挂其它系统 AGENTS，材料可缺。不要从真 AGENTS 临时并 README 边。用户命令的范围只有 `--scope`、`--super`、`--all`：默认 list 从真 `AGENTS.md` 做一次 traverse；`--all` 从当前 scope 走森林；`--super` 只换根。最全是 `--scope <仓库根> --super --all`。`--scope <仓库根>` 与 `--scope <仓库根>/.harness` 的 children 不是同一份。
 6. **入口合同：** 组织清单 → `README.md` + `project-entries-*`；内容叶子 → `INDEX.md`；Skill → `SKILL.md`；系统入口 → `AGENTS.md`。有无子节点看是否出现组成登记，不持久化 `isLeaf`。
 7. **谁拥有系统入口：** 任意目录可由用户自行 init；不是路径白名单。有列表 ≠ 系统入口。
@@ -24,7 +24,7 @@ flowchart TB
   MARK["isProjectHarnessAgentsFile<br/>internal/harness-agents.ts<br/>只看传入文本"] --> SCAN["services/node/system-roots.ts<br/>collectSystemRoots 扫盘"]
   SCAN --> SFS
   SUPER --> SFS["SystemForestService<br/>BaseNode[][]"]
-  TRAV["traverse<br/>只跑单系统 children"] --> SFS
+  TRAV["traverse<br/>children 与 Compose 边"] --> SFS
   SFS -->|"independent: resolve 遇其它根早停"| OUT["edges forest list / review"]
   SFS -->|"innermost: 可达则丢外层"| OUT
 
@@ -108,15 +108,16 @@ classDiagram
 
 ### 本层、下层与 harness
 
-AgentsNode 对应 `AGENTS.md`，把三个受管部分映射为：
+AgentsNode 对应 `AGENTS.md`，把受管部分映射为：
 
 | AGENTS 内容 | 内存模型 | 含义 |
 | --- | --- | --- |
 | 本层硬约束 | `constraints` | 本节点的重要约束 |
 | 本层系统维护信息 | `localChildren` | 本层系统二材料与维护入口引用（现行标题；旧称本层组成） |
 | 下层系统维护信息 | `descendantChildren` | 下层系统入口引用（现行标题；旧称下层节点） |
+| 组合 | `composeEntries` / `composeChildren` | 被组合仓库的本地目录。`composeChildren` 的 id 是该目录下的 `AGENTS.md` |
 
-`children` 是 `localChildren` 与 `descendantChildren` 的有序合并。这里的 descendant 是下层索引组，不是已经加载完的所有后代；两组存的都只是当前入口登记的引用。物理目录深度或节点类型不能替代本层/下层的判断，新增登记由调用方明确给出 `local` 或 `descendant`。`moveChild` 只修改当前 AGENTS 中引用的分组，不移动目录、不改变 parent。
+`children` 是 `localChildren` 与 `descendantChildren` 的有序合并，不含 Compose 边。Compose 边在同一次 traverse 里跟在结构 children 后面；只走本层时也包含它们。这里的 descendant 是下层索引组，不是已经加载完的所有后代；两组存的都只是当前入口登记的引用。物理目录深度或节点类型不能替代本层/下层的判断，新增登记由调用方明确给出 `local` 或 `descendant`。`moveChild` 只修改当前 AGENTS 中引用的分组，不移动目录、不改变 parent。
 
 已有 Memory 类型入口的 `project-memory-entries` 区块也按本层索引处理；不要求为了使用 AgentsNode 而改写成另一套标题。普通导航链接和非受控 Markdown 保持为正文。
 

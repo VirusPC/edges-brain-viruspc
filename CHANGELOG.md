@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 组合仓库
+
+- **组合进来的仓库可以 clone、pull 和 push：** 在作用域 `AGENTS.md` 的组合区块登记本地目录、名字、说明和 git 地址后，`edges compose clone` 把仓库拉到登记路径，`edges compose pull` 和 `edges compose push` 在该目录执行这个仓库自己的 git pull / git push。`edges compose register` 写入登记，`edges compose list` 列出登记。顺着节点树走时会进入这些本地仓库的 `AGENTS.md` 再往下。
+
 ### 笔记入库与能力面
 
 - **中文标题的笔记和项目目录保留汉字：** 用 `edges notes create` 或 `edges projects create` 新建叶子时，日期目录会留下标题里的汉字和数字。标题「中文标题」得到形如 `YYYY-MM-DD--中文标题` 的目录，不再收成 `untitled-` 加时间。英文单词仍转成小写，词与词之间用 `-`；连续空白会折成一个 `-`。标题里没有任何字母或数字时，目录名仍是 `untitled-` 加时间。很长的标题会被截短，使整个日期目录名不超过 255 字节。

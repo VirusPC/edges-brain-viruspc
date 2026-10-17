@@ -58,8 +58,9 @@ status: accepted
 
 ## Consequences
 
-- 以下都未实现：AGENTS.md Compose block 的解析；Domain 的 Compose 节点模型；Service 层的 clone / pull / push / 登记 / traverse（traverse 须沿 Compose 边跨仓，不是只走同仓子节点）；CLI 对 Compose 的最小面（至少 clone：把登记仓库拉到本机路径；pull：更新已有 clone）以及组合仓的 push（兼容各仓既有 git 流程）；traverse 中跨仓库的本地入口节点（沿 Compose 边）；dream（入口为工作空间 `AGENTS.md` / Compose block，自下而上整理整棵组合树：合并/删除记忆、目录清理、刷新 name / description、经 PR 提升到大脑/团队库）及其调度（每 24 小时检查、主分支有变化才运行）。实现跟进不另开任务卡（用户：不要开 task，直接写 ADR）；以 Decision #10 为准。
-- 还没定的：Compose 完整操作列表（仍在 grill，本轮只确认 clone / pull / push / traverse）；Compose block 里每个入口条目的字段形态；clone 放在哪（如 `~/.harness/` 下或用户自选目录）；dream 在哪运行、要看哪些项目仓库的主分支、读和开 PR 需要哪些权限。
+- Compose block 在作用域 `AGENTS.md` 的 `project-harness-compose` 区块。条目是本地目录链接，名字是链接文字，说明在破折号后，git 地址写 `remote: <url>`。Domain 收成 Compose 节点。`edges compose register` / `list` 经 NodeService 读写该区块。`edges compose clone` 把 `remote` 克隆到条目中的目录；目录已是同一 origin 的检出时保持不动。`edges compose pull` 与 `edges compose push` 在该目录执行该仓库自己的 `git pull` / `git push`。traverse 沿 Compose 边进入该目录的 `AGENTS.md` 再向下，本层遍历同样包含这些边。
+- dream（入口为工作空间 `AGENTS.md` / Compose block，自下而上整理整棵组合树：合并/删除记忆、目录清理、刷新 name / description、经 PR 提升到大脑/团队库）及其调度（每 24 小时检查、主分支有变化才运行）待做。实现跟进不另开任务卡；以 Decision #10 为准。
+- 还没定的：Compose 在 register / list / clone / pull / push 与 traverse 之外的操作（仍在 grill）；dream 在哪运行、要看哪些项目仓库的主分支、读和开 PR 需要哪些权限。
 - 未核实：主流代码 Agent 开场读到 `AGENTS.md` 的 Compose block 后，是否真的会顺着入口路径往下读。第九轮决定依赖这一点，验证与是否需要 `edges context` 的判断见任务卡 [评估是否需要 `edges context`](<../../.harness/tasks/project-memory/backlog/2026-10-17--评估是否需要-edges-context/INDEX.md>)。
 - 没有本地 harness 的对话框类宿主（如手机上的 ChatGPT）不由 edges 直接支持。
 - 经 dream 整理并提升的经验要等下一轮和 PR 合并后才对他人可见，可能隔天；在本机直接写组合仓库的，按该仓库自己的提交、推送节奏对他人可见。
