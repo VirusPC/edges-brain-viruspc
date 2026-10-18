@@ -4,8 +4,8 @@ import path from "node:path";
 import { harnessMaterialById, tasksBoardDirName } from "../../domain/config/harness-materials.js";
 import { ENTRY_NAMES, identifyNodeType } from "../../domain/models/layout.js";
 import { BaseNode, AgentsNode, ReadmeNode, TaskNode } from "../../domain/models/index.js";
-import { domainFields, scalar } from "../../domain/models/core/fields.js";
-import { decodeBody } from "../../domain/models/agents/parse.js";
+import { domainFields, scalar } from "../../domain/core/fields.js";
+import { decodeBody } from "../../domain/models/syntax/parse.js";
 import {
   assertProjectDualWrite,
   projectIdFromDir,

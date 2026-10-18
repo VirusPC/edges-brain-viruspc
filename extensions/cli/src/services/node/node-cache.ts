@@ -3,7 +3,7 @@ import { isWithinPath } from '../../utils/filesystem.js';
 import * as fs from "node:fs";
 import { BaseNode } from "../../domain/models/index.js";
 import { harnessPath } from "../../domain/models/layout.js";
-import { setNodeRelations, setNodePath } from "../../domain/models/core/relations.js";
+import { setNodeRelations, setNodePath } from "../../domain/core/relations.js";
 import { readEntry, validateEntry, type EntryFile } from "./node-files.js";
 import { resourceSnapshot, type ResourceSnapshot } from "./node-resources.js";
 import { physicalParent } from "./node-layout.js";

@@ -13,7 +13,7 @@ import {
   identifyNodeType,
   normalizeNodeType,
 } from "../../domain/models/layout.js";
-import { referenceOf, setNodePath } from "../../domain/models/core/relations.js";
+import { referenceOf, setNodePath } from "../../domain/core/relations.js";
 import {
   checkPath,
   readEntry,

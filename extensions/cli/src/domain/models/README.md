@@ -42,7 +42,7 @@ flowchart TB
 
 ## 类与节点关系
 
-> `InternalNode` 与 `LeafNode` 都在 `core/`，分别承接组成索引和纯 text。`AgentsNode` / `ReadmeNode` 继承 `InternalNode`；Task、Memory、Note、Skill、Project 直继 `BaseNode`。`type` 含 `agents`/`readme`/`text`。组成登记（`localChildren` 是否存在）派生组织/叶子。`LeafNode` 是 deprecated 的纯 text 节点。
+> `InternalNode` 与 `LeafNode` 都在 `domain/core/`，分别承接组成索引和纯 text。`AgentsNode` / `ReadmeNode` 继承 `InternalNode`；Task、Memory、Note、Skill、Project 直继 `BaseNode`。`type` 含 `agents`/`readme`/`text`。组成登记（`localChildren` 是否存在）派生组织/叶子。`LeafNode` 是 deprecated 的纯 text 节点。
 
 ```mermaid
 classDiagram
@@ -105,7 +105,7 @@ classDiagram
     BaseNode ..> NodeReference : parent / harness / children
 ```
 
-图中列出可读取的关系；不表示这些属性允许随意赋值。具体签名与只读限定见 [BaseNode](core/base-node.ts)、[InternalNode](core/internal-node.ts)、[NodeReference](core/types.ts) 和 [AgentsNode](agents/agents-node.ts)。
+图中列出可读取的关系；不表示这些属性允许随意赋值。具体签名与只读限定见 [BaseNode](../core/base-node.ts)、[InternalNode](../core/internal-node.ts)、[NodeReference](../core/types.ts) 和 [AgentsNode](agents/agents-node.ts)。
 
 - `id` 等于规范化的绝对入口路径，例如 `/repo/notes/example/index.md`；`directoryPath` 是入口所在目录。移动节点会改变路径与 ID，由 Service 协调。
 - `name`、`description` 是可选内容字段。引用只携带 `id/name/description`，无需先加载完整节点。
@@ -153,23 +153,27 @@ flowchart LR
 ## 文件按什么规则组织
 
 ```text
-models/
-├── index.ts                 # 节点类、输入类型与布局的公共出口
-├── layout.ts                # 跨模型的目录、入口、区块和生命周期单位协议
+domain/
 ├── core/                    # BaseNode、InternalNode、LeafNode、引用、共享字段与关系协调
-├── agents/                  # AgentsNode 与 AGENTS 文档解析、索引维护
-├── tasks/                   # TaskNode、任务字段规则、TaskDoc 契约和文档适配
-├── memory/                  # MemoryNode 与记忆文档规则
-├── notes/                   # NoteNode：当前主要是正文标题访问与更新
-└── skills/                  # SkillNode：SKILL.md 入口、名称和描述校验
+└── models/
+    ├── index.ts             # 节点类、输入类型与布局的公共出口；基类从 domain/core 再导出
+    ├── layout.ts            # 跨模型的目录、入口、区块和生命周期单位协议
+    ├── syntax/              # README 与 AGENTS 共用的块语法和编解码
+    ├── agents/              # AgentsNode、SuperAgentsNode、harness 判定与 Compose 登记
+    ├── readme/              # ReadmeNode：组织清单
+    ├── tasks/               # TaskNode、任务字段规则、TaskDoc 契约和文档适配
+    ├── memory/              # MemoryNode 与记忆文档规则
+    ├── notes/               # NoteNode：当前主要是正文标题访问与更新
+    └── skills/              # SkillNode：SKILL.md 入口、名称和描述校验
 ```
 
-同一节点的类与专属规则放在一起。只在多个模型共用时才下沉到 core；不要求每个节点都有同样数量的 types、codec、factory 文件。
+同一节点的类与专属规则放在一起。节点基类在 `domain/core`。README 与 AGENTS 共用的块语法在 `syntax/`，不放进其中一方。不要求每个节点都有同样数量的 types、codec、factory 文件。
 
 | 模块 | 值得保留的拆分 |
 | --- | --- |
-| [core](core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写 |
-| [agents](agents/agents-node.ts) | `agents-node.ts` 管领域引用；`syntax.ts` 转换领域内容与 Markdown 索引；`document.ts` 定义 AgentsDocument；`parse.ts`/`serialize.ts` 保留原文并处理格式；`blocks.ts` 处理受控区块；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘 |
+| [core](../core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写 |
+| [syntax](syntax/syntax.ts) | `syntax.ts` 的 InternalSyntax 转换索引与 Markdown 区块，README 用 entries 档，AGENTS 用 agents 档；`blocks.ts` 处理受控区块；`document.ts` 定义文档表示；`parse.ts`/`serialize.ts` 保留原文并处理格式 |
+| [agents](agents/agents-node.ts) | `agents-node.ts` 管 AGENTS 引用、约束和 Compose 登记；`super-agents-node.ts` 是虚拟超节点；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘；`compose.ts` 读写组合条目 |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |
 | [layout.ts](layout.ts) | 集中管理 AGENTS.md、SKILL.md、INDEX.md（兼容旧 index.md）的识别、章节标记及 harness 路径。它涉及 Tasks 状态目录，因此保留在 models 根层，不伪装成业务无关的 core |
@@ -197,7 +201,7 @@ Model 的 `create/update/destroy` 是内存领域方法，不会创建、写入�
 
 模型采用可变实例。同一个 NodeService 内，同路径节点共享实例；`create/update` 使用临时草稿校验后再更新当前实例，减少失败时的半修改状态。这不等于 immutable，也不构成跨进程事务。metadata 和关系 getter 返回受保护的视图/副本；修改 getter 返回值不会更新节点，内容应通过字段 setter 或模型方法更新。
 
-core 不依赖具体节点，Model 不依赖 operations 或 Service。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与 AGENTS 文档/解析器之间有类型引用，运行时仍无循环。
+`domain/core` 不依赖具体节点，Model 不依赖 operations 或 Service。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用 `models/syntax`，不互相引用。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与文档解析器之间有类型引用，运行时仍无循环。
 
 ## Markdown 如何进入模型
 

@@ -1,7 +1,7 @@
 import { dirname, join } from "node:path";
 import { ENTRY_NAMES } from "../layout.js";
 import { AgentsNode } from "./agents-node.js";
-import type { NodeReference } from "../core/types.js";
+import type { NodeReference } from "../../core/types.js";
 
 /** Runtime-only name segment; the entry never exists on disk. */
 export const SUPER_ENTRY_DIR = ".super";

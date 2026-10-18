@@ -35,7 +35,8 @@ src/
 ├── commands/              # 参数、输入输出与命令适配
 ├── services/              # 完整用例、跨节点协调和持久化
 ├── domain/
-│   ├── models/            # 单节点身份、内容、关系和行为
+│   ├── core/              # BaseNode、InternalNode、LeafNode、引用与关系
+│   ├── models/            # 各节点类型；README 与 AGENTS 共用的块语法在 models/syntax
 │   └── operations/        # 树遍历、惰性查询和集合算法
 └── utils/                 # Markdown、文件系统等基础工具
 ```
@@ -46,6 +47,8 @@ flowchart TD
     S --> M[Models：单节点规则]
     S --> O[Operations：树与集合]
     O --> M
+    M --> Core[Core：节点基类与关系]
+    O --> Core
     M --> U[通用 Markdown 工具]
     S --> F[文件 IO、快照与写入协调]
     S -. 提供加载回调 .-> O
@@ -55,7 +58,8 @@ flowchart TD
 | --- | --- | --- |
 | commands | 命令注册、参数与 stdin 适配、stdout/stderr 和退出码 | 把 `notes create` 转成 `services/notes/service` 的创建请求 |
 | services | 加载、跨节点协调、文件操作与完整业务流程 | 各领域 `service.ts`；创建 Task 后登记父 AGENTS、保存、移动整个任务目录 |
-| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验、InternalNode.addChild |
+| core | 节点基类、本层/下层索引和关系 | BaseNode、InternalNode.addChild、LeafNode |
+| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验；AgentsNode 与 ReadmeNode 共用 models/syntax |
 | operations | 对多个元素进行遍历、筛选、分组、查找 | traverse、filter、groupBy、Task 数组排序 |
 | utils | 可复用的底层格式与文件机制 | gray-matter 适配、路径与文件原语 |
 
