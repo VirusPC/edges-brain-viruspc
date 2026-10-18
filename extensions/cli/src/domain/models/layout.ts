@@ -1,6 +1,32 @@
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { harnessMaterialById, tasksBoardDirName } from "../config/harness-materials.js";
-import { TASK_STATUSES } from "./tasks/types.js";
+import {
+  classifyDirectory,
+  installDirectoryClassifiers,
+  type DirectoryContract,
+} from "../core/directory.js";
+import { memoryDirectory } from "./memory/directory.js";
+import { noteDirectory } from "./notes/directory.js";
+import { projectDirectory } from "./projects/directory.js";
+import { taskDirectory } from "./tasks/directory.js";
+
+export {
+  CODEC_SECTIONS,
+  COMPOSE_SECTION,
+  ENTRIES_SECTIONS,
+  INDEX_MARKERS,
+  INTERNAL_SECTIONS,
+} from "../core/syntax/sections.js";
+export type { DirectoryClassifier, DirectoryContract } from "../core/directory.js";
+export { registerDirectoryClassifier } from "../core/directory.js";
+
+installDirectoryClassifiers([
+  memoryDirectory,
+  taskDirectory,
+  noteDirectory,
+  projectDirectory,
+]);
+
 export const ENTRY_NAMES = {
   internal: "AGENTS.md",
   readme: "README.md",
@@ -15,35 +41,6 @@ export const LEAF_ENTRY_NAMES: readonly string[] = [
 ];
 export const isLeafEntryName = (name: string): boolean =>
   LEAF_ENTRY_NAMES.includes(name);
-export const INTERNAL_SECTIONS = {
-  constraints: { heading: "本层硬约束", marker: "project-harness-constraints" },
-  localChildren: { heading: "本层系统维护信息", marker: "project-harness-local" },
-  descendantChildren: {
-    heading: "下层系统维护信息",
-    marker: "project-harness-descendants",
-  },
-} as const;
-export const ENTRIES_SECTIONS = {
-  localChildren: { heading: "本层内容", marker: "project-entries-local" },
-  descendantChildren: {
-    heading: "下层内容",
-    marker: "project-entries-descendants",
-  },
-} as const;
-export const COMPOSE_SECTION = {
-  heading: "组合",
-  marker: "project-harness-compose",
-} as const;
-export const CODEC_SECTIONS = {
-  constraints: INTERNAL_SECTIONS.constraints,
-  memory: INTERNAL_SECTIONS.localChildren,
-  children: INTERNAL_SECTIONS.descendantChildren,
-  compose: COMPOSE_SECTION,
-} as const;
-export const INDEX_MARKERS = {
-  type: "project-memory-type",
-  entries: "project-memory-entries",
-} as const;
 export type NodeType =
   "agents" | "readme" | "skill" | "task" | "memory" | "note" | "text" | (string & {});
 
@@ -63,42 +60,6 @@ export function legacyNodeType(type: string): string {
 export function normalizeNodeType(type: string): NodeType {
   return LEGACY_NODE_TYPES[type] ?? type;
 }
-export interface DirectoryContract {
-  module?: string;
-  format?: string;
-  name?: string;
-}
-export type DirectoryClassifier = (
-  entryPath: string,
-  contract?: DirectoryContract,
-) => NodeType | undefined;
-const classifiers: DirectoryClassifier[] = [
-  (_entry, contract) => (contract?.module === "memory" ? "memory" : undefined),
-  (entry) => {
-    const board = tasksBoardDirName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return new RegExp(
-      `(?:^|/)${board}/(?:[^/]+/)*(?:${TASK_STATUSES.join("|")})/[^/]+/(?:INDEX|index)\\.md$`,
-    ).test(entry)
-      ? "task"
-      : undefined;
-  },
-  (entry) =>
-    /(?:^|\/)notes\/(?:[^/]+\/)+(?:INDEX|index)\.md$/.test(entry) ? "note" : undefined,
-  (entry) =>
-    /(?:^|\/)(?<!memory\/)projects\/(?:[^/]+\/)+(?:INDEX|index)\.md$/.test(entry)
-      ? "project"
-      : undefined,
-];
-/** Register a directory contract; return a disposer for scoped registrations. */
-export function registerDirectoryClassifier(
-  classifier: DirectoryClassifier,
-): () => void {
-  classifiers.unshift(classifier);
-  return () => {
-    const index = classifiers.indexOf(classifier);
-    if (index >= 0) classifiers.splice(index, 1);
-  };
-}
 export function identifyNodeType(
   entryPath: string,
   contract?: DirectoryContract,
@@ -108,11 +69,7 @@ export function identifyNodeType(
   if (filename === ENTRY_NAMES.readme) return "readme";
   if (filename === ENTRY_NAMES.skill) return "skill";
   if (!isLeafEntryName(filename)) return undefined;
-  for (const classify of classifiers) {
-    const type = classify(entryPath, contract);
-    if (type !== undefined) return type;
-  }
-  return "text";
+  return (classifyDirectory(entryPath, contract) as NodeType | undefined) ?? "text";
 }
 export function harnessPath(entryPath: string): string {
   return join(

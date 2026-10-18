@@ -1,5 +1,5 @@
 import { OUTER_END, OUTER_START } from "./blocks.js";
-import { CODEC_SECTIONS } from "../layout.js";
+import { CODEC_SECTIONS } from "./sections.js";
 import type { AgentsDocument, SectionKey, AgentsLink, AgentsItem } from "./document.js";
 import { decodeBody } from "./parse.js";
 import { isDeepStrictEqual as same } from "node:util";

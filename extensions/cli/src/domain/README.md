@@ -9,8 +9,8 @@ src/
 ├── commands/             # CLI 参数、输入输出与命令适配
 ├── services/             # 完整用例、加载、跨节点协调、持久化
 ├── domain/
-│   ├── core/             # BaseNode、InternalNode、LeafNode、引用与关系
-│   ├── models/           # 各节点类型；README 与 AGENTS 共用的块语法在 models/syntax
+│   ├── core/             # BaseNode、InternalNode、LeafNode、块语法与目录登记入口
+│   ├── models/           # 各节点类型；目录规则由 model 登记到 core
 │   └── operations/       # 树遍历、惰性查询与集合算法
 └── utils/                # Markdown、文件系统等基础工具
 ```
@@ -21,7 +21,7 @@ flowchart TD
     S --> M[Models：单节点规则]
     S --> O[Operations：集合与树]
     O --> M
-    M --> Core[Core：节点基类与关系]
+    M --> Core[Core：节点基类、块语法与目录登记]
     O --> Core
     M --> U[通用 Markdown 工具]
     S --> F[文件 IO 与写入协调]
@@ -33,7 +33,7 @@ flowchart TD
 | 问题 | 归属 |
 | --- | --- |
 | 一个 Task 的优先级是否合法？怎样更新标题？ | models/tasks |
-| 怎样解析 AGENTS，并修改它持有的索引？ | models/agents；块语法在 models/syntax |
+| 怎样解析 AGENTS，并修改它持有的索引？ | models/agents；块语法在 core/syntax |
 | 怎样按属性过滤、分组，递归访问已登记的节点？ | operations |
 | 怎样创建目录、登记父索引、检查外部修改并保存？ | services |
 | 怎样把命令参数变成请求、返回 JSON 或表格？ | commands |
@@ -91,7 +91,7 @@ Schema 从登记的 TS 数据契约生成，不扫描完整模型类，生成物
 
 ## 扩展与维护
 
-- 新节点行为放到 models 对应目录。业务节点继承 `domain/core` 的 BaseNode；带本层/下层索引的入口继承同目录的 InternalNode。LeafNode 只表示纯 text。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用的块语法在 `models/syntax`。
+- 新节点行为放到 models 对应目录。业务节点继承 `domain/core` 的 BaseNode；带本层/下层索引的入口继承同目录的 InternalNode。LeafNode 只表示纯 text。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用的块语法在 `core/syntax`。目录类型规则放在对应 model，由 `models/layout.ts` 按固定顺序装入 `core/directory.ts`。
 - 集合或遍历算法放 operations，通过参数或回调取得外部能力，不引入 Service 依赖。
 - 涉及文件、多个节点、发布或权限策略的完整动作由 Service 编排。
 - 新外部 JSON 合同用纯 TS 类型定义，按实际需求登记到 Schema 生成器。

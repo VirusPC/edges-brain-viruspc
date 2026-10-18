@@ -1,4 +1,4 @@
-import { CODEC_SECTIONS } from "../layout.js";
+import { CODEC_SECTIONS } from "./sections.js";
 import type { AgentsDocument, SectionKey, AgentsItem, AgentsLink } from "./document.js";
 import type { Nodes as AstNode } from "mdast";
 import { fromMarkdown } from "mdast-util-from-markdown";

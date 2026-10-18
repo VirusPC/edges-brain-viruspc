@@ -1,6 +1,6 @@
 import { dirname, relative } from "node:path";
 import { InternalNode, type InternalCreateInput } from "../../core/internal-node.js";
-import { InternalSyntax, type SyntaxReference } from "../syntax/syntax.js";
+import { InternalSyntax, type SyntaxReference } from "../../core/syntax/syntax.js";
 import { identifyNodeType, resolveEntryHref } from "../layout.js";
 import type { NodeReference } from "../../core/types.js";
 

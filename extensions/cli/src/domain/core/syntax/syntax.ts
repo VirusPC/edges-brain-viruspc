@@ -1,7 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
 import { decodeBody } from "./parse.js";
 import { serializeNode } from "./serialize.js";
-import { ENTRIES_SECTIONS, INTERNAL_SECTIONS } from "../layout.js";
+import { ENTRIES_SECTIONS, INTERNAL_SECTIONS } from "./sections.js";
 import type { AgentsItem, AgentsDocument } from "./document.js";
 export interface SyntaxReference {
   target: string;

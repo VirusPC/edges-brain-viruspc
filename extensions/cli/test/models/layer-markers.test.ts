@@ -12,7 +12,7 @@ import {
   ENTRIES_START,
   TYPE_META_START,
   rewriteLayerSurface,
-} from "../../src/domain/models/syntax/blocks.js";
+} from "../../src/domain/core/syntax/blocks.js";
 
 test("canonical layer markers are project-harness, type markers stay project-memory", () => {
   assert.equal(
