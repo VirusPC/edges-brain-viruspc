@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { mkdtemp, readdir, readFile, rename, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import test from 'node:test';
+
+const cliPackage = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { name: string; version: string };
+const packedArchiveName = `${cliPackage.name.replace(/^@/, '').replace('/', '-')}-${cliPackage.version}.tgz`;
 
 async function files(directory: string): Promise<string[]> {
   const result: string[] = [];
@@ -24,7 +28,7 @@ test('packed CLI works outside repo with production dependencies and fails clear
     const archive = path.join(directory, archiveName);
     const packedManifest = JSON.parse(execFileSync('tar', ['-xOf', archive, 'package/package.json'], {encoding:'utf8'}));
     assert.equal(packedManifest.name, '@viruspc/edges');
-    assert.equal(packedManifest.version, '0.1.0');
+    assert.equal(packedManifest.version, cliPackage.version);
     assert.equal(packedManifest.private, undefined);
     assert.equal(packedManifest.bin?.edges, './dist/index.js');
     assert.equal(packedManifest.publishConfig?.access, 'public');
@@ -110,5 +114,5 @@ test('npm pack is rejected when npm_execpath is npm even if the user agent says 
   const output = `${packed.stdout}${packed.stderr}`;
   assert.notEqual(packed.status, 0, output);
   assert.match(output, /npm_execpath is npm, but npm_config_user_agent says pnpm/);
-  assert.equal(output.includes('viruspc-edges-0.1.0.tgz'), false);
+  assert.equal(output.includes(packedArchiveName), false);
 });
