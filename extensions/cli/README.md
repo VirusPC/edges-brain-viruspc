@@ -28,7 +28,7 @@ npm install -g @viruspc/edges
 edges --help
 ```
 
-`package.json` 的 bin 指向 `dist/index.js`。`files` 还包含构建时从 `extensions/skills/` 拷来的 `skills/`。`prepack` 会执行完整构建，把审阅页编好的 HTML/JS/CSS、Schema、Memory 模板和这些 skill 放进安装包。`tasks-review-app` 只在本仓构建时使用，不单独发布；安装包里没有它的 React 源码，也没有 `workspace:` 依赖。发布到 npm 用 `pnpm --filter @viruspc/edges publish`（`publishConfig.access` 为 `public`）。不要用 `npm publish` 或 `npm pack`：npm 不会去掉 workspace 协议。本仓打本地安装包仍是 `pnpm --filter @viruspc/edges pack`。只有 build 或 prepack 成功后，编译后的命令才可用。
+`package.json` 的 bin 指向 `dist/index.js`。`files` 还包含构建时从 `extensions/skills/` 拷来的 `skills/`。`prepack` 会执行完整构建，把审阅页编好的 HTML/JS/CSS、Schema、Memory 模板和这些 skill 放进安装包。`tasks-review-app` 只在本仓构建时使用，不单独发布；安装包里没有它的 React 源码，也没有 `workspace:` 依赖。发布到 npm 用 `pnpm --filter @viruspc/edges publish`（`publishConfig.access` 为 `public`）。不要用 `npm publish` 或 `npm pack`：npm 不会去掉 workspace 协议。本仓打本地安装包仍是 `pnpm --filter @viruspc/edges pack`。只有 build 或 prepack 成功后，编译后的命令才可用。发版前把 `package.json` 的 `version` 与 `src/utils/version.ts` 的 `VERSION` 升到同一号，并写入 `CHANGELOG.md`；发布用 `pnpm --filter @viruspc/edges publish`；发布后在该提交上打 annotated tag `cli@<version>`。
 
 直接运行 `edges` 而不带子命令会返回用法错误；没有 `edges-note` 别名，也没有根命令默认写入笔记的行为。
 
