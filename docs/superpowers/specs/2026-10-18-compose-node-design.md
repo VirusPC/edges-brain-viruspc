@@ -30,6 +30,7 @@
 - 无类型 list 不 yield `ComposeNode`。`--with-composed` 时 traverse 穿过挂载点，yield 外部仓库的真实入口。
 - 序列化时 `AgentsNode` 读写该子节点，写回 `project-harness-compose`。
 - clone / pull / push 的目录和 remote 由 `ComposeNode` 给出。git 进程仍在 Service。
+- `edges compose register` 的 `--path` 可选。不传时检出目录是 `~/.edges/composed/<name>`，`<name>` 为 `--name`。显式 `--path` 使用传入值。默认检出在用户主目录：同一外部仓在本机一份，多个工作空间登记同一条路径。
 - 依赖方向保持 models → core。core 不知道标记名、remote 语法和 git。
 
 ## 目标目录树
@@ -86,11 +87,11 @@ Compose 实现 PR 不再夹带这次搬家。`ComposeNode` 从第一天就放在
 
 方法：
 
-- `addChild({ name, directory, description?, remote?, href? })`：名字空则报错；同一名字替换该条；目录重复报错；目录等于所属 `AGENTS.md` 所在目录报错。`directory` 与 `href` 只在这里解析一次（含 `~`、相对所属文件、拒绝 URL 和片段）。
+- `addChild({ name, directory?, description?, remote?, href? })`：名字空则报错；同一名字替换该条；展开后的目录重复报错；目录等于所属 `AGENTS.md` 所在目录报错。未给 `directory` 与 `href` 时，写入链接为 `~/.edges/composed/<name>`。`<name>` 是去掉首尾空白的名字，并且是 `composed` 下的一个目录名；含路径分隔符、`.` 或 `..` 则报错。给了 `directory` 时用该值，不用默认目录。以 `~` 或 `~/` 开头的链接原样写入区块。其余路径只在这里解析一次（相对所属 `AGENTS.md`、拒绝 URL 和片段）。运行时 directory 与子节点 id 使用展开 `~` 之后的绝对路径。
 - `removeChild(id)`：`id` 是该仓库的 `AGENTS.md`。没有这条则报错。
-- `updateChild(id, patch)`：改 name、description、remote。name 与目录的唯一性仍校验。
+- `updateChild(id, patch)`：改 name、description、remote。name 与展开后目录的唯一性仍校验。
 - `children` 与 `localChildren` 是同一份列表，顺序即区块顺序。`descendantChildren` 为空。
-- `checkout(name)`：返回 `{ name, directory, remote? }`，给 clone / pull / push 用。没有该名字则报错。
+- `checkout(name)`：返回 `{ name, directory, remote? }`，给 clone / pull / push 用。`directory` 已展开 `~`，是绝对路径。没有该名字则报错。
 
 `AgentsNode` 通过 `composeNode()` 取得实例。没有条目时也要能拿到空实例，以便第一次 `addChild`。
 
@@ -136,16 +137,18 @@ Compose 实现 PR 不再夹带这次搬家。`ComposeNode` 从第一天就放在
 
 写：`ComposeNode` 交出链接列表（href、name、说明）。remote 有值时写回 `remote: <url>`，形式与现在相同。`AgentsNode.serializeBody` 把这份列表放进文书的 compose 段。最后一条被 `removeChild` 去掉之后，序列化不再写出该链接；空段的去留与现在 `unregisterCompose` 之后的正文一致。
 
+默认登记写入的链接目标是 `~/.edges/composed/<name>`。以 `~` 开头的链接按这个形式留在区块里。读的时候把 `~` 展开成当前用户的主目录，换到另一台机器时落到那台机器上的同一约定位置。展开后的绝对路径只存在于运行时 directory、子节点 id 和 `checkout` 的返回值；序列化仍写回原来的 `~` 形式。显式 `--path` 优先：传入值以 `~` 开头时区块保留该 `~` 形式；绝对路径写入该绝对路径；相对路径相对所属 `AGENTS.md` 解析一次，区块写入得到的绝对路径。
+
 `ComposeNode` 不实现自己的文件 parse/serialize。
 
 ## clone / pull / push
 
-Service 仍执行 `git`。它先取 `AgentsNode.composeNode().checkout(name)`，再用返回的 `directory` 与 `remote`。
+Service 执行 `git`。它先取 `AgentsNode.composeNode().checkout(name)`，再用返回的已展开 `directory` 与 `remote`。
 
-- clone：没有 remote 则报错；目录已是同一 origin 的检出则保持不动；目录存在但不是 git 检出则报错；否则 `git clone remote directory`。
+- clone：没有 remote 则报错；目录已是同一 origin 的检出则保持不动；目录存在但不是 git 检出则报错；否则 `git clone remote directory`。同一台机器上，多个工作空间把同一个名字登记到 `~/.edges/composed/<name>` 时，clone 共用这一份检出。
 - pull / push：目录必须已是 git 检出，然后在该目录执行该仓库自己的 `git pull` / `git push`。
 
-Service 不再自己展开 `~`、不再自己算相对 href。登记是 `composeNode.addChild(...)`，注销是 `removeChild(id)`。CLI 子命令名不变：`register`、`unregister`、`list`、`clone`、`pull`、`push`。
+`edges compose register` 的 `--path` 可选。不传时 `addChild` 不收 directory，默认链接是 `~/.edges/composed/<name>`，检出不落在当前仓库里。传入 `--path` 时把该值作为 directory。注销是 `removeChild(id)`。CLI 子命令是 `register`、`unregister`、`list`、`clone`、`pull`、`push`。路径只在 `addChild` 解析一次。Service 使用 `checkout` 给出的绝对目录。
 
 ## 与 SuperAgentsNode 对照
 
@@ -173,6 +176,7 @@ Service 不再自己展开 `~`、不再自己算相对 href。登记是 `compose
 - **把 `ComposeNode` 写成 `.compose/README.md` 文件。** 持久化位置仍是所属 `AGENTS.md` 的区块。
 - **改掉说明里的 `remote:` 写法，另起字段或文件。** 磁盘形式保持 ADR 0034。变的是解析之后 remote 成为节点字段，说明原文只负责往返。
 - **让 `ComposeNode` 自己执行 git。** 模型不做 IO。
+- **默认检出放进当前仓库。** 同一外部仓在本机只 clone 一份，目录是用户主目录下的 `~/.edges/composed/<name>`，多个工作空间登记这一条路径。
 - **用 `localOnly` 打开 Compose 边。** `localOnly` 只决定当前 scope 的本层范围。Compose 由 `--with-composed` 决定。
 - **用 `includeHarness` 打开 Compose 边。** `includeHarness` 只打开下一层 `.harness/AGENTS.md`。
 - **默认 list 带上外部仓库，或 `--with-composed` 继续展开该仓库的下层。** 默认只含当前 scope。`--with-composed` 只到外部仓库入口这一层。
@@ -200,11 +204,12 @@ Compose 实现 PR：
 - 根级 `--with-composed`，与 `--scope`、`--super`、`--all` 一起传入 `NodeQueryOptions.withComposed`
 - `operations/traverse.ts`：仅 `withComposed: true` 时穿过 `node.compose`，yield 外部仓库入口后停止；删除 `isComposeOnlyReference`
 - `services/node/node-service.ts`：`--with-composed` 时装载虚拟节点与外部入口；登记图与写前校验不跟随这条边
-- `services/compose/service.ts`：登记/注销改走 `addChild` / `removeChild`；git 使用 `checkout(name)`
-- 测试：`test/models/compose-node.test.ts`、compose 命令测试；默认 list 不含外部仓库和挂载点，`--with-composed` 的 list 含外部入口、不含挂载点、不含该入口的下层
+- `commands/compose/register.ts`：`--path` 可选；不传时不给 `addChild` directory
+- `services/compose/service.ts`：登记/注销改走 `addChild` / `removeChild`；省略 `--path` 时由节点写入 `~/.edges/composed/<name>`；git 使用 `checkout(name)` 的已展开目录
+- 测试：`test/models/compose-node.test.ts`、compose 命令测试；默认 list 不含外部仓库和挂载点，`--with-composed` 的 list 含外部入口、不含挂载点、不含该入口的下层；不传 `--path` 时链接为 `~/.edges/composed/<name>` 且 `checkout` 展开 `~`；显式 `--path` 优先
 - 现状文档：`models/README.md`、`domain/README.md`、CLI README 里描述 Compose 边的句子；`CONTEXT.md` 里「Domain 把 Compose block 收成 Compose 节点」改成现在的虚拟节点和目录。历史 plan / spec / ADR 0034 的决定记录不动
 
-命令文件 `commands/compose/` 只在 Service 的函数签名变了的时候跟着改。子命令集合不变。
+`commands/compose/register.ts` 把 `--path` 做成可选。其余 compose 子命令在 Service 的函数签名变了的时候跟着改。子命令是 `register`、`unregister`、`list`、`clone`、`pull`、`push`。
 
 ## 下一实现 PR 的范围
 
@@ -220,6 +225,7 @@ Compose 实现 PR：
 - 默认 traverse / 无类型 list：结果只有当前 scope 内的节点，没有 `.compose/README.md`，也没有被组合仓库的 `AGENTS.md`。
 - `--with-composed`：结果含每个被组合仓库的入口 `AGENTS.md`，不含 `.compose/README.md`，不含该入口的下层（例如 `/brain/nested/AGENTS.md`）。`localOnly` 与 `includeHarness` 都不单独打开这条边。
 - 尚不存在的检出目录仍可先 `addChild` 再保存区块。`checkout` 从 `ComposeNode` 取目录和 remote，不依赖 `--with-composed`。
-- 登记路径只解析一次：`~`、相对路径、绝对路径得到同一个 directory 和写回用的 href。
-- `checkout(name)` 给出的 directory / remote 与 clone、pull、push 使用的是同一份。
+- 不传 `--path`：区块链接是 `~/.edges/composed/<name>`。`checkout(name)` 的 directory 是当前用户主目录下的 `.edges/composed/<name>`，不含 `~`。
+- 显式 `--path` 优先于默认目录。`~/custom` 写入区块时以 `~` 开头，`checkout` 展开为绝对路径。绝对路径写入该绝对路径。相对路径相对所属 `AGENTS.md` 解析一次，区块与 `checkout` 使用该绝对路径。
+- 登记路径只在 `addChild` 解析一次。`checkout(name)` 给出的已展开 directory / remote 与 clone、pull、push 使用的是同一份。
 - `#registered` 与写前校验不要求 `.compose/README.md` 存在，也不把仓外组合树纳入本仓写图。
