@@ -4,12 +4,12 @@ description: 把 edges CLI 发布到 npm，外部用户一行命令就能装上�
 metadata:
   edges-type: task
   edges-title: edges CLI 发布到 npm
-  edges-tasks-status: backlog
+  edges-tasks-status: done
   edges-origin-session-id: d807a059-9774-4fd0-8fa7-d5fb69f9d031
   edges-agent-client: cursor
   edges-username: 任务记录员
   edges-email: grok-bot@users.noreply.github.com
-  edges-updated-at: '2026-10-17T17:31:12.765Z'
+  edges-updated-at: '2026-10-18T11:35:32.276Z'
   edges-task-project: edges-extensions
 ---
 
