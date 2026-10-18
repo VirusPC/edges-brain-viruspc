@@ -3,6 +3,13 @@ import { BaseNode } from "../core/base-node.js";
 import { ENTRY_NAMES } from "../layout.js";
 export class SkillNode extends BaseNode {
   override readonly type = "skill" as const;
+
+  constructor(path: string) {
+    super(path);
+    if (nodePath.basename(this.path) !== ENTRY_NAMES.skill)
+      throw new Error(`Skill entry must be ${ENTRY_NAMES.skill}`);
+  }
+
   override validate(): void {
     super.validate();
     if (
@@ -15,10 +22,5 @@ export class SkillNode extends BaseNode {
       );
     if (!this.description?.trim())
       throw new Error(`${this.path}: description must be nonempty.`);
-  }
-  constructor(path: string) {
-    super(path);
-    if (nodePath.basename(this.path) !== ENTRY_NAMES.skill)
-      throw new Error(`Skill entry must be ${ENTRY_NAMES.skill}`);
   }
 }

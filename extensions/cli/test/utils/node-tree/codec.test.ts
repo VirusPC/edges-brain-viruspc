@@ -8,7 +8,7 @@ const source = '# Manual identity\n\nKeep this introduction.\n\n<!-- project-mem
 
 test('pure parsing returns the three-part model with unresolved references and no source/location/AST', () => {
   const model = parseNode(source);
-  assert.deepEqual(Object.keys(model), ['constraints', 'memory', 'children', 'references']);
+  assert.deepEqual(Object.keys(model), ['constraints', 'memory', 'children', 'compose', 'references']);
   assert.deepEqual(model.constraints, [{ content: [{ kind: 'text', value: 'Keep secrets private.' }] }]);
   assert.deepEqual(model.memory, [
     { content: [{ kind: 'text', value: 'Human explanation.' }] },
