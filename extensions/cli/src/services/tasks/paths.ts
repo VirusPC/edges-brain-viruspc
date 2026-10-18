@@ -13,37 +13,38 @@ export function isTaskStatus(value: string): value is TaskStatus {
 }
 
 export type TaskPurpose = "domain" | "maintenance";
-export const DEFAULT_TASK_PURPOSE: TaskPurpose = "maintenance";
 export type TaskBoardLocation = {
   scopeDir: string;
   purpose: TaskPurpose;
   boardDir: string;
-  indexGroup?: import("../../domain/models/core/types.js").ChildGroup;
 };
 export type BoardTarget = string | TaskBoardLocation;
+/** A string scope is the real system: materials live under `<scope>/.harness`. Pass `{ super: true }` for the virtual board in the scope directory. */
 export function taskBoardLocation(
   scopeDir: string,
-  purpose: TaskPurpose = DEFAULT_TASK_PURPOSE,
+  options: { super?: boolean } = {},
 ): TaskBoardLocation {
-  const { absPath } = placeHarnessMaterial(scopeDir, "tasks", { super: purpose === "domain" });
+  const superFace = options.super === true;
+  const { absPath } = placeHarnessMaterial(scopeDir, "tasks", { super: superFace });
   return {
     scopeDir,
-    purpose,
+    purpose: superFace ? "domain" : "maintenance",
     boardDir: path.dirname(absPath),
   };
 }
 
 /** Board of the subject system. The directory is the tasks material from harness-materials. Real systems place it under `<scope>/.harness`; `--super` places it in the scope directory. */
 export function subjectTaskBoard(scopeDir: string, options: { super?: boolean } = {}): TaskBoardLocation {
-  return taskBoardLocation(scopeDir, options.super === true ? "domain" : "maintenance");
+  return taskBoardLocation(scopeDir, options);
+}
+export function resolveBoard(target: BoardTarget): TaskBoardLocation {
+  return typeof target === "string" ? subjectTaskBoard(target) : target;
 }
 export function scopeDir(target: BoardTarget): string {
-  return typeof target === "string" ? target : target.scopeDir;
+  return resolveBoard(target).scopeDir;
 }
 export function boardRoot(target: BoardTarget): string {
-  return typeof target === "string"
-    ? taskBoardLocation(target, "domain").boardDir
-    : target.boardDir;
+  return resolveBoard(target).boardDir;
 }
 export function boardRel(target: BoardTarget = ""): string {
   return path.relative(scopeDir(target), boardRoot(target));

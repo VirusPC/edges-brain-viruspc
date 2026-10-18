@@ -29,8 +29,8 @@ _避免使用_：index.md（迁移前史料）、把叶子叫 README.md、把 IN
 _避免使用_：目录扫描结果、把任意 Markdown 链接当子节点、宣称 AGENTS.md 永不登记子项、把系统一孩子双写进 AGENTS 与 README、两套标记混用、把同目录 README 持久化挂成该 AGENTS 的 child、在 edges 作用域的 AGENTS 本层与 `.harness/README.md` 双写材料列表、把材料直接挂在 AGENTS 本层而不经 `.harness/README.md`
 
 **组织节点 / 叶子节点（派生状态）**：
-同一文档节点的当前状态：有组成登记为组织节点，否则为叶子。不是固定类型，模型不持久化 isLeaf，任意节点都可增加子节点。具体节点直接继承 BaseNode；`type` 为 `agents` / `readme` / `task` / `memory` / `note` / `skill` / `text`（普通文本兜底），无 `internal`。
-_避免使用_：InternalNode/LeafNode 类层次、type internal、按文件名区分组织/叶子、另造 entryKind
+同一文档节点的当前状态：有组成登记为组织节点，否则为叶子。不是固定类型，模型不持久化 isLeaf。`AgentsNode` 与 `ReadmeNode` 继承 `InternalNode`（本层/下层 children 与索引编辑）；业务节点继承 `BaseNode`。`LeafNode` 是纯 text 节点。`type` 为 `agents` / `readme` / `task` / `memory` / `note` / `skill` / `text`（普通文本兜底），无 `internal`。
+_避免使用_：用类层次代替组成登记来区分组织/叶子、type internal、按文件名区分组织/叶子、另造 entryKind
 
 **维护关系（harness）**：
 节点指向自身维护系统（系统二）的独立关系；系统入口即该关系在文件上的落点。默认不跟随 harness。真系统入口上的组成是该系统的系统二材料；内容面另经组织清单或 `SuperAgentsNode` 进入，不自动从真 AGENTS 并进。
@@ -42,10 +42,10 @@ _避免使用_：Agent 工具箱、skill 合集、用「Edges」指本仓这个�
 
 **组合（Compose）**：
 把别的 harness 仓库（大脑、团队库、规范库、组件库等）叠加进当前工作空间的统一说法，对应 Devin Agent Memory 文章里的 composable。工作空间 = 自身就地 init 的 harness + 若干被组合的 harness 仓库；被组合的仓库各自保持独立的归属、权限和历史。被组合的仓库一律 clone 到本机，在当前作用域的 `AGENTS.md` 里用专用的 **Compose block** 登记本地入口，挂到目录树上，traverse 沿 Compose 边跨仓往下走（不是只遍历同仓子节点），和读本仓子目录一样；本地组合进来的仓库和 `.harness/` 一样可以直接写。Compose block **属本层**（与本层硬约束、本层系统维护信息同一层语义，不是旁路）。edges 只管 git 仓库和本地目录树，不管远程入口和大规模检索。组合是 harness 的依赖声明，不是记忆库：`.harness/` 好比项目自己的源码，Compose block 里的本地入口好比依赖声明，Agent 开场读 `AGENTS.md`、顺着 Compose block 的路径走，就是解析并加载（不另做 `edges context` 命令，暂缓，见 ADR 0034）。它和 docker compose 一样用登记声明由哪些东西组合而成，但组合的是可复用的经验与约束，不是运行中的服务。见 ADR 0034。
-_避免使用_：外部记忆、挂载、mount、把 edges 当成要接进工作空间的独立记忆库、用组合代替项目知识的就地 init、git submodule、另造 `compose.json` / `compose.yaml`、远程入口、远程 MCP 组合、服务端 clone、「一个模型两种部署」、把现有组成登记列表原样复用当记忆入口登记、把 Compose block 当成层模型外的旁路
+_避免使用_：外部记忆、挂载、mount、把 edges 当成要接进工作空间的独立记忆库、用组合代替项目知识的就地 init、git submodule、另造 `compose.json` / `compose.yaml`、远程入口、远程 MCP 组合、服务端 clone、「一个模型两种部署」、把现有组成登记列表原样复用当外部记忆仓库登记、把 Compose block 当成层模型外的旁路
 
-**记忆入口登记**：
-在当前作用域的 `AGENTS.md` 的专用 **Compose block** 里，登记被组合仓库在本机 clone 的入口目录（可直接写，与就地 `.harness/` 一致）。只有本地入口，没有远程入口。Compose block **属本层**，对当前作用域做 traverse / 本层硬约束收集时归入该层；Agent 开场读 `AGENTS.md` 时就能看到其中的入口路径和 name / description。取代已废弃的「组合清单」；不是把现有组成登记列表原样多挂一个节点。实现上 Domain（Compose 节点模型）、Service（clone / pull / push / 登记 / traverse）、CLI 三层一起改；traverse 须沿 Compose 边跨仓（不是只走同仓子节点）；CLI 至少支持 clone 与 pull，并对组合仓支持 push（兼容各仓既有 git 流程）（均未实现）；完整操作列表仍在 grill，本轮只确认 clone / pull / push / traverse。入口条目字段形态、clone 放在哪另议；以后可加读写权限控制且要和 Git 仓库权限关联，本轮不定。见 ADR 0034。
+**外部记忆仓库登记**：
+在当前作用域的 `AGENTS.md` 的专用 **Compose block** 里，登记被组合仓库在本机 clone 的入口目录（可直接写，与就地 `.harness/` 一致）。只有本地入口，没有远程入口。Compose block **属本层**，对当前作用域做 traverse / 本层硬约束收集时归入该层；Agent 开场读 `AGENTS.md` 时就能看到其中的入口路径和 name / description。取代已废弃的「组合清单」；不是把现有组成登记列表原样多挂一个节点。Domain 把 Compose block 收成 Compose 节点（本地目录、name、description、git remote）。CLI 是 `edges compose register`、`unregister`、`list`、`clone`、`pull`、`push`：unregister 按名字从区块去掉条目，不删除已 clone 的目录；clone 按条目中的路径把仓库拉到本机；pull 与 push 在该目录执行该仓库自己的 `git pull` / `git push`。traverse 沿 Compose 边进入该目录的 `AGENTS.md` 再往下走，本层遍历同样包含这些边。条目写在 `AGENTS.md` 的 `project-harness-compose` 区块，链接指向本地目录，`remote: <git-url>` 写在说明里。完整操作列表仍在 grill。以后可加读写权限控制且要和 Git 仓库权限关联，本轮不定。见 ADR 0034。
 _避免使用_：组合清单、Compose List、`compose.json`、`compose.yaml`、`~/.harness/compose.json`、`.harness/compose.json`、挂载表、记忆源清单（`memory-sources`）、复用 `--super` 的 `harness-materials.json` 表示跨仓库入口、远程入口、MCP 目录根、MCP `remember` / 收件箱（`.harness/inbox/`）、由 edges 维护的远程大库索引（PageIndex 式）、另造与 Git 无关的独立 ACL、把 Compose block 当成不算本层的旁路
 
 **dream**：

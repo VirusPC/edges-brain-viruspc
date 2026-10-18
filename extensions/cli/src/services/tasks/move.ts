@@ -2,7 +2,7 @@ import { scopeDir, type BoardTarget } from "./paths.js";
 import path from "node:path";
 import { getTask, type BoardWriter } from "./board.js";
 import { TaskNode } from "../../domain/models/tasks/task-node.js";
-import { setDomainField } from "../../domain/models/core/fields.js";
+import { setDomainField } from "../../domain/core/fields.js";
 import { taskNodes, taskFile, moveTaskEntry, ensureTaskDestination } from "./write.js";
 import { sidecarRelPath, taskRelPath, withEntryName } from "./paths.js";
 import { TasksError, type TaskStatus } from "../../domain/models/tasks/types.js";

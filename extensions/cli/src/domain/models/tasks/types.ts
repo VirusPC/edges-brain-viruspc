@@ -1,4 +1,4 @@
-import type { NodeCreateInput } from "../core/types.js";
+import type { NodeCreateInput } from "../../core/types.js";
 
 export const TASK_STATUSES = [
   "backlog",

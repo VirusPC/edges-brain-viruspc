@@ -8,7 +8,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { nodeBoardFs } from "./helpers.js";
+import { domainBoard, nodeBoardFs } from "./helpers.js";
 import { listTasks, getTask } from "../../../src/services/tasks/board.js";
 
 async function seed() {
@@ -48,7 +48,7 @@ body
 test("listTasks returns todo item and ignores AGENTS.md / .memory", async () => {
   const repo = await seed();
   try {
-    const items = await listTasks(repo, {}, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), {}, nodeBoardFs());
     assert.equal(items.length, 1);
     assert.equal(items[0]?.stem, "2026-09-13--demo");
     assert.equal(items[0]?.status, "todo");
@@ -61,7 +61,7 @@ test("listTasks returns todo item and ignores AGENTS.md / .memory", async () => 
 test("listTasks --status backlog is empty when only todo exists", async () => {
   const repo = await seed();
   try {
-    const items = await listTasks(repo, { status: "backlog" }, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), { status: "backlog" }, nodeBoardFs());
     assert.equal(items.length, 0);
   } finally {
     await rm(repo, { recursive: true, force: true });
@@ -71,9 +71,9 @@ test("listTasks --status backlog is empty when only todo exists", async () => {
 test("getTask by stem and by path", async () => {
   const repo = await seed();
   try {
-    const byStem = await getTask(repo, "2026-09-13--demo", nodeBoardFs());
+    const byStem = await getTask(domainBoard(repo), "2026-09-13--demo", nodeBoardFs());
     const byPath = await getTask(
-      repo,
+      domainBoard(repo),
       "tasks/_default/todo/2026-09-13--demo/index.md",
       nodeBoardFs(),
     );
@@ -87,7 +87,7 @@ test("getTask by stem and by path", async () => {
 test("getTask by old layout path is TASK_NOT_FOUND", async () => {
   const repo = await seed();
   try {
-    await getTask(repo, "tasks/todo/2026-09-13--demo/index.md", nodeBoardFs());
+    await getTask(domainBoard(repo), "tasks/todo/2026-09-13--demo/index.md", nodeBoardFs());
     assert.fail("expected throw");
   } catch (error) {
     assert.equal((error as { errorCode: string }).errorCode, "TASK_NOT_FOUND");
@@ -99,7 +99,7 @@ test("getTask by old layout path is TASK_NOT_FOUND", async () => {
 test("getTask missing stem is TASK_NOT_FOUND", async () => {
   const repo = await seed();
   try {
-    await getTask(repo, "nope", nodeBoardFs());
+    await getTask(domainBoard(repo), "nope", nodeBoardFs());
     assert.fail("expected throw");
   } catch (error) {
     assert.equal((error as { errorCode: string }).errorCode, "TASK_NOT_FOUND");
@@ -111,9 +111,9 @@ test("getTask missing stem is TASK_NOT_FOUND", async () => {
 test("listTasks and getTask expose priority none when the field is missing", async () => {
   const repo = await seed();
   try {
-    const items = await listTasks(repo, {}, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), {}, nodeBoardFs());
     assert.equal(items[0]?.priority, "none");
-    const got = await getTask(repo, "2026-09-13--demo", nodeBoardFs());
+    const got = await getTask(domainBoard(repo), "2026-09-13--demo", nodeBoardFs());
     assert.equal(got.priority, "none");
     assert.equal(got.metadata["edges-task-priority"], undefined);
   } finally {
@@ -124,9 +124,9 @@ test("listTasks and getTask expose priority none when the field is missing", asy
 test("listTasks and getTask expose project default when field is missing under _default", async () => {
   const repo = await seed();
   try {
-    const items = await listTasks(repo, {}, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), {}, nodeBoardFs());
     assert.equal(items[0]?.project, "default");
-    const got = await getTask(repo, "2026-09-13--demo", nodeBoardFs());
+    const got = await getTask(domainBoard(repo), "2026-09-13--demo", nodeBoardFs());
     assert.equal(got.project, "default");
     assert.equal(got.metadata["edges-task-project"], undefined);
   } finally {
@@ -172,7 +172,7 @@ body
 `,
       "utf8",
     );
-    const items = await listTasks(repo, {}, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), {}, nodeBoardFs());
     assert.equal(items.length, 1);
     assert.equal(items[0]?.stem, "2026-09-16--named");
     assert.equal(items[0]?.project, "cli");
@@ -207,7 +207,7 @@ body
       "utf8",
     );
     try {
-      await listTasks(repo, {}, nodeBoardFs());
+      await listTasks(domainBoard(repo), {}, nodeBoardFs());
       assert.fail("expected throw");
     } catch (error) {
       assert.equal(
@@ -263,7 +263,7 @@ body
       );
     }
     const filtered = await listTasks(
-      repo,
+      domainBoard(repo),
       { projects: ["default", "cli"] },
       nodeBoardFs(),
     );
@@ -297,9 +297,9 @@ body
 `,
       "utf8",
     );
-    const items = await listTasks(repo, {}, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), {}, nodeBoardFs());
     assert.equal(items[0]?.priority, "urgent");
-    const got = await getTask(repo, "2026-09-16--hot", nodeBoardFs());
+    const got = await getTask(domainBoard(repo), "2026-09-16--hot", nodeBoardFs());
     assert.equal(got.priority, "urgent");
     assert.equal(got.metadata["edges-task-priority"], "urgent");
   } finally {
@@ -328,7 +328,7 @@ body
 `,
       "utf8",
     );
-    await assert.rejects(listTasks(repo, {}, nodeBoardFs()), /Invalid edges-task-priority: P0/);
+    await assert.rejects(listTasks(domainBoard(repo), {}, nodeBoardFs()), /Invalid edges-task-priority: P0/);
   } finally {
     await rm(repo, { recursive: true, force: true });
   }
@@ -388,7 +388,7 @@ body
 test("listTasks default order is board walk not priority", async () => {
   const repo = await seedPriorities();
   try {
-    const items = await listTasks(repo, {}, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), {}, nodeBoardFs());
     const stems = items.map((item) => item.stem);
     const backlog = stems.slice(0, 2);
     const todo = stems.slice(2);
@@ -413,7 +413,7 @@ test("listTasks default order is board walk not priority", async () => {
 test("listTasks --sort priority is urgent to none and stable", async () => {
   const repo = await seedPriorities();
   try {
-    const items = await listTasks(repo, { sort: "priority" }, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), { sort: "priority" }, nodeBoardFs());
     assert.deepEqual(
       items.map((item) => `${item.priority}:${item.stem}`),
       [
@@ -433,7 +433,7 @@ test("listTasks repeatable --priority is OR and ANDs with --status", async () =>
   const repo = await seedPriorities();
   try {
     const or = await listTasks(
-      repo,
+      domainBoard(repo),
       { priorities: ["urgent", "high"] },
       nodeBoardFs(),
     );
@@ -449,7 +449,7 @@ test("listTasks repeatable --priority is OR and ANDs with --status", async () =>
     assert.equal(orStems[0], "2026-09-16--high-one");
     assert.notEqual(orStems[0], "2026-09-16--urgent-one");
     const and = await listTasks(
-      repo,
+      domainBoard(repo),
       { status: "todo", priorities: ["high"] },
       nodeBoardFs(),
     );
@@ -457,7 +457,7 @@ test("listTasks repeatable --priority is OR and ANDs with --status", async () =>
       and.map((item) => item.stem),
       ["2026-09-16--high-two"],
     );
-    const none = await listTasks(repo, { priorities: ["none"] }, nodeBoardFs());
+    const none = await listTasks(domainBoard(repo), { priorities: ["none"] }, nodeBoardFs());
     assert.deepEqual(
       none.map((item) => item.stem),
       ["2026-09-16--none-one"],

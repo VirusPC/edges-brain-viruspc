@@ -8,7 +8,7 @@ metadata:
   edges-task-priority: none
 name: model_by_node_responsibility
 description: >-
-  把分散的模型类按 core/internal/tasks/memory/notes/skills 归组，通用 Markdown 回 utils，并补
+  把分散的模型类按 core/agents/tasks/memory/notes/skills 归组，通用 Markdown 回 utils，并补
   domain 架构与中文 CLI README；commands↔Service 解耦另开卡。
 ---
 **背景：**
@@ -20,7 +20,7 @@ description: >-
 Model 按节点职责清晰归组，公开节点接口与 TaskDoc 契约保留；中文架构 / CLI README 反映当前实现。
 
 **动作：**
-- 按 core/internal/tasks/memory/notes/skills 归组；格式能力回 utils/markdown；Task 集合操作入 operations
+- 按 core/agents/tasks/memory/notes/skills 归组；格式能力回 utils/markdown；Task 集合操作入 operations
 - 补齐 domain/models/operations 架构 README，重写中文 CLI README
 - 为看板旧 task-projects 迁移与解耦后续卡做登记（解耦本身不在本 PR）
 

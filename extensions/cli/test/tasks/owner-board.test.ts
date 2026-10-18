@@ -54,7 +54,7 @@ test('CLI first projects and tasks connect existing root, child and content scop
   assert.deepEqual(items.map((item) => item.path).sort(), maintenance.sort());
   assert.equal(new Set(items.map((item) => item.path)).size, maintenance.length);
   const outPath = path.join(root, 'site/index.html');
-  await generateTasksSite({ repoPath: root, purpose: 'all', outPath });
+  await generateTasksSite({ repoPath: root, outPath });
   const html = JSON.parse(fs.readFileSync(outPath, 'utf8').match(/<script type="application\/json" id="edges-review-payload">([\s\S]*?)<\/script>/)![1]!);
   assert.equal(html.items.length, items.length);
   for (const scope of ['.', 'child', 'notes/example']) {

@@ -1,6 +1,6 @@
 import { canonicalPath, isWithinPath } from '../../utils/filesystem.js';
 export { ownershipTarget } from './paths.js';
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { discoverScopes } from '../scope.js';
 import { memoryNodes, prepareMemoryWrite } from './service.js';
 import { NodeService } from '../node/node-service.js';
@@ -145,7 +145,7 @@ export function findIndexAnchor(target: string, root: string): string {
     }
     return root;
 }
-export async function syncIndexEntry(anchor: string, target: string, description?: string, indexGroup?: import("../../domain/models/core/types.js").ChildGroup): Promise<[string, string | null, string | null]> {
+export async function syncIndexEntry(anchor: string, target: string, description?: string): Promise<[string, string | null, string | null]> {
     if (anchor === target) return ['not-applicable', null, null];
     const service = memoryNodes(anchor);
     const file = prepareMemoryWrite(anchor, join(anchor, AGENTS_FILE_NAME));
@@ -155,13 +155,13 @@ export async function syncIndexEntry(anchor: string, target: string, description
     const registered = node.children.find(ref => canonicalPath(ref.id) === id);
     const rel = relative(anchor, id), normalized = normalizeIndexDescription(target, description);
     if (registered && (description === undefined || registered.description === normalized)) return ['preserved', rel, null];
-    if (!registered && !indexGroup) {
-        const harness = join(anchor, ".harness");
-        indexGroup = id === harness || id.startsWith(harness + sep) ? "local" : "descendant";
-    }
     const patch = (refs: typeof node.localChildren) => refs.map(ref => ref.id === registered?.id ? { ...ref, description: normalized } : ref);
     const localChildren = patch(node.localChildren), descendantChildren = patch(node.descendantChildren);
-    if (!registered) (indexGroup === 'local' ? localChildren : descendantChildren).push({ id, name: rel, description: normalized });
+    if (!registered) {
+        const harness = join(anchor, ".harness");
+        const group = id === harness || id.startsWith(harness + sep) ? "local" : "descendant";
+        (group === "local" ? localChildren : descendantChildren).push({ id, name: rel, description: normalized });
+    }
     await service.update(node, { localChildren, descendantChildren });
     return ['updated', rel, normalized];
 }

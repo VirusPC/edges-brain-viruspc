@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { randomUUID } from 'node:crypto';
-import { AgentsNode } from "../extensions/cli/src/domain/models/internal/agents-node.js";
-import { decodeBody } from '../extensions/cli/src/domain/models/internal/parse.js';
+import { AgentsNode } from "../extensions/cli/src/domain/models/agents/agents-node.js";
+import { decodeBody } from '../extensions/cli/src/domain/models/syntax.js';
 import { readEntry, saveEntries, validateEntry, checkPath, type EntryFile } from '../extensions/cli/src/services/node/node-files.js';
 const start = '<!-- task-projects:start -->', end = '<!-- task-projects:end -->';
 const excluded = new Set(['.git', 'node_modules', 'dist', 'build', 'posts', '.agents', '.superpowers']);
@@ -20,7 +20,7 @@ export function convert(file: string, source: string): string {
  const adapted='<!-- project-memory-local:start -->'+block+'<!-- project-memory-local:end -->';
  const decoded=decodeBody(adapted);
  if(decoded.unsafe) throw new Error(`${file}: ambiguous legacy markers`);
- const legacy = new Map<string, import("../extensions/cli/src/domain/models/core/types.js").NodeReference>();
+ const legacy = new Map<string, import("../extensions/cli/src/domain/core/types.js").NodeReference>();
  const removed: Array<{start:number;end:number}>=[];
  for (let i=0;i<decoded.model.memory.length;i++) {
   const item=decoded.model.memory[i], binding=decoded.bindings.memory[i];

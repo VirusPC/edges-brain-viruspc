@@ -42,7 +42,8 @@ src/
 ├── commands/              # 参数、输入输出与命令适配
 ├── services/              # 完整用例、跨节点协调和持久化
 ├── domain/
-│   ├── models/            # 单节点身份、内容、关系和行为
+│   ├── core/              # BaseNode、InternalNode、LeafNode、通用块机制
+│   ├── models/            # 各节点类型、具体文法与目录分类
 │   └── operations/        # 树遍历、惰性查询和集合算法
 └── utils/                 # Markdown、文件系统等基础工具
 ```
@@ -53,6 +54,8 @@ flowchart TD
     S --> M[Models：单节点规则]
     S --> O[Operations：树与集合]
     O --> M
+    M --> Core[Core：节点基类与通用块机制]
+    O --> Core
     M --> U[通用 Markdown 工具]
     S --> F[文件 IO、快照与写入协调]
     S -. 提供加载回调 .-> O
@@ -62,7 +65,8 @@ flowchart TD
 | --- | --- | --- |
 | commands | 命令注册、参数与 stdin 适配、stdout/stderr 和退出码 | 把 `notes create` 转成 `services/notes/service` 的创建请求 |
 | services | 加载、跨节点协调、文件操作与完整业务流程 | 各领域 `service.ts`；创建 Task 后登记父 AGENTS、保存、移动整个任务目录 |
-| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验、InternalNode.addChild |
+| core | 节点基类、本层/下层索引、关系和通用块机制 | BaseNode、InternalNode.addChild、core/syntax 按传入文法解析区块 |
+| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验；models/classify.ts 的目录分类；AgentsNode 与 ReadmeNode 经 models/syntax.ts 使用 core/syntax |
 | operations | 对多个元素进行遍历、筛选、分组、查找 | traverse、filter、groupBy、Task 数组排序 |
 | utils | 可复用的底层格式与文件机制 | gray-matter 适配、路径与文件原语 |
 
@@ -103,19 +107,19 @@ edges --scope /absolute/project memory doctor
 
 AGENTS 的本层硬约束、本层记忆、下层索引分别对应 constraints、localChildren、descendantChildren。NodeReference 只有 id，以及可选的 name、description；作者写下的相对链接由解析和序列化层维护。
 
-每个节点可以有独立的 harness。内容叶节点的 harness 是同目录 AGENTS.md；InternalNode 的下一层 harness 位于 `.harness/AGENTS.md`。harness 不混入 children，普通查询不会自动进入维护系统的下一层。
+每个节点可以有独立的 harness。内容叶节点的 harness 是同目录 AGENTS.md；AgentsNode 的下一层 harness 位于 `.harness/AGENTS.md`。harness 不混入 children，普通查询不会自动进入维护系统的下一层。
 
 新增父级登记跟着主体系统走。路径在该系统的 `.harness` 里进本层；另一套系统入口进下层。已有关系保留原分组。缺少 owner 时不会自动初始化；生成的 Task 项目与 Memory 类型入口使用其固定本层系统维护信息关系。
 
 ### 查询遵循索引
 
-NodeService.query 按已登记关系遍历，不靠扫描补齐遗漏。默认走全部组成 children（local∪descendants）；显式 `localOnly` 才只走 localChildren；includeHarness 才沿维护关系递归。**traverse 一次只走一个系统的 `children`。** 多个系统由 Service 层收集并拼成森林，见[多个系统拼成森林](#多个系统拼成森林)。默认根是 scope 下真 `AGENTS.md`。显式 `--super` 在这个 scope 的上一级建 `SuperAgentsNode`：当前 scope 目录就是该超节点的 `.harness`，材料 README 按 `harness-materials.json` 的 path 直接挂在 scope 下（`tasks/README.md` 即 `<scope>/tasks/README.md`）。scope 自己的 `<scope>/.harness/` 是再下一层维护系统，由真 `AGENTS.md` 进入，超节点不把它再当成材料根。遍历仍当普通 `AgentsNode`，只走 `children`，不从真 AGENTS 并 README 边。详见 [models 设计原则](src/domain/models/README.md#设计原则树与入口)与 [operations 遍历原则](src/domain/operations/README.md#traverse-只走单个系统)。
+NodeService.query 按已登记关系遍历，不靠扫描补齐遗漏。默认走全部组成 children（local∪descendants）以及 Compose 边；显式 `localOnly` 走 localChildren 与 Compose 边；includeHarness 才沿维护关系递归。**traverse 一次走一个系统的 `children`，并沿 Compose block 进入登记目录的 `AGENTS.md`。** 多个系统由 Service 层收集并拼成森林，见[多个系统拼成森林](#多个系统拼成森林)。默认根是 scope 下真 `AGENTS.md`。显式 `--super` 在这个 scope 的上一级建 `SuperAgentsNode`：当前 scope 目录就是该超节点的 `.harness`，材料 README 按 `harness-materials.json` 的 path 直接挂在 scope 下（`tasks/README.md` 即 `<scope>/tasks/README.md`）。scope 自己的 `<scope>/.harness/` 是再下一层维护系统，由真 `AGENTS.md` 进入，超节点不把它再当成材料根。遍历仍当普通 `AgentsNode`，只走 `children`，不从真 AGENTS 并 README 边。详见 [models 设计原则](src/domain/models/README.md#设计原则树与入口)与 [operations 遍历原则](src/domain/operations/README.md#traverse-只走单个系统)。
 
 ### 多个系统拼成森林
 
 多个系统由 Service 层收集并拼成森林。
 
-[`services/node/system-roots.ts`](src/services/node/system-roots.ts) 的 `collectSystemRoots` 扫盘，收下带 `project-harness` 标记的 `AGENTS.md`。一份路径和正文算不算这种入口，由 [`models/internal/harness-agents.ts`](src/domain/models/internal/harness-agents.ts) 的 `isProjectHarnessAgentsFile` 判断；这个函数只看传入的文本。
+[`services/node/system-roots.ts`](src/services/node/system-roots.ts) 的 `collectSystemRoots` 扫盘，收下带 `project-harness` 标记的 `AGENTS.md`。一份路径和正文算不算这种入口，由 [`models/agents/harness-agents.ts`](src/domain/models/agents/harness-agents.ts) 的 `isProjectHarnessAgentsFile` 判断；这个函数只看传入的文本。
 
 [`services/node/system-forest-service.ts`](src/services/node/system-forest-service.ts) 的 `buildSystemForest` 对每个根各自做一次 traverse，得到 `BaseNode[][]`。`independent`（默认）在 resolve 遇到其它根时停住；`innermost` 在外层能走到内层时只留下内层。命令行是 `edges forest list`。
 
@@ -214,7 +218,7 @@ edges memory backup --repo-dir /absolute/project
 edges memory restore --repo-dir /absolute/project --archive /private/archive.tar.gz
 ```
 
-新作用域的 `edges memory init` 未选择类型时只返回推荐项，不创建 notes、projects、skills 或 tasks 的材料。`edges skills init` 只写 skill 类型索引。`edges tasks init` 只写任务看板。remember 不初始化缺失作用域；doctor 默认只诊断。旧 `.memory` 通过显式 migrate 转换，普通命令不兼容迁移。新建 owner 登记需要的 index-group 放在 init 或 doctor 后。
+新作用域的 `edges memory init` 未选择类型时只返回推荐项，不创建 notes、projects、skills 或 tasks 的材料。`edges skills init` 只写 skill 类型索引。`edges tasks init` 只写任务看板。remember 不初始化缺失作用域；doctor 默认只诊断。旧 `.memory` 通过显式 migrate 转换，普通命令不兼容迁移。新建子作用域按路径登记到父级：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已经登记的保持原组。`edges memory doctor --apply` 按同一规则补上缺失的父级链接。
 
 用户记忆 restore 默认拒绝覆盖，明确使用 --force 才整份替换，失败时回滚。备份和恢复接受未压缩或 gzip tar，解包上限 256 MiB、10,000 文件，拒绝硬链接；中断后若报告 `.private-user-memory-*/previous`，应保留恢复副本。模板随包复制到 dist，运行不依赖相邻 Skill 源码或 Python。
 
@@ -267,6 +271,21 @@ edges artifacts server status
 init 管理客户端配置，publish/rm 调用预览服务并返回 JSON。server install 负责构建、服务配置和启用，不自动 start；start/stop/restart 只管理进程。服务部署路径与内容作用域独立。发布任务来源时使用 from-type、from-id、task-project，不把渲染审阅页与发布合成一个隐含动作。
 
 客户端 token、服务端配置、nginx、升级与恢复流程见 [Artifacts 服务说明](../services/artifacts-preview/README.md)和[部署说明](deploy/README.md)。
+
+### 组合仓库：compose
+
+作用域 `AGENTS.md` 的 `project-harness-compose` 区块登记被组合的 harness 仓库。每条是一个本地目录链接：链接文字是名字，破折号后面是说明，`remote: <git-url>` 是 clone 用的地址。检出就放在这条路径上。
+
+```bash
+edges --scope <directory> compose register --name brain --path ../brain --remote https://github.com/example/brain.git --description "个人大脑"
+edges --scope <directory> compose list
+edges --scope <directory> compose unregister --name brain
+edges --scope <directory> compose clone
+edges --scope <directory> compose pull
+edges --scope <directory> compose push --name brain
+```
+
+`register`、`list` 和 `unregister` 读写当前作用域的 Compose block，经 NodeService 保存 `AGENTS.md`。`unregister` 按 `--name` 去掉一条登记，不删除已 clone 的目录。`clone` 把尚未检出的条目 `git clone` 到登记目录；该目录已经是同一 origin 的检出时保持不动。`pull` 与 `push` 在检出目录里执行这个仓库自己的 `git pull` / `git push`，不另建提交。`clone` / `pull` / `push` 的 `--name` 只处理一条。查询节点树时会走进这些目录的 `AGENTS.md`。
 
 <a id="json-schema-contracts"></a>
 

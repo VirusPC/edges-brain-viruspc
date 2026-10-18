@@ -1,10 +1,11 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
-import type { NodeReference } from "../../domain/models/core/types.js";
-import { identifyNodeType, isHarnessMaterial, resolveHref } from "../../domain/models/layout.js";
-import { extractLocalBlock } from "../../domain/models/internal/blocks.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
+import type { NodeReference } from "../../domain/core/types.js";
+import { identifyNodeType } from "../../domain/models/classify.js";
+import { isHarnessMaterial, resolveHref } from "../../domain/models/layout.js";
+import { extractLocalBlock } from "../../domain/models/syntax.js";
 import { NodeService } from "../node/node-service.js";
 import { AGENTS_FILE_NAME, isScope } from "../memory/paths.js";
 import { memoryNodes } from "../memory/service.js";

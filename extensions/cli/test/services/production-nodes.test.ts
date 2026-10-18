@@ -67,7 +67,7 @@ test("task update adds title and priority metadata to an indexed task and status
 });
 test("memory remember rejects malformed domain metadata without erasing the original entry", async (t) => {
   const root = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
+  await initMemory({ targetDir: root, memoryTypes: ["project"] });
   const file = path.join(root, ".harness/memory/projects/project_example.md");
   const source =
     "---\nname: example\ndescription: Existing\nmetadata: malformed\n---\nOriginal\n";

@@ -37,21 +37,21 @@ const put = (dir: string, file: string, body: string | Buffer) => {
 const projectIndex = ".harness/memory/projects/README.md";
 test("init requires selection without mutation and reruns preserve selected adoption", async (t) => {
   const targetDir = fixture(t);
-  assert.equal((await initMemory({ indexGroup: "descendant", targetDir })).selectionRequired, true);
+  assert.equal((await initMemory({ targetDir })).selectionRequired, true);
   assert.deepEqual(readdirSync(targetDir), []);
-  await initMemory({ indexGroup: "descendant", targetDir, memoryTypes: ["project"] });
+  await initMemory({ targetDir, memoryTypes: ["project"] });
   assert.deepEqual(
     layerTypeSpecs(targetDir).map((s) => s.name),
     ["project"],
   );
   const before = read(targetDir, "AGENTS.md");
-  await initMemory({ indexGroup: "descendant", targetDir });
+  await initMemory({ targetDir });
   assert.equal(read(targetDir, "AGENTS.md"), before);
   assert.equal(existsSync(join(targetDir, ".harness/memory/users")), false);
 });
 test("remember refreshes index and preserves YAML metadata and origin on update", async (t) => {
   const targetDir = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir, memoryTypes: ["project"] });
+  await initMemory({ targetDir, memoryTypes: ["project"] });
   await rememberMemory({
     targetDir,
     type: "project",
@@ -83,11 +83,11 @@ test("remember refreshes index and preserves YAML metadata and origin on update"
     read(targetDir, projectIndex),
     /\[Decision\]\(<project_decision\/INDEX.md>\) — When deciding/,
   );
-  assert.equal((await doctorMemory({ indexGroup: "descendant", targetDir })).remaining.length, 0);
+  assert.equal((await doctorMemory({ targetDir })).remaining.length, 0);
 });
 test("managed uses skill format and referenced remains read only with missing source diagnostics", async (t) => {
   const targetDir = fixture(t);
-  const result = await initSkills({ indexGroup: "descendant",
+  const result = await initSkills({
     targetDir,
     skillTypes: ["managed", "referenced"],
   });
@@ -121,7 +121,7 @@ test("managed uses skill format and referenced remains read only with missing so
 test("private custom privileges are preserved, ignored before writing, and cannot be inferred when lost", async (t) => {
   const targetDir = fixture(t);
   execFileSync("git", ["init", "-q", targetDir]);
-  await initMemory({ indexGroup: "descendant", targetDir, memoryTypes: ["project"] });
+  await initMemory({ targetDir, memoryTypes: ["project"] });
   await addMemoryType({
     targetDir,
     name: "recipes",
@@ -148,18 +148,18 @@ test("private custom privileges are preserved, ignored before writing, and canno
   const index = ".harness/memory/recipes/README.md";
   put(targetDir, index, read(targetDir, index).replace("writable: true\n", ""));
   await assert.rejects(
-    async () => await initMemory({ indexGroup: "descendant", targetDir }),
+    async () => await initMemory({ targetDir }),
     /privilege/,
   );
   assert.ok(
-    (await doctorMemory({ indexGroup: "descendant", targetDir, apply: true })).remaining.some(
+    (await doctorMemory({ targetDir, apply: true })).remaining.some(
       (f) => f.code === "unsafe-layout",
     ),
   );
 });
 test("doctor diagnoses without writes and apply repairs foreign agents and stale indexes idempotently", async (t) => {
   const targetDir = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir, memoryTypes: ["project"] });
+  await initMemory({ targetDir, memoryTypes: ["project"] });
   put(targetDir, "AGENTS.md", "# Manual\nKeep this.\n");
   put(
     targetDir,
@@ -167,32 +167,32 @@ test("doctor diagnoses without writes and apply repairs foreign agents and stale
     "---\nname: a\ndescription: test\n---\nBody\n",
   );
   const before = read(targetDir, projectIndex);
-  const report = await doctorMemory({ indexGroup: "descendant", targetDir });
+  const report = await doctorMemory({ targetDir });
   assert.ok(report.findings.length);
   assert.equal(read(targetDir, projectIndex), before);
   assert.equal(
-    (await doctorMemory({ indexGroup: "descendant", targetDir, apply: true })).remaining.length,
+    (await doctorMemory({ targetDir, apply: true })).remaining.length,
     0,
   );
   assert.match(read(targetDir, "AGENTS.md"), /^# Manual\nKeep this/);
   assert.deepEqual(
-    (await doctorMemory({ indexGroup: "descendant", targetDir, apply: true })).repaired,
+    (await doctorMemory({ targetDir, apply: true })).repaired,
     [],
   );
 });
 test("source read errors preserve existing indexes and invalid frontmatter remains diagnosed", async (t) => {
   const targetDir = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir, memoryTypes: ["project"] });
+  await initMemory({ targetDir, memoryTypes: ["project"] });
   const before = read(targetDir, projectIndex);
   put(
     targetDir,
     ".harness/memory/projects/project_bad/INDEX.md",
     Buffer.from([0xff]),
   );
-  assert.equal((await initMemory({ indexGroup: "descendant", targetDir })).complete, false);
+  assert.equal((await initMemory({ targetDir })).complete, false);
   assert.equal(read(targetDir, projectIndex), before);
   assert.ok(
-    (await doctorMemory({ indexGroup: "descendant", targetDir, apply: true })).remaining.some(
+    (await doctorMemory({ targetDir, apply: true })).remaining.some(
       (f) => f.code === "source-scan-error",
     ),
   );
@@ -202,7 +202,7 @@ test("source read errors preserve existing indexes and invalid frontmatter remai
     "---\ndescription: unclosed\n",
   );
   assert.ok(
-    (await doctorMemory({ indexGroup: "descendant", targetDir, apply: true })).remaining.some(
+    (await doctorMemory({ targetDir, apply: true })).remaining.some(
       (f) => f.code === "invalid-entry",
     ),
   );
@@ -210,11 +210,11 @@ test("source read errors preserve existing indexes and invalid frontmatter remai
 test("managed symlink escapes are rejected and referenced links deduplicate by realpath", async (t) => {
   const targetDir = fixture(t);
   const external = fixture(t);
-  await initMemory({ indexGroup: "descendant",
+  await initMemory({
     targetDir,
     memoryTypes: ["project"],
   });
-  await initSkills({ indexGroup: "descendant",
+  await initSkills({
     targetDir,
     skillTypes: ["referenced"],
   });
@@ -238,7 +238,7 @@ test("managed symlink escapes are rejected and referenced links deduplicate by r
   mkdirSync(join(targetDir, ".agents/skills"), { recursive: true });
   symlinkSync(external, join(targetDir, ".agents/skills/a"));
   symlinkSync(external, join(targetDir, ".agents/skills/b"));
-  const initialized = await initSkills({ indexGroup: "descendant", targetDir });
+  const initialized = await initSkills({ targetDir });
   assert.equal(initialized.complete, true, JSON.stringify(initialized));
   assert.equal(
     read(targetDir, ".harness/skills/referenced/README.md").split(" — external")
@@ -252,14 +252,14 @@ test("explicit registered descendants survive intermediate adoption and nested G
   put(targetDir, "AGENTS.md", "# Existing owner\n");
   const child = join(targetDir, "a/b");
   mkdirSync(child, { recursive: true });
-  await initMemory({ indexGroup: "descendant",
+  await initMemory({
     targetDir: child,
     rootDir: targetDir,
     memoryTypes: ["project"],
     description: "Child",
   });
   assert.match(read(targetDir, "AGENTS.md"), /a\/b\/AGENTS.md/);
-  await initMemory({ indexGroup: "descendant",
+  await initMemory({
     targetDir: join(targetDir, "a"),
     rootDir: targetDir,
     memoryTypes: ["feedback"],
@@ -268,10 +268,10 @@ test("explicit registered descendants survive intermediate adoption and nested G
   assert.doesNotMatch(read(targetDir, "a/AGENTS.md"), /b\/AGENTS.md/);
   const nested = join(targetDir, "nested");
   mkdirSync(join(nested, ".git"), { recursive: true });
-  await initMemory({ indexGroup: "descendant", targetDir: nested, memoryTypes: ["project"] });
+  await initMemory({ targetDir: nested, memoryTypes: ["project"] });
   await assert.rejects(
     async () =>
-      await initMemory({ indexGroup: "descendant",
+      await initMemory({
         targetDir: nested,
         rootDir: targetDir,
         memoryTypes: ["project"],
@@ -279,7 +279,7 @@ test("explicit registered descendants survive intermediate adoption and nested G
     /Git root/,
   );
   assert.equal(
-    (await doctorMemory({ indexGroup: "descendant", targetDir, apply: true })).memoryDirs.includes(
+    (await doctorMemory({ targetDir, apply: true })).memoryDirs.includes(
       "nested",
     ),
     false,
@@ -297,11 +297,12 @@ test('refreshing a memory type preserves a separately authored relation', async 
  const saved=new ReadmeNode(file).parse(read(targetDir,projectIndex));
  assert.ok(saved.localChildren.some(ref=>ref.name==='Other'&&ref.description==='Authored relation'));
 });
-test('cross-scope init preflights explicit placement before creating harness files',async t=>{
+test('cross-scope init registers the child scope in the descendant section',async t=>{
  const targetDir=fixture(t);put(targetDir,'AGENTS.md','# Owner\n');mkdirSync(join(targetDir,'child'));
- await assert.rejects(initMemory({targetDir:join(targetDir,'child'),rootDir:targetDir,memoryTypes:['project']}),/index-group/);
- assert.equal(existsSync(join(targetDir,'child/.harness')),false);
- await initMemory({targetDir:join(targetDir,'child'),rootDir:targetDir,memoryTypes:['project'],indexGroup:'local'});
- const {AgentsNode}=await import("../../src/domain/models/internal/agents-node.js");
- assert.equal(new AgentsNode(join(targetDir,'AGENTS.md')).parse(read(targetDir,'AGENTS.md')).localChildren.length,1);
+ await initMemory({targetDir:join(targetDir,'child'),rootDir:targetDir,memoryTypes:['project']});
+ const {AgentsNode}=await import("../../src/domain/models/agents/agents-node.js");
+ const owner=new AgentsNode(join(targetDir,'AGENTS.md')).parse(read(targetDir,'AGENTS.md'));
+ assert.equal(owner.localChildren.length,0);
+ assert.equal(owner.descendantChildren.length,1);
+ assert.equal(owner.descendantChildren[0]?.id,join(targetDir,'child/AGENTS.md'));
 });

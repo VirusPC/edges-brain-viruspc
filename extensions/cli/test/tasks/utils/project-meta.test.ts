@@ -9,7 +9,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { nodeBoardWriter } from "./helpers.js";
+import { domainBoard, nodeBoardWriter } from "./helpers.js";
 import {
   DEFAULT_PROJECT_DESCRIPTION,
   DEFAULT_PROJECT_TITLE,
@@ -139,8 +139,8 @@ test("oneLineDescription collapses newlines", () => {
 });
 
 test("projectAgentsRelPath uses _default for default", () => {
-  assert.equal(projectAgentsRelPath("default"), "tasks/_default/AGENTS.md");
-  assert.equal(projectAgentsRelPath("cli"), "tasks/cli/AGENTS.md");
+  assert.equal(projectAgentsRelPath("default"), ".harness/tasks/_default/AGENTS.md");
+  assert.equal(projectAgentsRelPath("cli"), ".harness/tasks/cli/AGENTS.md");
 });
 
 test("ensureProjectMetadata seeds _default and root index without moving Task files", async () => {
@@ -165,7 +165,7 @@ test("ensureProjectMetadata seeds _default and root index without moving Task fi
     // Metadata must be created by the operation under test, not the fixture helper.
     await assert.rejects(readFile(path.join(repo, "tasks/_default/README.md")));
     await assert.rejects(readFile(path.join(repo, "tasks/cli/README.md")));
-    const records = await ensureProjectMetadata(repo, nodeBoardWriter(), undefined, ["cli"]);
+    const records = await ensureProjectMetadata(domainBoard(repo), nodeBoardWriter(), undefined, ["cli"]);
     assert.equal(records[0]?.project, "default");
     assert.equal(
       records.some((item) => item.project === "cli"),
@@ -205,7 +205,7 @@ test("ensureProjectMetadata skipId leaves that README.md missing", async () => {
   const repo = await mkdtemp(path.join(tmpdir(), "edges-proj-"));
   try {
     await mkdir(path.join(repo, "tasks"), { recursive: true });
-    await ensureProjectMetadata(repo, nodeBoardWriter(), "default");
+    await ensureProjectMetadata(domainBoard(repo), nodeBoardWriter(), "default");
     await assert.rejects(
       readFile(path.join(repo, "tasks/_default/README.md"), "utf8"),
     );
@@ -222,8 +222,8 @@ test("project reads reject unindexed directories without creating metadata", asy
   try {
     await mkdir(path.join(repo, "tasks/cli/todo"), { recursive: true });
     const fs = nodeBoardWriter();
-    await assert.rejects(listProjects(repo, fs), /Task board material missing|index missing.*migrate/i);
-    await assert.rejects(getProject(repo, 'cli', fs), /Task board material missing|index missing.*migrate/i);
+    await assert.rejects(listProjects(domainBoard(repo), fs), /Task board material missing|index missing.*migrate/i);
+    await assert.rejects(getProject(domainBoard(repo), 'cli', fs), /Task board material missing|index missing.*migrate/i);
     for (const rel of [
       "tasks/cli/AGENTS.md",
       "tasks/AGENTS.md",

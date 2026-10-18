@@ -7,6 +7,7 @@ import { NodeService } from '../../src/services/node/node-service.js';
 import { syncAgentsBlocks } from '../../src/services/memory/agents.js';
 import { initMemory } from '../../src/services/memory/init.js';
 import { indexTaskFixtureBoard } from '../tasks/utils/helpers.js';
+import { taskBoardLocation } from '../../src/services/tasks/paths.js';
 import { updateTask } from '../../src/services/tasks/write.js';
 import { createNodeBoardWriter } from '../../src/services/tasks/board.js';
 import { parseDocument } from '../../src/utils/markdown/document.js';
@@ -19,7 +20,7 @@ function fixture(t: any) {
 
 test('Memory derives an index edit from the snapshot loaded after an intervening human edit', async t => {
   const root = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ['project'] });
+  await initMemory({ targetDir: root, memoryTypes: ['project'] });
   const file = path.join(root, 'AGENTS.md'), original = fs.readFileSync(file, 'utf8');
   const get = NodeService.prototype.get;
   let edited = false;
@@ -47,13 +48,14 @@ test('Task body update preserves supplied blank lines and trailing spaces', asyn
   fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
   fs.writeFileSync(path.join(root, rel), '---\nname: body\nmetadata:\n  edges-tasks-status: todo\n---\nOld\n');
   await indexTaskFixtureBoard(path.join(root, 'tasks'));
-  await updateTask(root, '2026-10-05--body', { body: '\nBody  \n\n' }, { fs: createNodeBoardWriter(root), now: new Date('2026-10-05T00:00:00Z') });
+  const board = taskBoardLocation(root, { super: true });
+  await updateTask(board, '2026-10-05--body', { body: '\nBody  \n\n' }, { fs: createNodeBoardWriter(board), now: new Date('2026-10-05T00:00:00Z') });
   assert.equal(parseDocument(fs.readFileSync(path.join(root, rel), 'utf8')).body, '\nBody  \n\n');
 });
 
 for (const exists of [false, true]) test(`Memory rejects ${exists ? 'edits' : 'creation'} after its loaded snapshot`, async t => {
   const root = fixture(t), file = path.join(root, 'AGENTS.md');
-  if (exists) await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ['project'] });
+  if (exists) await initMemory({ targetDir: root, memoryTypes: ['project'] });
   const humanSource = exists ? fs.readFileSync(file, 'utf8') + '\nLater human edit\n' : '# Later human creation\n';
   const get = NodeService.prototype.get;
   let changed = false;

@@ -1,6 +1,5 @@
-import { OUTER_END, OUTER_START } from "./blocks.js";
-import { CODEC_SECTIONS } from "../layout.js";
 import type { AgentsDocument, SectionKey, AgentsLink, AgentsItem } from "./document.js";
+import type { BlockGrammar } from "./grammar.js";
 import { decodeBody } from "./parse.js";
 import { isDeepStrictEqual as same } from "node:util";
 import {
@@ -8,7 +7,11 @@ import {
   serializeDocument,
 } from "../../../utils/markdown/document.js";
 
-const keys: SectionKey[] = ["constraints", "memory", "children"];
+const keys: SectionKey[] = ["constraints", "memory", "children", "compose"];
+
+function renderedKeys(model: Pick<AgentsDocument, SectionKey>): SectionKey[] {
+  return keys.filter((key) => key !== "compose" || model[key].length > 0);
+}
 
 const escape = (value: string): string =>
   value
@@ -34,8 +37,9 @@ function renderSection(
   key: SectionKey,
   items: AgentsItem[],
   newline: string,
+  grammar: BlockGrammar,
 ): string {
-  const { marker, heading: title } = CODEC_SECTIONS[key];
+  const { marker, heading: title } = grammar.sections[key];
   return [
     `<!-- ${marker}:start -->`,
     `## ${title}`,
@@ -47,24 +51,30 @@ function renderSection(
 }
 
 /** Pure serialization. Original source enables loss-preserving edits; no IO occurs here. */
-function serializeBody(model: AgentsDocument, originalSource?: string): string {
+function serializeBody(
+  model: AgentsDocument,
+  grammar: BlockGrammar,
+  originalSource?: string,
+): string {
   const newline = originalSource?.includes("\r\n") ? "\r\n" : "\n";
   if (originalSource === undefined) {
     const source = [
-      OUTER_START,
-      ...keys.map((key) => renderSection(key, model[key], newline)),
-      OUTER_END,
+      grammar.outerStart,
+      ...renderedKeys(model).map((key) =>
+        renderSection(key, model[key], newline, grammar),
+      ),
+      grammar.outerEnd,
       "",
       ...model.references.map((ref) => `- ${renderLink(ref)}`),
       "",
     ].join(newline);
-    if (!same(decodeBody(source).model, model))
+    if (!same(decodeBody(source, grammar).model, model))
       throw new Error(
         "Model cannot be represented losslessly as a node document.",
       );
     return source;
   }
-  const original = decodeBody(originalSource);
+  const original = decodeBody(originalSource, grammar);
   const originalText = originalSource;
   if (same(original.model, model)) return originalSource;
   if (original.unsafe)
@@ -138,7 +148,7 @@ function serializeBody(model: AgentsDocument, originalSource?: string): string {
         edit(
           original.appendAt,
           original.appendAt,
-          newline + renderSection(key, extra, newline),
+          newline + renderSection(key, extra, newline, grammar),
         );
       }
     }
@@ -181,7 +191,7 @@ function serializeBody(model: AgentsDocument, originalSource?: string): string {
       source.slice(0, change.start) + change.value + source.slice(change.end);
     boundary = change.start;
   }
-  if (!same(decodeBody(source).model, model))
+  if (!same(decodeBody(source, grammar).model, model))
     throw new Error(
       "Model cannot be represented losslessly without changing surrounding content.",
     );
@@ -190,12 +200,13 @@ function serializeBody(model: AgentsDocument, originalSource?: string): string {
 
 export function serializeNode(
   model: AgentsDocument,
-  originalSource?: string,
+  originalSource: string | undefined,
+  grammar: BlockGrammar,
 ): string {
   const { metadata, ...content } = model;
   const original =
     originalSource === undefined ? undefined : parseDocument(originalSource);
-  const body = serializeBody(content, original?.body);
+  const body = serializeBody(content, grammar, original?.body);
   return serializeDocument(
     metadata === undefined ? { body } : { metadata, body },
     originalSource,

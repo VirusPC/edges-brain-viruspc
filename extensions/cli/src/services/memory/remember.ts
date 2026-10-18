@@ -1,5 +1,5 @@
 import { ENTRY_NAMES, isLeafEntryName } from "../../domain/models/layout.js";
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { typeIndexPath } from './types.js';
 import { assertImportType } from "../import-entry.js";
 import { MemoryNode, SkillNode } from "../../domain/models/index.js";

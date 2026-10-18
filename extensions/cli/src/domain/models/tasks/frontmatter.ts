@@ -1,5 +1,5 @@
 import { TaskNode } from "./task-node.js";
-import { setDomainField } from "../core/fields.js";
+import { setDomainField } from "../../core/fields.js";
 import { createMarkdownCodec } from "../../../utils/markdown/document.js";
 import type { DocumentCodec, MarkdownDocument, Metadata, MetadataValue } from "../../../utils/markdown/types.js";
 import matter from "gray-matter";

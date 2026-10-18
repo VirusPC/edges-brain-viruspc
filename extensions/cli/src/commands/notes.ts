@@ -24,7 +24,7 @@ FLAGS
   create   --title <title>  --body <markdown>  --metadata <key=value>  --json
   update   <path>  --title  --body  --metadata <key=value>
   delete   <path>
-  init     [--target-dir] [--root-dir] [--index-group] [--description]
+  init     [--target-dir] [--root-dir] [--description]
 
   create/update use metadata plus --body. The title is the body H1, or --title.
   get and delete take only the target. list uses the shared filter/group envelope.

@@ -1,6 +1,6 @@
 import { fromMarkdown } from "mdast-util-from-markdown";
 import type { Nodes } from "mdast";
-import { BaseNode } from "../core/base-node.js";
+import { BaseNode } from "../../core/base-node.js";
 function text(node: Nodes): string {
   return "value" in node
     ? node.value

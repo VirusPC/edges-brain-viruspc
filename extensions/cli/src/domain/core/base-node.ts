@@ -1,5 +1,5 @@
 import { dirname, isAbsolute, normalize } from "node:path";
-import { parseDocument, serializeDocument } from "../../../utils/markdown/document.js";
+import { parseDocument, serializeDocument } from "../../utils/markdown/document.js";
 import { nodeRelations, nodePath } from "./relations.js";
 import type { ChildGroup, Metadata, NodeReference, NodeCreateInput, NodeUpdateInput, NodeContext } from "./types.js";
 
@@ -13,14 +13,9 @@ export class BaseNode<
   CreateInput extends NodeCreateInput = NodeCreateInput,
   UpdateInput extends NodeUpdateInput = NodeUpdateInput,
 > implements NodeReference {
+  // #region Identity and path
   readonly type: string = "base";
   readonly #initialPath: string;
-  #metadata: Metadata | undefined;
-  #body = "";
-  constructor(path: string) {
-    if (!isAbsolute(path)) throw new Error("Node path must be absolute.");
-    this.#initialPath = normalize(path);
-  }
   get path(): string {
     return nodePath(this) ?? this.#initialPath;
   }
@@ -30,16 +25,10 @@ export class BaseNode<
   get id(): string {
     return this.path;
   }
-  get isLeaf(): boolean {
-    return this.localChildren === undefined && this.children.length === 0;
-  }
-  /** Present only on nodes that own composition; undefined means no composition fields. */
-  get localChildren(): readonly Readonly<NodeReference>[] | undefined {
-    return undefined;
-  }
-  get descendantChildren(): readonly Readonly<NodeReference>[] | undefined {
-    return undefined;
-  }
+  // #endregion
+
+  // #region Metadata
+  #metadata: Metadata | undefined;
   get name(): string | undefined {
     return this.#metadata?.name as string | undefined;
   }
@@ -54,28 +43,56 @@ export class BaseNode<
     if (value === undefined) this.removeMetadata("description");
     else this.setMetadata("description", value);
   }
-  get parent(): Readonly<NodeReference> | undefined {
-    return nodeRelations(this).parent;
-  }
-  get harness(): Readonly<NodeReference> | undefined {
-    return nodeRelations(this).harness;
-  }
-  get children(): readonly Readonly<NodeReference>[] {
-    return [];
-  }
-  /** Composite nodes (AgentsNode, ReadmeNode) override; other nodes own no composition. */
-  addChild(_group: ChildGroup, _reference: NodeReference): this {
-    throw new Error(`${this.path}: node does not own composition; cannot add child.`);
-  }
   get metadata(): Readonly<Metadata> | undefined {
     return structuredClone(this.#metadata);
   }
+  // #endregion
+
+  // #region Body
+  #body = "";
   get body(): string {
     return this.serializeBody();
   }
   set body(markdown: string) {
     this.parseBody(markdown);
   }
+  // #endregion
+
+  // #region Relations
+  get parent(): Readonly<NodeReference> | undefined {
+    return nodeRelations(this).parent;
+  }
+  get harness(): Readonly<NodeReference> | undefined {
+    return nodeRelations(this).harness;
+  }
+  // #endregion
+
+  // #region Composition
+  /** Present only on nodes that own composition; undefined means no composition fields. */
+  get localChildren(): readonly Readonly<NodeReference>[] | undefined {
+    return undefined;
+  }
+  get descendantChildren(): readonly Readonly<NodeReference>[] | undefined {
+    return undefined;
+  }
+  get children(): readonly Readonly<NodeReference>[] {
+    return [];
+  }
+  /** Compose-block edges. Undefined when this node has no compose section. */
+  get composeChildren(): readonly Readonly<NodeReference>[] | undefined {
+    return undefined;
+  }
+  get isLeaf(): boolean {
+    return this.localChildren === undefined && this.children.length === 0;
+  }
+  // #endregion
+
+  constructor(path: string) {
+    if (!isAbsolute(path)) throw new Error("Node path must be absolute.");
+    this.#initialPath = normalize(path);
+  }
+
+  // #region Parse and serialize
   parse(markdown: string): this {
     try {
       const document = parseDocument(markdown);
@@ -102,6 +119,9 @@ export class BaseNode<
   protected serializeBody(): string {
     return this.#body;
   }
+  // #endregion
+
+  // #region Metadata methods
   protected validateMetadata(metadata: Metadata | undefined): void {
     if (
       metadata !== undefined &&
@@ -115,6 +135,28 @@ export class BaseNode<
       )
         throw new Error(`${this.path}: ${field} must be a string.`);
   }
+  setMetadata(key: string, value: unknown): void {
+    const next = { ...this.#metadata, [key]: structuredClone(value) };
+    this.validateMetadata(next);
+    this.#metadata = next;
+  }
+  removeMetadata(key: string): void {
+    if (this.#metadata === undefined) return;
+    const next = { ...this.#metadata };
+    delete next[key];
+    this.validateMetadata(next);
+    this.#metadata = next;
+  }
+  // #endregion
+
+  // #region Composition methods
+  /** InternalNode implements index editing. Other nodes own no composition. */
+  addChild(_group: ChildGroup, _reference: NodeReference): this {
+    throw new Error(`${this.path}: node does not own composition; cannot add child.`);
+  }
+  // #endregion
+
+  // #region Lifecycle
   protected applyInput(input: NodeCreateInput): void {
     if (input.metadata !== undefined) {
       this.validateMetadata(input.metadata);
@@ -156,16 +198,5 @@ export class BaseNode<
   validate(): void {
     this.validateMetadata(this.#metadata);
   }
-  setMetadata(key: string, value: unknown): void {
-    const next = { ...this.#metadata, [key]: structuredClone(value) };
-    this.validateMetadata(next);
-    this.#metadata = next;
-  }
-  removeMetadata(key: string): void {
-    if (this.#metadata === undefined) return;
-    const next = { ...this.#metadata };
-    delete next[key];
-    this.validateMetadata(next);
-    this.#metadata = next;
-  }
+  // #endregion
 }

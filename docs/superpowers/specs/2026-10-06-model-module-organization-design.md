@@ -40,8 +40,8 @@ src/
 │   │   │   ├── types.ts              # NodeReference、基础输入、NodeContext
 │   │   │   ├── relations.ts          # 关系校验及内部身份协调
 │   │   │   └── fields.ts             # 多个节点共用的 metadata 字段操作
-│   │   ├── internal/
-│   │   │   ├── internal-node.ts
+│   │   ├── agents/
+│   │   │   ├── agents-node.ts
 │   │   │   ├── syntax.ts             # 节点与 AGENTS 文档表示之间的转换
 │   │   │   ├── document.ts           # AgentsDocument、条目/链接表示与文档 codec
 │   │   │   ├── parse.ts
@@ -83,17 +83,17 @@ src/
 | --- | --- |
 | 根层 `base-node.ts`、`leaf-node.ts`、`relations.ts`、`fields.ts` | 移入 `core/`，保留已有行为与内部可见性 |
 | 根层各业务 `*-node.ts` | 移入对应节点目录 |
-| 根层 `internal-syntax.ts` | `internal/syntax.ts` |
+| 根层 `internal-syntax.ts` | `agents/syntax.ts` |
 | 根 `types.ts` 的基础类型 | `core/types.ts`，不依赖具体业务节点 |
-| Internal 输入与 InternalContent | 与 `internal/internal-node.ts` 同处；合并等义的私有内容类型，保留只读接口语义 |
+| Internal 输入与 InternalContent | 与 `agents/agents-node.ts` 同处；合并等义的私有内容类型，保留只读接口语义 |
 | Task 输入 | `tasks/types.ts`，与已有枚举和领域数据一起维护 |
 | Memory 输入 | `memory/memory-node.ts`，暂不为少量声明新建 types 文件 |
 | ScopeTraversalOptions、NodeQueryOptions | `operations/traverse.ts`；由使用遍历能力的 Service 引用 |
-| `internal/model.ts` | 改为 `internal/document.ts`；NodeModel → AgentsDocument、createNodeModel → createAgentsDocument，相应条目/链接类型明确为文档表示 |
+| `internal/model.ts` | 改为 `agents/document.ts`；NodeModel → AgentsDocument、createNodeModel → createAgentsDocument，相应条目/链接类型明确为文档表示 |
 | `internal/typed.ts` 的 createMarkdownCodec | 并入既有 `utils/markdown/document.ts`，Tasks 不再经 Internal 引入通用能力 |
 | baseDocumentCodec | 与通用工厂同处；已有调用合同保留 |
 | memoryDocumentCodec | `memory/documents.ts` |
-| agentsDocumentCodec | `internal/document.ts`；parse/serialize 对文档结构用 type-only 导入，空文档构造不经 codec 产生运行时环 |
+| agentsDocumentCodec | `agents/document.ts`；parse/serialize 对文档结构用 type-only 导入，空文档构造不经 codec 产生运行时环 |
 | `internal/index.ts` | 删除跨职责的转出口，仓内消费者直接引用所属模块；不保留旧路径转发壳 |
 | priority/project 中处理数组的函数 | `operations/tasks.ts`；单值解析、比较及校验留在模型目录 |
 | 未被引用的 TasksOutput | 删除；table/json 是 CLI 输出选择，不属于节点模型 |

@@ -1,8 +1,8 @@
 import { basename, dirname, join } from "node:path";
-import { BaseNode } from "../models/core/base-node.js";
+import { BaseNode } from "../core/base-node.js";
 import { ENTRY_NAMES, normalizeNodeType } from "../models/layout.js";
-import type { NodeReference } from "../models/core/types.js";
-import { validateChild } from "../models/core/relations.js";
+import type { NodeReference } from "../core/types.js";
+import { validateChild } from "../core/relations.js";
 
 export interface ScopeTraversalOptions {
   /** When true, expand only localChildren. Default false: local ∪ descendants. */
@@ -27,9 +27,21 @@ function expandedChildren(
   node: BaseNode,
   options: ScopeTraversalOptions,
 ): readonly NodeReference[] {
-  return options.localOnly
+  const structural = options.localOnly
     ? (node.localChildren ?? node.children)
     : node.children;
+  // The Compose block belongs to the current layer, so localOnly still follows it.
+  return [...structural, ...(node.composeChildren ?? [])];
+}
+
+/** True when the reference is only a Compose edge, not a structural child. */
+export function isComposeOnlyReference(
+  parent: BaseNode,
+  reference: NodeReference,
+): boolean {
+  const compose = parent.composeChildren;
+  if (!compose?.some((item) => item.id === reference.id)) return false;
+  return !parent.children.some((item) => item.id === reference.id);
 }
 
 export interface NodeQueryOptions extends ScopeTraversalOptions {

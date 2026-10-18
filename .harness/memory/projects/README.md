@@ -90,7 +90,7 @@ format: ordinary
 
 - [四种入口可组织；README 下层仍 README；虚拟超节点须 \-\-super](<project_grill_arch_all_org_readme_virtual_flag/INDEX.md>) — 改 traverse/架构图时：四入口可组织；README 下层只挂 README；虚拟超节点须显式 \-\-super，默认 scope/AGENTS.md，不因缺 AGENTS 自动合成。
 
-- [BaseNode 直继；type 含 agents/readme/text](<project_grill_basenode_type_agents_readme_text/INDEX.md>) — 改节点类层次或 type 时：各节点直继 BaseNode；type 含 agents/readme/text；虚拟超节点为 SuperAgentsNode 继承 AgentsNode，用 \-\-super。
+- [InternalNode 承接组成索引](<project_grill_basenode_type_agents_readme_text/INDEX.md>) — 改节点类层次或 type 时：AgentsNode 与 ReadmeNode 继承 InternalNode；业务节点继承 BaseNode；LeafNode 是纯 text；组织/叶子看组成登记，type 不含 internal。
 
 - [类型入口只写 README，空的类型 AGENTS 桩删除](<project_grill_type_index_as_readme/INDEX.md>) — 改类型索引、init/remember/doctor 或 PROTOCOL 时：memory 与 skills 的类型索引只写 README\+project\-entries。空的同目录 AGENTS 桩删除；缺失索引不补 AGENTS。层系统入口仍是 AGENTS.md。
 

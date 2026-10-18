@@ -4,7 +4,7 @@ import { realpathSync } from "node:fs";
 import { AgentsNode } from "../../domain/models/index.js";
 import { query } from "../../domain/operations/query.js";
 import { projectLocationOf } from "./node-query.js";
-import { taskBoardLocation, type TaskPurpose } from "./paths.js";
+import { resolveBoard, taskBoardLocation } from "./paths.js";
 import { scopeDir, type BoardTarget } from "./paths.js";
 import { isTaskProjectId } from "../../domain/models/tasks/project.js";
 import { NodeService } from "../node/node-service.js";
@@ -258,7 +258,7 @@ export async function listGroupedByProject(
     groups.push(await resolveGroup(repoPath, id, fs));
   }
   const grouped = buildGroupedList(tasks, groups);
-  const source: TaskSource = { scope: sourceScope, purpose: typeof repoPath === "string" ? "domain" : repoPath.purpose };
+  const source: TaskSource = { scope: sourceScope, purpose: resolveBoard(repoPath).purpose };
   return {
     ...grouped,
     groups: grouped.groups.map(group => ({ ...group, source, project: group.id, id: sourceIdentity(source, group.id) })),
@@ -268,10 +268,10 @@ export async function listGroupedByProject(
 
 /** Repository groups use physical source identity, retaining registered empty projects. */
 export async function listRepositoryGroupedByProject(
-  root: string, opts: TaskListOpts = {}, purpose?: TaskPurpose,
+  root: string, opts: TaskListOpts = {},
 ): Promise<GroupedList> {
   root = realpathSync(root);
-  const tasks = await listRepositoryTasksWithDocs(root, opts, purpose);
+  const tasks = await listRepositoryTasksWithDocs(root, opts);
   const groupedTasks = await query(async function* () { yield* tasks; })
     .groupBy(task => sourceIdentity(task.source, task.project)).value();
   const groups = new Map<string, GroupedListGroup>();
@@ -282,7 +282,6 @@ export async function listRepositoryGroupedByProject(
     .filter((node): node is AgentsNode => node instanceof AgentsNode)
     .map(node => projectLocationOf(node, root))
     .filter((entry): entry is NonNullable<typeof entry> => !!entry)
-    .filter(entry => !purpose || entry.source.purpose === purpose)
     .filter(entry => !opts.projects?.length || opts.projects.includes(entry.project)).value();
   for (const { location, project, source } of projects) {
     const record = await readProjectRecord(location, project, createNodeBoardFs(location));
@@ -292,7 +291,7 @@ export async function listRepositoryGroupedByProject(
   for (const [id, rows] of Object.entries(groupedTasks)) {
     if (groups.has(id)) continue;
     const { source, project } = rows[0]!;
-    const target = taskBoardLocation(path.resolve(root, source.scope), source.purpose);
+    const target = taskBoardLocation(path.resolve(root, source.scope), { super: source.purpose === "domain" });
     const record = await resolveGroup(target, project, createNodeBoardFs(target));
     groups.set(id, { ...record, id, source, project });
   }

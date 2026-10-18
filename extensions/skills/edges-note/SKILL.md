@@ -1,7 +1,7 @@
 ---
 name: edges-note
 description: 把一条 Note 入库到 Edges 仓库时使用。有 shell 就调用 `edges notes`；没有 shell 的宿主调用对等能力面入口 new-note MCP。只在本地写叶子，不要自己跑 git，也不要找仓根 bin/new-note。
-version: 2.3.0
+version: 2.3.1
 ---
 
 # edges notes
@@ -67,5 +67,5 @@ get 与 delete 只收目标。update 至少给 `--title`、`--body` 或 `--metad
 - 不要在本 skill 下写 `scripts/` 去跑 git。
 - 不要教 Agent 把仓根 `bin/` 加入 PATH。
 - 不要把 npm `bin` 说成能力面的一层。能力面是 CLI + Skill + MCP（见仓库 `CONTEXT.md` 与 `docs/adr/0004-capability-surface-cli-skill-mcp.md`）。
-- 不要给 `notes create` 传 `--index-group`。父级登记跟着主体系统走；这个 flag 只留在 `memory init` / `memory doctor`。
+- 不要给 `notes create` 传 `--index-group`。init 与 `memory doctor` 也不接受这个旗标；新的子作用域按路径登记到父级。
 - 不要传已删除的 ingest / git 旗标。

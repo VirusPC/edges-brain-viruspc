@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isProjectHarnessAgentsFile } from "../../src/domain/models/internal/harness-agents.js";
+import { isProjectHarnessAgentsFile } from "../../src/domain/models/agents/harness-agents.js";
 
 const harnessAgents = `# Scope
 

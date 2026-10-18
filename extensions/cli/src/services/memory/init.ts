@@ -2,7 +2,6 @@ export interface InitMemoryOptions {
   targetDir: string;
   rootDir?: string;
   description?: string;
-  indexGroup?: "local" | "descendant";
   memoryTypes?: readonly string[];
   skillTypes?: readonly string[];
 }

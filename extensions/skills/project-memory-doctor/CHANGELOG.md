@@ -4,6 +4,12 @@
 
 - 缺失类型入口补 `README.md`（`project-entries-*`），memory 与 skills 都一样。不补类型目录 `AGENTS.md`；已存在的旧 AGENTS 类型索引仍可原地更新。
 
+## [3.3.0] - 2026-10-18
+
+### Changed
+
+- `edges memory doctor --apply` 按路径补缺失的父级链接：目标 `AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已有登记保持原组。命令不再接受 `--index-group`。
+
 ## [3.2.0] - 2026-10-07
 
 ### Changed

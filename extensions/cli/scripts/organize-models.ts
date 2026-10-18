@@ -12,9 +12,10 @@ const operations = prefix + 'domain/operations/';
 const markdown = prefix + 'utils/markdown/';
 const moves = new Map<string, string>([
   ...['base-node', 'leaf-node', 'fields', 'relations'].map(name => [models + name + '.ts', models + 'core/' + name + '.ts'] as [string, string]),
-  ...Object.entries({ internal: 'internal', task: 'tasks', memory: 'memory', note: 'notes', skill: 'skills' }).map(([name, dir]) => [models + name + '-node.ts', models + dir + '/' + name + '-node.ts'] as [string, string]),
-  [models + 'internal-syntax.ts', models + 'internal/syntax.ts'],
-  [models + 'internal/model.ts', models + 'internal/document.ts'],
+  [models + 'internal-node.ts', models + 'agents/agents-node.ts'],
+  ...Object.entries({ task: 'tasks', memory: 'memory', note: 'notes', skill: 'skills' }).map(([name, dir]) => [models + name + '-node.ts', models + dir + '/' + name + '-node.ts'] as [string, string]),
+  [models + 'internal-syntax.ts', models + 'agents/syntax.ts'],
+  [models + 'internal/model.ts', models + 'agents/document.ts'],
 ]);
 const removed = [models + 'types.ts', models + 'internal/typed.ts', models + 'internal/index.ts'];
 const oldPaths = [...moves.keys(), ...removed];
@@ -86,11 +87,11 @@ contents.set(models + 'index.ts', [
   'export { MemoryNode } from "./memory/memory-node.js";',
   'export { NoteNode } from "./notes/note-node.js";',
   'export { SkillNode } from "./skills/skill-node.js";',
-  'export { InternalNode } from "./internal/internal-node.js";',
+  'export { InternalNode } from "./agents/agents-node.js";',
   'export type * from "./core/types.js";',
   'export type { TaskCreateInput, TaskUpdateInput, TaskStatus, TaskPriority } from "./tasks/types.js";',
   'export type { MemoryCreateInput, MemoryUpdateInput } from "./memory/memory-node.js";',
-  'export type { InternalCreateInput, InternalUpdateInput, InternalContent } from "./internal/internal-node.js";',
+  'export type { InternalCreateInput, InternalUpdateInput, InternalContent } from "./agents/agents-node.js";',
   'export * from "./layout.js";',
   '',
 ].join('\n'));
@@ -98,14 +99,14 @@ contents.set(models + 'index.ts', [
 const renames = new Map(Object.entries({ NodeModel: 'AgentsDocument', createNodeModel: 'createAgentsDocument', NodeItem: 'AgentsItem', NodeLink: 'AgentsLink', NodeText: 'AgentsText', nodeLinks: 'agentsLinks' }));
 const typeOwners = new Map<string, string>([
   ...sharedTypes.map(name => [name, models + 'core/types.ts'] as [string, string]),
-  ...['InternalCreateInput', 'InternalUpdateInput', 'InternalContent'].map(name => [name, models + 'internal/internal-node.ts'] as [string, string]),
+  ...['InternalCreateInput', 'InternalUpdateInput', 'InternalContent'].map(name => [name, models + 'agents/agents-node.ts'] as [string, string]),
   ...['TaskCreateInput', 'TaskUpdateInput', 'TaskStatus', 'TaskPriority'].map(name => [name, models + 'tasks/types.ts'] as [string, string]),
   ...['MemoryCreateInput', 'MemoryUpdateInput'].map(name => [name, models + 'memory/memory-node.ts'] as [string, string]),
   ...['ScopeTraversalOptions', 'NodeQueryOptions'].map(name => [name, operations + 'traverse.ts'] as [string, string]),
 ]);
 const codecOwners: Record<string, string> = {
-  parseNode: models + 'internal/parse.ts', serializeNode: models + 'internal/serialize.ts',
-  agentsDocumentCodec: models + 'internal/document.ts', memoryDocumentCodec: models + 'memory/documents.ts',
+  parseNode: models + 'agents/parse.ts', serializeNode: models + 'agents/serialize.ts',
+  agentsDocumentCodec: models + 'agents/document.ts', memoryDocumentCodec: models + 'memory/documents.ts',
   parseDocument: markdown + 'document.ts', serializeDocument: markdown + 'document.ts', createMarkdownCodec: markdown + 'document.ts', baseDocumentCodec: markdown + 'document.ts',
   DocumentType: markdown + 'types.ts', DocumentCodec: markdown + 'types.ts', DocumentReference: markdown + 'types.ts', MarkdownDocument: markdown + 'types.ts',
 };

@@ -11,9 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 组合仓库
+
+- **组合进来的仓库可以 clone、pull 和 push：** 在作用域 `AGENTS.md` 的组合区块登记本地目录、名字、说明和 git 地址后，`edges compose clone` 把仓库拉到登记路径，`edges compose pull` 和 `edges compose push` 在该目录执行这个仓库自己的 git pull / git push。`edges compose register` 写入登记，`edges compose list` 列出登记，`edges compose unregister` 按名字去掉一条登记且不删除已 clone 的目录。顺着节点树走时会进入这些本地仓库的 `AGENTS.md` 再往下。
+
 ### 笔记入库与能力面
 
 - **中文标题的笔记和项目目录保留汉字：** 用 `edges notes create` 或 `edges projects create` 新建叶子时，日期目录会留下标题里的汉字和数字。标题「中文标题」得到形如 `YYYY-MM-DD--中文标题` 的目录，不再收成 `untitled-` 加时间。英文单词仍转成小写，词与词之间用 `-`；连续空白会折成一个 `-`。标题里没有任何字母或数字时，目录名仍是 `untitled-` 加时间。很长的标题会被截短，使整个日期目录名不超过 255 字节。
+
+### 项目记忆
+
+- **初始化按路径登记子作用域：** `edges init`、`edges memory init`、`edges notes init`、`edges projects init`、`edges skills init` 和 `edges tasks init` 不再接受 `--index-group`。新的子作用域按路径挂到父级：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已经登记的保持原来的组。`edges memory doctor --apply` 按同一规则补上缺失的父级链接。
 
 ### 任务看板与项目
 
@@ -36,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **README 改为对外门面：** 根 README 现在先回答外部访客「这是什么、能不能拿去用」：标语「harness 任何目录。你的大脑，也是一个目录。」、六条要点、一张知识闭环图、照着就能跑通的快速开始（`npm install -g @viruspc/edges` 后对任意仓库执行 `edges init`），以及本仓的目录地图。原来写在 README 里的内容标准下放到所属目录：Edge 准入与演化在 `edges/README.md`，归档与附件规则在新的 `archive/README.md`；原「理念」「系统实现」原文保存在 `docs/architecture.md`。
 
 ### 任务看板与项目
+
+- **持久看板汇总该根下的全部任务板：** 生成页的 `extensions/cli/scripts/generate-tasks-site.ts` 不再接受 `--purpose`。传入 `--scope` 后，它汇总这个根下面发现到的 domain 与 maintenance 板，列表和页面里的 `source.purpose` 仍从目录推出来。`edges tasks` 继续用 `--scope` 和 `--super` 选定要写的那一块目录：不传 `--super` 写 `<scope>/.harness/tasks`，`--super` 写 `<scope>/tasks`。
 
 - **旧任务入口继续可用：** `edges tasks status` 对旧 `index.md` 任务仍能正常流转，保留入口文件的拼写，并一起移动日志和附件；索引迁移不会因同一文件的 `INDEX.md` 别名重复登记。
 - **项目列表保留完整描述：** `edges tasks project list` 与 `edges tasks project get` 返回一致的项目信息，包括自定义标题和多段描述；`--all` 列表也沿用同一解析方式。查询只读取当前范围内已登记的项目，不补建元数据或系统入口。
