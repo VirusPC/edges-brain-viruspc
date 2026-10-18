@@ -65,12 +65,6 @@ function directoryHasSkill(dir: string): boolean {
   );
 }
 
-function runningUnderNodeTest(): boolean {
-  // In-process flag from the test preload, or `node --test` on this process.
-  // Do not read NODE_TEST_CONTEXT: a packaged CLI spawned by a test inherits it.
-  return refuseRealSpawn || process.execArgv.includes("--test");
-}
-
 /**
  * Skills shipped with this package. One path, chosen from where this file lives:
  * built or installed code (`dist/`) reads `<packageRoot>/skills`;
@@ -114,7 +108,7 @@ function defaultSpawn(
   args: readonly string[],
   options: { stdio: "inherit" },
 ): Promise<number> {
-  if (runningUnderNodeTest()) {
+  if (refuseRealSpawn) {
     return Promise.reject(
       new SkillsInstallError("refusing to spawn the real skills installer under test", 1),
     );

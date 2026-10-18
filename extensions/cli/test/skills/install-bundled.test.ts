@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { ignoredInstallTokens } from "../../src/commands/init.js";
 import { run } from "../../src/program.js";
 import { acquireWriteLock } from "../../src/services/node/node-lock.js";
 import { restoreBundledSkillsSpawnForTests } from "../register-skills-install-mock.js";
@@ -275,6 +276,69 @@ test("edges init notes -- -y warns and does not install", async (t) => {
   assert.equal(calls.length, 0);
   assert.equal(existsSync(path.join(root, ".harness/notes/README.md")), true);
   assert.equal(existsSync(path.join(root, ".harness/skills/managed/README.md")), false);
+});
+
+test("memory type selection does not warn when skills is in the resolved module set", () => {
+  assert.equal(
+    ignoredInstallTokens(["memory", "skills", "notes", "projects"], ["-y"]),
+    "",
+  );
+  assert.equal(ignoredInstallTokens(undefined, ["-y"]), "");
+  assert.match(ignoredInstallTokens(["notes"], ["-y"]), /ignoring install tokens: -y/);
+});
+
+test("edges memory init -- -y is not a skills install and does not warn", async (t) => {
+  const root = await scope(t);
+  const selected = await run(["--scope", root, "memory", "init"], { env: {} });
+  assert.equal(selected.exitCode, 0, selected.stdout + selected.stderr);
+  const body = JSON.parse(selected.stdout) as { selectionRequired: boolean };
+  assert.equal(body.selectionRequired, true);
+  assert.doesNotMatch(selected.stderr, /skills was not selected/);
+
+  const withTokens = await run(["--scope", root, "memory", "init", "--", "-y"], { env: {} });
+  assert.notEqual(withTokens.exitCode, 0, withTokens.stdout);
+  assert.doesNotMatch(withTokens.stderr, /skills was not selected/);
+  assert.match(withTokens.stdout + withTokens.stderr, /-y|too many arguments/);
+});
+
+test("edges skills get -- edges-note keeps the target operand", async (t) => {
+  const root = await scope(t);
+  const ready = await run(["--scope", root, "init", "notes"], { env: {} });
+  assert.equal(ready.exitCode, 0, ready.stdout + ready.stderr);
+  const result = await run(["--scope", root, "skills", "get", "--", "edges-note"], { env: {} });
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stdout, /skill not found: edges-note/);
+  assert.doesNotMatch(result.stdout + result.stderr, /missing required argument/);
+});
+
+test("edges notes get -- -weird/INDEX.md keeps the path operand", async (t) => {
+  const root = await scope(t);
+  const ready = await run(["--scope", root, "init", "notes"], { env: {} });
+  assert.equal(ready.exitCode, 0, ready.stdout + ready.stderr);
+  const result = await run(["--scope", root, "notes", "get", "--", "-weird/INDEX.md"], { env: {} });
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stdout, /note path must be notes\/<stem>\/INDEX.md/);
+  assert.doesNotMatch(result.stdout + result.stderr, /missing required argument/);
+});
+
+test("edges skills list -- nope does not drop the operand", async (t) => {
+  const root = await scope(t);
+  const result = await run(["--scope", root, "skills", "list", "--", "nope"], { env: {} });
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stdout + result.stderr, /nope|too many arguments/);
+  assert.doesNotMatch(result.stderr, /skills was not selected/);
+});
+
+test("edges notes create keeps a title whose value is --", async (t) => {
+  const root = await scope(t);
+  const result = await run(
+    ["--scope", root, "notes", "create", "--title", "--", "--body", "kept body"],
+    { env: {} },
+  );
+  assert.equal(result.exitCode, 0, result.stdout + result.stderr);
+  const body = JSON.parse(result.stdout) as { title?: string; path: string };
+  assert.equal(body.title, "--");
+  assert.match(readFileSync(path.join(root, body.path), "utf8"), /kept body/);
 });
 
 test("multi-value --memory-types before -- is not forwarded and is not a module", async (t) => {

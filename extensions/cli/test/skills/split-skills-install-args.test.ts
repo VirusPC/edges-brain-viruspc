@@ -26,11 +26,24 @@ test("edges skills init forwards tokens after -- in order", () => {
   );
 });
 
-test("the first literal -- splits even when the command is not init", () => {
-  assert.deepEqual(splitSkillsInstallArgs(["skills", "list", "--", "nope"]), {
-    argv: ["skills", "list"],
-    skillsInstallArgs: ["nope"],
-  });
+test("commands other than init keep `--` and the tokens after it", () => {
+  const argv = ["skills", "list", "--", "nope"];
+  assert.deepEqual(splitSkillsInstallArgs(argv), { argv: [...argv], skillsInstallArgs: [] });
+});
+
+test("skills get keeps the target after --", () => {
+  const argv = ["skills", "get", "--", "edges-note"];
+  assert.deepEqual(splitSkillsInstallArgs(argv), { argv: [...argv], skillsInstallArgs: [] });
+});
+
+test("notes get keeps a path after --", () => {
+  const argv = ["--scope", "/tmp", "notes", "get", "--", "-weird/INDEX.md"];
+  assert.deepEqual(splitSkillsInstallArgs(argv), { argv: [...argv], skillsInstallArgs: [] });
+});
+
+test("a non-init option whose value is literally -- stays in argv", () => {
+  const argv = ["notes", "create", "--title", "--", "--body", "kept"];
+  assert.deepEqual(splitSkillsInstallArgs(argv), { argv: [...argv], skillsInstallArgs: [] });
 });
 
 test("multi-value options before -- stay with the command in order", () => {

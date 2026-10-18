@@ -5,8 +5,12 @@ import { fail, succeed } from "./result.js";
 
 const HELP = "See edges init --help for usage.\n";
 
-function ignoredInstallTokens(skillsSelected: boolean, args: readonly string[] | undefined): string {
-  if (skillsSelected || !args?.length) return "";
+/** Warn only when the resolved module set omits skills. `skillsInstall: false` also covers an early stop, such as memory type selection. */
+export function ignoredInstallTokens(
+  modules: readonly string[] | undefined,
+  args: readonly string[] | undefined,
+): string {
+  if (!args?.length || modules === undefined || modules.includes("skills")) return "";
   return `warning: skills was not selected; ignoring install tokens: ${args.join(" ")}\n`;
 }
 
@@ -69,16 +73,11 @@ export function addInitCommand(program: Command, ctx: CliContext): void {
           }
           ctx.result = succeed(
             { ...payload, command: "init" },
-            ignoredInstallTokens(skillsInstall, ctx.skillsInstallArgs),
+            ignoredInstallTokens(result.modules, ctx.skillsInstallArgs),
           );
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          const failed = fail("VALIDATION_ERROR", message, HELP);
-          const warning = ignoredInstallTokens(
-            modules.length === 0 || modules.includes("skills"),
-            ctx.skillsInstallArgs,
-          );
-          ctx.result = warning ? { ...failed, stderr: `${failed.stderr}${warning}` } : failed;
+          ctx.result = fail("VALIDATION_ERROR", message, HELP);
         }
       },
     );
