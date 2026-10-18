@@ -9,7 +9,7 @@ export { NoteNode } from "./notes/note-node.js";
 export { ProjectNode } from "./projects/project-node.js";
 export { SkillNode } from "./skills/skill-node.js";
 export { AgentsNode } from "./agents/agents-node.js";
-export { SuperAgentsNode } from "./agents/super-agents-node.js";
+export { SuperAgentsNode } from "./super-agents/super-agents-node.js";
 export { ReadmeNode } from "./readme/readme-node.js";
 export type * from "../core/types.js";
 export type { TaskCreateInput, TaskUpdateInput, TaskStatus, TaskPriority } from "./tasks/types.js";
