@@ -31,8 +31,6 @@ export type CliContext = {
   super?: boolean;
   /** Explicit `--all`: traverse the system forest from the current scope. */
   all?: boolean;
-  indexGroup?: "local" | "descendant";
-  purpose?: "domain" | "maintenance";
   result: CliResult | undefined;
 };
 
