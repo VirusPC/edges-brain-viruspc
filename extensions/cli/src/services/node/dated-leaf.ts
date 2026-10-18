@@ -1,6 +1,7 @@
 import path from "node:path";
 import { BaseNode } from "../../domain/models/index.js";
-import { ENTRY_NAMES, isLeafEntryName } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
+import { isLeafEntryName } from "../../domain/models/node/layout.js";
 import { directoryStem } from "../../domain/models/node/stem.js";
 import { NoteNode } from "../../domain/models/notes/note-node.js";
 import { ProjectNode } from "../../domain/models/projects/project-node.js";
@@ -10,6 +11,7 @@ import { parseMetadata } from "../metadata.js";
 import type { Model } from "./node-layout.js";
 import { openNodeSession, scopeRelativePath } from "./scope-session.js";
 import { buildSystemForest } from "./system-forest-service.js";
+import { scopeTraversal } from "../../domain/operations/traverse.js";
 
 export type TitledLeaf = BaseNode & { title: string };
 
@@ -55,6 +57,7 @@ export type DatedLeafItem = {
 export type LeafReach = {
   all?: boolean;
   super?: boolean;
+  withComposed?: boolean;
 };
 
 export function datedLeafFile<T extends TitledLeaf>(
@@ -190,9 +193,9 @@ export async function listDatedLeaves<T extends TitledLeaf>(
 ): Promise<DatedLeafItem[]> {
   const { scope, service } = openNodeSession(env);
   const nodes = reach.all
-    ? (await buildSystemForest(scope, { includeSuper: reach.super === true, form: "independent" })).flat()
+    ? (await buildSystemForest(scope, { includeSuper: reach.super === true, withComposed: reach.withComposed === true, form: "independent" })).flat()
     : await service
-      .query(scope, { types: [spec.queryType], ...(reach.super ? { super: true as const } : {}) })
+      .query(scope, { types: [spec.queryType], ...scopeTraversal(reach) })
       .value();
   return nodes.flatMap((node) => {
     if (!(node instanceof spec.Model)) return [];

@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { isProjectHarnessAgentsFile } from "../../domain/models/agents/harness-agents.js";
 
 const SKIP_DIR_NAMES = new Set([

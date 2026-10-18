@@ -6,10 +6,11 @@ import { parseTaskProject } from "../../domain/models/tasks/project.js";
 import { parseTaskPriority } from "../../domain/models/tasks/priority.js";
 import { TaskNode } from "../../domain/models/tasks/task-node.js";
 import { sortTasksByPriority } from "../../domain/operations/tasks.js";
+import { scopeTraversal } from "../../domain/operations/traverse.js";
 import { TASK_PRIORITIES, TASK_STATUSES, type TaskPriority, type TaskProjectId, type TaskStatus } from "../../domain/models/tasks/types.js";
 import { runTasksCommand, succeed } from "./run.js";
 import { TasksError } from "../../domain/models/tasks/types.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import {
   buildSystemForest,
   gitRoot,
@@ -105,6 +106,7 @@ export function addListCommand(tasks: Command, ctx: CliContext): void {
         const listed = (await collectTasks(scopeDir, {
           all: ctx.all === true,
           super: ctx.super === true,
+          withComposed: ctx.withComposed === true,
         })).filter((item) => itemMatches(item, listOpts));
         const ordered = listOpts.sort === "priority" ? sortTasksByPriority(listed) : listed;
         const filtered = ordered.filter((item) =>
@@ -127,10 +129,10 @@ export function addListCommand(tasks: Command, ctx: CliContext): void {
     });
 }
 
-async function collectTasks(scopeDir: string, mode: { all: boolean; super: boolean }) {
+async function collectTasks(scopeDir: string, mode: { all: boolean; super: boolean; withComposed: boolean }) {
   const managed = gitRoot(scopeDir) ?? scopeDir;
   if (mode.all) {
-    const forest = await buildSystemForest(scopeDir, { includeSuper: mode.super, form: "independent" });
+    const forest = await buildSystemForest(scopeDir, { includeSuper: mode.super, withComposed: mode.withComposed, form: "independent" });
     return forest.flat().flatMap((node) => node instanceof TaskNode ? [taskItem(node, scopeDir)] : []);
   }
   const scopeEntry = path.join(path.resolve(scopeDir), ENTRY_NAMES.internal);
@@ -143,7 +145,7 @@ async function collectTasks(scopeDir: string, mode: { all: boolean; super: boole
     );
   }
   const nodes = await new NodeService({ managedRoot: managed })
-    .query(scopeDir, { types: ["task"], ...(mode.super ? { super: true as const } : {}) })
+    .query(scopeDir, { types: ["task"], ...scopeTraversal(mode) })
     .filter((node): node is TaskNode => node instanceof TaskNode)
     .value();
   return nodes.map((node) => taskItem(node, scopeDir));

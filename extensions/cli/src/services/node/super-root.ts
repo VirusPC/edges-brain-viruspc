@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { listHarnessMaterialAbsPaths, placeHarnessMaterial } from "../../domain/config/harness-materials.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { SuperAgentsNode } from "../../domain/models/index.js";
 
 /**

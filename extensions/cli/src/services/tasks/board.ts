@@ -30,7 +30,7 @@ import {
   projectDirName,
   type TaskProjectId,
 } from "../../domain/models/tasks/project.js";
-import { isLeafEntryName } from "../../domain/models/layout.js";
+import { isLeafEntryName } from "../../domain/models/node/layout.js";
 import {
   boardRoot,
   parseTarget,

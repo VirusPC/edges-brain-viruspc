@@ -13,7 +13,7 @@ export function addSkillDeleteCommand(skill: Command, ctx: CliContext): void {
     .argument("<target>", "SKILL.md path or skill name")
     .action(async (target: string) => {
       try {
-        const removed = await deleteSkill(ctx.env, target, { all: ctx.all, super: ctx.super });
+        const removed = await deleteSkill(ctx.env, target, { all: ctx.all, super: ctx.super, withComposed: ctx.withComposed });
         ctx.result = succeed({ command: "skills.delete", path: removed.path });
       } catch (error) {
         failNodeCommand(ctx, error, HELP);

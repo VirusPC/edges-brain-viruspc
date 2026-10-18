@@ -65,8 +65,9 @@ flowchart TD
 | --- | --- | --- |
 | commands | 命令注册、参数与 stdin 适配、stdout/stderr 和退出码 | 把 `notes create` 转成 `services/notes/service` 的创建请求 |
 | services | 加载、跨节点协调、文件操作与完整业务流程 | 各领域 `service.ts`；创建 Task 后登记父 AGENTS、保存、移动整个任务目录 |
-| core | 节点基类、本层/下层索引、关系和通用块机制 | BaseNode、InternalNode.addChild、core/syntax 按传入文法解析区块 |
-| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验；models/classify.ts 的目录分类；AgentsNode 与 ReadmeNode 经 models/syntax.ts 使用 core/syntax |
+| core | 节点基类、本层/下层索引、关系和通用块机制 | BaseNode、InternalNode.addChild、core/node-content 按传入文法解析区块 |
+| config | 入口文件名、叶子目录规则、区块标题与标记 | config/layout.ts 的 AGENTS.md、README.md、SKILL.md、INDEX.md 和 memory、task、note、project 规则；config/sections.ts 的 project-harness / project-entries 标题与标记 |
+| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验；models/node/layout.ts 按 memory、task、note、project 判定目录类型；AgentsNode 与 ReadmeNode 经 models/node/document.ts 使用 core/node-content |
 | operations | 对多个元素进行遍历、筛选、分组、查找 | traverse、filter、groupBy、Task 数组排序 |
 | utils | 可复用的底层格式与文件机制 | gray-matter 适配、路径与文件原语 |
 
@@ -113,7 +114,7 @@ AGENTS 的本层硬约束、本层记忆、下层索引分别对应 constraints�
 
 ### 查询遵循索引
 
-NodeService.query 按已登记关系遍历，不靠扫描补齐遗漏。默认走全部组成 children（local∪descendants）以及 Compose 边；显式 `localOnly` 走 localChildren 与 Compose 边；includeHarness 才沿维护关系递归。**traverse 一次走一个系统的 `children`，并沿 Compose block 进入登记目录的 `AGENTS.md`。** 多个系统由 Service 层收集并拼成森林，见[多个系统拼成森林](#多个系统拼成森林)。默认根是 scope 下真 `AGENTS.md`。显式 `--super` 在这个 scope 的上一级建 `SuperAgentsNode`：当前 scope 目录就是该超节点的 `.harness`，材料 README 按 `harness-materials.json` 的 path 直接挂在 scope 下（`tasks/README.md` 即 `<scope>/tasks/README.md`）。scope 自己的 `<scope>/.harness/` 是再下一层维护系统，由真 `AGENTS.md` 进入，超节点不把它再当成材料根。遍历仍当普通 `AgentsNode`，只走 `children`，不从真 AGENTS 并 README 边。详见 [models 设计原则](src/domain/models/README.md#设计原则树与入口)与 [operations 遍历原则](src/domain/operations/README.md#traverse-只走单个系统)。
+NodeService.query 按已登记关系遍历，不靠扫描补齐遗漏。默认走全部组成 children（local∪descendants），不走进 Compose 边；显式 `localOnly` 走 localChildren；`withComposed` 穿过挂载点，只纳入外部仓库入口；includeHarness 才沿维护关系递归。**traverse 一次走一个系统的 `children`。根级 `--with-composed` 才把被组合仓库的入口 `AGENTS.md` 纳入结果，并且只到这一层。** 多个系统由 Service 层收集并拼成森林，见[多个系统拼成森林](#多个系统拼成森林)。默认根是 scope 下真 `AGENTS.md`。显式 `--super` 在这个 scope 的上一级建 `SuperAgentsNode`：当前 scope 目录就是该超节点的 `.harness`，材料 README 按 `harness-materials.json` 的 path 直接挂在 scope 下（`tasks/README.md` 即 `<scope>/tasks/README.md`）。scope 自己的 `<scope>/.harness/` 是再下一层维护系统，由真 `AGENTS.md` 进入，超节点不把它再当成材料根。遍历仍当普通 `AgentsNode`，只走 `children`，不从真 AGENTS 并 README 边。详见 [models 设计原则](src/domain/models/README.md#设计原则树与入口)与 [operations 遍历原则](src/domain/operations/README.md#traverse-只走单个系统)。
 
 ### 多个系统拼成森林
 
@@ -274,10 +275,11 @@ init 管理客户端配置，publish/rm 调用预览服务并返回 JSON。serve
 
 ### 组合仓库：compose
 
-作用域 `AGENTS.md` 的 `project-harness-compose` 区块登记被组合的 harness 仓库。每条是一个本地目录链接：链接文字是名字，破折号后面是说明，`remote: <git-url>` 是 clone 用的地址。检出就放在这条路径上。
+作用域 `AGENTS.md` 的 `project-harness-compose` 区块登记被组合的 harness 仓库。每条是一个本地目录链接：链接文字是名字，破折号后面是说明，`remote: <git-url>` 是 clone 用的地址。`register` 不传 `--path` 时，检出目录是 `~/.edges/composed/<name>`，区块按这个以 `~` 开头的形式保存。显式 `--path` 使用传入值。检出就放在 `checkout` 展开后的目录上。
 
 ```bash
-edges --scope <directory> compose register --name brain --path ../brain --remote https://github.com/example/brain.git --description "个人大脑"
+edges --scope <directory> compose register --name brain --remote https://github.com/example/brain.git --description "个人大脑"
+edges --scope <directory> compose register --name brain --path ../brain --remote https://github.com/example/brain.git
 edges --scope <directory> compose list
 edges --scope <directory> compose unregister --name brain
 edges --scope <directory> compose clone
@@ -285,7 +287,7 @@ edges --scope <directory> compose pull
 edges --scope <directory> compose push --name brain
 ```
 
-`register`、`list` 和 `unregister` 读写当前作用域的 Compose block，经 NodeService 保存 `AGENTS.md`。`unregister` 按 `--name` 去掉一条登记，不删除已 clone 的目录。`clone` 把尚未检出的条目 `git clone` 到登记目录；该目录已经是同一 origin 的检出时保持不动。`pull` 与 `push` 在检出目录里执行这个仓库自己的 `git pull` / `git push`，不另建提交。`clone` / `pull` / `push` 的 `--name` 只处理一条。查询节点树时会走进这些目录的 `AGENTS.md`。
+`register`、`list` 和 `unregister` 读写当前作用域的 Compose block，经 NodeService 保存 `AGENTS.md`。`unregister` 按 `--name` 去掉一条登记，不删除已 clone 的目录。`clone` 把尚未检出的条目 `git clone` 到登记目录；该目录已经是同一 origin 的检出时保持不动。`pull` 与 `push` 在检出目录里执行这个仓库自己的 `git pull` / `git push`，不另建提交。`clone` / `pull` / `push` 的 `--name` 只处理一条。默认查询停在当前 scope。`--with-composed` 把这些目录的入口 `AGENTS.md` 纳入结果，并且只到这一层。
 
 <a id="json-schema-contracts"></a>
 

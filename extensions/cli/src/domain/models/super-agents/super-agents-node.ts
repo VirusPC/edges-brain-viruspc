@@ -1,6 +1,6 @@
 import { dirname, join } from "node:path";
-import { ENTRY_NAMES } from "../layout.js";
-import { AgentsNode } from "./agents-node.js";
+import { ENTRY_NAMES } from "../../config/layout.js";
+import { AgentsNode } from "../agents/agents-node.js";
 import type { NodeReference } from "../../core/types.js";
 
 /** Runtime-only name segment; the entry never exists on disk. */
@@ -21,6 +21,9 @@ export class SuperAgentsNode extends AgentsNode {
     this.#mounts = mounts.map((mount) => ({ ...mount }));
   }
 
+  override get compose(): undefined {
+    return undefined;
+  }
   override get localChildren(): readonly Readonly<NodeReference>[] {
     return structuredClone([...this.#mounts]);
   }

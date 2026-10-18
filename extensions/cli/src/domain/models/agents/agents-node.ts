@@ -1,20 +1,9 @@
-import path, { relative, dirname } from "node:path";
+import { relative, dirname } from "node:path";
 import { InternalNode, type InternalCreateInput } from "../../core/internal-node.js";
-import { InternalSyntax, type SyntaxContent, type SyntaxReference } from "../syntax.js";
-import { validateChild } from "../../core/relations.js";
-import { identifyNodeType } from "../classify.js";
-import { resolveEntryHref, isHarnessMaterial } from "../layout.js";
+import { InternalSyntax, type SyntaxContent, type SyntaxReference } from "../node/document.js";
+import { identifyNodeType, resolveEntryHref, isHarnessMaterial } from "../node/layout.js";
 import type { NodeReference } from "../../core/types.js";
-import {
-  composeAgentsPath,
-  readComposeSuffix,
-  resolveComposeDirectory,
-  sameComposeSuffix,
-  toComposeEntry,
-  writeComposeSuffix,
-  type ComposeEntry,
-  type ComposeRecord,
-} from "./compose.js";
+import { ComposeNode } from "../compose/compose-node.js";
 
 export interface AgentsCreateInput extends InternalCreateInput {
   constraints?: readonly string[];
@@ -29,9 +18,15 @@ export interface AgentsContent {
 export class AgentsNode extends InternalNode<AgentsCreateInput, AgentsUpdateInput> {
   override readonly type = "agents";
   #constraints: string[] = [];
-  #compose: ComposeRecord[] = [];
+  #composeNode: ComposeNode;
   #syntax = new InternalSyntax("");
   #hrefs = new Map<string, string>();
+
+  constructor(file: string) {
+    super(file);
+    this.#composeNode = new ComposeNode(file);
+    this.#composeNode.track(() => this.path);
+  }
 
   get content(): AgentsContent {
     return {
@@ -43,15 +38,12 @@ export class AgentsNode extends InternalNode<AgentsCreateInput, AgentsUpdateInpu
   get constraints(): readonly string[] {
     return [...this.#constraints];
   }
-  get composeEntries(): readonly ComposeEntry[] {
-    return this.#compose.map(toComposeEntry);
+  composeNode(): ComposeNode {
+    return this.#composeNode;
   }
-  override get composeChildren(): readonly Readonly<NodeReference>[] {
-    return this.composeEntries.map((entry) => ({
-      id: entry.id,
-      name: entry.name,
-      ...(entry.description === undefined ? {} : { description: entry.description }),
-    }));
+  override get compose(): Readonly<NodeReference> | undefined {
+    if (this.#composeNode.children.length === 0) return undefined;
+    return { id: this.#composeNode.path, name: "组合" };
   }
 
   protected override parseBody(markdown: string): void {
@@ -72,47 +64,25 @@ export class AgentsNode extends InternalNode<AgentsCreateInput, AgentsUpdateInpu
           ...(entry.description === undefined ? {} : { description: entry.description }),
         }];
       });
-    const compose = (parsed.compose ?? []).map((entry) => this.#composeRecord(entry));
-    this.#validateCompose(compose);
+    const previousLinks = this.#composeNode.links();
     const previous = {
       constraints: this.#constraints,
-      compose: this.#compose,
       syntax: this.#syntax,
       hrefs: this.#hrefs,
     };
     this.#constraints = [...parsed.constraints];
-    this.#compose = compose;
     this.#syntax = syntax;
     this.#hrefs = hrefs;
     try {
+      this.#composeNode.loadLinks(parsed.compose ?? []);
       this.replace(references(parsed.localChildren), references(parsed.descendantChildren));
     } catch (error) {
       this.#constraints = previous.constraints;
-      this.#compose = previous.compose;
+      this.#composeNode.loadLinks(previousLinks);
       this.#syntax = previous.syntax;
       this.#hrefs = previous.hrefs;
       throw error;
     }
-  }
-  #composeRecord(entry: SyntaxReference): ComposeRecord {
-    const name = entry.label?.trim() ?? "";
-    if (!name) throw new Error(`${this.path}: compose entry name is required`);
-    const directory = resolveComposeDirectory(this.path, entry.target);
-    const fields = readComposeSuffix(entry.description);
-    return { directory, href: entry.target, name, authored: entry.description, ...fields };
-  }
-  #composeSyntax(records: readonly ComposeRecord[]): SyntaxReference[] {
-    return records.map((entry) => {
-      const unchanged =
-        entry.authored !== undefined &&
-        sameComposeSuffix(entry.authored, entry.description, entry.remote);
-      const description = unchanged ? entry.authored : writeComposeSuffix(entry.description, entry.remote);
-      return {
-        target: entry.href,
-        label: entry.name,
-        ...(description === undefined ? {} : { description }),
-      };
-    });
   }
   #links(items: readonly NodeReference[]): SyntaxReference[] {
     return items.map((ref) => ({
@@ -128,7 +98,7 @@ export class AgentsNode extends InternalNode<AgentsCreateInput, AgentsUpdateInpu
       constraints: this.#constraints,
       localChildren: this.#links(this.locals),
       descendantChildren: this.#links(this.descendants),
-      compose: this.#composeSyntax(this.#compose),
+      compose: this.#composeNode.links(),
     };
   }
   protected override serializeBody(): string {
@@ -144,58 +114,19 @@ export class AgentsNode extends InternalNode<AgentsCreateInput, AgentsUpdateInpu
       throw new Error(`${this.path}: constraints must be strings.`);
     this.serializeBody();
   }
-  #validateCompose(records: readonly ComposeRecord[]): void {
-    const names = new Set<string>();
-    const directories = new Set<string>();
-    for (const entry of records) {
-      if (!entry.name.trim()) throw new Error(`${this.path}: compose entry name is required`);
-      if (entry.directory === dirname(this.path))
-        throw new Error(`${this.path}: compose entry cannot target its own directory`);
-      validateChild({ id: composeAgentsPath(entry.directory) });
-      if (names.has(entry.name))
-        throw new Error(`${this.path}: compose entry already registered: ${entry.name}`);
-      if (directories.has(entry.directory))
-        throw new Error(`${this.path}: compose directory already registered: ${entry.directory}`);
-      names.add(entry.name);
-      directories.add(entry.directory);
-    }
-  }
   #edit(apply: () => void): void {
     const constraints = this.#constraints;
-    const compose = this.#compose;
     apply();
     try {
       this.sync();
     } catch (error) {
       this.#constraints = constraints;
-      this.#compose = compose;
       throw error;
     }
   }
   override validate(): void {
     super.validate();
-    this.#validateCompose(this.#compose);
-  }
-  registerCompose(input: { name: string; directory: string; href?: string; description?: string; remote?: string }): this {
-    const name = input.name.trim();
-    if (!name) throw new Error(`${this.path}: compose entry name is required`);
-    const directory = path.resolve(input.directory);
-    const relativeHref = relative(dirname(this.path), directory).split(path.sep).join("/");
-    const href = input.href ?? (relativeHref || ".");
-    const description = input.description?.trim() || undefined;
-    const remote = input.remote?.trim() || undefined;
-    const next = [...this.#compose.filter((entry) => entry.name !== name), { directory, href, name, description, remote }];
-    this.#validateCompose(next);
-    this.#edit(() => { this.#compose = next; });
-    return this;
-  }
-  unregisterCompose(name: string): this {
-    const trimmed = name.trim();
-    if (!trimmed) throw new Error(`${this.path}: compose entry name is required`);
-    if (!this.#compose.some((entry) => entry.name === trimmed))
-      throw new Error(`${this.path}: compose entry not found: ${trimmed}`);
-    this.#edit(() => { this.#compose = this.#compose.filter((entry) => entry.name !== trimmed); });
-    return this;
+    this.#composeNode.check();
   }
   protected override applyInput(input: AgentsCreateInput): void {
     if (

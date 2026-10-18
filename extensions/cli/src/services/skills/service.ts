@@ -1,12 +1,13 @@
 import path from "node:path";
 import { materialHarnessRoot } from "../../domain/config/harness-materials.js";
 import { initScope, type InitScopeOptions } from "../init/service.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { SkillNode } from "../../domain/models/skills/skill-node.js";
 import { isWithinPath } from "../../utils/filesystem.js";
 import { parseMetadata } from "../metadata.js";
 import { openNodeSession, scopeRelativePath } from "../node/scope-session.js";
 import { buildSystemForest } from "../node/system-forest-service.js";
+import { scopeTraversal } from "../../domain/operations/traverse.js";
 import type { NodeService } from "../node/node-service.js";
 
 export { presentListed } from "../list-query.js";
@@ -14,6 +15,7 @@ export { presentListed } from "../list-query.js";
 export type SkillReach = {
   all?: boolean;
   super?: boolean;
+  withComposed?: boolean;
 };
 
 export type SkillFields = {
@@ -42,9 +44,9 @@ async function listedSkills(
 ): Promise<SkillNode[]> {
   const { scope, service } = openNodeSession(env);
   const nodes = reach.all
-    ? (await buildSystemForest(scope, { includeSuper: reach.super === true, form: "independent" })).flat()
+    ? (await buildSystemForest(scope, { includeSuper: reach.super === true, withComposed: reach.withComposed === true, form: "independent" })).flat()
     : await service
-      .query(scope, { types: ["skill"], ...(reach.super ? { super: true as const } : {}) })
+      .query(scope, { types: ["skill"], ...scopeTraversal(reach) })
       .value();
   return nodes.filter((node): node is SkillNode => node instanceof SkillNode);
 }
@@ -143,9 +145,9 @@ export function initSkills(options: Omit<InitScopeOptions, "modules">) {
 export async function listSkills(env: NodeJS.ProcessEnv, reach: SkillReach): Promise<SkillItem[]> {
   const { scope, service } = openNodeSession(env);
   const nodes = reach.all
-    ? (await buildSystemForest(scope, { includeSuper: reach.super === true, form: "independent" })).flat()
+    ? (await buildSystemForest(scope, { includeSuper: reach.super === true, withComposed: reach.withComposed === true, form: "independent" })).flat()
     : await service
-      .query(scope, { types: ["skill"], ...(reach.super ? { super: true as const } : {}) })
+      .query(scope, { types: ["skill"], ...scopeTraversal(reach) })
       .value();
   return nodes.flatMap((node) => node instanceof SkillNode ? [{
     name: node.name ?? "",

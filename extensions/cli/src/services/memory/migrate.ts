@@ -5,7 +5,7 @@ import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { assertPrivateIgnored } from "./ignore.js";
-import { escapeIndexText, encodeIndexPath } from "../../domain/core/syntax/serialize.js";
+import { escapeIndexText, encodeIndexPath } from "../../domain/core/node-content/serialize.js";
 import {
   isDirectory,
   isFile,
@@ -23,7 +23,7 @@ import {
   SEED_TYPE_NAMES,
 } from "./types.js";
 import { AGENTS_FILE_NAME, legacyTypeIndexRelpath as indexFileName } from "./paths.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { frontmatterData, logicalFields } from "../../domain/models/memory/documents.js";
 import {
   parseLegacy,

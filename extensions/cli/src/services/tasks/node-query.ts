@@ -2,11 +2,11 @@ import { isWithinPath } from '../../utils/filesystem.js';
 import * as fs from "node:fs";
 import path from "node:path";
 import { harnessMaterialById, tasksBoardDirName } from "../../domain/config/harness-materials.js";
-import { identifyNodeType } from "../../domain/models/classify.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
+import { identifyNodeType } from "../../domain/models/node/layout.js";
 import { BaseNode, AgentsNode, ReadmeNode, TaskNode } from "../../domain/models/index.js";
 import { domainFields, scalar } from "../../domain/core/fields.js";
-import { decodeBody } from "../../domain/models/syntax.js";
+import { decodeBody } from "../../domain/models/node/document.js";
 import {
   assertProjectDualWrite,
   projectIdFromDir,

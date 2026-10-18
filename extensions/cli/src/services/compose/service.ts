@@ -3,9 +3,8 @@ import { existsSync, lstatSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import { AgentsNode } from "../../domain/models/index.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
-import type { ComposeEntry } from "../../domain/models/agents/compose.js";
-import { expandHomePath } from "../../utils/filesystem.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
+import type { ComposeCheckout, ComposeEntry } from "../../domain/models/compose/compose-node.js";
 import { openNodeSession } from "../node/scope-session.js";
 import type { NodeService } from "../node/node-service.js";
 
@@ -22,8 +21,8 @@ export interface ComposeGitReport {
 
 export interface ComposeRegisterInput {
   name: string;
-  /** Local directory, absolute or relative to the process cwd. */
-  directory: string;
+  /** Local directory. Omitted directories use `~/.edges/composed/<name>`. */
+  directory?: string;
   description?: string;
   remote?: string;
 }
@@ -54,14 +53,10 @@ async function loadScope(env: NodeJS.ProcessEnv): Promise<{
   return { service, node };
 }
 
-function select(
-  entries: readonly ComposeEntry[],
-  name?: string,
-): ComposeEntry[] {
-  if (name === undefined) return [...entries];
-  const found = entries.filter((entry) => entry.name === name);
-  if (!found.length) throw new Error(`Compose entry not found: ${name}`);
-  return found;
+function checkouts(node: AgentsNode, name?: string): ComposeCheckout[] {
+  const compose = node.composeNode();
+  if (name === undefined) return compose.entries().map((entry) => compose.checkout(entry.name));
+  return [compose.checkout(name)];
 }
 
 function sameRemote(left: string, right: string): boolean {
@@ -80,7 +75,7 @@ async function isGitCheckout(directory: string): Promise<boolean> {
   }
 }
 
-async function requireCheckout(entry: ComposeEntry): Promise<void> {
+async function requireCheckout(entry: ComposeCheckout): Promise<void> {
   if (!(await isGitCheckout(entry.directory)))
     throw new Error(`Compose checkout is missing: ${entry.name}`);
 }
@@ -89,7 +84,7 @@ export async function listCompose(
   env: NodeJS.ProcessEnv,
 ): Promise<ComposeEntry[]> {
   const { node } = await loadScope(env);
-  return [...node.composeEntries];
+  return node.composeNode().entries();
 }
 
 export async function registerCompose(
@@ -97,21 +92,16 @@ export async function registerCompose(
   input: ComposeRegisterInput,
 ): Promise<ComposeEntry> {
   const { service, node } = await loadScope(env);
-  const directory = path.resolve(expandHomePath(input.directory));
-  const href =
-    path.relative(path.dirname(node.path), directory).split(path.sep).join("/") ||
-    ".";
   const name = input.name.trim();
-  node.registerCompose({
+  node.composeNode().addChild({
     name,
-    directory,
-    href,
+    ...(input.directory === undefined ? {} : { directory: input.directory }),
     description: input.description,
     remote: input.remote,
   });
   await service.update(node, {});
   const saved = await service.get(node.path, AgentsNode);
-  const entry = saved?.composeEntries.find((item) => item.name === name);
+  const entry = saved?.composeNode().entries().find((item) => item.name === name);
   if (!entry) throw new Error(`Compose entry was not saved: ${name}`);
   return entry;
 }
@@ -122,9 +112,9 @@ export async function unregisterCompose(
 ): Promise<ComposeEntry> {
   const { service, node } = await loadScope(env);
   const trimmed = name.trim();
-  const entry = node.composeEntries.find((item) => item.name === trimmed);
+  const entry = node.composeNode().entries().find((item) => item.name === trimmed);
   if (!entry) throw new Error(`Compose entry not found: ${trimmed || name}`);
-  node.unregisterCompose(trimmed);
+  node.composeNode().removeChild(entry.id);
   await service.update(node, {});
   return entry;
 }
@@ -135,7 +125,7 @@ export async function cloneCompose(
 ): Promise<ComposeGitReport[]> {
   const { node } = await loadScope(env);
   const reports: ComposeGitReport[] = [];
-  for (const entry of select(node.composeEntries, name)) {
+  for (const entry of checkouts(node, name)) {
     if (!entry.remote)
       throw new Error(`Compose entry has no git remote: ${entry.name}`);
     if (await isGitCheckout(entry.directory)) {
@@ -179,7 +169,7 @@ export async function pullCompose(
 ): Promise<ComposeGitReport[]> {
   const { node } = await loadScope(env);
   const reports: ComposeGitReport[] = [];
-  for (const entry of select(node.composeEntries, name)) {
+  for (const entry of checkouts(node, name)) {
     await requireCheckout(entry);
     await git(["-C", entry.directory, "pull"]);
     reports.push({
@@ -198,7 +188,7 @@ export async function pushCompose(
 ): Promise<ComposeGitReport[]> {
   const { node } = await loadScope(env);
   const reports: ComposeGitReport[] = [];
-  for (const entry of select(node.composeEntries, name)) {
+  for (const entry of checkouts(node, name)) {
     await requireCheckout(entry);
     await git(["-C", entry.directory, "push"]);
     reports.push({
