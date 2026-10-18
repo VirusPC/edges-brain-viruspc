@@ -18,6 +18,7 @@ jobs:
       - name: Assert tag is annotated
         run: |
           set -euo pipefail
+          git fetch --force origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
           if [ "$(git cat-file -t "refs/tags/${GITHUB_REF_NAME}")" != "tag" ]; then
             echo "tag ${GITHUB_REF_NAME} must be annotated"
             exit 1
