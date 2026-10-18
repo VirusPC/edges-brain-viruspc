@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-19
+
 ### CLI
 
 - **init 安装包内 skills：** `edges skills init` 和无参 `edges init` 在建 skill 类型索引之后，用依赖里的 `skills@1.7.2` 把包内 Edges skill 装给本机 agent。edges 只补包内目录和 `--skill '*'`；`--` 之后的旗标原样转交。没有 TTY、安装器又没探测到 agent 时，在 `--` 后加 `-g -y`（例如 `edges init -- -g -y`），否则安装器退出 1，init 用同一退出码失败，信封里的 `errorCode` 是 `SKILLS_INSTALL_FAILED`。Node.js 要求改为 22.20 及以上。
@@ -210,7 +212,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 办公文档（`.docx` / `.xlsx` / `.pptx`）入库。
 - 未公开的专利交底材料。
 
-[Unreleased]: https://github.com/VirusPC/edges/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/VirusPC/edges/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/VirusPC/edges/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/VirusPC/edges/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/VirusPC/edges/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/VirusPC/edges/compare/v1.1.0...v1.2.0

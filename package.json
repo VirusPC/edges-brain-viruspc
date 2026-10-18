@@ -1,7 +1,7 @@
 {
   "name": "edges",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.5.0",
   "license": "MIT",
   "description": "Edges - 认知系统服务工作区",
   "scripts": {
