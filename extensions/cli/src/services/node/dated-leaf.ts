@@ -1,6 +1,7 @@
 import path from "node:path";
 import { BaseNode } from "../../domain/models/index.js";
-import { ENTRY_NAMES, isLeafEntryName } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
+import { isLeafEntryName } from "../../domain/models/node/layout.js";
 import { directoryStem } from "../../domain/models/node/stem.js";
 import { NoteNode } from "../../domain/models/notes/note-node.js";
 import { ProjectNode } from "../../domain/models/projects/project-node.js";

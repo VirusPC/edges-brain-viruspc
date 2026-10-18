@@ -5,10 +5,12 @@ import { AgentsNode, TaskNode } from "../../domain/models/index.js";
 import {
   ENTRY_NAMES,
   LEAF_ENTRY_NAMES,
+} from "../../domain/config/layout.js";
+import {
   identifyNodeType,
   isLeafEntryName,
-} from "../../domain/models/layout.js";
-import { decodeBody } from "../../domain/models/syntax.js";
+} from "../../domain/models/node/layout.js";
+import { decodeBody } from "../../domain/models/node/document.js";
 import { projectIdFromDir } from "../../domain/models/tasks/project.js";
 import {
   readEntry,

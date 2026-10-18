@@ -128,7 +128,7 @@ AgentsNode 对应 `AGENTS.md`，把受管部分映射为：
 
 已有 Memory 类型入口的 `project-memory-entries` 区块也按本层索引处理；不要求为了使用 AgentsNode 而改写成另一套标题。普通导航链接和非受控 Markdown 保持为正文。
 
-每个节点还可以有独立的 `harness` 引用。它不加入 `children`，所以普通树遍历不会自动跨进维护系统。当前[布局协议](layout.ts)约定：
+每个节点还可以有独立的 `harness` 引用。它不加入 `children`，所以普通树遍历不会自动跨进维护系统。当前[布局协议](node/layout.ts)约定：
 
 ```text
 example-skill/
@@ -154,12 +154,18 @@ flowchart LR
 
 ```text
 domain/
+├── config/
+│   ├── layout.ts            # 入口文件名、旧叶子拼写、旧类型拼写、叶子目录规则顺序
+│   ├── sections.ts          # project-harness / project-entries 的标题、标记和文法表
+│   └── harness-materials.ts # .harness 材料路径
 ├── core/                    # BaseNode、InternalNode、LeafNode、引用、共享字段、通用块机制
 │   └── node-content/        # parse / serialize / blocks / document：只认区块、标题、标记、条目
 └── models/
-    ├── index.ts             # 节点类、输入类型、布局与目录分类的公共出口；基类从 domain/core 再导出
-    ├── layout.ts            # 入口文件名、href、harness 路径、生命周期；目录类型按 memory、task、note、project
-    ├── syntax.ts            # project-harness / project-entries 的标题、标记和换档；InternalSyntax 把文法交给 core
+    ├── index.ts             # 节点类、输入类型和路径判定的公共出口；基类从 domain/core 再导出
+    ├── node/
+    │   ├── layout.ts        # 路径类型、href、harness 材料、生命周期；叶子按 memory、task、note、project
+    │   ├── document.ts      # 绑好文法的 parse/serialize，区块改写，Agents 与 README 换档
+    │   └── stem.ts          # 目录名清理
     ├── agents/              # AgentsNode、SuperAgentsNode、harness 判定与 Compose 登记
     ├── readme/              # ReadmeNode：组织清单
     ├── tasks/               # TaskNode、任务字段规则、TaskDoc 契约和文档适配
@@ -168,16 +174,18 @@ domain/
     └── skills/              # SkillNode：SKILL.md 入口、名称和描述校验
 ```
 
-同一节点的类与专属规则放在一起。节点基类在 `domain/core`。`core/node-content` 按调用方给出的标题、标记和条目解析、序列化区块。README 与 AGENTS 的具体文法在 `syntax.ts`，由 `InternalSyntax` 交给 core，不放进 Agents 或 Readme 其中一方。目录类型在 `layout.ts`，叶子规则按 memory、task、note、project 排列。不要求每个节点都有同样数量的 types、codec、factory 文件。
+同一节点的类与专属规则放在一起。节点基类在 `domain/core`。`core/node-content` 按调用方给出的标题、标记和条目解析、序列化区块。README 与 AGENTS 的标题和标记在 `config/sections.ts`，`models/node/document.ts` 的 `InternalSyntax` 负责换档并把 `HARNESS_GRAMMAR` 交给 core。入口文件名和叶子规则在 `config/layout.ts`，路径类型判定在 `models/node/layout.ts`，叶子规则按 memory、task、note、project 排列。不要求每个节点都有同样数量的 types、codec、factory 文件。
 
 | 模块 | 值得保留的拆分 |
 | --- | --- |
 | [core](../core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写。`core/node-content` 的 `parse.ts`/`serialize.ts` 按传入文法保留原文；`blocks.ts` 只提供与标记名无关的区块字符串操作；`document.ts` 是文档表示；`grammar.ts` 描述标题、标记如何对应到区块 |
-| [syntax.ts](syntax.ts) | `INTERNAL_SECTIONS`、`ENTRIES_SECTIONS`、`CODEC_SECTIONS` 是 project-harness / project-entries 的标题与标记。同一文件放这些标记的注释常量，以及按标记插入、替换、改写区块。`InternalSyntax` 在 agents 与 entries 两档之间换标记，并把 `HARNESS_GRAMMAR` 交给 core 的 parse/serialize |
+| [config/sections.ts](../config/sections.ts) | `INTERNAL_SECTIONS`、`ENTRIES_SECTIONS`、`CODEC_SECTIONS` 是 project-harness / project-entries 的标题与标记。同一文件放这些标记的注释常量、改写表和 `HARNESS_GRAMMAR` |
+| [node/document.ts](node/document.ts) | 按标记插入、替换、改写区块。`decodeBody` / `parseNode` / `serializeNode` 把 `HARNESS_GRAMMAR` 交给 core。`InternalSyntax` 在 agents 与 entries 两档之间换标记 |
 | [agents](agents/agents-node.ts) | `agents-node.ts` 管 AGENTS 引用、约束和 Compose 登记；`super-agents-node.ts` 是虚拟超节点；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘；`compose.ts` 读写组合条目 |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |
-| [layout.ts](layout.ts) | 入口文件名（AGENTS.md、README.md、SKILL.md、INDEX.md，兼容旧 index.md）、href 解析、harness 路径和生命周期单位。目录类型单独一段：`AGENTS.md` / `README.md` / `SKILL.md` 按文件名判定；叶子 `INDEX.md` 按 memory、task、note、project 的顺序判定。`registerDirectoryClassifier` 把额外规则插到这个列表前面 |
+| [config/layout.ts](../config/layout.ts) | 入口文件名（AGENTS.md、README.md、SKILL.md、INDEX.md，兼容旧 index.md）、旧类型拼写，以及叶子目录规则表。规则顺序是 memory、task、note、project |
+| [node/layout.ts](node/layout.ts) | 按文件名判定 `AGENTS.md` / `README.md` / `SKILL.md`，按 config 里的叶子规则判定 `INDEX.md`。同一文件做 href 解析、harness 路径和生命周期单位。`registerDirectoryClassifier` 把额外规则插到叶子列表前面 |
 
 ## Model、operations 与 Service 的边界
 
@@ -202,7 +210,7 @@ Model 的 `create/update/destroy` 是内存领域方法，不会创建、写入�
 
 模型采用可变实例。同一个 NodeService 内，同路径节点共享实例；`create/update` 使用临时草稿校验后再更新当前实例，减少失败时的半修改状态。这不等于 immutable，也不构成跨进程事务。metadata 和关系 getter 返回受保护的视图/副本；修改 getter 返回值不会更新节点，内容应通过字段 setter 或模型方法更新。
 
-`domain/core` 不依赖具体节点，也不引用 models。Model 不依赖 operations 或 Service。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用 `models/syntax.ts`，不互相引用。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与文档解析器之间有类型引用，运行时仍无循环。
+`domain/core` 不依赖具体节点，也不引用 models 或 config。Model 不依赖 operations 或 Service。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用 `config/sections.ts` 和 `models/node/document.ts`，不互相引用。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与文档解析器之间有类型引用，运行时仍无循环。
 
 ## Markdown 如何进入模型
 
@@ -216,9 +224,9 @@ flowchart LR
     B --> N[InternalNode：本层 / 下层 children]
     N --> I[AgentsNode：AGENTS 结构]
     N --> R[ReadmeNode：README 结构]
-    I --> X[InternalSyntax：models 文法]
+    I --> X[InternalSyntax：agents / entries 换档]
     R --> X
-    X --> P[core/node-content：按传入文法解析]
+    X --> P[core/node-content：按 config/sections 的文法解析]
     P --> D[AgentsDocument：文本项与链接项]
 ```
 
@@ -249,7 +257,7 @@ TaskNode 负责节点行为；TaskDoc 是可交换的纯数据。契约与节点
 1. 在所属类型目录定义类。业务内容直继 BaseNode。维护本层/下层索引的入口继承 InternalNode：系统入口用 AgentsNode，组织清单用 ReadmeNode。没有专属行为的 index.md 可使用（deprecated 的）LeafNode 或 BaseNode。
 2. 保持只传绝对入口路径即可构造。通过现有 hooks 扩展字段、校验及解析序列化；正文的 serialize → parse 必须能恢复状态，因为生命周期草稿复用这条路径。
 3. 定义该类型的输入与规则；共享后再下沉，不预先新增空抽象层。
-4. 若需要自动识别，通过 layout 的目录分类机制和 NodeService 的 `models` 映射接入。分类只决定模型类型，不推断 local/descendant 归属。
+4. 若需要自动识别，通过 `models/node/layout.ts` 的目录规则和 NodeService 的 `models` 映射接入。分类只决定模型类型，不推断 local/descendant 归属。
 5. 由 Service 协调 IO 与完整用例。需要集合算法时放 operations；确有外部数据合同需求时，再单独定义纯类型并登记 Schema。
 
 公共节点类和必要类型从 [index.ts](index.ts) 导入。模型内部直接依赖实际模块，避免绕公共聚合出口形成环。验证已有行为可运行 CLI 的模型、文档、查询及全量测试；模块整理的设计与验收记录见[实施计划](../../../../../docs/superpowers/plans/2026-10-06-model-module-organization.md)。

@@ -3,9 +3,9 @@ import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import {
   ENTRY_NAMES,
   LEGACY_LEAF_ENTRY,
-  isLeafEntryName,
-} from "../../domain/models/layout.js";
-import { ENTRIES_SECTIONS } from "../../domain/models/syntax.js";
+} from "../../domain/config/layout.js";
+import { isLeafEntryName } from "../../domain/models/node/layout.js";
+import { ENTRIES_SECTIONS } from "../../domain/config/sections.js";
 import {
   escapeIndexText,
   encodeIndexPath,

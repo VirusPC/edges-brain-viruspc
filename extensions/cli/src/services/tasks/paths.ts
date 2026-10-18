@@ -1,6 +1,7 @@
 import path from "node:path";
 import { placeHarnessMaterial, harnessMaterialById } from "../../domain/config/harness-materials.js";
-import { ENTRY_NAMES, LEGACY_LEAF_ENTRY, isLeafEntryName } from "../../domain/models/layout.js";
+import { ENTRY_NAMES, LEGACY_LEAF_ENTRY } from "../../domain/config/layout.js";
+import { isLeafEntryName } from "../../domain/models/node/layout.js";
 import { projectDirName } from "../../domain/models/tasks/project.js";
 import {
   TASK_STATUSES,

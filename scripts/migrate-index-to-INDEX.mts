@@ -21,7 +21,7 @@ import { traverse } from "../extensions/cli/src/domain/operations/traverse.js";
 import {
   ENTRY_NAMES,
   LEGACY_LEAF_ENTRY,
-} from "../extensions/cli/src/domain/models/layout.js";
+} from "../extensions/cli/src/domain/config/layout.js";
 import {
   modelAt,
   rewriteLinks,

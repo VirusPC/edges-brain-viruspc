@@ -1,15 +1,17 @@
 import { isWithinPath, findAncestor } from "../../utils/filesystem.js";
 import { WRITE_LOCK_NAME } from "./node-lock.js";
-import { InternalSyntax, type SyntaxReference } from "../../domain/models/syntax.js";
+import { InternalSyntax, type SyntaxReference } from "../../domain/models/node/document.js";
 import {
   ENTRY_NAMES,
   LEAF_ENTRY_NAMES,
+} from "../../domain/config/layout.js";
+import {
   identifyNodeType,
   legacyNodeType,
   resolveEntryHref,
   resolveHref,
   type DirectoryContract,
-} from "../../domain/models/layout.js";
+} from "../../domain/models/node/layout.js";
 /** Filesystem facts and source-preserving relocation; no domain resources. */
 import * as fs from "node:fs";
 import path from "node:path";

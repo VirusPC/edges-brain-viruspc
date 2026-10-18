@@ -1,6 +1,7 @@
 import { basename, dirname, join } from "node:path";
 import { BaseNode } from "../core/base-node.js";
-import { ENTRY_NAMES, normalizeNodeType } from "../models/layout.js";
+import { ENTRY_NAMES } from "../config/layout.js";
+import { normalizeNodeType } from "../models/node/layout.js";
 import type { NodeReference } from "../core/types.js";
 import { validateChild } from "../core/relations.js";
 

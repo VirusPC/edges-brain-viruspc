@@ -6,13 +6,13 @@ import path from "node:path";
 import { BaseNode, AgentsNode, SuperAgentsNode } from "../../domain/models/index.js";
 import type { ChildGroup, NodeReference } from "../../domain/models/index.js";
 import type { ScopeTraversalOptions, NodeQueryOptions } from "../../domain/operations/traverse.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import {
-  ENTRY_NAMES,
   identifyNodeType,
   lifecycleUnits,
   assertMovableLayout,
   normalizeNodeType,
-} from "../../domain/models/layout.js";
+} from "../../domain/models/node/layout.js";
 import { referenceOf, setNodePath } from "../../domain/core/relations.js";
 import {
   checkPath,

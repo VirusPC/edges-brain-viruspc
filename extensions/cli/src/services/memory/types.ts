@@ -3,7 +3,7 @@ import { canonicalPath, findAncestor } from "../../utils/filesystem.js";
 import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import * as fs from "node:fs";
-import { ENTRY_NAMES, LEGACY_LEAF_ENTRY } from "../../domain/models/layout.js";
+import { ENTRY_NAMES, LEGACY_LEAF_ENTRY } from "../../domain/config/layout.js";
 import { join, dirname, basename, relative, resolve } from "node:path";
 import { assertPrivateIgnored } from "./ignore.js";
 import { parseDocument } from "../../utils/markdown/document.js";

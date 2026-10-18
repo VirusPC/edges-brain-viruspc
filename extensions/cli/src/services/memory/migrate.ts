@@ -23,7 +23,7 @@ import {
   SEED_TYPE_NAMES,
 } from "./types.js";
 import { AGENTS_FILE_NAME, legacyTypeIndexRelpath as indexFileName } from "./paths.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { frontmatterData, logicalFields } from "../../domain/models/memory/documents.js";
 import {
   parseLegacy,

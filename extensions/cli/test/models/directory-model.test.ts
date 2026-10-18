@@ -121,7 +121,7 @@ test("layout follows canonical task statuses, registered contracts and recursive
     assertMovableLayout,
     registerDirectoryClassifier,
     resolveHref,
-  } = await import("../../src/domain/models/layout.js");
+  } = await import("../../src/domain/models/node/layout.js");
   for (const status of ["cancelled", "in_review", "blocked"])
     assert.equal(
       identifyNodeType(`/repo/tasks/_default/${status}/a/index.md`),

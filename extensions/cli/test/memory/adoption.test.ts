@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { AgentsNode } from "../../src/domain/models/agents/agents-node.js";
 import { initMemory, doctorMemory } from "../../src/services/memory/index.js";
 import { layerTypeSpecs } from "../../src/services/memory/types.js";
-import { rewriteLayerSurface } from "../../src/domain/models/syntax.js";
+import { rewriteLayerSurface } from "../../src/domain/models/node/document.js";
 function fixture(t: any) {
   const root = fs.realpathSync(
     fs.mkdtempSync(join(tmpdir(), "memory-adoption-")),
