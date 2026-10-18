@@ -2,9 +2,9 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-18T15:10:00.000Z'
+  edges-updated-at: '2026-10-18T16:27:29.817Z'
   edges-title: 安装 edges 后自动装好 skills
-  edges-tasks-status: backlog
+  edges-tasks-status: done
   edges-task-priority: none
 name: 安装_edges_后自动装好_skills
 description: 只装 npm 包拿不到 edges skills；目标是一次安装加一次初始化，同时装好 CLI 和 skills。
