@@ -46,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **写命令拒绝森林开关：** `edges --all tasks create`、`edges --all tasks update` 和 `edges --all tasks status` 现在会明确报错且不修改文件；其他内容写命令也采用同一检查，避免把森林查询开关误用于写入。
 - **项目列表保留完整描述：** `edges tasks project list` 与 `edges tasks project get` 返回一致的项目信息，包括自定义标题和多段描述；`--all` 列表也沿用同一解析方式。查询只读取当前范围内已登记的项目，不补建元数据或系统入口。
 - **旧任务入口继续可用：** `edges tasks status` 对旧 `index.md` 任务仍能正常流转，保留入口文件的拼写，并一起移动日志和附件；索引迁移不会因同一文件的 `INDEX.md` 别名重复登记。
+- **改状态时不动软链登记：** `edges tasks status` 把任务移到另一个状态目录时，只迁移任务自己的登记。父级里指向它的软链登记原样保留，移动后可能断开，和 `mv` 一样；不再报 `Node path contains a symbolic link`。
+- **`--scope` 大小写不同也不越界：** 在大小写不敏感的文件系统上，传给 `--scope` 的路径和实际目录大小写不一致时，`edges tasks list`、`edges tasks get`、`edges tasks update`、`edges tasks project list` 和 `--all` 列表返回的 `path` 不再带 `..`，仍留在作用域内。真正在作用域外的路径会被拒绝，错误码是 `VALIDATION_ERROR`。
 - **持久看板汇总该根下的全部任务板：** 生成页的 `extensions/cli/scripts/generate-tasks-site.ts` 不再接受 `--purpose`。传入 `--scope` 后，它汇总这个根下面发现到的 domain 与 maintenance 板，列表和页面里的 `source.purpose` 仍从目录推出来。
 
 ### 笔记入库与能力面
