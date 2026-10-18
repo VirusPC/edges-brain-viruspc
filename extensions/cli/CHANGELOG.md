@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-19
+
+跳过 `0.2.0`：该版本号曾被一次后来拒绝的 `npm stage publish` 占用，npm 不允许再次发布同一版本。GitHub Actions 发布 `@viruspc/edges@0.2.0` 时返回 `E409 Cannot publish over previously staged version "0.2.0"`。本版没有相对那次记录的功能变更。
+
 ## [0.2.0] - 2026-10-18
 
 ### Added
