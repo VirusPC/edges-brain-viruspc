@@ -19,16 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **推 annotated tag 经 GitHub Actions 发版：** 在 main 上把 `extensions/cli/package.json` 的 `version` 对齐后，打 annotated tag `@viruspc/edges@x.y.z` 并推送，会跑 `.github/workflows/publish-edges-cli.yml`：先测，再进入 Environment `npm-publish` 等人批，批准后用 OIDC Trusted Publishing 执行 `pnpm --filter @viruspc/edges publish --no-git-checks --access public`，不放长效 `NPM_TOKEN`。版本号必须和 `package.json` 一致。
 - **init 安装包内 skills：** `edges skills init` 和无参 `edges init` 在建 skill 类型索引之后，用依赖里的 `skills@1.7.2` 把包内 Edges skill 装给本机 agent。edges 只补包内目录和 `--skill '*'`；`--` 之后的旗标原样转交。没有 TTY、安装器又没探测到 agent 时，在 `--` 后加 `-g -y`（例如 `edges init -- -g -y`），否则安装器退出 1，init 用同一退出码失败，信封里的 `errorCode` 是 `SKILLS_INSTALL_FAILED`。
 
+### 复盘与 routines
+
+- **日复盘和周复盘把回看送回仓库：** `retrospectives/` 记阶段性回看。日复盘覆盖过去一天，写在 `retrospectives/daily/<日期>--日复盘/INDEX.md`，必写范围与建议补充内容清单。周复盘覆盖过去一周，写在 `retrospectives/weekly/<周一日期>--周复盘/INDEX.md`，一级标题下用二级标题写六节：范围、本该怎样、实际怎样、为什么、下次做什么、建议补充内容清单。清单里的候选送回 Harness：Memory 用 `edges memory remember`，Skill 用 `edges skills`，Note 用 `edges notes`，Task 用 `edges tasks`，`AGENTS.md` 硬约束写进目标作用域的「本层硬约束」。日复盘回顾过去 24 小时各助手的对话，把候选落成文件，和当天这篇放进同一个开到 `main` 的 PR，不自动合并。周复盘回顾上一个自然周的 GitHub 记录（commits、PR、Issue、看板状态、CI），经 PR 写入；这次运行不读其他助手的对话，不改代码、不动看板，对话层由主聊天补进后再合成。
+- **日复盘和周复盘各有一份 routine：** `projects/routines/daily-conversation-deposit/` 与 `projects/routines/weekly-retrospective/` 各放一份。`SKILL.md` 放提示词，同目录的 `schedule.md` 只放日程并引用这份 Skill。
+
 ### 评测与观测
 
 - **检索评测冒烟可按仓库 URL 跑：** `.harness/evaluation/retrieval_eval/run.py` 用三维配置（git 仓库 URL 与可选 ref、agent client、样本集）克隆仓库后执行 `codex exec --sandbox read-only`，按簇算 P@5 / R@5 / nDCG@5；有序题综合分用 R@5。`print-command` 只打印克隆与执行命令。第一组是本仓 `main`、`codex` 与 6 道自有题，实跑 R@5 为 `0.8333`。这是评测冒烟，不是公开基准证明。
 - **MemoryBench 小规模对照可复跑：** 新增 `.harness/evaluation/cases/memorybench-smoke/run.py`，固定官方代码和 NFCats 数据，比较无记忆与 BM25-M；`--prepare-only` 准备数据且不调用模型，`--output` 指定新的运行目录。默认最多 40 次模型请求，保存真实检索、作答、评分和用量，接口失败时终止并标记失败。附 MiniMax-M2.5 的实际试跑报告；该用例验证官方基准链路，尚未接入 Edges 项目记忆。
 - **自建 Langfuse 的仓库记录与实例对齐：** 在仓库根执行 `bash .harness/observation/smoke/langfuse-otlp-smoke.sh`，可以向自建 Langfuse 发一条名为 `edges-langfuse-smoke` 的 OTLP trace，并用 v2 observations 回查。先在环境里设置 `LANGFUSE_HOST`、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`，脚本和仓库都不存放这些值。公网入口记为经 Cloudflare Tunnel 的 HTTPS，仓库不写实例域名。
-
-### 复盘与 routines
-
-- **周复盘和日复盘有单独目录：** 阶段性回看写在 `retrospectives/`。周复盘是 `retrospectives/weekly/<周一日期>--周复盘/INDEX.md`，一级标题下用二级标题写六节：范围、本该怎样、实际怎样、为什么、下次做什么、建议补充内容清单。日复盘是 `retrospectives/daily/<日期>--日复盘/INDEX.md`，必写范围与建议补充内容清单，同样用二级标题。命名，以及 Memory / Skill / Note / Task / `AGENTS.md` 硬约束候选的去向，在 `retrospectives/README.md`。根 README 的目录表和本层内容列入了这个目录。
-- **日复盘和周复盘各有一份 routine：** `projects/routines/daily-conversation-deposit/` 与 `projects/routines/weekly-retrospective/` 各放一份。`SKILL.md` 放提示词，同目录的 `schedule.md` 只放日程并引用这份 Skill。
 
 ### 组合仓库
 
