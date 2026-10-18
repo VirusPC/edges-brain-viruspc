@@ -1,9 +1,14 @@
 import { Command } from "commander";
 import type { CliContext } from "../context.js";
-import { initScope, SkillsInstallError } from "../services/init/service.js";
-import { fail, failWithExit, succeed } from "./result.js";
+import { initScope } from "../services/init/service.js";
+import { fail, succeed } from "./result.js";
 
 const HELP = "See edges init --help for usage.\n";
+
+function ignoredInstallTokens(skillsSelected: boolean, args: readonly string[] | undefined): string {
+  if (skillsSelected || !args?.length) return "";
+  return `warning: skills was not selected; ignoring install tokens: ${args.join(" ")}\n`;
+}
 
 const AFTER_HELP = `
 This command does not read --super. Materials always land under <scope>/.harness.
@@ -53,19 +58,27 @@ export function addInitCommand(program: Command, ctx: CliContext): void {
             skillsInstallArgs: ctx.skillsInstallArgs,
             env: ctx.env,
           });
-          ctx.result = succeed({ ...result, command: "init" });
-        } catch (error) {
-          if (error instanceof SkillsInstallError) {
-            ctx.result = failWithExit(
-              error.exitCode || 1,
-              "SKILLS_INSTALL_FAILED",
-              error.message,
-              HELP,
-            );
-            return;
+          const skillsInstall = result.skillsInstall === true;
+          const { skillsInstall: _install, ...payload } = result;
+          if (skillsInstall && "created" in payload) {
+            ctx.pendingSkillsInstall = {
+              args: ctx.skillsInstallArgs ?? [],
+              created: payload.created,
+              stderrHint: HELP,
+            };
           }
+          ctx.result = succeed(
+            { ...payload, command: "init" },
+            ignoredInstallTokens(skillsInstall, ctx.skillsInstallArgs),
+          );
+        } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          ctx.result = fail("VALIDATION_ERROR", message, HELP);
+          const failed = fail("VALIDATION_ERROR", message, HELP);
+          const warning = ignoredInstallTokens(
+            modules.length === 0 || modules.includes("skills"),
+            ctx.skillsInstallArgs,
+          );
+          ctx.result = warning ? { ...failed, stderr: `${failed.stderr}${warning}` } : failed;
         }
       },
     );

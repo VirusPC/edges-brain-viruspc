@@ -37,12 +37,12 @@ harness 就是一组 Markdown 文件加 Git。仓库里的那套，给 Cursor、
 
 ```bash
 npm install -g @viruspc/edges
-cd ~/your-repo && edges init
+cd ~/your-repo && edges init -- -g -y
 ```
 
-`edges init` 会写系统入口，并把包里的 Edges skills 装给本机 agent。要传给安装器的旗标写在 `--` 后面，例如 `edges init -- -y --agent '*'`。说明见 [`extensions/skills`](extensions/skills/README.md)。
+`edges init -- -g -y` 会写系统入口，并把包里的 Edges skills 装给本机 agent。`-g -y` 写在 `--` 后面，交给 `skills@1.7.2`：没有 TTY 时也不再询问；探测到当前 agent 时只装给那一个，否则按本机已安装的 agent 装（一个都没有则装给全部）。要指定 agent 时写成 `edges init -- -y --agent claude-code`。说明见 [`extensions/skills`](extensions/skills/README.md)。
 
-想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges init`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
+想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges init -- -g -y`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
 
 CLI、MCP 和 skill 各自的用法见 [`extensions/cli`](extensions/cli/README.md)、[`extensions/mcp-servers`](extensions/mcp-servers/README.md) 和 [`extensions/skills`](extensions/skills/README.md)。
 

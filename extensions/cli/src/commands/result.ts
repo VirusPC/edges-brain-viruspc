@@ -22,10 +22,11 @@ export function failWithExit(
   errorCode: string,
   reason: string,
   stderrHint: string,
+  fields: Record<string, unknown> = {},
 ): CliResult {
   return {
     exitCode,
-    stdout: `${JSON.stringify({ status: "failed", errorCode, reason })}\n`,
+    stdout: `${JSON.stringify({ status: "failed", errorCode, reason, ...fields })}\n`,
     stderr: stderrHint,
   };
 }

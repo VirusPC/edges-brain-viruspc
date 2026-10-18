@@ -13,11 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### CLI
 
-- **init 安装包内 skills：** `edges skills init` 和无参 `edges init` 在建 skill 类型索引之后，用依赖里的 `skills@1.7.2` 把包内 Edges skill 装给本机 agent。edges 只补包内目录和 `--skill '*'`；`--` 之后的旗标原样转交。Node.js 要求改为 22.20 及以上。
+- **init 安装包内 skills：** `edges skills init` 和无参 `edges init` 在建 skill 类型索引之后，用依赖里的 `skills@1.7.2` 把包内 Edges skill 装给本机 agent。edges 只补包内目录和 `--skill '*'`；`--` 之后的旗标原样转交。没有 TTY、安装器又没探测到 agent 时，在 `--` 后加 `-g -y`（例如 `edges init -- -g -y`），否则安装器退出 1，init 用同一退出码失败，信封里的 `errorCode` 是 `SKILLS_INSTALL_FAILED`。Node.js 要求改为 22.20 及以上。
 
 ### shared-extensions
 
 - **通用 skill 移出 extensions：** `paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`、`horizontal-vertical-research`、`learn-repo` 改到 `shared-extensions/skills/`，不打进 `@viruspc/edges`。整层版本记为 `1.2.0`（`shared-extensions@1.1.0` 已被尚未合入 main 的 tag 占用）。
+
+### 组合仓库
 
 - **组合进来的仓库可以 clone、pull 和 push：** 在作用域 `AGENTS.md` 的组合区块登记本地目录、名字、说明和 git 地址后，`edges compose clone` 把仓库拉到登记路径，`edges compose pull` 和 `edges compose push` 在该目录执行这个仓库自己的 git pull / git push。`edges compose register` 写入登记，`edges compose list` 列出登记，`edges compose unregister` 按名字去掉一条登记且不删除已 clone 的目录。顺着节点树走时会进入这些本地仓库的 `AGENTS.md` 再往下。
 

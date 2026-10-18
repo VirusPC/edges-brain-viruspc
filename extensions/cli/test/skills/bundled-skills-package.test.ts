@@ -6,7 +6,15 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { copyBundledSkills } from "../../scripts/copy-bundled-skills.js";
-import { UNRELATED_SKILL_NAMES } from "../../../../scripts/move-edges-unrelated-skills.mts";
+
+const MOVED_SKILL_NAMES = [
+  "paper-10-questions",
+  "summarize-ai-article",
+  "summarize-ai-article-ultra",
+  "weekly-ai-blogs-digest",
+  "horizontal-vertical-research",
+  "learn-repo",
+] as const;
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const sourceSkills = path.resolve(here, "../../../skills");
@@ -29,9 +37,9 @@ test("copyBundledSkills copies every remaining extensions skill and not the six 
   assert.ok(expected.length > 0);
   for (const name of expected) {
     assert.equal(existsSync(path.join(dest, name, "SKILL.md")), true, name);
-    assert.equal(UNRELATED_SKILL_NAMES.includes(name as (typeof UNRELATED_SKILL_NAMES)[number]), false, name);
+    assert.equal(MOVED_SKILL_NAMES.includes(name as (typeof MOVED_SKILL_NAMES)[number]), false, name);
   }
-  for (const name of UNRELATED_SKILL_NAMES) {
+  for (const name of MOVED_SKILL_NAMES) {
     assert.equal(existsSync(path.join(dest, name)), false, name);
     assert.equal(existsSync(path.join(sharedSkills, name, "SKILL.md")), true, name);
   }

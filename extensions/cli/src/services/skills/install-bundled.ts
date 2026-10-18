@@ -23,9 +23,15 @@ export type BundledSkillsSpawn = (
 ) => Promise<number>;
 
 let spawnForTests: BundledSkillsSpawn | undefined;
+let refuseRealSpawn = false;
 
 export function setBundledSkillsSpawnForTests(spawnImpl: BundledSkillsSpawn | undefined): void {
   spawnForTests = spawnImpl;
+}
+
+/** Test preload calls this. It is in-process only, so a spawned CLI is unaffected. */
+export function refuseRealBundledSkillsSpawnForTests(): void {
+  refuseRealSpawn = true;
 }
 
 /** `skills add <dir> --skill '*'`, then the caller's tokens unchanged. */
@@ -59,17 +65,32 @@ function directoryHasSkill(dir: string): boolean {
   );
 }
 
-/** Absolute path of the skills directory shipped in this package, or the repo source tree. */
+function runningUnderNodeTest(): boolean {
+  // In-process flag from the test preload, or `node --test` on this process.
+  // Do not read NODE_TEST_CONTEXT: a packaged CLI spawned by a test inherits it.
+  return refuseRealSpawn || process.execArgv.includes("--test");
+}
+
+/**
+ * Skills shipped with this package. One path, chosen from where this file lives:
+ * built or installed code (`dist/`) reads `<packageRoot>/skills`;
+ * source (`src/`, tsx) reads the repo tree `extensions/skills`.
+ * A stale `extensions/cli/skills/` build copy is never consulted.
+ */
 export function resolveBundledSkillsDir(moduleUrl: string = import.meta.url): string {
-  const root = packageRootFrom(path.dirname(fileURLToPath(moduleUrl)));
-  const packed = path.join(root, "skills");
-  if (directoryHasSkill(packed)) return path.resolve(packed);
-  const source = path.resolve(root, "../skills");
-  if (directoryHasSkill(source)) return source;
-  throw new SkillsInstallError(
-    `skills@${VERCEL_SKILLS_VERSION} could not be started: bundled skills directory not found`,
-    1,
-  );
+  const moduleDir = path.dirname(fileURLToPath(moduleUrl));
+  const root = packageRootFrom(moduleDir);
+  const relativeToPackage = path.relative(root, moduleDir);
+  const fromBuiltPackage =
+    relativeToPackage === "dist" || relativeToPackage.startsWith(`dist${path.sep}`);
+  const dir = fromBuiltPackage ? path.resolve(root, "skills") : path.resolve(root, "..", "skills");
+  if (!directoryHasSkill(dir)) {
+    throw new SkillsInstallError(
+      `skills@${VERCEL_SKILLS_VERSION} could not be started: bundled skills directory not found`,
+      1,
+    );
+  }
+  return dir;
 }
 
 function resolveSkillsBin(): string {
@@ -93,6 +114,11 @@ function defaultSpawn(
   args: readonly string[],
   options: { stdio: "inherit" },
 ): Promise<number> {
+  if (runningUnderNodeTest()) {
+    return Promise.reject(
+      new SkillsInstallError("refusing to spawn the real skills installer under test", 1),
+    );
+  }
   return new Promise((resolve, reject) => {
     const child = spawn(command, [...args], { stdio: options.stdio });
     child.on("error", reject);
@@ -118,6 +144,7 @@ export async function installBundledSkills(forwarded: readonly string[]): Promis
       stdio: "inherit",
     });
   } catch (error) {
+    if (error instanceof SkillsInstallError) throw error;
     const message = error instanceof Error ? error.message : String(error);
     throw new SkillsInstallError(`skills@${VERCEL_SKILLS_VERSION} could not be started: ${message}`, 1);
   }

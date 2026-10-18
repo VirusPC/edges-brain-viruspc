@@ -204,7 +204,7 @@ review-page 只把 groups/items JSON 渲染成 HTML，不改任务、不打开�
 Project Memory 的执行能力由 TS CLI 提供，Skill 负责工作流和调用规范。
 
 ```bash
-edges --scope /absolute/project init
+edges --scope /absolute/project init -- -g -y
 edges --scope /absolute/project init notes
 edges --scope /absolute/project notes init
 edges --scope /absolute/project memory init --memory-types project feedback
@@ -221,7 +221,7 @@ edges memory backup --repo-dir /absolute/project
 edges memory restore --repo-dir /absolute/project --archive /private/archive.tar.gz
 ```
 
-新作用域的 `edges memory init` 未选择类型时只返回推荐项，不创建 notes、projects、skills 或 tasks 的材料。无参 `edges init` 的默认集包含 skills。`edges skills init` 既写 skill 类型索引，也把包内 skill 装给本机 agent：安装步骤是固定的 `skills@1.7.2`，只额外传入包内 skills 目录和 `--skill '*'`，`--` 之后的 token 原样转交。`edges tasks init` 只写任务看板。remember 不初始化缺失作用域；doctor 默认只诊断。旧 `.memory` 通过显式 migrate 转换，普通命令不兼容迁移。新建子作用域按路径登记到父级：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已经登记的保持原组。`edges memory doctor --apply` 按同一规则补上缺失的父级链接。
+新作用域的 `edges memory init` 未选择类型时只返回推荐项，不创建 notes、projects、skills 或 tasks 的材料。无参 `edges init` 的默认集包含 skills。`edges skills init` 既写 skill 类型索引，也把包内 skill 装给本机 agent：安装步骤是固定的 `skills@1.7.2`，只额外传入包内 skills 目录和 `--skill '*'`，`--` 之后的 token 原样转交。`skills@1.7.2` 在探测到自己跑在 agent 里时会非交互，并只装给那个 agent；没有探测到、stdin 又不是 TTY 时，不带 `-y` 会退出 1。非交互且保留自动探测时用 `edges init -- -g -y`（`-g` 装到用户目录，`-y` 跳过确认；本机没有已安装 agent 时它会装给全部 agent）。指定某一个则用 `edges init -- -y --agent claude-code`（不加 `-g` 时写当前项目的 `.claude/skills`）。这次 init 没选 skills 时，`--` 后面的 token 不会装，stderr 会列出被忽略的 token。安装失败时进程退出码就是安装器的退出码，stdout 信封是 `{ status: "failed", errorCode: "SKILLS_INSTALL_FAILED", reason, created }`。`created` 是失败前已经写好的相对路径。`errorCode` 与 `VALIDATION_ERROR` 不同；不要用退出码是不是 2 来判断是不是校验错误，安装器自己也可能退出 2。校验错误仍然是退出码 2、`errorCode` 为 `VALIDATION_ERROR`。`edges tasks init` 只写任务看板。remember 不初始化缺失作用域；doctor 默认只诊断。旧 `.memory` 通过显式 migrate 转换，普通命令不兼容迁移。新建子作用域按路径登记到父级：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已经登记的保持原组。`edges memory doctor --apply` 按同一规则补上缺失的父级链接。
 
 用户记忆 restore 默认拒绝覆盖，明确使用 --force 才整份替换，失败时回滚。备份和恢复接受未压缩或 gzip tar，解包上限 256 MiB、10,000 文件，拒绝硬链接；中断后若报告 `.private-user-memory-*/previous`，应保留恢复副本。模板随包复制到 dist，运行不依赖相邻 Skill 源码或 Python。
 

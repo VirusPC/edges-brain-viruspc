@@ -55,8 +55,10 @@ test('packed CLI works outside repo with production dependencies and fails clear
     const repo = path.join(directory, 'repo');
     await mkdir(repo);
     execFileSync('git', ['init'], {cwd: repo, stdio:'pipe'});
-    const smoke = (args: string[]) => spawnSync(bin, args, {cwd: repo, encoding:'utf8', env:{...process.env, EDGES_SCOPE: repo}});
-    const init = smoke(['init', '--target-dir', repo]);
+    const home = path.join(directory, 'home');
+    await mkdir(home);
+    const smoke = (args: string[]) => spawnSync(bin, args, {cwd: repo, encoding:'utf8', env:{...process.env, EDGES_SCOPE: repo, HOME: home, USERPROFILE: home, CLAUDE_CONFIG_DIR: path.join(home, '.claude'), DO_NOT_TRACK: '1'}});
+    const init = smoke(['init', '--target-dir', repo, '--', '-y', '--agent', 'claude-code']);
     assert.equal(init.status, 0, init.stderr + init.stdout);
     const remembered = smoke(['memory', 'remember', '--target-dir', repo, '--type', 'project', '--slug', 'smoke_publish', '--title', 'Smoke', '--description', 'Packed CLI can remember', '--content', 'Packed install wrote this entry.', '--username', 'edges smoke', '--email', 'edges-smoke@example.com']);
     assert.equal(remembered.status, 0, remembered.stderr + remembered.stdout);

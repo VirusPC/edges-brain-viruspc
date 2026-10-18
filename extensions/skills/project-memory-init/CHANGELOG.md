@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.9.0] - 2026-10-18
+
+### Changed
+
+- agent 调用无参 `edges init` 或 `edges skills init` 时，在 `--` 后传 `-g -y`。`skills@1.7.2` 没探测到 agent 且没有 TTY 时，不带这些旗标会退出 1。`-g -y` 仍把 agent 选择留给安装器：探测到当前 agent 就只装给它，否则按本机已安装的 agent 装。
+
 ## [3.8.0] - 2026-10-18
 
 ### Changed

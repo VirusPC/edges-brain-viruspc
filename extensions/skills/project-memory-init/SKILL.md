@@ -1,7 +1,7 @@
 ---
 name: project-memory-init
 description: 对用户选定的任意目录初始化或刷新系统入口 AGENTS.md（硬约束 + 组成登记），并按选择采用 Project Memory / Skills 类型。无参 edges init 与 edges skills init 还会安装包内 skill。仅当用户明确要求 init 时使用。标准命令是 edges init；各域 init 只初始化本模块。
-version: 3.8.0
+version: 3.9.0
 ---
 
 # Project harness init（`$project-memory-init`）
@@ -14,10 +14,10 @@ version: 3.8.0
 
 无参 `edges init` 写出 `AGENTS.md`、memory 的 feedback / project / reference、skills 的 managed / referenced 类型索引，以及 `.harness/notes/README.md` 与 `.harness/projects/README.md`，并把 npm 包内的 Edges skill 装给本机 agent。不建 user、tasks。`edges init` 不读 `--super`，材料落在 `<scope>/.harness`。`edges init <module>` 与 `edges <module> init` 写同一批文件，而且只写该模块。模块之间不创建对方的材料。安装只在这次 init 包含 skills 时发生。
 
-类型选择按模块拆开。memory 类型走 `edges memory init`；skill 类型走 `edges skills init`。推荐模块仍含 memory、skills、tasks、projects、notes，推荐不代表无参命令会全建。新层先展示 memory 的 project / feedback / reference / user 与 skills 的 managed / referenced 用途，让用户选择，不预建全部。未选择时 `edges memory init` 返回 `selectionRequired` 和推荐清单且不改文件。已有 memory 层不传选择只刷新已采用的 memory 类型。`edges memory init` 不创建 notes、projects、tasks、skills 的文件。`edges skills init` 在未选择且尚未采用 skill 类型时采用 managed 与 referenced；已经采用时只刷新那些 skill 类型，并安装包内 skill。传给安装器的旗标写在 `--` 后面，例如 `edges skills init -- -g -y --agent claude-code`。`edges tasks init` 只建任务看板；首次 tasks 写入仍会在看板缺失时补上同一份文件。
+类型选择按模块拆开。memory 类型走 `edges memory init`；skill 类型走 `edges skills init`。推荐模块仍含 memory、skills、tasks、projects、notes，推荐不代表无参命令会全建。新层先展示 memory 的 project / feedback / reference / user 与 skills 的 managed / referenced 用途，让用户选择，不预建全部。未选择时 `edges memory init` 返回 `selectionRequired` 和推荐清单且不改文件。已有 memory 层不传选择只刷新已采用的 memory 类型。`edges memory init` 不创建 notes、projects、tasks、skills 的文件。`edges skills init` 在未选择且尚未采用 skill 类型时采用 managed 与 referenced；已经采用时只刷新那些 skill 类型，并安装包内 skill。传给安装器的旗标写在 `--` 后面。agent 调用时不要跑裸的 `edges init`：`skills@1.7.2` 没探测到自己在 agent 里、stdin 又不是 TTY 时会退出 1。非交互且保留它的 agent 自动探测，用 `-- -g -y`。`-g` 装到用户目录，`-y` 跳过确认；探测到当前 agent 时只装给那一个，没探测到则按本机已安装的 agent 装（一个都没有则装给全部）。要钉死某一个 agent，再加 `--agent <name>`，例如 `-- -y --agent claude-code`（不加 `-g` 时写项目目录下的 `.claude/skills`）。`edges tasks init` 只建任务看板；首次 tasks 写入仍会在看板缺失时补上同一份文件。
 
 ```bash
-edges --scope <目录> init
+edges --scope <目录> init -- -g -y
 edges --scope <目录> init notes
 edges --scope <目录> notes init
 edges --scope <目录> memory init \
@@ -26,7 +26,7 @@ edges --scope <目录> memory init \
   [--description <本层职责>]
 edges --scope <目录> skills init \
   [--skill-types managed referenced] \
-  [-- -g -y --agent claude-code]
+  -- -g -y
 edges --scope <目录> tasks init
 ```
 

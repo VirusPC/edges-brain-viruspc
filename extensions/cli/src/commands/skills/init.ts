@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import type { CliContext } from "../../context.js";
-import { initSkills, SkillsInstallError } from "../../services/skills/service.js";
-import { fail, failWithExit, succeed } from "../result.js";
+import { initSkills } from "../../services/skills/service.js";
+import { fail, succeed } from "../result.js";
 
 const HELP = "See edges skills init --help for usage.\n";
 const AFTER_HELP = `
@@ -32,17 +32,17 @@ export function addSkillInitCommand(skills: Command, ctx: CliContext): void {
             skillsInstallArgs: ctx.skillsInstallArgs,
             env: ctx.env,
           });
-          ctx.result = succeed({ ...result, command: "skills.init" });
-        } catch (error) {
-          if (error instanceof SkillsInstallError) {
-            ctx.result = failWithExit(
-              error.exitCode || 1,
-              "SKILLS_INSTALL_FAILED",
-              error.message,
-              HELP,
-            );
-            return;
+          const skillsInstall = result.skillsInstall === true;
+          const { skillsInstall: _install, ...payload } = result;
+          if (skillsInstall && "created" in payload) {
+            ctx.pendingSkillsInstall = {
+              args: ctx.skillsInstallArgs ?? [],
+              created: payload.created,
+              stderrHint: HELP,
+            };
           }
+          ctx.result = succeed({ ...payload, command: "skills.init" });
+        } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
           ctx.result = fail("VALIDATION_ERROR", message, HELP);
         }

@@ -26,9 +26,28 @@ test("edges skills init forwards tokens after -- in order", () => {
   );
 });
 
-test("commands other than init keep -- and the tokens after it", () => {
-  const argv = ["skills", "list", "--", "nope"];
-  assert.deepEqual(splitSkillsInstallArgs(argv), { argv, skillsInstallArgs: [] });
+test("the first literal -- splits even when the command is not init", () => {
+  assert.deepEqual(splitSkillsInstallArgs(["skills", "list", "--", "nope"]), {
+    argv: ["skills", "list"],
+    skillsInstallArgs: ["nope"],
+  });
+});
+
+test("multi-value options before -- stay with the command in order", () => {
+  assert.deepEqual(
+    splitSkillsInstallArgs(["init", "--memory-types", "project", "feedback", "--", "-y", "--agent", "*"]),
+    {
+      argv: ["init", "--memory-types", "project", "feedback"],
+      skillsInstallArgs: ["-y", "--agent", "*"],
+    },
+  );
+  assert.deepEqual(
+    splitSkillsInstallArgs(["--scope", "/tmp", "skills", "init", "--skill-types", "managed", "referenced", "--", "-g"]),
+    {
+      argv: ["--scope", "/tmp", "skills", "init", "--skill-types", "managed", "referenced"],
+      skillsInstallArgs: ["-g"],
+    },
+  );
 });
 
 test("init without -- forwards nothing", () => {

@@ -30,10 +30,10 @@ CLI 目标选择依次为显式 `--scope`、`EDGES_SCOPE` / `EDGES_REPO`、cwd �
 ## 选择式初始化
 
 ```bash
-edges --scope S init
+edges --scope S init -- -g -y
 edges --scope S memory init --root-dir R \
   --memory-types project feedback reference user
-edges --scope S skills init --skill-types managed referenced
+edges --scope S skills init --skill-types managed referenced -- -g -y
 edges --scope S tasks init
 ```
 

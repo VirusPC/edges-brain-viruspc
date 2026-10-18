@@ -11,7 +11,7 @@
 | | `extensions/skills` | `shared-extensions/skills` |
 | --- | --- | --- |
 | 用途 | 接入或操作 Edges，打进 `@viruspc/edges` | 作者自己的通用 harness，不进这个 npm 包 |
-| 对外 | `edges skills init`（或无参 `edges init`） | 不走这条对外路径 |
+| 对外 | `edges skills init -- -g -y`（或无参 `edges init -- -g -y`） | 不走这条对外路径 |
 | 本机 | 项目级：`pnpm skills:link` → `.agents/skills` | 全局：`~/.agents/skills`（安装脚本待落地） |
 
 一件 skill 只放一处。`name` 在两个目录之间也不得重复。

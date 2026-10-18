@@ -50,9 +50,6 @@ import {
   type InitModuleName,
 } from "./modules.js";
 import { migrateScopeMaterialIndex } from "./migrate-scope-readme.js";
-import { installBundledSkills, SkillsInstallError } from "../skills/install-bundled.js";
-
-export { SkillsInstallError };
 
 export type { InitMemoryOptions };
 
@@ -441,7 +438,7 @@ export async function initScope(options: InitScopeOptions) {
         { ...base, memoryTypes, skillTypes: module === "skills" ? options.skillTypes : undefined },
         module,
       );
-      if (typeResult.selectionRequired) return { ...typeResult, modules: requested };
+      if (typeResult.selectionRequired) return { ...typeResult, modules: requested, skillsInstall: false as const };
       created = [...created, ...typeResult.created];
       preserved = [...preserved, ...typeResult.preserved];
       diagnostics = [...(diagnostics ?? []), ...typeResult.diagnostics];
@@ -453,9 +450,6 @@ export async function initScope(options: InitScopeOptions) {
     preserved = [...preserved, ...boards.preserved];
   }
   await migrateScopeMaterialIndex(scope.targetDir);
-  if (requested.includes("skills")) {
-    await installBundledSkills(options.skillsInstallArgs ?? []);
-  }
   return {
     ...(typeResult ?? {}),
     targetDir: scope.targetDir,
@@ -466,6 +460,7 @@ export async function initScope(options: InitScopeOptions) {
     modules: requested,
     created,
     preserved,
+    skillsInstall: requested.includes("skills"),
     ...(complete === undefined ? {} : { complete, diagnostics }),
   };
 }

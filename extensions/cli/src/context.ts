@@ -33,8 +33,17 @@ export type CliContext = {
   all?: boolean;
   /** Explicit `--with-composed`: include composed repository entry nodes in list and query. */
   withComposed?: boolean;
-  /** Tokens after `--` on `edges init` / `edges skills init`, forwarded to skills install. */
+  /** Tokens after the first `--`, forwarded only when this invocation installs skills. */
   skillsInstallArgs?: readonly string[];
+  /**
+   * Set by init while the write lock is still held. `run()` installs only after
+   * releasing that lock, so an interactive installer does not block other writers.
+   */
+  pendingSkillsInstall?: {
+    args: readonly string[];
+    created: string[];
+    stderrHint: string;
+  };
   result: CliResult | undefined;
 };
 

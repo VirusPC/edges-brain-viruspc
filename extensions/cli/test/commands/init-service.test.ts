@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { run } from "../../src/program.js";
+import "../register-skills-install-mock.js";
 import { initMemory } from "../../src/services/memory/init.js";
 import { acquireWriteLock } from "../../src/services/node/node-lock.js";
 

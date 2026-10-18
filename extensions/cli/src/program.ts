@@ -18,7 +18,9 @@ import { addSkillsCommand } from "./commands/skills.js";
 import { addForestCommand } from "./commands/forest.js";
 import { addComposeCommand } from "./commands/compose.js";
 import { addInitCommand } from "./commands/init.js";
+import { failWithExit } from "./commands/result.js";
 import { acquireWriteLock } from "./services/node/node-lock.js";
+import { installBundledSkills, SkillsInstallError } from "./services/skills/install-bundled.js";
 import { splitSkillsInstallArgs } from "./services/skills/split-skills-install-args.js";
 import { VERSION } from "./utils/version.js";
 
@@ -278,6 +280,7 @@ export async function run(
   } finally {
     try {
       await release?.();
+      release = undefined;
     } catch (error) {
       const message = `Node write lock release failed: ${String(error)}`;
       if (ctx.result && ctx.result.exitCode !== 0) {
@@ -299,8 +302,24 @@ export async function run(
       }
     }
   }
+  await installSkillsAfterLock(ctx);
   return (
     ctx.result ??
     usageError("missing command. Use edges --help.", usageScope(split.argv))
   );
+}
+
+/** Vercel install runs only after the init write lock is released. */
+async function installSkillsAfterLock(ctx: CliContext): Promise<void> {
+  const pending = ctx.pendingSkillsInstall;
+  if (!pending || ctx.result?.exitCode !== 0) return;
+  try {
+    await installBundledSkills(pending.args);
+  } catch (error) {
+    const exitCode = error instanceof SkillsInstallError ? error.exitCode || 1 : 1;
+    const reason = error instanceof Error ? error.message : String(error);
+    ctx.result = failWithExit(exitCode, "SKILLS_INSTALL_FAILED", reason, pending.stderrHint, {
+      created: pending.created,
+    });
+  }
 }
