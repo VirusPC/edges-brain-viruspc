@@ -160,8 +160,7 @@ domain/
     ├── index.ts             # 节点类、输入类型、布局与目录分类的公共出口；基类从 domain/core 再导出
     ├── layout.ts            # 入口文件名、href、harness 路径、生命周期单位
     ├── classify.ts          # 目录类型：memory → task → note → project，再加上入口文件名
-    ├── syntax.ts            # project-harness / project-entries 文法；InternalSyntax 把文法交给 core
-    ├── blocks.ts            # 上述文法的注释标记，以及按这些标记改写区块
+    ├── syntax.ts            # project-harness / project-entries 的标题、标记和换档；InternalSyntax 把文法交给 core
     ├── agents/              # AgentsNode、SuperAgentsNode、harness 判定与 Compose 登记
     ├── readme/              # ReadmeNode：组织清单
     ├── tasks/               # TaskNode、任务字段规则、TaskDoc 契约和文档适配
@@ -175,7 +174,7 @@ domain/
 | 模块 | 值得保留的拆分 |
 | --- | --- |
 | [core](../core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写。`core/syntax` 的 `parse.ts`/`serialize.ts` 按传入文法保留原文；`blocks.ts` 只提供与标记名无关的区块字符串操作；`document.ts` 是文档表示；`grammar.ts` 描述标题、标记如何对应到区块 |
-| [syntax.ts](syntax.ts) | `INTERNAL_SECTIONS`、`ENTRIES_SECTIONS`、`CODEC_SECTIONS` 是 project-harness / project-entries 的标题与标记。`InternalSyntax` 在 agents 与 entries 两档之间换标记，并把 `HARNESS_GRAMMAR` 交给 core 的 parse/serialize。`blocks.ts` 放这些标记的注释常量，以及按标记插入、替换、改写区块 |
+| [syntax.ts](syntax.ts) | `INTERNAL_SECTIONS`、`ENTRIES_SECTIONS`、`CODEC_SECTIONS` 是 project-harness / project-entries 的标题与标记。同一文件放这些标记的注释常量，以及按标记插入、替换、改写区块。`InternalSyntax` 在 agents 与 entries 两档之间换标记，并把 `HARNESS_GRAMMAR` 交给 core 的 parse/serialize |
 | [agents](agents/agents-node.ts) | `agents-node.ts` 管 AGENTS 引用、约束和 Compose 登记；`super-agents-node.ts` 是虚拟超节点；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘；`compose.ts` 读写组合条目 |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |

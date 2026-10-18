@@ -308,7 +308,7 @@ test("ownership hrefs retain filename escapes, Unicode, spaces and fragments acr
 });
 
 test('managed block replacement preserves CRLF and refuses malformed boundaries', async () => {
- const {upsertBlock}=await import('../../src/domain/models/blocks.js');
+ const {upsertBlock}=await import('../../src/domain/models/syntax.js');
  const start='<!-- project-memory-local:start -->',end='<!-- project-memory-local:end -->';
  const source='Intro  \r\n'+start+'\r\nOld\r\n'+end+'\r\nTail  \r\n';
  assert.equal(upsertBlock(source,start,end,start+'\nNew\n'+end),'Intro  \r\n'+start+'\r\nNew\r\n'+end+'\r\nTail  \r\n');
