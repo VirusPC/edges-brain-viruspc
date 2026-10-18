@@ -30,5 +30,6 @@ edges CLI/脚手架/发布/鉴权等平台层。
 - [探索新的\_cr\_方式](<backlog/2026-10-11--%E6%8E%A2%E7%B4%A2%E6%96%B0%E7%9A%84-CR-%E6%96%B9%E5%BC%8F/INDEX.md>) — 在 Cursor Bugbot 之外，为 edges 找到可控、可试点的自动/半自动 PR Code Review 方式。
 - [agent\_取外部内容优先走\_rss浏览器爬取只作退路](<backlog/2026-10-15--Agent-%E5%8F%96%E5%A4%96%E9%83%A8%E5%86%85%E5%AE%B9%E4%BC%98%E5%85%88%E8%B5%B0-RSS%E6%B5%8F%E8%A7%88%E5%99%A8%E7%88%AC%E5%8F%96%E5%8F%AA%E4%BD%9C%E9%80%80%E8%B7%AF/INDEX.md>) — 现在 Agent 抓文章常靠开浏览器爬页面，又慢又不稳。改成先找 RSS 源拉结构化内容，找不到再爬。
 - [入库类\_skill\_增加无工作区降级模式](<backlog/2026-10-15--%E5%85%A5%E5%BA%93%E7%B1%BB-skill-%E5%A2%9E%E5%8A%A0%E6%97%A0%E5%B7%A5%E4%BD%9C%E5%8C%BA%E9%99%8D%E7%BA%A7%E6%A8%A1%E5%BC%8F/INDEX.md>) — 聊天窗口没有工作区时，skill 只输出完整 Markdown 和目标路径，交给有工作区的 Agent 入库
-- [安装\_edges\_后自动装好\_skills](<backlog/2026-10-18--%E5%AE%89%E8%A3%85-edges-%E5%90%8E%E8%87%AA%E5%8A%A8%E8%A3%85%E5%A5%BD-skills/INDEX.md>) — 只装 npm 包拿不到 edges skills；目标是一次安装加一次初始化，同时装好 CLI 和 skills。
+- [安装\_edges\_后自动装好\_skills](<done/2026-10-18--%E5%AE%89%E8%A3%85-edges-%E5%90%8E%E8%87%AA%E5%8A%A8%E8%A3%85%E5%A5%BD-skills/INDEX.md>) — 只装 npm 包拿不到 edges skills；目标是一次安装加一次初始化，同时装好 CLI 和 skills。
+- [配置\_github\_actions\_oidc\_发布\_viruspc\_edges](<backlog/2026-10-18--%E9%85%8D%E7%BD%AE-GitHub-ActionsOIDC-%E5%8F%91%E5%B8%83-viruspcedges/INDEX.md>) — 推约定 tag 后，用 GitHub Actions 和 npm Trusted Publishing（OIDC）把 @viruspc/edges 发到 npm，发版前经过测试和 Environment 审批。本卡只锁定 grill 已定范围，保持 backlog。
 <!-- project-entries-local:end -->
