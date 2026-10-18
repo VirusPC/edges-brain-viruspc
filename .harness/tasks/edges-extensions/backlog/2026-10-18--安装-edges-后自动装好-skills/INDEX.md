@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-18T13:20:00.000Z'
+  edges-updated-at: '2026-10-18T13:40:00.000Z'
   edges-title: 安装 edges 后自动装好 skills
   edges-tasks-status: backlog
   edges-task-priority: none
@@ -127,3 +127,4 @@ description: 只装 npm 包拿不到 edges skills；目标是一次安装加一�
 - 2026-10-18 再次修订 Q7（peng cheng）：核对 vercel skills 1.7.2 源码后决定「抄他的行为」，edges 不做版本比较、不加 `-f` / `--force`，同名 skill 由 vercel skills 列出覆盖清单并确认（无 TTY 时 `-y` 直接覆盖）；上一条里的 Q7 补充已被取代，保留为决策历史。Q12、Q13 不变。ADR 0036 Decision 6 同步，完成标准相应调整。用户同意合入 PR #274。卡仍在 backlog。
 - 2026-10-18 20:53（Asia/Shanghai）定下总原则（peng cheng）：安装技能是 vercel skills 的薄封装，edges 只补 skill 源地址与 `--skill '*'`，其余按 vercel skills 默认、旗标透传，不加额外逻辑。据此修订 Q12（无 TTY 不再强制 `--agent`，改为按默认行为），并对齐 Q4–Q9 的表述；Q13 不变。ADR 0036 精简重写，完成标准相应调整。待定：stdout 上 vercel 输出与 edges JSON 信封并存（ADR 记为继承 stdio 的后果）、`edges init` 如何转交旗标、用户自带 `--skill` 的处理。卡仍在 backlog，实现未开始。
 - 2026-10-18 21:00（Asia/Shanghai）追加决策（peng cheng）：Q14 `--skill` 不开放，CLI 写死 `--skill '*'`；Q15 用 `--` 分隔，之后的 token 原样转交 vercel skills，`edges init` 只转交给 skills 安装步骤，commander 解析前在 `--` 处切开 argv。上一条的两个待定（旗标转交、自带 `--skill`）已定；stdout 与 JSON 信封并存仍记为继承 stdio 的后果。完成标准相应调整。卡仍在 backlog。
+- 2026-10-18 实现：6 个无关 skill 移到 `shared-extensions/skills/`。整层版本记为 `1.2.0`（远程已有 `shared-extensions@1.1.0`，指向并不含这 6 个 skill 的提交，不能复用）。`edges skills init` 与无参 `edges init` 在建类型索引后调用依赖 `skills@1.7.2`：`add <包内目录绝对路径> --skill '*'`，`--` 之后原样转交，stdio 继承。`engines.node` 为 `>=22.20.0`。分支 `cursor/edges-init-install-skills-4daa`（`1adb174a`）；tag `shared-extensions@1.2.0`、`skill/project-memory-init@3.8.0` 已推。`gh pr create` 返回 `Resource not accessible by integration`，PR 未开，对比页：https://github.com/VirusPC/edges/compare/main...cursor/edges-init-install-skills-4daa 。CLI 测试 1051 通过；`pack` 含 14 个 skill、不含迁走的 6 个。干净环境的全局安装与真实 agent 目录未跑。卡仍在 backlog。
