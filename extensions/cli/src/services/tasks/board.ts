@@ -3,8 +3,7 @@ import { query } from "../../domain/operations/query.js";
 import { realpathSync } from "node:fs";
 import { TaskNode, AgentsNode, ReadmeNode } from "../../domain/models/index.js";
 import { taskBoardQuery, taskLocationOf, listRepositoryTaskNodes } from "./node-query.js";
-import { taskBoardLocation } from "./paths.js";
-import { scopeDir, type BoardTarget } from "./paths.js";
+import { resolveBoard, scopeDir, taskBoardLocation, type BoardTarget } from "./paths.js";
 import {
   access,
   mkdir,
@@ -154,7 +153,7 @@ export async function listProjectIds(
   repoPath: BoardTarget,
   fs: BoardFs,
 ): Promise<TaskProjectId[]> {
-  const target = typeof repoPath === 'string' ? taskBoardLocation(repoPath, 'domain') : repoPath;
+  const target = resolveBoard(repoPath);
   // Content face (board README) holds org-list projects; real AGENTS still holds
   // system-entry projects and legacy README links awaiting migration.
   const [fromContent, fromAgents] = await Promise.all([
@@ -251,7 +250,7 @@ export async function listTasksWithDocs(
   opts: TaskListOpts,
   fs: BoardFs,
 ): Promise<Array<TaskListItem & { doc: TaskDoc }>> {
-  const target = typeof repoPath === 'string' ? taskBoardLocation(repoPath, 'domain') : repoPath;
+  const target = resolveBoard(repoPath);
   const root = realpathSync(scopeDir(repoPath));
   const filtered = await (await taskBoardQuery(target))
     .filter((node): node is TaskNode => node instanceof TaskNode)
@@ -293,7 +292,7 @@ async function findByStem(
   stem: string,
   fs: BoardFs,
 ): Promise<Array<{ project: TaskProjectId; status: TaskStatus }>> {
-  const target = typeof repoPath === 'string' ? taskBoardLocation(repoPath, 'domain') : repoPath;
+  const target = resolveBoard(repoPath);
   const root = realpathSync(scopeDir(repoPath));
   return (await taskBoardQuery(target))
     .filter((node): node is TaskNode => node instanceof TaskNode)
@@ -388,20 +387,19 @@ export type RepositoryTaskItem = TaskListItem & {
 };
 /** Shared projection for repository CLI lists and the persistent dashboard. */
 export async function listRepositoryTasksWithDocs(
-  root: string, opts: TaskListOpts = {}, purpose?: import("./paths.js").TaskPurpose,
+  root: string, opts: TaskListOpts = {},
   traversal: { super?: boolean } = {},
 ): Promise<RepositoryTaskItem[]> {
   root = realpathSync(root);
   const nodes = await listRepositoryTaskNodes(root, traversal);
   const rows = await query(async function* () { yield* nodes; })
     .map(node => ({ node, location: taskLocationOf(node, root) }))
-    .filter(({ location }) => !purpose || location.source.purpose === purpose)
     .filter(({ location }) => !opts.status || location.status === opts.status)
     .filter(({ node }) => !opts.priorities?.length || opts.priorities.includes(node.priority))
     .filter(({ location }) => !opts.projects?.length || opts.projects.includes(location.project))
     .map(async ({ node, location }) => {
       const { source, project, status, stem } = location;
-      const target = taskBoardLocation(path.resolve(root, source.scope), source.purpose);
+      const target = taskBoardLocation(path.resolve(root, source.scope), { super: source.purpose === "domain" });
       const listed = await readListItem(target, project, status, stem, createNodeBoardFs(target), node);
       return { ...listed.item, doc: listed.doc, source,
         path: path.relative(root, node.path),

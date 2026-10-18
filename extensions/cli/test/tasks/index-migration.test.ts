@@ -86,7 +86,7 @@ test("preview preserves prose and bytes; apply indexes exact task identities, in
     plan.tasks,
   );
   assert.equal(
-    (await listTaskNodes(taskBoardLocation(root, "domain"))).length,
+    (await listTaskNodes(taskBoardLocation(root, { super: true }))).length,
     1,
   );
   for (const [p, bytesBefore] of bytes)
@@ -203,7 +203,7 @@ test("adopts legacy task-projects-only board index into a readable local section
   await applyAgentsIndexes(planAgentsIndexes(root));
   await applyTaskIndexes(await planTaskIndexes(root));
   assert.equal(
-    (await listTaskNodes(taskBoardLocation(root, "domain"))).length,
+    (await listTaskNodes(taskBoardLocation(root, { super: true }))).length,
     1,
   );
   assert.match(

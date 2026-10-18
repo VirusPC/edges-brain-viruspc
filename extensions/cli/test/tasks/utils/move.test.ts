@@ -13,7 +13,7 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { moveTaskStatus } from "../../../src/services/tasks/move.js";
-import { nodeBoardWriter } from "./helpers.js";
+import { domainBoard, nodeBoardWriter } from "./helpers.js";
 
 for (const entryName of ["index.md", "INDEX.md"]) {
 test(`moveTaskStatus updates frontmatter and moves Task + sidecar (${entryName})`, async () => {
@@ -45,7 +45,7 @@ body
       "utf8",
     );
     await writeFile(path.join(fromDir, "2026-09-13--mv/resource.txt"), "resource bytes", "utf8");
-    const result = await moveTaskStatus(repo, "2026-09-13--mv", "in_progress", {
+    const result = await moveTaskStatus(domainBoard(repo), "2026-09-13--mv", "in_progress", {
       fs: nodeBoardWriter(),
       now: new Date("2026-09-13T12:00:00Z"),
     });
@@ -96,7 +96,7 @@ body
       "# Run log: 2026-09-13--stop\n",
       "utf8",
     );
-    await moveTaskStatus(repo, "2026-09-13--stop", "cancelled", {
+    await moveTaskStatus(domainBoard(repo), "2026-09-13--stop", "cancelled", {
       fs: nodeBoardWriter(),
       now: new Date("2026-09-13T12:00:00Z"),
     });
@@ -142,7 +142,7 @@ body
       "utf8",
     );
     const result = await moveTaskStatus(
-      repo,
+      domainBoard(repo),
       "2026-09-16--keep",
       "in_progress",
       {
@@ -203,7 +203,7 @@ body
       "utf8",
     );
     const result = await moveTaskStatus(
-      repo,
+      domainBoard(repo),
       "2026-09-16--keep",
       "in_progress",
       {

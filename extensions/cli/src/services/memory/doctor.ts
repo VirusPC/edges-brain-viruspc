@@ -328,7 +328,6 @@ export function collectFindings(root: string): MemoryFinding[] {
 export async function applyFindings(
   root: string,
   findings: MemoryFinding[],
-  indexGroup?: import("../../domain/models/core/types.js").ChildGroup,
 ): Promise<string[]> {
   const invalid = new Set(
     findings
@@ -343,14 +342,6 @@ export async function applyFindings(
         .filter((f) => ["migration-required", "unsafe-layout"].includes(f.code))
         .map((f) => join(root, f.path)),
     );
-  if (!indexGroup) for (const owner of discoverMemoryDirs(root)) {
-    if (owner === root || blocked.has(owner) || blockedBy(owner, invalid)) continue;
-    if (!validAnchors(owner, root, invalid).length) {
-      const anchor = validAnchor(owner, root, invalid);
-      if (fs.existsSync(join(anchor, AGENTS_FILE_NAME)))
-        throw new Error('New owner registration requires --index-group local|descendant');
-    }
-  }
   for (const owner of walkOwners(root)) {
     if (blocked.has(owner) || blockedBy(owner, invalid)) continue;
     try {
@@ -456,7 +447,7 @@ export async function applyFindings(
       continue;
     // A surviving local edge already owns this node; dedup must not replace it.
     if (validAnchors(owner, root, invalid).length) continue;
-    const [action, entry] = await syncIndexEntry(anchor, owner, description, indexGroup);
+    const [action, entry] = await syncIndexEntry(anchor, owner, description);
     if (!["preserved", "not-applicable", "needs-doctor", "missing-owner"].includes(action))
       repaired.push(`registered: ${entry}`);
   }
@@ -466,7 +457,6 @@ export interface DoctorMemoryOptions {
   targetDir: string;
   rootDir?: string;
   apply?: boolean;
-  indexGroup?: import("../../domain/models/core/types.js").ChildGroup;
 }
 export async function doctorMemory(options: DoctorMemoryOptions) {
   const target = resolveTarget(options.targetDir);
@@ -481,7 +471,7 @@ export async function doctorMemory(options: DoctorMemoryOptions) {
   }
   const applied = options.apply ?? false,
     findings = collectFindings(root),
-    repaired = applied ? await applyFindings(root, findings, options.indexGroup) : [],
+    repaired = applied ? await applyFindings(root, findings) : [],
     remaining = applied ? collectFindings(root) : findings;
   return {
     operation: "doctor",

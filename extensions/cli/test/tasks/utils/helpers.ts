@@ -9,6 +9,12 @@ import {
   access,
 } from "node:fs/promises";
 import type { BoardFs } from "../../../src/services/tasks/board.js";
+import { taskBoardLocation, type TaskBoardLocation } from "../../../src/services/tasks/paths.js";
+
+/** Fixtures under `<scope>/tasks` are the virtual board. A string scope is the maintenance board. */
+export function domainBoard(scopeDir: string): TaskBoardLocation {
+  return taskBoardLocation(scopeDir, { super: true });
+}
 
 export type BoardWriter = BoardFs & {
   writeFile(abs: string, contents: string): Promise<void>;

@@ -3,7 +3,7 @@ import { dirname, join, relative } from "node:path";
 import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
 import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
-import type { ChildGroup, NodeReference } from "../../domain/models/core/types.js";
+import type { NodeReference } from "../../domain/models/core/types.js";
 import { parseDocument } from "../../utils/markdown/document.js";
 import { NodeService } from "../node/node-service.js";
 import {
@@ -58,7 +58,6 @@ export interface InitScopeOptions {
   env?: NodeJS.ProcessEnv;
   rootDir?: string;
   description?: string;
-  indexGroup?: ChildGroup;
   modules?: readonly string[];
   memoryTypes?: readonly string[];
   skillTypes?: readonly string[];
@@ -298,16 +297,6 @@ async function runTypeInit(
   assertScopePath(join(target, AGENTS_FILE_NAME), target);
   for (const spec of specs.values()) assertScopePath(indexPathForSpec(target, spec), target);
   const anchor = findIndexAnchor(target, root);
-  if (anchor !== target) {
-    const owner = await memoryNodes(anchor).get(join(anchor, AGENTS_FILE_NAME), AgentsNode);
-    if (
-      owner &&
-      !owner.children.some((ref) => ref.id === join(target, AGENTS_FILE_NAME)) &&
-      !options.indexGroup
-    ) {
-      throw new Error("New owner registration requires --index-group local|descendant");
-    }
-  }
   const service = memoryNodes(target);
   await ensureScopeReadme(target, service);
   const created: string[] = [];
@@ -363,7 +352,6 @@ async function runTypeInit(
     anchor,
     target,
     options.description,
-    options.indexGroup,
   );
   return {
     operation: "init",
@@ -392,16 +380,6 @@ async function ensureScopeEntry(options: InitMemoryOptions) {
   const { target, root } = await openScope(options);
   assertScopePath(join(target, AGENTS_FILE_NAME), target);
   const anchor = findIndexAnchor(target, root);
-  if (anchor !== target) {
-    const owner = await memoryNodes(anchor).get(join(anchor, AGENTS_FILE_NAME), AgentsNode);
-    if (
-      owner &&
-      !owner.children.some((ref) => ref.id === join(target, AGENTS_FILE_NAME)) &&
-      !options.indexGroup
-    ) {
-      throw new Error("New owner registration requires --index-group local|descendant");
-    }
-  }
   const service = memoryNodes(target);
   await ensureScopeReadme(target, service);
   const agentsAction = await syncTargetAgents(target, root, service);
@@ -410,7 +388,6 @@ async function ensureScopeEntry(options: InitMemoryOptions) {
     anchor,
     target,
     options.description,
-    options.indexGroup,
   );
   return {
     targetDir: target,
@@ -440,7 +417,6 @@ export async function initScope(options: InitScopeOptions) {
     targetDir,
     rootDir: options.rootDir,
     description: options.description,
-    indexGroup: options.indexGroup,
   };
   // Shared system entry, then each module writes only its own materials.
   const scope = await ensureScopeEntry(base);

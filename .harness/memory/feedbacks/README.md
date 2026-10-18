@@ -39,7 +39,7 @@ format: ordinary
 - [CLI 默认只做系统二操作](<feedback_cli_is_system_two_ops/INDEX.md>) — 改 traverse、scope 根或 tasks 查询入口时：同目录 README 不并进真 AGENTS；层入口本层可登记材料 README，默认 list 顺着它走到任务。\-\-super 仍是虚拟系统。
 - [系统一内容经 SuperAgentsNode 当虚拟系统二](<feedback_content_via_super_agents_node/INDEX.md>) — 改 traverse/\-\-super/tasks 查询时：同目录 README 不并边；层入口可登记材料 README 供默认 list；\-\-super 把材料接到 scope 目录。无 includeContentFace。
 - [traverse 单系统；森林根、Super 挂载与 domain 配置](<feedback_traverse_single_system_and_forest_roots/INDEX.md>) — 改 traverse/森林/Super/harness 材料 IO 时：domain/config/harness\-materials.json；Super 只挂 README；森林 BaseNode\[\]\[\]；edges forest list。
-- [scope、super、all 的组合形成一切](<feedback_scope_super_all/INDEX.md>) — 改 edges 的 list、写任务、帮助或 skill 时：范围只由 \-\-scope、\-\-super、\-\-all 组合决定，不要再加用途、index\-group 或另一套全仓开关。
+- [scope、super、all 的组合形成一切](<feedback_scope_super_all/INDEX.md>) — 改 edges 的 list、写任务、init、doctor、帮助、skill 或持久看板生成时：目录和登记分组只由 \-\-scope、\-\-super、\-\-all 与路径决定，不要再加 purpose、index\-group 或另一套全仓开关。
 - [commands 不直接读 harness 材料表](<feedback_commands_do_not_import_harness_materials/INDEX.md>) — 改 CLI 命令时：不要在 commands 里 import harness\-materials；看板路径与是否存在走该领域 service。
 - [模块 README 不写说明文字](<feedback_no_prose_in_harness_module_readmes/INDEX.md>) — 下放内容或补说明时打开：harness\-materials.json 登记的模块 README（含 \-\-super 视角下根上的 tasks/、notes/、projects/ README）只放标题与受管区块，不加正文；概念进 CONTEXT，命令用法进能力 README。edges/、archive/ 这类内容目录 README 可以写标准。
 - [精简内容前先把要删的迁到合适去处](<feedback_migrate_before_delete/INDEX.md>) — 精简或拆分笔记、清单时：被删的条目先查在别处有没有归宿，没有就先迁过去再删，不直接删除。

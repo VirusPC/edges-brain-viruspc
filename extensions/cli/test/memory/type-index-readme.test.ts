@@ -45,7 +45,6 @@ test("type index path is README.md", () => {
 test("init creates system entry AGENTS.md only at scope root, not organization README.md", async (t) => {
   const dir = fixture(t);
   await initMemory({
-    indexGroup: "descendant",
     targetDir: dir,
     memoryTypes: ["project"],
   });
@@ -57,12 +56,10 @@ test("init creates system entry AGENTS.md only at scope root, not organization R
 test("init writes README type indexes with project-entries markers", async (t) => {
   const dir = fixture(t);
   await initMemory({
-    indexGroup: "descendant",
     targetDir: dir,
     memoryTypes: ["project"],
   });
   await initSkills({
-    indexGroup: "descendant",
     targetDir: dir,
     skillTypes: ["managed"],
   });
@@ -89,7 +86,7 @@ test("init writes README type indexes with project-entries markers", async (t) =
 
 test("remember lists the entry in README project-entries-local and registers it once", async (t) => {
   const dir = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: dir, memoryTypes: ["project"] });
+  await initMemory({ targetDir: dir, memoryTypes: ["project"] });
   const result = await rememberMemory({
     targetDir: dir,
     type: "project",
@@ -125,7 +122,7 @@ test("remember lists the entry in README project-entries-local and registers it 
 
 test("add-type creates a README index and links it from layer AGENTS", async (t) => {
   const dir = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: dir, memoryTypes: ["project"] });
+  await initMemory({ targetDir: dir, memoryTypes: ["project"] });
   const result = await addMemoryType({
     targetDir: dir,
     name: "docs",
@@ -146,12 +143,10 @@ test("add-type creates a README index and links it from layer AGENTS", async (t)
 test("a missing type index is created as README.md for memory and skills", async (t) => {
   const dir = fixture(t);
   await initMemory({
-    indexGroup: "descendant",
     targetDir: dir,
     memoryTypes: ["project"],
   });
   await initSkills({
-    indexGroup: "descendant",
     targetDir: dir,
     skillTypes: ["managed"],
   });
@@ -172,7 +167,7 @@ test("a missing type index is created as README.md for memory and skills", async
 
 test("legacy AGENTS.md type index still discovers and loads until migrated", async (t) => {
   const dir = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: dir, memoryTypes: ["project"] });
+  await initMemory({ targetDir: dir, memoryTypes: ["project"] });
   const base = join(dir, ".harness/memory/projects");
   const legacy = `<!-- project-memory-type:start -->
 name: project

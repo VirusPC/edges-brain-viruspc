@@ -244,7 +244,7 @@ test("createTask writes default edges-task-project on disk and returns project d
     assert.equal(created.project, "default");
     assert.equal(
       created.path,
-      "tasks/_default/backlog/2026-09-16--No-Proj/INDEX.md",
+      ".harness/tasks/_default/backlog/2026-09-16--No-Proj/INDEX.md",
     );
     const md = await readFile(path.join(repo, created.path), "utf8");
     assert.match(md, /edges-task-project: default/);
@@ -263,7 +263,7 @@ test("createTask --project cli writes field and named directory", async () => {
       { fs: nodeBoardWriter(), now: new Date(2026, 8, 16, 12, 0, 0) },
     );
     assert.equal(created.project, "cli");
-    assert.equal(created.path, "tasks/cli/todo/2026-09-16--Named/INDEX.md");
+    assert.equal(created.path, ".harness/tasks/cli/todo/2026-09-16--Named/INDEX.md");
     const md = await readFile(path.join(repo, created.path), "utf8");
     assert.match(md, /edges-task-project: cli/);
     await access(path.join(repo, created.sidecarPath));
@@ -312,7 +312,7 @@ test("updateTask --project cli moves Task + sidecar and dual-writes", async () =
       { fs: nodeBoardWriter(), now: new Date(2026, 8, 16, 13, 0, 0) },
     );
     assert.equal(updated.project, "cli");
-    assert.equal(updated.path, "tasks/cli/todo/2026-09-16--Move-me/INDEX.md");
+    assert.equal(updated.path, ".harness/tasks/cli/todo/2026-09-16--Move-me/INDEX.md");
     const md = await readFile(path.join(repo, updated.path), "utf8");
     assert.match(md, /edges-task-project: cli/);
     assert.match(md, /edges-tasks-status: todo/);
@@ -320,7 +320,7 @@ test("updateTask --project cli moves Task + sidecar and dual-writes", async () =
     await access(
       path.join(
         repo,
-        "tasks/cli/todo/2026-09-16--Move-me/.2026-09-16--Move-me.log.md",
+        ".harness/tasks/cli/todo/2026-09-16--Move-me/.2026-09-16--Move-me.log.md",
       ),
     );
     await assert.rejects(access(path.join(repo, created.path)));
@@ -346,7 +346,7 @@ test("updateTask --project default writes the field and does not require other f
     assert.equal(updated.project, "default");
     assert.equal(
       updated.path,
-      "tasks/_default/in_progress/2026-09-16--Home/INDEX.md",
+      ".harness/tasks/_default/in_progress/2026-09-16--Home/INDEX.md",
     );
     const md = await readFile(path.join(repo, updated.path), "utf8");
     assert.match(md, /edges-task-project: default/);
@@ -390,7 +390,7 @@ test("updateTask --project dest-exists is BOARD_IO_ERROR and does not move", asy
       { title: "Mover", status: "todo" },
       io,
     );
-    const destRel = `tasks/cli/todo/${mover.stem}.md`;
+    const destRel = `.harness/tasks/cli/todo/${mover.stem}/INDEX.md`;
     await mkdir(path.dirname(path.join(repo, destRel)), { recursive: true });
     await writeFile(path.join(repo, destRel), "blocker\n", "utf8");
     await assert.rejects(

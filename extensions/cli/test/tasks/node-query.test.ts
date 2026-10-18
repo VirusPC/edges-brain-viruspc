@@ -77,7 +77,7 @@ test("board reads only registered tasks/projects and keeps stem ambiguity checks
   index("tasks/empty/AGENTS.md", []);
   task("tasks/alpha/todo/same/index.md", "alpha");
   task("tasks/unregistered/todo/same/index.md", "unregistered");
-  const target = taskBoardLocation(root, "domain"),
+  const target = taskBoardLocation(root, { super: true }),
     io = createNodeBoardFs(target);
   assert.deepEqual(await listProjectIds(target, io), ["alpha", "empty"]);
   assert.equal((await listTasks(target, {}, io)).length, 1);
@@ -88,7 +88,7 @@ test("board reads only registered tasks/projects and keeps stem ambiguity checks
 });
 test("missing board is empty, existing unindexed board requests migration", async (t) => {
   const { root, write } = fixture(t);
-  const target = taskBoardLocation(root, "domain");
+  const target = taskBoardLocation(root, { super: true });
   assert.deepEqual(await listTaskNodes(target), []);
   write("tasks/_default/todo/old/index.md", "Old");
   const material = (await import("../../src/domain/config/harness-materials.js")).placeHarnessMaterial(root, "tasks", { super: true }).absPath;
@@ -126,7 +126,7 @@ test("repository includes every harness depth and physical origins despite alias
     [".harness/tasks/AGENTS.md"],
   );
   assert.equal(
-    (await listTaskNodes(taskBoardLocation(root, "domain"))).length,
+    (await listTaskNodes(taskBoardLocation(root, { super: true }))).length,
     1,
   );
   const all = await listRepositoryTaskNodes(root);
@@ -186,9 +186,6 @@ test("global grouped projection preserves empty indexed projects and separates s
     "domain",
     "maintenance",
   ]);
-  const only = await listRepositoryGroupedByProject(root, {}, "maintenance");
-  assert.equal(only.groups.length, 2);
-  assert.equal(only.items.length, 1);
 });
 
 test("explicit get rejects status metadata mismatch just like indexed lists", async (t) => {
@@ -203,7 +200,7 @@ test("explicit get rejects status metadata mismatch just like indexed lists", as
       .readFileSync(file, "utf8")
       .replace("edges-tasks-status: todo", "edges-tasks-status: done"),
   );
-  const target = taskBoardLocation(root, "domain"),
+  const target = taskBoardLocation(root, { super: true }),
     io = createNodeBoardFs(target);
   await assert.rejects(listTasks(target, {}, io), /dual-write mismatch/);
   await assert.rejects(
@@ -217,7 +214,7 @@ test("selected board rejects a registered reference into another board", async (
   index("tasks/AGENTS.md", ["../.harness/tasks/_default/todo/same/index.md"]);
   task(".harness/tasks/_default/todo/same/index.md");
   await assert.rejects(
-    listTaskNodes(taskBoardLocation(root, "domain")),
+    listTaskNodes(taskBoardLocation(root, { super: true })),
     /outside selected task board/,
   );
 });
@@ -228,7 +225,7 @@ test('board query grouping keeps chaining lazy and repeatable after operations m
   index('tasks/_default/AGENTS.md', ['todo/same/index.md']);
   task('tasks/_default/todo/same/index.md');
   const { taskBoardQuery } = await import('../../src/services/tasks/node-query.js');
-  const source = await taskBoardQuery(taskBoardLocation(root, 'domain'));
+  const source = await taskBoardQuery(taskBoardLocation(root, { super: true }));
   let calls = 0;
   const chain = source.filter((node): node is TaskNode => node instanceof TaskNode)
     .map(node => {calls++; return node;})

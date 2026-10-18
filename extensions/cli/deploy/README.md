@@ -13,7 +13,7 @@ pnpm install --frozen-lockfile --filter edges-cli... --filter tasks-review-app..
 pnpm --filter tasks-review-app run build
 pnpm --filter edges-cli run build:schemas
 pnpm --filter edges-cli exec -- tsx scripts/generate-tasks-site.ts \
-  --scope "$PWD" --purpose all --out "$PWD/tasks/_site/index.html"
+  --scope "$PWD" --out "$PWD/tasks/_site/index.html"
 ```
 
 From a checkout with PATH already set (same as the Action):
@@ -22,12 +22,12 @@ From a checkout with PATH already set (same as the Action):
 pnpm --filter tasks-review-app run build
 pnpm --filter edges-cli run build:schemas
 pnpm --filter edges-cli exec -- tsx scripts/generate-tasks-site.ts \
-  --scope "$PWD" --purpose all --out "$PWD/tasks/_site/index.html"
+  --scope "$PWD" --out "$PWD/tasks/_site/index.html"
 ```
 
 If dependencies are missing, `pnpm install --frozen-lockfile --filter edges-cli... --filter tasks-review-app...`, then `pnpm --filter tasks-review-app run build` and `pnpm --filter edges-cli run build:schemas`. The Vite files and `dist/schemas/` are gitignored and are not in the git checkout. Output HTML is gitignored (`tasks/_site/`). A failed generate fails the Action; nginx keeps serving the last good `index.html` until the next success. `edges artifacts server install` / `restart` do not read these schema files. `deploy/bootstrap.sh` only wraps those two server commands.
 
-`--scope "$PWD" --purpose all` gathers the root and actual descendant scopes, including domain and maintenance tasks. Public `/tasks/` remains one aggregated board.
+`--scope "$PWD"` gathers the root and actual descendant scopes, including domain and maintenance tasks. Public `/tasks/` remains one aggregated board.
 
 The Action does **not** re-run nginx setup. After generation it runs `sudo -n /usr/local/sbin/edges-migrate-site-layout`. That command is a root-owned copy, not a script in this repo: teaching locations serve `<repo>/teaching/`, and the installed tasks snippet serves `<repo>/tasks/_site/`. It keeps unrelated roots, backs up both configs, validates with `nginx -t`, restores on failure, and reloads only when changed. This runs regardless of the artifacts token/env file.
 

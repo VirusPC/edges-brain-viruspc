@@ -1,4 +1,4 @@
-import { Command, Option } from "commander";
+import { Command } from "commander";
 import type { CliContext } from "../../context.js";
 import { initTasks } from "../../services/tasks/service.js";
 import { fail, succeed } from "../result.js";
@@ -11,7 +11,6 @@ export function addTaskInitCommand(tasks: Command, ctx: CliContext): void {
     .description("Initialize the tasks board and scope AGENTS.md. Does not read --super.")
     .option("--target-dir <directory>", "Explicit target scope (otherwise use --scope or scope discovery)")
     .option("--root-dir <directory>", "Boundary for the scope tree")
-    .addOption(new Option("--index-group <group>", "Caller-selected parent index group").choices(["local", "descendant"]))
     .option("--description <text>", "Description in the parent scope index")
     .allowExcessArguments(false)
     .action(
@@ -19,7 +18,6 @@ export function addTaskInitCommand(tasks: Command, ctx: CliContext): void {
         targetDir?: string;
         rootDir?: string;
         description?: string;
-        indexGroup?: "local" | "descendant";
       }) => {
         try {
           const result = await initTasks({ ...options, env: ctx.env });

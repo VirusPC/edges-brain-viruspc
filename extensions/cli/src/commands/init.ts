@@ -1,4 +1,4 @@
-import { Command, Option } from "commander";
+import { Command } from "commander";
 import type { CliContext } from "../context.js";
 import { initScope } from "../services/init/service.js";
 import { fail, succeed } from "./result.js";
@@ -27,7 +27,6 @@ export function addInitCommand(program: Command, ctx: CliContext): void {
     .argument("[module...]", "Repeatable module: memory, skills, tasks, notes, or projects")
     .option("--target-dir <directory>", "Explicit target scope (otherwise use --scope or scope discovery)")
     .option("--root-dir <directory>", "Boundary for the scope tree")
-    .addOption(new Option("--index-group <group>", "Caller-selected parent index group").choices(["local", "descendant"]))
     .option("--description <text>", "Description in the parent scope index")
     .option("--memory-types <types...>", "Select memory types: project feedback reference user")
     .option("--skill-types <types...>", "Select skill types: managed referenced")
@@ -40,7 +39,6 @@ export function addInitCommand(program: Command, ctx: CliContext): void {
           targetDir?: string;
           rootDir?: string;
           description?: string;
-          indexGroup?: "local" | "descendant";
           memoryTypes?: string[];
           skillTypes?: string[];
         },

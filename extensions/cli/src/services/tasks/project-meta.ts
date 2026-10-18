@@ -7,7 +7,7 @@ import { ENTRIES_SECTIONS, ENTRY_NAMES } from "../../domain/models/layout.js";
 import { serializeNode } from '../../domain/models/agents/serialize.js';
 import { NodeService } from '../node/node-service.js';
 import { assertBoardPath } from './board.js';
-import { scopeDir, boardRel, type BoardTarget } from "./paths.js";
+import { scopeDir, boardRel, resolveBoard, type BoardTarget } from "./paths.js";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import type { NodeReference } from "../../domain/models/core/types.js";
@@ -164,7 +164,7 @@ async function resolveProjectEntry(
 }
 
 function boardIsVirtual(repoPath: BoardTarget): boolean {
-  return typeof repoPath === "string" || repoPath.purpose === "domain";
+  return resolveBoard(repoPath).purpose === "domain";
 }
 /** Absolute tasks material from harness-materials. Virtual boards sit on the scope; maintenance boards sit under `.harness`. */
 function tasksMaterialAbsPath(repoPath: BoardTarget): string {
@@ -232,10 +232,9 @@ function projectNodes(target: BoardTarget): NodeService {
   const scope = realpathSync(scopeDir(target)), owner = path.join(scope, ENTRY_NAMES.internal);
   return new NodeService({ managedRoot: scope, assertWrite: async ({ node }) => {
     if (node.path === owner && existsSync(owner)) return;
-    await assertBoardPath({ scopeDir: scope, purpose: typeof target === "string" ? "domain" : target.purpose, boardDir: path.join(scope, boardRel(target)) }, node.path);
+    await assertBoardPath(resolveBoard(target), node.path);
   } });
 }
-function selectedGroup(target: BoardTarget) { return typeof target === 'string' ? undefined : target.indexGroup; }
 
 async function prepareProjectWrite(target: BoardTarget, service: NodeService): Promise<void> {
   await assertBoardPath(target, tasksMaterialAbsPath(target));
@@ -294,10 +293,9 @@ export async function refreshProjectIndex(
   // A child already sitting in the board directory counts as hung, whatever its filename.
   const alreadyHung = owner?.children.some((ref) => path.dirname(ref.id) === boardDir) === true;
   if (owner && material.startsWith(harnessPrefix) && !alreadyHung) {
-    const group = selectedGroup(repoPath) ?? "local";
     await service.update(owner, {
-      localChildren: group === "local" ? [...owner.localChildren, { id: material }] : owner.localChildren,
-      descendantChildren: group === "descendant" ? [...owner.descendantChildren, { id: material }] : owner.descendantChildren,
+      localChildren: [...owner.localChildren, { id: material }],
+      descendantChildren: owner.descendantChildren,
     });
   }
   return records;

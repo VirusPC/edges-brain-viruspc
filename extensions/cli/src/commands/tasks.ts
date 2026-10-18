@@ -27,7 +27,7 @@ COMMANDS
   delete <stem|path>
     Does not delete files. Run: edges tasks status <stem|path> cancelled
   status <stem|path> <edges-tasks-status>
-  init     [--target-dir] [--root-dir] [--index-group] [--description]
+  init     [--target-dir] [--root-dir] [--description]
     Creates only the tasks board. Does not read --super.
   runs <stem|path> [--output table|json]
   run-messages <run-id> [--task <stem>] [--output table|json]
