@@ -9,7 +9,7 @@
 1. **第一次真正把 CLI 发到公共 npm**，让人可以用 `npm i -g @viruspc/edges` 装到机器上跑，而不是只在 monorepo 里 `pnpm` 调。
 2. **把发版从「有人登录 box + 贴 token + 等人 2FA」变成「推 tag → CI 测 → 人在 GitHub Environment 点一下 → OIDC 发」**，尽量不要长效 NPM_TOKEN。
 
-2026-10-18 先用手动 stage 发出 **0.1.0**（PR #264 合入后发布）。同日稍后拍板 GitHub Actions；**0.2.0**（版本 bump PR #278）用来验证新流水线。两套路径会抢同一 semver，所以 0.2.0 的手动 stage 最终被 reject，改走 Actions。
+2026-10-18 先用手动 stage 发出 **0.1.0**（PR #264 合入后发布）。同日稍后拍板 GitHub Actions；**0.2.0**（版本 bump PR #278）用来验证新流水线。两套路径会抢同一 semver，所以 0.2.0 的手动 stage 最终被 reject，改走 Actions。Actions 首发时 0.2.0 仍被 npm 记为「曾 staged」，直发报 E409，最终以 **0.2.1**（PR #284）成功上 npm。
 
 ## 主题
 
@@ -22,6 +22,9 @@
 - 难点五：**stage-only token 不能直发**——直接 `npm publish` 会 404；手动路径必须 `pnpm pack` → `npm stage publish <tgz>`，再等人在 npmjs.com 用 2FA 批准。
 - 难点六：**「发了 npm」≠「GitHub 主页有 Packages」**——侧栏只认 GitHub Packages；npmjs 包要靠 README 徽章露出。
 - 难点七：**只发 CLI dist 不够**——0.1.0 不含 `extensions/skills/`，装完 CLI agent 仍缺 skills（另开 ADR 0036 / 任务卡）。
+- 难点八：**Environment 名必须字节级一致**——workflow 写 `npm-publish`、GitHub 里若误建成 `npm-publush`，GitHub 会**自动新建一个无门禁的空 Environment**，publish 不卡审批直接跑；人以为「我没批」，其实门没挂上。
+- 难点九：**reject 掉的 stage 仍占住该 semver**——`Cannot publish over previously staged version "0.2.0"`（E409）。OIDC 与 provenance 都可能已成功，仍须 **bump 版本**（本例改发 0.2.1）。
+- 难点十：**GitHub 手机 App 审批入口不在运行页**——运行页只有 Cancel；待审批在 **Inbox 通知**（需开启 “Requests to approve a deployment”）。浏览器桌面站运行页才有黄色 Review deployments。
 
 ## 过程
 
@@ -150,17 +153,28 @@ GitHub 个人页 / 仓库侧栏 **Packages** 只列出发布到 **GitHub Package
 
 ### 0.2.0：与手动 stage 的交叉
 
-在 Actions 就绪前，全栈侧曾按 Grok Bot 教的流程 stage 过 0.2.0（stage id `7128c509-376a-40d3-b23e-0ca2a0c799f3`）。为验证 OIDC，用户 **reject** 该 stage 后再推 tag。若当时 approve，registry 已有 0.2.0，workflow 会故意失败。
+在 Actions 就绪前，全栈侧曾按 Grok Bot 教的流程 stage 过 0.2.0（stage id `7128c509-376a-40d3-b23e-0ca2a0c799f3`）。为验证 OIDC，用户 **reject** 该 stage 后再推 tag。若当时 approve，registry 已有 0.2.0，workflow 会故意失败——但即便 reject，后面仍会撞上「曾 staged」的 E409（见下）。
+
+### 首发踩坑时间线（0.2.0 → 0.2.1，Asia/Shanghai 约 2026-10-19 01:00～02:10）
+
+1. **Environment 拼写错误**：某次配置写成 `npm-publush`。run 不出现 Waiting，助手误报「你已批」；用户说「我没有审批呀」。纠正为精确名 `npm-publish` 并设 Required reviewers 后，才真正卡门。
+2. **Trusted Publisher 未对齐时的 E404**：publish 日志对 registry 的 PUT 报 E404（与「包不存在」不同语境）。核对 npm 页字段：仓库 `VirusPC/edges`、workflow 文件名 `publish-edges-cli.yml`、Environment `npm-publish`、Allowed actions 含 **npm publish**（及可选 npm stage publish）。用户截图显示 Pending validation（约须在 Oct 20 2026 5:36 PM UTC / 上海次日凌晨前完成一次成功 publish）。
+3. **OIDC 已通仍 E409**：重跑后 provenance 已签名并写入透明日志（例：`https://search.sigstore.dev/?logIndex=3314541766`），最终 `409 Conflict - Cannot publish over previously staged version "0.2.0"`。reject 不能腾出版本号。
+4. **改发 0.2.1**：PR [#284](https://github.com/VirusPC/edges/pull/284) bump `package.json`、CHANGELOG 注明跳过 0.2.0、README 示例、任务卡进度日志（状态未改）。合入 `0e7cceb5` 后打 annotated tag `@viruspc/edges@0.2.1` 并推送。
+5. **审批入口**：用户在手机 App 运行页找不到 Review。查证：[GitHub Mobile 自 2021-04 支持部署审批](https://github.blog/changelog/2021-04-01-reviewing-deployments-on-github-mobile/)，入口在 **Inbox 通知**，不在运行页步骤列表。也可用浏览器打开 run 页，或 `gh api .../pending_deployments` 批准（仅在用户明确要求时代批）。
+6. **0.2.1 成功**：run [39151340074](https://github.com/VirusPC/edges/actions/runs/39151340074) test + publish 均 success；日志 `+ @viruspc/edges@0.2.1`，并提示 *Your package is being processed and may take a few minutes*。约一两分钟后 `npm view` 的 `latest` 变为 `0.2.1`。
 
 ## 结果
 
 | 项 | 状态（整理时） |
 | --- | --- |
 | 0.1.0 | 已在 npm（手动 stage + 人批）；任务卡 done |
+| 0.2.0 | **未**进 npm：曾 staged 后 reject，Actions 直发 E409；版本号作废 |
+| 0.2.1 | 已在 npm（Actions OIDC，run 39151340074）；`dist-tags.latest` = `0.2.1` |
 | 默认发版路径 | Actions + OIDC（ADR 0037） |
 | 应急路径 | 手动 `pnpm pack` + `npm stage publish` + 2FA |
-| #281 / #282 / #280 / #278 / #264 | 已合 main |
-| 0.2.0 Actions 首发 | 以当时 Actions run 与 `npm view @viruspc/edges version` 为准 |
+| #281 / #282 / #280 / #278 / #264 / #284 | 已合 main |
+| 本笔记 | PR #283（补完首发踩坑后合入） |
 | skills 随安装 | 另案（ADR 0036），不在本笔记展开实现细节 |
 
 ## 所学
@@ -174,6 +188,10 @@ GitHub 个人页 / 仓库侧栏 **Packages** 只列出发布到 **GitHub Package
 - **`0.0.0-stage` 噪音**：当占位，不当产品版本。
 - **可见性**：用户问「GitHub 主页怎么没 package」时先解释 Packages 源，再决定徽章还是双发。
 - **产品缺口**：CLI 上 npm ≠ skills 开箱可用。
+- **拼错 Environment = 假「已批」**：名字不一致时 GitHub 静默建空环境，门禁失效；以 run 是否出现 Waiting / `pending_deployments` 为准，不要靠「我点过没」。
+- **reject ≠ 释放版本号**：曾 staged 的 `x.y.z` 不能再 `npm publish` 同号；唯一干净出路是 bump。
+- **OIDC 成功 ≠ 包已可装**：日志里 provenance / `+ pkg@version` 之后，registry 可能还要处理一两分钟再 `npm view` 可见。
+- **手机审批在 Inbox**：运行页没有 Approve；别让用户在步骤列表里空找。
 
 ## 行动指南
 
@@ -194,7 +212,7 @@ GitHub 个人页 / 仓库侧栏 **Packages** 只列出发布到 **GitHub Package
 3. 在发版提交上打 annotated tag 并推送：
    `git tag -a '@viruspc/edges@x.y.z' -m 'Release @viruspc/edges@x.y.z'`
    `git push origin 'refs/tags/@viruspc/edges@x.y.z'`
-4. 打开 Actions：`Publish @viruspc/edges` → 等 test 绿 → **Review deployments → Approve** `npm-publish`。
+4. 打开 Actions：`Publish @viruspc/edges` → 等 test 绿 → publish 变 Waiting → **审批 `npm-publish`**：桌面浏览器在 run 页点 Review deployments；手机 App 去 **Inbox** 里的部署审批通知（运行页通常只有 Cancel）。
 5. 验收：`npm view @viruspc/edges version`；干净环境 `npm i -g @viruspc/edges@x.y.z` 后跑 `--help` / `init`（按版本能力加测）。
 
 相关可选项：继续纯手动 stage——适合抢救或 Trusted Publisher 挂掉时；长期默认成本高（token、Node 升级、2FA 扫描等待）。双发 GitHub Packages——侧栏好看，维护翻倍，通常不做。
@@ -208,6 +226,18 @@ GitHub 个人页 / 仓库侧栏 **Packages** 只列出发布到 **GitHub Package
 - README / ADR 0037 与 workflow 一致。
 
 ### 细节与其他
+
+#### 若 Environment 配完仍不出现 Waiting
+
+则：立刻核对 workflow 里的 `environment:` 字符串与 Settings → Environments 的**显示名**是否完全一致（含拼写）。不一致时 GitHub 会建一个无 Required reviewers 的同名/错名环境，publish 直接跑。用 `gh api repos/VirusPC/edges/actions/runs/<id>/pending_deployments` 看是否真有待批项。
+
+#### 若 publish 报 E409 previously staged version
+
+则：该版本号已废，**bump package.json**（如 0.2.0 → 0.2.1），合 PR，打新 annotated tag；不要指望 reject stage 或挪旧 tag 复活同号。CHANGELOG 写明跳过原因。
+
+#### 若手机 App 运行页找不到审批
+
+则：去 Inbox 找部署审批通知；或开桌面站点的 run URL。助手仅在用户明确说「你来批」时用 `gh api .../pending_deployments` 代批。
 
 #### 若走手动 stage（应急）
 
@@ -245,7 +275,7 @@ GitHub 个人页 / 仓库侧栏 **Packages** 只列出发布到 **GitHub Package
 
 ## 对照表
 
-| | 手动 stage（0.1.0 实证） | Actions OIDC（0.2.0 起默认） |
+| | 手动 stage（0.1.0 实证） | Actions OIDC（0.2.1 起默认；0.2.0 作废） |
 | --- | --- | --- |
 | 谁构建 | 本机/box 上 pnpm | Actions `test`/`publish` job |
 | 谁上传 | `npm stage publish` | `pnpm publish` → npm（OIDC） |
@@ -257,7 +287,7 @@ GitHub 个人页 / 仓库侧栏 **Packages** 只列出发布到 **GitHub Package
 
 ## 补充说明
 
-- **原始材料**：助手「全栈开发专家」「Grok Bot」会话（约 2026-10-18～19，Asia/Shanghai）；PR [#264](https://github.com/VirusPC/edges/pull/264)、[#273](https://github.com/VirusPC/edges/pull/273)、[#278](https://github.com/VirusPC/edges/pull/278)、[#280](https://github.com/VirusPC/edges/pull/280)、[#281](https://github.com/VirusPC/edges/pull/281)、[#282](https://github.com/VirusPC/edges/pull/282)；ADR [0037](../../docs/adr/0037-npm-publish-via-github-actions.md)、[0036](../../docs/adr/0036-edges-init-installs-bundled-skills.md)；workflow `.github/workflows/publish-edges-cli.yml`；守卫 `extensions/cli/scripts/assert-pnpm-publish.mjs`；Actions runs `39148971966`、`39149375556`。
-- **标识**：包 `@viruspc/edges`；tag `@viruspc/edges@*`；Environment `npm-publish`；workflow 文件名 `publish-edges-cli.yml`。
-- **官方文档**：[Trusted publishing for npm packages](https://docs.npmjs.com/trusted-publishers/)
-- **本笔记 PR**：入库后链到合并的 docs PR（撰写时为 draft/open 的笔记 PR）。
+- **原始材料**：助手「全栈开发专家」「Grok Bot」会话（约 2026-10-18～19，Asia/Shanghai）；PR [#264](https://github.com/VirusPC/edges/pull/264)、[#273](https://github.com/VirusPC/edges/pull/273)、[#278](https://github.com/VirusPC/edges/pull/278)、[#280](https://github.com/VirusPC/edges/pull/280)、[#281](https://github.com/VirusPC/edges/pull/281)、[#282](https://github.com/VirusPC/edges/pull/282)、[#283](https://github.com/VirusPC/edges/pull/283)（本笔记）、[#284](https://github.com/VirusPC/edges/pull/284)（bump 0.2.1）；ADR [0037](../../docs/adr/0037-npm-publish-via-github-actions.md)、[0036](../../docs/adr/0036-edges-init-installs-bundled-skills.md)；workflow `.github/workflows/publish-edges-cli.yml`；守卫 `extensions/cli/scripts/assert-pnpm-publish.mjs`；Actions runs [39148971966](https://github.com/VirusPC/edges/actions/runs/39148971966)（annotated 剥皮失败）、[39149375556](https://github.com/VirusPC/edges/actions/runs/39149375556)（OIDC 通后 E409）、[39151340074](https://github.com/VirusPC/edges/actions/runs/39151340074)（0.2.1 成功）。
+- **标识**：包 `@viruspc/edges`；tag `@viruspc/edges@*`；Environment `npm-publish`（勿拼成 `npm-publush`）；workflow 文件名 `publish-edges-cli.yml`。
+- **官方文档**：[Trusted publishing for npm packages](https://docs.npmjs.com/trusted-publishers/)；[Reviewing deployments on GitHub Mobile](https://github.blog/changelog/2021-04-01-reviewing-deployments-on-github-mobile/)
+- **本笔记 PR**：[#283](https://github.com/VirusPC/edges/pull/283)
