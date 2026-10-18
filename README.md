@@ -1,6 +1,6 @@
 # Edges
 
-[![站点部署](https://github.com/VirusPC/edges/actions/workflows/deploy.yml/badge.svg)](https://github.com/VirusPC/edges/actions/workflows/deploy.yml) ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/VirusPC/edges?utm_source=oss&utm_medium=github&utm_campaign=VirusPC%2Fedges&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+[![npm](https://img.shields.io/npm/v/@viruspc/edges?label=npm&color=CB3837)](https://www.npmjs.com/package/@viruspc/edges) [![站点部署](https://github.com/VirusPC/edges/actions/workflows/deploy.yml/badge.svg)](https://github.com/VirusPC/edges/actions/workflows/deploy.yml) ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/VirusPC/edges?utm_source=oss&utm_medium=github&utm_campaign=VirusPC%2Fedges&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 **harness 任何目录。你的大脑，也是一个目录。**
 
