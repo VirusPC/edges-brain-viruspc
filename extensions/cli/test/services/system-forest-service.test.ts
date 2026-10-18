@@ -4,7 +4,7 @@ import * as fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { AgentsNode } from "../../src/domain/models/index.js";
-import { SuperAgentsNode } from "../../src/domain/models/agents/super-agents-node.js";
+import { SuperAgentsNode } from "../../src/domain/models/super-agents/super-agents-node.js";
 import { buildSystemForest } from "../../src/services/node/system-forest-service.js";
 
 function writeAgents(
