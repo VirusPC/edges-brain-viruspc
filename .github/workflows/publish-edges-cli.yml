@@ -1,0 +1,104 @@
+name: Publish @viruspc/edges
+
+on:
+  push:
+    tags: ['@viruspc/edges@*']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assert tag is annotated
+        run: |
+          set -euo pipefail
+          if [ "$(git cat-file -t "refs/tags/${GITHUB_REF_NAME}")" != "tag" ]; then
+            echo "tag ${GITHUB_REF_NAME} must be annotated"
+            exit 1
+          fi
+
+      - name: Assert tag == package.json version
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          PREFIX='@viruspc/edges@'
+          case "$TAG" in
+            "$PREFIX"*) VER="${TAG#"$PREFIX"}" ;;
+            *) echo "unexpected tag: $TAG"; exit 1 ;;
+          esac
+          PKG="$(node -p "require('./extensions/cli/package.json').version")"
+          if [ "$VER" != "$PKG" ]; then
+            echo "tag version $VER != package.json $PKG"
+            exit 1
+          fi
+
+      - name: Assert tag commit is ancestor of origin/main
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor HEAD origin/main
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @viruspc/edges test
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm install -g npm@^11.5.1
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Fail if version already on npm
+        run: |
+          set -euo pipefail
+          VER="$(node -p "require('./extensions/cli/package.json').version")"
+          set +e
+          OUT="$(npm view "@viruspc/edges@${VER}" version 2>&1)"
+          CODE=$?
+          set -e
+          if [ "$CODE" -eq 0 ]; then
+            echo "@viruspc/edges@${VER} already on npm"
+            exit 1
+          fi
+          if printf '%s\n' "$OUT" | grep -q 'E404'; then
+            echo "@viruspc/edges@${VER} is not on npm"
+            exit 0
+          fi
+          echo "npm view @viruspc/edges@${VER} failed (exit ${CODE})"
+          printf '%s\n' "$OUT"
+          exit 1
+
+      - name: Publish
+        run: pnpm --filter @viruspc/edges publish --no-git-checks --access public
