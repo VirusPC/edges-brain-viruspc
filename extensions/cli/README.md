@@ -268,12 +268,13 @@ init 管理客户端配置，publish/rm 调用预览服务并返回 JSON。serve
 ```bash
 edges --scope <directory> compose register --name brain --path ../brain --remote https://github.com/example/brain.git --description "个人大脑"
 edges --scope <directory> compose list
+edges --scope <directory> compose unregister --name brain
 edges --scope <directory> compose clone
 edges --scope <directory> compose pull
 edges --scope <directory> compose push --name brain
 ```
 
-`register` 和 `list` 读写当前作用域的 Compose block，经 NodeService 保存 `AGENTS.md`。`clone` 把尚未检出的条目 `git clone` 到登记目录；该目录已经是同一 origin 的检出时保持不动。`pull` 与 `push` 在检出目录里执行这个仓库自己的 `git pull` / `git push`，不另建提交。`--name` 只处理一条。查询节点树时会走进这些目录的 `AGENTS.md`。
+`register`、`list` 和 `unregister` 读写当前作用域的 Compose block，经 NodeService 保存 `AGENTS.md`。`unregister` 按 `--name` 去掉一条登记，不删除已 clone 的目录。`clone` 把尚未检出的条目 `git clone` 到登记目录；该目录已经是同一 origin 的检出时保持不动。`pull` 与 `push` 在检出目录里执行这个仓库自己的 `git pull` / `git push`，不另建提交。`clone` / `pull` / `push` 的 `--name` 只处理一条。查询节点树时会走进这些目录的 `AGENTS.md`。
 
 <a id="json-schema-contracts"></a>
 

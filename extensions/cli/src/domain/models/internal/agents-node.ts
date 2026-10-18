@@ -255,6 +255,16 @@ export class AgentsNode extends BaseNode<
     this.#syntax.serialize(this.#syntaxContent(this.#content));
     return this;
   }
+  unregisterCompose(name: string): this {
+    const trimmed = name.trim();
+    if (!trimmed)
+      throw new Error(`${this.path}: compose entry name is required`);
+    if (!this.#compose.some((entry) => entry.name === trimmed))
+      throw new Error(`${this.path}: compose entry not found: ${trimmed}`);
+    this.#compose = this.#compose.filter((entry) => entry.name !== trimmed);
+    this.#syntax.serialize(this.#syntaxContent(this.#content));
+    return this;
+  }
   protected override applyInput(input: AgentsCreateInput): void {
     const structured =
       input.constraints !== undefined ||

@@ -168,7 +168,7 @@ function commandWriteTarget(
         (name === "doctor" && options.apply) ||
         (name === "migrate" && !options.dryRun))) ||
     (parent === "compose" &&
-      ["register", "clone", "pull", "push"].includes(name));
+      ["register", "unregister", "clone", "pull", "push"].includes(name));
   if (!writes) return undefined;
   if (
     options.targetDir &&

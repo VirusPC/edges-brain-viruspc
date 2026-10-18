@@ -76,6 +76,15 @@ test("registerCompose writes the block and keeps existing sections", () => {
   const again = new AgentsNode(file).parse(source);
   assert.equal(again.composeEntries[0]?.name, "team");
   assert.equal(again.localChildren[0]?.name, "tasks");
+  again.unregisterCompose("team");
+  const cleared = again.serialize();
+  assert.doesNotMatch(cleared, /\[team\]/);
+  assert.match(cleared, /\[tasks\]\(<\.harness\/tasks\/README\.md>\)/);
+  assert.equal(new AgentsNode(file).parse(cleared).composeEntries.length, 0);
+  assert.throws(
+    () => again.unregisterCompose("team"),
+    /compose entry not found: team/,
+  );
 });
 
 test("traverse follows compose edges into another repository, including localOnly", async () => {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -48,6 +48,7 @@ test("edges compose --help lists clone, pull, and push", async () => {
   assert.match(result.stdout, /^\s+pull\b/m);
   assert.match(result.stdout, /^\s+push\b/m);
   assert.match(result.stdout, /^\s+register\b/m);
+  assert.match(result.stdout, /^\s+unregister\b/m);
   assert.match(result.stdout, /^\s+list\b/m);
 });
 
@@ -100,4 +101,17 @@ test("compose register, clone, pull, and push use the repo's own git flow", asyn
   assert.equal(JSON.parse(pushed.stdout).entries[0].action, "pushed");
   const seen = git(["--git-dir", bare, "log", "-1", "--format=%s", "main"]);
   assert.match(seen, /local/);
+
+  const removed = await run(["compose", "unregister", "--name", "brain"], { env });
+  assert.equal(removed.exitCode, 0, removed.stdout + removed.stderr);
+  assert.equal(JSON.parse(removed.stdout).name, "brain");
+  assert.equal(existsSync(path.join(checkout, "README.md")), true);
+  const after = JSON.parse((await run(["compose", "list"], { env })).stdout) as {
+    entries: unknown[];
+  };
+  assert.equal(after.entries.length, 0);
+  assert.doesNotMatch(readFileSync(path.join(scope, "AGENTS.md"), "utf8"), /\[brain\]/);
+  const missing = await run(["compose", "unregister", "--name", "brain"], { env });
+  assert.notEqual(missing.exitCode, 0);
+  assert.match(missing.stdout, /Compose entry not found: brain/);
 });

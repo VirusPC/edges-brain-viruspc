@@ -116,6 +116,19 @@ export async function registerCompose(
   return entry;
 }
 
+export async function unregisterCompose(
+  env: NodeJS.ProcessEnv,
+  name: string,
+): Promise<ComposeEntry> {
+  const { service, node } = await loadScope(env);
+  const trimmed = name.trim();
+  const entry = node.composeEntries.find((item) => item.name === trimmed);
+  if (!entry) throw new Error(`Compose entry not found: ${trimmed || name}`);
+  node.unregisterCompose(trimmed);
+  await service.update(node, {});
+  return entry;
+}
+
 export async function cloneCompose(
   env: NodeJS.ProcessEnv,
   name?: string,

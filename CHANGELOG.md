@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 组合仓库
 
-- **组合进来的仓库可以 clone、pull 和 push：** 在作用域 `AGENTS.md` 的组合区块登记本地目录、名字、说明和 git 地址后，`edges compose clone` 把仓库拉到登记路径，`edges compose pull` 和 `edges compose push` 在该目录执行这个仓库自己的 git pull / git push。`edges compose register` 写入登记，`edges compose list` 列出登记。顺着节点树走时会进入这些本地仓库的 `AGENTS.md` 再往下。
+- **组合进来的仓库可以 clone、pull 和 push：** 在作用域 `AGENTS.md` 的组合区块登记本地目录、名字、说明和 git 地址后，`edges compose clone` 把仓库拉到登记路径，`edges compose pull` 和 `edges compose push` 在该目录执行这个仓库自己的 git pull / git push。`edges compose register` 写入登记，`edges compose list` 列出登记，`edges compose unregister` 按名字去掉一条登记且不删除已 clone 的目录。顺着节点树走时会进入这些本地仓库的 `AGENTS.md` 再往下。
 
 ### 笔记入库与能力面
 
