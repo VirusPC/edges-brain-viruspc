@@ -4,7 +4,7 @@ import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
 import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import type { NodeReference } from "../../domain/core/types.js";
 import { identifyNodeType, isHarnessMaterial, resolveHref } from "../../domain/models/layout.js";
-import { extractLocalBlock } from "../../domain/models/syntax/blocks.js";
+import { extractLocalBlock } from "../../domain/core/syntax/blocks.js";
 import { NodeService } from "../node/node-service.js";
 import { AGENTS_FILE_NAME, isScope } from "../memory/paths.js";
 import { memoryNodes } from "../memory/service.js";

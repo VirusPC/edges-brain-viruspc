@@ -15,7 +15,7 @@ import { parseDocument } from '../../utils/markdown/document.js';
 import {
   escapeIndexText,
   encodeIndexPath,
-} from "../../domain/models/syntax/serialize.js";
+} from "../../domain/core/syntax/serialize.js";
 import * as fs from "node:fs";
 import { basename, dirname, join, parse } from "node:path";
 import {

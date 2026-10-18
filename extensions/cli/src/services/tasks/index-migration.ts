@@ -8,7 +8,7 @@ import {
   identifyNodeType,
   isLeafEntryName,
 } from "../../domain/models/layout.js";
-import { decodeBody } from "../../domain/models/syntax/parse.js";
+import { decodeBody } from "../../domain/core/syntax/parse.js";
 import { projectIdFromDir } from "../../domain/models/tasks/project.js";
 import {
   readEntry,
