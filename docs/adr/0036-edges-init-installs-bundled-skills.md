@@ -8,7 +8,7 @@ status: accepted
 
 **Amends ADR 0031**：无参 `edges init` 的默认集加入 skills；`edges skills init` 除建 skill 类型索引外，还安装包内 skill。0031 其余决定不变。
 
-**Status:** accepted（2026-10-18 Asia/Shanghai；实现待做，见任务卡「安装 edges 后自动装好 skills」）
+**Status:** accepted，已实现（2026-10-18；合入 main 随本变更的 PR。实现前的「待做」记录见任务卡进展）
 
 **See also:** ADR 0031、ADR 0004；[Agent Skills 规范](https://agentskills.io/specification)
 
@@ -31,7 +31,8 @@ status: accepted
 
 ## Consequences
 
-- 会写用户级 agent 目录（如 `~/.agents/skills`、`~/.claude/skills`）；测试需隔离 HOME。
-- vercel skills 的输出直接继承 stdio，打到 edges 的 stdout / stderr，与 edges 的 JSON 信封并存；edges 不改写它的输出。
-- 无 TTY 又需要交互时，vercel skills 不装、退出码 1，按第 4 条 init 失败。
-- 升级固定的 vercel skills 版本时，复核其旗标语义与 node 要求。
+- `@viruspc/edges` 的 `files` 包含构建时拷入的 `skills/`。与 edges CLI 无关的 6 个 skill 在 `shared-extensions/skills/`，不进包。
+- 安装步骤调用依赖里的 `skills@1.7.2`：`node <该包 bin> add <包内 skills 目录绝对路径> --skill '*'`，再加上 `--` 之后的 token。stdio 继承，edges 不改写安装器输出，因此它的输出与 edges 的 JSON 信封会出现在同一次进程的 stdout / stderr 上。
+- 会写用户级 agent 目录（如 `~/.agents/skills`、`~/.claude/skills`）。测试用假 spawn，不写开发机的这些目录。
+- 无 TTY 又需要交互时，vercel skills 不装、退出码 1，init 以同一退出码失败。
+- 升级固定的 vercel skills 版本时，复核其旗标语义与 node 要求，并改 `VERCEL_SKILLS_VERSION` 与 `dependencies.skills`。

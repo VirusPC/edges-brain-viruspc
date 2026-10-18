@@ -7,7 +7,7 @@
   "scripts": {
     "setup": "./scripts/setup",
     "skills:link": "./scripts/link-agent-skills",
-    "skills:install-claude-global": "npx -y skills@latest add ./extensions/skills -g -a claude-code -y",
+    "skills:install-claude-global": "npx -y skills@1.7.2 add ./extensions/skills -g -a claude-code -y",
     "build": "pnpm recursive run build",
     "test": "pnpm recursive run test",
     "lint": "pnpm recursive lint",

@@ -61,6 +61,8 @@ export interface InitScopeOptions {
   modules?: readonly string[];
   memoryTypes?: readonly string[];
   skillTypes?: readonly string[];
+  /** Tokens after `--`, forwarded only to the bundled skills install. */
+  skillsInstallArgs?: readonly string[];
 }
 
 function scopeReadmePath(scopeDir: string): string {
@@ -436,7 +438,7 @@ export async function initScope(options: InitScopeOptions) {
         { ...base, memoryTypes, skillTypes: module === "skills" ? options.skillTypes : undefined },
         module,
       );
-      if (typeResult.selectionRequired) return { ...typeResult, modules: requested };
+      if (typeResult.selectionRequired) return { ...typeResult, modules: requested, skillsInstall: false as const };
       created = [...created, ...typeResult.created];
       preserved = [...preserved, ...typeResult.preserved];
       diagnostics = [...(diagnostics ?? []), ...typeResult.diagnostics];
@@ -458,6 +460,7 @@ export async function initScope(options: InitScopeOptions) {
     modules: requested,
     created,
     preserved,
+    skillsInstall: requested.includes("skills"),
     ...(complete === undefined ? {} : { complete, diagnostics }),
   };
 }

@@ -1,7 +1,6 @@
 ---
 name: paper-10-questions
 description: 当用户想要系统性地阅读、分析、审阅、总结或批判一篇学术论文时——尤其是 AI/ML/CS 领域的论文——使用此技能。应用沈向洋博士（Harry Shum）的"论文十问"（Ten Questions for a Paper）框架来引导结构化分析。在以下短语触发："用十问分析这篇论文"、"论文十问"、"帮我读一下这篇 paper"、"review this paper"、"analyze this paper with the ten questions"、"沈向洋十问"。不要为快速关键词查找、引用格式调整或非学术性阅读材料触发。
-version: 1.0.0
 ---
 
 

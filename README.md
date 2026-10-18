@@ -33,16 +33,16 @@ harness 就是一组 Markdown 文件加 Git。仓库里的那套，给 Cursor、
 
 ## 快速开始
 
-需要 Node.js 22 及以上。
+需要 Node.js 22.20 及以上。
 
 ```bash
 npm install -g @viruspc/edges
-cd ~/your-repo && edges init
+cd ~/your-repo && edges init -- -g -y
 ```
 
-让 Agent 学会什么时候调用这些命令，见 [`extensions/skills`](extensions/skills/README.md) 的「外部用户」。
+`edges init -- -g -y` 会写系统入口，并把包里的 Edges skills 装给本机 agent。`-g -y` 写在 `--` 后面，交给 `skills@1.7.2`：没有 TTY 时也不再询问；探测到当前 agent 时只装给那一个，否则按本机已安装的 agent 装（一个都没有则装给全部）。要指定 agent 时写成 `edges init -- -y --agent claude-code`。说明见 [`extensions/skills`](extensions/skills/README.md)。
 
-想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges init`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
+想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges init -- -g -y`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
 
 CLI、MCP 和 skill 各自的用法见 [`extensions/cli`](extensions/cli/README.md)、[`extensions/mcp-servers`](extensions/mcp-servers/README.md) 和 [`extensions/skills`](extensions/skills/README.md)。
 
@@ -58,8 +58,8 @@ CLI、MCP 和 skill 各自的用法见 [`extensions/cli`](extensions/cli/README.
 | [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护 |
 | [`tasks/`](tasks/README.md)、[`.harness/tasks/`](.harness/tasks/README.md) | 领域任务与 Edges 维护任务看板 |
 | [`archive/`](archive/README.md) | 退出活跃区域的内容 |
-| [`extensions/`](extensions/README.md) | 接入和操作 Edges 的 CLI、MCP、skill 与应用 |
-| [`shared-extensions/`](shared-extensions/README.md) | 不依赖 Edges、跨机器跨 Agent 共用的能力 |
+| [`extensions/`](extensions/README.md) | 接入和操作 Edges 的 CLI、MCP、skill 与应用。打进 npm 包的是 `extensions/skills/` |
+| [`shared-extensions/`](shared-extensions/README.md) | 不依赖 Edges、跨机器跨 Agent 共用的能力。通用 skill 在 [`shared-extensions/skills/`](shared-extensions/skills/README.md)，不打进 `@viruspc/edges` |
 | [`.harness/`](.harness/) | 本仓自身的维护记忆、技能、评测与观测 |
 
 对外输出可以直接看：[教学站](https://edges.viruspc.tech/teaching/)、[任务看板](https://edges.viruspc.tech/tasks/)。

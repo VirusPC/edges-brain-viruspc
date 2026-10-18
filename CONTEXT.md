@@ -247,7 +247,7 @@ _避免使用_：仅指 Agent 生成的技能、未安装技能、全部本地�
 _避免使用_：仅指第三方技能、全部 Agent 技能、Project Memory 可直接改写的正文
 
 **安装技能（Install Skill）**：
-把随 `@viruspc/edges` npm 包分发的 Edges 自有 Skill 装进本机 Agent 的 skill 目录（如 `~/.agents/skills`、`~/.claude/skills`），由 vercel-labs/skills 执行。是 `edges skills init` 的一步：`edges skills init` 既建 skill 类型索引（Managed / Referenced），也安装包内 Skill；重跑即刷新。无参 `edges init` 的默认集含 skills。安装失败则 init 失败。与 Managed / Referenced 的类型索引是两件事：装进 Agent 目录不等于登记进作用域的索引。见 ADR 0036。
+把随 `@viruspc/edges` npm 包分发的 Edges 自有 Skill 装进本机 Agent 的 skill 目录（如 `~/.agents/skills`、`~/.claude/skills`）。`edges skills init` 的安装步骤是固定版本 `skills@1.7.2` 的薄封装：`skills add <包内 skills 目录绝对路径> --skill '*'`，`--` 之后的 token 原样转交；agent、`-g`、`-y`、有无 TTY、同名覆盖都按 vercel-labs/skills 的默认。同一条命令还建 skill 类型索引（Managed / Referenced）。无参 `edges init` 的默认集含 skills，其 `--` 之后只转交给这一步。vercel skills 非零退出则 init 失败。与 Managed / Referenced 的类型索引是两件事：装进 Agent 目录不等于登记进作用域的索引。见 ADR 0036。
 _避免使用_：`edges skills install`、把安装当成可跳过的附加步骤、安装时从 GitHub 拉 skill、把 shared-extensions 里的通用 skill 算进安装范围
 
 **MCP（Edges）**：

@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.0.0] - 2026-10-18
+
+### Changed
+
+- 无参 `edges init` 与 `edges skills init` 会安装包内 skill。agent 调用时用 `edges init -- -g -y`：`-g` 装到用户目录，`-y` 跳过确认。`skills@1.7.2` 没探测到 agent 且没有 TTY 时，不带这些旗标会退出 1。探测到当前 agent 就只装给它，否则按本机已安装的 agent 装。
+
 ## [3.7.0] - 2026-10-18
 
 ### Changed
@@ -138,7 +144,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 按 semver 标记的首个版本。
 
-[Unreleased]: https://github.com/VirusPC/edges/compare/skill/project-memory-init@1.7.0...HEAD
+[Unreleased]: https://github.com/VirusPC/edges/compare/skill/project-memory-init@4.0.0...HEAD
+[4.0.0]: https://github.com/VirusPC/edges/compare/skill/project-memory-init@3.7.0...skill/project-memory-init@4.0.0
 [1.7.0]: https://github.com/VirusPC/edges/compare/skill/project-memory-init@1.6.0...skill/project-memory-init@1.7.0
 [1.6.0]: https://github.com/VirusPC/edges/compare/skill/project-memory-init@1.5.0...skill/project-memory-init@1.6.0
 [1.5.0]: https://github.com/VirusPC/edges/compare/skill/project-memory-init@1.4.0...skill/project-memory-init@1.5.0

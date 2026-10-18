@@ -14,9 +14,19 @@ export function usageErrorCode(commandCode: string): "VALIDATION_ERROR" | null {
 }
 
 export function fail(errorCode: string, reason: string, stderrHint: string): CliResult {
+  return failWithExit(exitCodeForErrorCode(errorCode), errorCode, reason, stderrHint);
+}
+
+export function failWithExit(
+  exitCode: number,
+  errorCode: string,
+  reason: string,
+  stderrHint: string,
+  fields: Record<string, unknown> = {},
+): CliResult {
   return {
-    exitCode: exitCodeForErrorCode(errorCode),
-    stdout: `${JSON.stringify({ status: "failed", errorCode, reason })}\n`,
+    exitCode,
+    stdout: `${JSON.stringify({ status: "failed", errorCode, reason, ...fields })}\n`,
     stderr: stderrHint,
   };
 }

@@ -18,7 +18,10 @@ import { addSkillsCommand } from "./commands/skills.js";
 import { addForestCommand } from "./commands/forest.js";
 import { addComposeCommand } from "./commands/compose.js";
 import { addInitCommand } from "./commands/init.js";
+import { failWithExit } from "./commands/result.js";
 import { acquireWriteLock } from "./services/node/node-lock.js";
+import { installBundledSkills, SkillsInstallError } from "./services/skills/install-bundled.js";
+import { splitSkillsInstallArgs } from "./services/skills/split-skills-install-args.js";
 import { VERSION } from "./utils/version.js";
 
 export type { CliContext, CliInput, CliResult };
@@ -232,10 +235,12 @@ export async function run(
     return usageError("ingest was renamed to notes. Use: edges notes …", "root");
   }
 
+  const split = splitSkillsInstallArgs(argv);
   const ctx: CliContext = {
     env: input.env ?? process.env,
     stdinText: input.stdinText,
     stdinIsTTY: input.stdinIsTTY,
+    skillsInstallArgs: split.skillsInstallArgs,
     result: undefined,
   };
   const capture = captureCommanderText();
@@ -246,7 +251,7 @@ export async function run(
   applyExitOverride(program);
 
   try {
-    await program.parseAsync(argv, { from: "user" });
+    await program.parseAsync(split.argv, { from: "user" });
   } catch (err) {
     if (err instanceof CommanderError) {
       if (
@@ -263,18 +268,19 @@ export async function run(
       } else {
         ctx.result = usageError(
           err.message.replace(/^error:\s*/i, ""),
-          usageScope(argv),
+          usageScope(split.argv),
         );
       }
     } else {
       ctx.result = usageError(
         err instanceof Error ? err.message : String(err),
-        usageScope(argv),
+        usageScope(split.argv),
       );
     }
   } finally {
     try {
       await release?.();
+      release = undefined;
     } catch (error) {
       const message = `Node write lock release failed: ${String(error)}`;
       if (ctx.result && ctx.result.exitCode !== 0) {
@@ -291,13 +297,29 @@ export async function run(
         };
       } else {
         const previousStderr = ctx.result?.stderr ?? "";
-        ctx.result = usageError(message, usageScope(argv));
+        ctx.result = usageError(message, usageScope(split.argv));
         ctx.result.stderr = previousStderr + ctx.result.stderr;
       }
     }
   }
+  await installSkillsAfterLock(ctx);
   return (
     ctx.result ??
-    usageError("missing command. Use edges --help.", usageScope(argv))
+    usageError("missing command. Use edges --help.", usageScope(split.argv))
   );
+}
+
+/** Vercel install runs only after the init write lock is released. */
+async function installSkillsAfterLock(ctx: CliContext): Promise<void> {
+  const pending = ctx.pendingSkillsInstall;
+  if (!pending || ctx.result?.exitCode !== 0) return;
+  try {
+    await installBundledSkills(pending.args);
+  } catch (error) {
+    const exitCode = error instanceof SkillsInstallError ? error.exitCode || 1 : 1;
+    const reason = error instanceof Error ? error.message : String(error);
+    ctx.result = failWithExit(exitCode, "SKILLS_INSTALL_FAILED", reason, pending.stderrHint, {
+      created: pending.created,
+    });
+  }
 }
