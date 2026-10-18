@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { AgentsNode } from "../../src/domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../src/domain/models/agents/agents-node.js";
 import { initMemory, doctorMemory } from "../../src/services/memory/index.js";
 import { layerTypeSpecs } from "../../src/services/memory/types.js";
-import { rewriteLayerSurface } from "../../src/domain/models/internal/blocks.js";
+import { rewriteLayerSurface } from "../../src/domain/models/agents/blocks.js";
 function fixture(t: any) {
   const root = fs.realpathSync(
     fs.mkdtempSync(join(tmpdir(), "memory-adoption-")),
@@ -23,11 +23,11 @@ for (const [kind, href] of [
 ] as const) {
   test(`Memory ${kind} local adoption recognizes missing type indexes and Doctor preserves authored links`, async (t) => {
     const root = fixture(t);
-    await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
+    await initMemory({ targetDir: root, memoryTypes: ["project"] });
     const text = ownerText(`- [projects](${href}) — hand written description`);
     fs.writeFileSync(join(root, "AGENTS.md"), text);
-    assert.deepEqual((await doctorMemory({ indexGroup: "descendant", targetDir: root })).findings, []);
-    await doctorMemory({ indexGroup: "descendant", targetDir: root, apply: true });
+    assert.deepEqual((await doctorMemory({ targetDir: root })).findings, []);
+    await doctorMemory({ targetDir: root, apply: true });
     assert.equal(
       fs.readFileSync(join(root, "AGENTS.md"), "utf8"),
       rewriteLayerSurface(text),
@@ -37,7 +37,7 @@ for (const [kind, href] of [
       layerTypeSpecs(root).map((spec) => spec.name),
       ["project"],
     );
-    const findings = (await doctorMemory({ indexGroup: "descendant", targetDir: root })).findings;
+    const findings = (await doctorMemory({ targetDir: root })).findings;
     assert.equal(findings.filter((f) => f.code === "missing-index").length, 1);
     assert.equal(
       findings.some((f) => f.code === "unregistered-type"),
@@ -66,7 +66,7 @@ for (const kind of ["descendant", "prose", "local-prose"] as const)
     );
     assert.deepEqual(layerTypeSpecs(root), []);
     assert.equal(
-      (await doctorMemory({ indexGroup: "descendant", targetDir: root })).findings.some(
+      (await doctorMemory({ targetDir: root })).findings.some(
         (f) => f.code === "missing-index",
       ),
       false,
@@ -86,7 +86,7 @@ test("AgentsNode generated local references are recognized as adopted types", as
     ["project"],
   );
   assert.equal(
-    (await doctorMemory({ indexGroup: "descendant", targetDir: root })).findings.filter(
+    (await doctorMemory({ targetDir: root })).findings.filter(
       (f) => f.code === "missing-index",
     ).length,
     1,
@@ -141,7 +141,7 @@ test("reviewed restored owners adopt and register their types with only expected
       ["feedback", "managed", "project", "reference", "referenced"],
       owner,
     );
-    const report = await doctorMemory({ indexGroup: "descendant",
+    const report = await doctorMemory({
       targetDir: join(root, owner),
       rootDir: join(root, owner),
     });
@@ -154,7 +154,7 @@ test("reviewed restored owners adopt and register their types with only expected
 });
 test("existing type files still require a .harness/README.md edge rather than a descendant or prose reference", async (t) => {
   const root = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
+  await initMemory({ targetDir: root, memoryTypes: ["project"] });
   const line =
     "- [projects](<.harness/memory/%70rojects/README.md>) — descendant";
   fs.writeFileSync(
@@ -166,7 +166,7 @@ test("existing type files still require a .harness/README.md edge rather than a 
   );
   const index = join(root, ".harness/README.md");
   fs.writeFileSync(index, fs.readFileSync(index, "utf8").replace(/^- .*\n/gm, ""));
-  const findings = (await doctorMemory({ indexGroup: "descendant", targetDir: root })).findings;
+  const findings = (await doctorMemory({ targetDir: root })).findings;
   assert.equal(
     findings.filter((f) => f.code === "unregistered-type").length,
     1,

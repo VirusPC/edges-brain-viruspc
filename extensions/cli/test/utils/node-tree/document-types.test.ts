@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { baseDocumentCodec } from "../../../src/utils/markdown/document.js";
 import { memoryDocumentCodec } from "../../../src/domain/models/memory/documents.js";
-import { agentsDocumentCodec } from "../../../src/domain/models/internal/document.js";
+import { agentsDocumentCodec } from "../../../src/domain/models/agents/document.js";
 import type { DocumentCodec, MarkdownDocument } from '../../../src/utils/markdown/types.js';
 import * as tasks from '../../../src/domain/models/tasks/frontmatter.js';
 

@@ -922,7 +922,7 @@ test("instance root generator demotes ADR directory ownership to ordinary local 
   const { runInstanceMigration } = await load();
   runInstanceMigration(root, manifest, true);
   const source = fs.readFileSync(file, "utf8");
-  const { AgentsNode } = await import("../../src/domain/models/internal/agents-node.js");
+  const { AgentsNode } = await import("../../src/domain/models/agents/agents-node.js");
   assert.equal(
     new AgentsNode(file)
       .parse(source)

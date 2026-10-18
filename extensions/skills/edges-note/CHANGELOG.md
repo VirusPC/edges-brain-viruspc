@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.1] - 2026-10-18
+
+### Changed
+
+- `notes create` 仍然不要传 `--index-group`。init 与 `edges memory doctor` 也不接受这个旗标；新的子作用域按路径登记到父级。
+
 ## [2.3.0] - 2026-10-08
 
 ### Changed

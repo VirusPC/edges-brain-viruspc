@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { migrateLegacyBoard } from "../../../src/services/tasks/migrate.js";
 import { listTasks } from "../../../src/services/tasks/board.js";
-import { nodeBoardFs, nodeBoardWriter } from "./helpers.js";
+import { domainBoard, nodeBoardFs, nodeBoardWriter } from "./helpers.js";
 
 test("migrateLegacyBoard moves Task + hidden sidecar and removes root status dirs", async () => {
   const repo = await mkdtemp(path.join(tmpdir(), "edges-tasks-"));
@@ -61,7 +61,7 @@ body
 `,
       "utf8",
     );
-    const result = await migrateLegacyBoard(repo, nodeBoardWriter());
+    const result = await migrateLegacyBoard(domainBoard(repo), nodeBoardWriter());
     assert.equal(result.moved, 3);
     assert.deepEqual(
       new Set(result.removedStatusDirs),
@@ -87,7 +87,7 @@ body
     const { planTaskIndexes, applyTaskIndexes } = await import("../../../src/services/tasks/index-migration.js");
     await writeFile(path.join(repo, "AGENTS.md"), "# Scope\n");
     await applyTaskIndexes(await planTaskIndexes(await realpath(repo)));
-    const items = await listTasks(repo, {}, nodeBoardFs());
+    const items = await listTasks(domainBoard(repo), {}, nodeBoardFs());
     assert.deepEqual(
       items.map((item) => `${item.project}:${item.status}:${item.stem}`).sort(),
       ["default:backlog:2026-09-16--open", "default:done:2026-09-16--closed"],
@@ -97,7 +97,7 @@ body
       "utf8",
     );
     assert.doesNotMatch(open, /edges-task-project/);
-    const again = await migrateLegacyBoard(repo, nodeBoardWriter());
+    const again = await migrateLegacyBoard(domainBoard(repo), nodeBoardWriter());
     assert.equal(again.moved, 0);
     assert.deepEqual(again.removedStatusDirs, []);
   } finally {
@@ -119,7 +119,7 @@ test("migrateLegacyBoard refuses dest collision and unexpected subdirectory", as
     );
     await writeFile(path.join(dest, "2026-09-16--dup.md"), "kept\n", "utf8");
     await assert.rejects(
-      () => migrateLegacyBoard(repo, nodeBoardWriter()),
+      () => migrateLegacyBoard(domainBoard(repo), nodeBoardWriter()),
       (error: unknown) =>
         (error as { errorCode: string }).errorCode === "BOARD_IO_ERROR",
     );
@@ -130,7 +130,7 @@ test("migrateLegacyBoard refuses dest collision and unexpected subdirectory", as
     await rm(path.join(dest, "2026-09-16--dup.md"));
     await mkdir(path.join(legacy, "nested"), { recursive: true });
     await assert.rejects(
-      () => migrateLegacyBoard(repo, nodeBoardWriter()),
+      () => migrateLegacyBoard(domainBoard(repo), nodeBoardWriter()),
       (error: unknown) => {
         const err = error as { errorCode: string; message: string };
         return (
@@ -148,7 +148,7 @@ test("migrateLegacyBoard rmdirs empty root status folders", async () => {
   const repo = await mkdtemp(path.join(tmpdir(), "edges-tasks-"));
   try {
     await mkdir(path.join(repo, "tasks/blocked"), { recursive: true });
-    const result = await migrateLegacyBoard(repo, nodeBoardWriter());
+    const result = await migrateLegacyBoard(domainBoard(repo), nodeBoardWriter());
     assert.equal(result.moved, 0);
     assert.deepEqual(result.removedStatusDirs, ["blocked"]);
     const names = await readdir(path.join(repo, "tasks"));

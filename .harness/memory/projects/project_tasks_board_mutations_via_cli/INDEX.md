@@ -8,12 +8,12 @@ metadata:
   edges-type: project
   edges-origin-session-id: bc-c0103a88-0443-5dd2-8ea4-9f76501e86ab
   edges-agent-client: codex
-  edges-username: cheng
-  edges-email: cheng.peng.helloworld@gmail.com
-  edges-updated-at: '2026-10-05T18:02:13+08:00'
+  edges-username: Cursor Agent
+  edges-email: cursoragent@cursor.com
+  edges-updated-at: '2026-10-18T05:55:14+00:00'
 ---
 
-改任意层级的领域 `tasks/` 或维护 `.harness/tasks/` 看板（状态/字段/搬家等）必须优先使用 `edges tasks`（list/get/create/update/status 等），用 `--purpose domain|maintenance` 明确目标板；不要默认手写 Markdown 再 git push。本条是仓根 `prefer_repo_skills_and_cli` 的看板特化：已有 tasks 相关 Skill（如 `project-tasks-classify`）也要优先用；通用 CRUD Skill 仍是 backlog。
+改任意层级的领域 `tasks/` 或维护 `.harness/tasks/` 看板（状态/字段/搬家等）必须优先使用 `edges tasks`（list/get/create/update/status 等）。不传 `--super` 写 `<scope>/.harness/tasks`；`--super` 写 `<scope>/tasks`。不要默认手写 Markdown 再 git push。本条是仓根 `prefer_repo_skills_and_cli` 的看板特化：已有 tasks 相关 Skill（如 `project-tasks-classify`）也要优先用；通用 CRUD Skill 仍是 backlog。
 
 **Why:**
 与 ADR 0005 及仓根「仓内优先用仓库 Skill 与 CLI」一致；避免双轨导致 frontmatter/路径漂移；暴露 CLI/Skill 缺口才能补齐。

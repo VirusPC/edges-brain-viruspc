@@ -32,7 +32,7 @@ flowchart TB
   subgraph domain["domain"]
     OP["operations/traverse"]
     LAY["models/layout 入口名·章节常量"]
-    SYN["internal/syntax+blocks 参数化组成"]
+    SYN["agents/syntax+blocks 参数化组成"]
     NODES["BaseNode 子类"]
   end
 
@@ -147,8 +147,8 @@ flowchart LR
 | 区域 | 主文件 |
 | --- | --- |
 | 入口名 / 章节常量 | `extensions/cli/src/domain/models/layout.ts` |
-| AGENTS/README blocks | `…/internal/blocks.ts`, `parse.ts`, `serialize.ts`, `syntax.ts` |
-| 组成节点 | `…/internal/internal-node.ts` → 演进为 Agents/Readme |
+| AGENTS/README blocks | `…/agents/blocks.ts`, `parse.ts`, `serialize.ts`, `syntax.ts` |
+| 组成节点 | `…/agents/agents-node.ts` → 演进为 Agents/Readme |
 | 遍历 | `…/operations/traverse.ts` + NodeService 加载 |
 | 类型索引路径 | `…/services/memory/paths.ts`, `types.ts`, `entries.ts`, `init.ts`, `add-type.ts` |
 | 模板 | `extensions/skills/project-memory-init/references/templates/*` |
@@ -164,7 +164,7 @@ flowchart LR
 
 **Files:**
 - Modify: `extensions/cli/src/domain/models/layout.ts`
-- Modify: `extensions/cli/test/models/internal.test.ts`
+- Modify: `extensions/cli/test/models/agents-node.test.ts`
 - Modify: `extensions/skills/project-memory-init/references/LAYOUT.md`
 - Modify: `extensions/skills/project-memory-init/references/PROTOCOL.md`（只改称呼，不写 HTML 标记名）
 - Modify: `extensions/skills/project-memory-init/references/templates/AGENTS.tmpl.md`
@@ -174,7 +174,7 @@ flowchart LR
 
 - [ ] **Step 1: 写失败测试（标题常量）**
 
-在 `test/models/internal.test.ts` 增加：
+在 `test/models/agents-node.test.ts` 增加：
 
 ```ts
 import { INTERNAL_SECTIONS } from "../../src/domain/models/layout.js";
@@ -187,7 +187,7 @@ test("AGENTS section headings are system-maintenance titles", () => {
 
 - [ ] **Step 2: 跑测试确认失败**
 
-Run: `pnpm --filter edges-cli exec node --test --import tsx test/models/internal.test.ts`
+Run: `pnpm --filter edges-cli exec node --test --import tsx test/models/agents-node.test.ts`
 
 Expected: FAIL on heading equality（仍是本层组成/下层节点）。
 
@@ -213,10 +213,10 @@ export const INTERNAL_SECTIONS = {
 - [ ] **Step 5: 对本仓已跟踪的层入口跑标题刷新（dry-run → apply），再跑测试通过并 commit**
 
 ```bash
-pnpm --filter edges-cli exec node --test --import tsx test/models/internal.test.ts
+pnpm --filter edges-cli exec node --test --import tsx test/models/agents-node.test.ts
 # apply 后一并 stage 被 rewrite 的各层 AGENTS.md（勿手改标题）
 git add extensions/cli/src/domain/models/layout.ts \
-  extensions/cli/test/models/internal.test.ts \
+  extensions/cli/test/models/agents-node.test.ts \
   extensions/skills/project-memory-init/references/ \
   $(git diff --name-only -- '**/AGENTS.md')
 git commit -m "$(cat <<'EOF'
@@ -233,7 +233,7 @@ EOF
 
 **Files:**
 - Modify: `extensions/cli/src/domain/models/layout.ts` — 增加 `ENTRY_NAMES.readme`、`ENTRIES_SECTIONS`、`identifyNodeType` 认 `README.md` → 暂映射可解析组成的节点
-- Modify: `extensions/cli/src/domain/models/internal/syntax.ts` / `blocks.ts` / `parse.ts` — 支持第二套 marker（或参数化 section table）
+- Modify: `extensions/cli/src/domain/models/agents/syntax.ts` / `blocks.ts` / `parse.ts` — 支持第二套 marker（或参数化 section table）
 - Create: `extensions/cli/src/domain/models/readme/readme-node.ts`（或先用参数化 InternalNode；Prefer 独立 `ReadmeNode`，`type` 先写 `"readme"` 字符串，Wave B 收口）
 - Test: `extensions/cli/test/models/readme-entries.test.ts`
 
@@ -314,7 +314,7 @@ export const ENTRIES_SECTIONS = {
 
 - [ ] **Step 4: 跑测试通过**
 
-Run: 同上；再跑 `test/models/internal.test.ts` 防回归。
+Run: 同上；再跑 `test/models/agents-node.test.ts` 防回归。
 
 - [ ] **Step 5: Commit**
 
@@ -559,7 +559,7 @@ EOF
 
 **Files:**
 - Modify: `layout.ts` `NodeType`、`identifyNodeType`（AGENTS→`agents`；未知 INDEX→`text`）
-- Modify: `internal-node.ts` `readonly type = "agents"`
+- Modify: `agents/agents-node.ts` `readonly type = "agents"`
 - Modify: 所有 `type === "internal"` / `"leaf"` 分支与测试
 - Modify: `core/leaf-node.ts` — 业务子类改直继 BaseNode（可分步：先改 type 字符串，再删 LeafNode）
 

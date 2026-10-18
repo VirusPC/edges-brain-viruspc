@@ -31,12 +31,10 @@ export type CliContext = {
   super?: boolean;
   /** Explicit `--all`: traverse the system forest from the current scope. */
   all?: boolean;
-  indexGroup?: "local" | "descendant";
-  purpose?: "domain" | "maintenance";
   result: CliResult | undefined;
 };
 
-export function usageError(reason: string, scope: "root" | "notes" | "projects" | "tasks" | "artifacts" | "memory" | "skills" | "schema"): CliResult {
+export function usageError(reason: string, scope: "root" | "notes" | "projects" | "tasks" | "artifacts" | "memory" | "skills" | "schema" | "compose"): CliResult {
   if (scope === "schema") return { exitCode: 2, stdout: "", stderr: `${reason}\nSee edges schema --help for usage.\n` };
   const usage =
     scope === "notes"
@@ -51,11 +49,13 @@ export function usageError(reason: string, scope: "root" | "notes" | "projects" 
               ? "See edges memory --help for usage.\n"
               : scope === "skills"
                 ? "See edges skills --help for usage.\n"
-                : "See edges --help for usage.\n";
+                : scope === "compose"
+                  ? "See edges compose --help for usage.\n"
+                  : "See edges --help for usage.\n";
   return fail("VALIDATION_ERROR", reason, usage);
 }
 
-export function usageScope(argv: string[]): "root" | "notes" | "projects" | "tasks" | "artifacts" | "memory" | "skills" | "schema" {
+export function usageScope(argv: string[]): "root" | "notes" | "projects" | "tasks" | "artifacts" | "memory" | "skills" | "schema" | "compose" {
   const command = argv.filter((arg, i) => arg !== "--scope" && argv[i - 1] !== "--scope" && !arg.startsWith("--scope=") && arg !== "--super")[0];
   if (command === "notes") return "notes";
   if (command === "projects") return "projects";
@@ -64,5 +64,6 @@ export function usageScope(argv: string[]): "root" | "notes" | "projects" | "tas
   if (command === "schema") return "schema";
   if (command === "memory") return "memory";
   if (command === "skills") return "skills";
+  if (command === "compose") return "compose";
   return "root";
 }

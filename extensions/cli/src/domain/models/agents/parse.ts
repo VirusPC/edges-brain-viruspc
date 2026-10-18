@@ -18,6 +18,7 @@ const LAYER_TO_KEY: Record<string, SectionKey> = {
   "project-memory-local": "memory",
   "project-harness-descendants": "children",
   "project-memory-children": "children",
+  "project-harness-compose": "compose",
 };
 
 const titles: Record<string, SectionKey> = {
@@ -33,6 +34,7 @@ const titles: Record<string, SectionKey> = {
   下层作用域: "children",
   本层系统维护信息: "memory",
   下层系统维护信息: "children",
+  组合: "compose",
 };
 
 function start(node: AstNode): number {
@@ -46,18 +48,20 @@ function end(node: AstNode): number {
 /** Private codec representation: source ranges never enter AgentsDocument. */
 export function decodeBody(source: string) {
   const ast = fromMarkdown(source);
-  const model: AgentsDocument = { constraints: [], memory: [], children: [], references: [] };
+  const model: AgentsDocument = { constraints: [], memory: [], children: [], compose: [], references: [] };
 
   const bindings: Record<SectionKey, Binding[]> = {
     constraints: [],
     memory: [],
     children: [],
+    compose: [],
   };
 
   const sections: Record<SectionKey, { present: boolean; insert: number }> = {
     constraints: { present: false, insert: source.length },
     memory: { present: false, insert: source.length },
     children: { present: false, insert: source.length },
+    compose: { present: false, insert: source.length },
   };
 
   const references: Binding[] = [];
@@ -183,7 +187,7 @@ export function decodeBody(source: string) {
       const marker = block.value
         .trim()
         .match(
-          /^<!-- (project-harness-constraints|project-harness-local|project-harness-descendants|project-memory-important|project-memory-local|project-memory-children):(start|end) -->$/,
+          /^<!-- (project-harness-constraints|project-harness-local|project-harness-descendants|project-harness-compose|project-memory-important|project-memory-local|project-memory-children):(start|end) -->$/,
         );
       if (marker) {
         const section = LAYER_TO_KEY[marker[1]];

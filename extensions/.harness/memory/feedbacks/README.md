@@ -26,4 +26,5 @@ format: ordinary
 - [审阅壳筛选靠右、紧挨导出](feedback_review_shell_filters_before_export/INDEX.md) — 改审阅壳顶栏筛选或复制导出 JSON 的位置时打开：全文和优先级、负责人、状态整组靠右，紧挨在导出按钮前面。系统名不在这一栏。
 - [改 skill 后必须升级 version、写 changelog、打 tag](feedback_skill_bump_version/INDEX.md) — 更新 extensions/skills 下任何一个 skill 后，升 SKILL.md version，写 CHANGELOG.md，并打 skill/\<name\>@\<version\> tag。
 - [目录 stem 保留 Unicode，名字校验仍要 ASCII](<feedback_node_stem_unicode_not_ascii_names/INDEX.md>) — 改笔记、项目目录名或任务名 slug 时打开：目录 stem 保留汉字；skill、memory、task project 的名字校验仍要求小写 ASCII，不要一起放宽。
+- [CLI 多子命令一文件一个动词](<feedback_cli_subcommand_files/INDEX.md>) — 新增或修改 extensions/cli 的多子命令时：父文件只注册，每个子命令一个文件，commands 层只解析参数并调 Service。
 <!-- project-entries-local:end -->

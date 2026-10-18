@@ -1,10 +1,9 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveScope } from "../scope.js";
-import { createNodeBoardFs, listRepositoryTasksWithDocs, listTasksWithDocs } from "./board.js";
-import { taskBoardLocation, type TaskPurpose } from "./paths.js";
+import { listRepositoryTasksWithDocs } from "./board.js";
 import { loadBuiltReviewShell, parseReviewPageInput, renderReviewPageHtml } from "./review-page.js";
-import { DEFAULT_TASK_PROJECT, TasksError } from "../../domain/models/tasks/types.js";
+import { DEFAULT_TASK_PROJECT } from "../../domain/models/tasks/types.js";
 import { fieldText } from "../list-query.js";
 
 export const DEFAULT_TASKS_SITE_REL = "tasks/_site/index.html";
@@ -14,15 +13,9 @@ export function findEdgesRepo(startDir: string, env: NodeJS.ProcessEnv = process
 export async function generateTasksSite(input: {
   repoPath: string;
   outPath: string;
-  purpose?: TaskPurpose | "all";
   env?: NodeJS.ProcessEnv;
 }): Promise<{ path: string; groupCount: number; itemCount: number }> {
-  const purpose = input.purpose ?? "domain";
-  if (!["domain", "maintenance", "all"].includes(purpose)) throw new TasksError("VALIDATION_ERROR", "purpose must be domain, maintenance, or all");
-  const location = taskBoardLocation(input.repoPath, purpose === "all" ? "domain" : purpose);
-  const records = (purpose === "all"
-    ? await listRepositoryTasksWithDocs(input.repoPath)
-    : await listTasksWithDocs(location, {}, createNodeBoardFs(location))) as unknown as Record<string, unknown>[];
+  const records = await listRepositoryTasksWithDocs(input.repoPath) as unknown as Record<string, unknown>[];
   const buckets = new Map<string, { id: string; title: string; source?: unknown; project?: unknown; items: Record<string, unknown>[] }>();
   for (const item of records) {
     const title = fieldText(item, "project");

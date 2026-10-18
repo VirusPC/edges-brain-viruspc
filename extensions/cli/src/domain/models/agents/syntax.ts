@@ -12,6 +12,7 @@ export interface SyntaxContent {
   constraints: readonly string[];
   localChildren: readonly SyntaxReference[];
   descendantChildren: readonly SyntaxReference[];
+  compose?: readonly SyntaxReference[];
 }
 
 // Existing type indexes use the same local ownership semantics, with different markers.
@@ -139,16 +140,17 @@ export class InternalSyntax {
     );
     const decoded = decodeBody(this.#source);
     this.#model = decoded.model;
-    for (const key of ["memory", "children"] as const) {
+    for (const key of ["memory", "children", "compose"] as const) {
       decoded.bindings[key].forEach((binding, index) => {
         const itemSource = this.#source.slice(binding.start, binding.end);
+        const references = indexedReferences(this.#model[key][index]);
+        // Compose targets are directories, not AGENTS/README entry filenames.
+        const selected =
+          key === "compose"
+            ? references
+            : references.filter((reference) => isIndexed(reference.target));
         // Only list items carry index ownership; prose links remain source content.
-        if (
-          /^(?:[-+*]|\d+[.)])\s/.test(itemSource) &&
-          indexedReferences(this.#model[key][index]).some((reference) =>
-            isIndexed(reference.target),
-          )
-        )
+        if (/^(?:[-+*]|\d+[.)])\s/.test(itemSource) && selected.length > 0)
           this.#indexItems.add(this.#model[key][index]);
       });
     }
@@ -164,6 +166,9 @@ export class InternalSyntax {
         .filter((item) => this.#indexItems.has(item))
         .flatMap(indexedReferences)
         .filter((reference) => this.#isIndexed(reference.target)),
+      compose: this.#model.compose
+        .filter((item) => this.#indexItems.has(item))
+        .flatMap(indexedReferences),
     };
   }
   serialize(content: SyntaxContent): string {
@@ -194,6 +199,15 @@ export class InternalSyntax {
         content.descendantChildren,
         this.#indexItems,
         this.#isIndexed,
+      ),
+      compose: rebuildIndexes(
+        this.#model.compose,
+        content.compose ??
+          this.#model.compose
+            .filter((item) => this.#indexItems.has(item))
+            .flatMap(indexedReferences),
+        this.#indexItems,
+        () => true,
       ),
       references: this.#model.references,
     };

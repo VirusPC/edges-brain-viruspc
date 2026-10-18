@@ -91,7 +91,7 @@ jobs:
              # dist/schemas is gitignored. Review-page doc checks read it at runtime.
              pnpm --filter edges-cli run build:schemas
              pnpm --filter edges-cli exec -- tsx scripts/generate-tasks-site.ts \
-               --scope "$PWD" --purpose all --out "$PWD/tasks/_site/index.html"
+               --scope "$PWD" --out "$PWD/tasks/_site/index.html"
              test -s tasks/_site/index.html
              grep -q "id=\"edges-review-payload\"" tasks/_site/index.html
              grep -q "<script type=\"module\">" tasks/_site/index.html

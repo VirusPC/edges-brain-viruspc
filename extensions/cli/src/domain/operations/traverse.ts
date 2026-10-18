@@ -27,9 +27,21 @@ function expandedChildren(
   node: BaseNode,
   options: ScopeTraversalOptions,
 ): readonly NodeReference[] {
-  return options.localOnly
+  const structural = options.localOnly
     ? (node.localChildren ?? node.children)
     : node.children;
+  // The Compose block belongs to the current layer, so localOnly still follows it.
+  return [...structural, ...(node.composeChildren ?? [])];
+}
+
+/** True when the reference is only a Compose edge, not a structural child. */
+export function isComposeOnlyReference(
+  parent: BaseNode,
+  reference: NodeReference,
+): boolean {
+  const compose = parent.composeChildren;
+  if (!compose?.some((item) => item.id === reference.id)) return false;
+  return !parent.children.some((item) => item.id === reference.id);
 }
 
 export interface NodeQueryOptions extends ScopeTraversalOptions {

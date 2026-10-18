@@ -8,7 +8,6 @@ import {
 const parsed = parseArgs({
   options: {
     scope: { type: "string" },
-    purpose: { type: "string", default: "domain" },
     out: { type: "string" },
   },
   allowPositionals: false,
@@ -17,7 +16,7 @@ const parsed = parseArgs({
 try {
   const repoPath = findEdgesRepo(process.cwd(), { ...process.env, ...(parsed.values.scope ? { EDGES_SCOPE: parsed.values.scope } : {}) });
   const outPath = parsed.values.out ?? defaultTasksSiteOutPath(repoPath);
-  const result = await generateTasksSite({ repoPath, outPath, purpose: parsed.values.purpose as "domain" | "maintenance" | "all", env: process.env });
+  const result = await generateTasksSite({ repoPath, outPath, env: process.env });
   process.stdout.write(
     `${JSON.stringify({
       status: "success",

@@ -28,7 +28,7 @@
 | `extensions/cli/src/domain/operations/system-forest.ts` | `collectSystemRoots`、`isSystemEntry`（扫盘 + 标志） |
 | `extensions/cli/src/services/node/system-forest-service.ts` | 组装 `BaseNode[][]`；全部独立 / 嵌套只留内层；resolve 禁入其它根 |
 | `extensions/cli/src/services/node/node-service.ts` | `#superRoot` 改为按配置挂载材料 |
-| `extensions/cli/src/domain/models/internal/super-agents-node.ts` | 注释对齐：材料挂载，非「只挂一个 README」 |
+| `extensions/cli/src/domain/models/agents/super-agents-node.ts` | 注释对齐：材料挂载，非「只挂一个 README」 |
 | `extensions/cli/src/commands/tasks/…` 或新 `forest` 子命令 / review 接线 | 暴露森林给 CLI / review |
 | `extensions/cli/test/domain/harness-materials.test.ts` | 配置与解析 |
 | `extensions/cli/test/operations/system-forest.test.ts` | 收根 |
@@ -140,7 +140,7 @@ git commit -m "feat: domain harness-materials.json 与 path 解析"
 
 **Files:**
 - Modify: `extensions/cli/src/services/node/node-service.ts` (`#superRoot`)
-- Modify: `extensions/cli/src/domain/models/internal/super-agents-node.ts`（注释）
+- Modify: `extensions/cli/src/domain/models/agents/super-agents-node.ts`（注释）
 - Test: `extensions/cli/test/services/super-agents-node.test.ts`（扩展或新建用例）
 
 **Interfaces:**

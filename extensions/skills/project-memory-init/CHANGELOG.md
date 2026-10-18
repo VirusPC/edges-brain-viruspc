@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.7.0] - 2026-10-18
+
+### Changed
+
+- `edges init` 与各模块 init 不再接受 `--index-group`。新的子作用域按路径登记：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已有登记保持原组。`edges memory doctor --apply` 按同一规则补缺失的父级链接。
+
 ## [3.6.0] - 2026-10-08
 
 ### Changed

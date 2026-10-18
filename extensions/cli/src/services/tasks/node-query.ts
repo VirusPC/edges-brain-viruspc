@@ -5,7 +5,7 @@ import { harnessMaterialById, tasksBoardDirName } from "../../domain/config/harn
 import { ENTRY_NAMES, identifyNodeType } from "../../domain/models/layout.js";
 import { BaseNode, AgentsNode, ReadmeNode, TaskNode } from "../../domain/models/index.js";
 import { domainFields, scalar } from "../../domain/models/core/fields.js";
-import { decodeBody } from "../../domain/models/internal/parse.js";
+import { decodeBody } from "../../domain/models/agents/parse.js";
 import {
   assertProjectDualWrite,
   projectIdFromDir,
@@ -19,7 +19,6 @@ import { query } from "../../domain/operations/query.js";
 import { traverse } from "../../domain/operations/traverse.js";
 import {
   isTaskStatus,
-  taskBoardLocation,
   type TaskBoardLocation,
   type TaskPurpose,
 } from "./paths.js";
@@ -203,10 +202,11 @@ export function boardLocationOf(
   const owner = path.dirname(board);
   const purpose: TaskPurpose =
     path.basename(owner) === ".harness" ? "maintenance" : "domain";
-  return taskBoardLocation(
-    purpose === "maintenance" ? path.dirname(owner) : owner,
+  return {
+    scopeDir: purpose === "maintenance" ? path.dirname(owner) : owner,
     purpose,
-  );
+    boardDir: path.resolve(board),
+  };
 }
 export function taskLocationOf(node: TaskNode, root: string) {
   const stem = path.basename(node.directoryPath),

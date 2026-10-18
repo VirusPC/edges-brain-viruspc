@@ -27,7 +27,7 @@ import {
   parseProjectAgents,
   updateProject,
 } from "../../src/services/tasks/project-meta.js";
-import { nodeBoardWriter } from "../tasks/utils/helpers.js";
+import { domainBoard, nodeBoardWriter } from "../tasks/utils/helpers.js";
 function fixture(t: any) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "uniform-nodes-")));
   t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -58,7 +58,7 @@ test("nearest unmarked, type and business AGENTS are CLI nodes without adopting 
   const target = resolveScope({}, root, "uninitialized");
   mkdirSync(target);
   assert.equal(
-    (await initMemory({ indexGroup: "descendant", targetDir: target, rootDir: target }))
+    (await initMemory({ targetDir: target, rootDir: target }))
       .selectionRequired,
     true,
   );
@@ -75,7 +75,7 @@ test("nearest unmarked, type and business AGENTS are CLI nodes without adopting 
 });
 test("Doctor preserves sparse generic nodes and registered cross-directory local and descendant ownership", async (t) => {
   const root = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
+  await initMemory({ targetDir: root, memoryTypes: ["project"] });
   put(
     root,
     "business/AGENTS.md",
@@ -84,7 +84,7 @@ test("Doctor preserves sparse generic nodes and registered cross-directory local
   put(root, "shared/AGENTS.md", "# Shared\n");
   put(root, "nested/AGENTS.md", "# Physical intermediate\n");
   mkdirSync(join(root, "nested/deep"), { recursive: true });
-  await initMemory({ indexGroup: "descendant",
+  await initMemory({
     targetDir: join(root, "nested/deep"),
     rootDir: join(root, "nested/deep"),
     memoryTypes: ["project"],
@@ -100,7 +100,7 @@ test("Doctor preserves sparse generic nodes and registered cross-directory local
     ".harness/memory/projects/README.md",
   ];
   const before = files.map((file) => read(root, file));
-  const report = await doctorMemory({ indexGroup: "descendant", targetDir: root, apply: true });
+  const report = await doctorMemory({ targetDir: root, apply: true });
   assert.deepEqual(report.remaining, []);
   assert.deepEqual(
     files.map((file) => read(root, file)),
@@ -142,7 +142,8 @@ test("Task Project index lives once in local ownership while preserving authored
   put(root, "tasks/demo/AGENTS.md", "# Demo\n\nBusiness purpose\n" + tail);
   const parsed = parseProjectAgents(read(root, "tasks/demo/AGENTS.md"));
   assert.equal(parsed.description, "Business purpose");
-  await updateProject(root, "demo", { title: "New title" }, nodeBoardWriter());
+  const board = domainBoard(root);
+  await updateProject(board, "demo", { title: "New title" }, nodeBoardWriter());
   assert.ok(read(root, "tasks/demo/AGENTS.md").endsWith(tail));
   const index = read(root, "tasks/AGENTS.md");
   assert.match(index, /## Authored\nkeep this/);
@@ -156,7 +157,7 @@ test("Task Project index lives once in local ownership while preserving authored
       (child) => child.id === join(root, "tasks/demo/AGENTS.md"),
     ),
   );
-  await refreshProjectIndex(root, nodeBoardWriter());
+  await refreshProjectIndex(board, nodeBoardWriter());
   assert.equal(read(root, "tasks/AGENTS.md"), index);
 });
 test("sparse Task Project markers are local content and a heading-only local section is reused", async (t) => {
@@ -173,7 +174,7 @@ test("sparse Task Project markers are local content and a heading-only local sec
   );
   const source =
     "# Board\n\n## 本层记忆\n\nManual local prose.\n\n## Authored\nKeep me.\n";
-  const { AgentsNode } = await import("../../src/domain/models/internal/agents-node.js");
+  const { AgentsNode } = await import("../../src/domain/models/agents/agents-node.js");
   const node = new AgentsNode(join(root, 'AGENTS.md')).parse(source);
   node.addChild('local', { id: join(root, 'demo/AGENTS.md'), name: 'Demo', description: 'Business' });
   const updated = node.serialize();
@@ -189,7 +190,7 @@ test("explicit init keeps an existing local owner and updates an explicitly supp
   );
   put(root, "physical/AGENTS.md", "# Physical parent\n");
   put(root, "physical/deep/AGENTS.md", "# Owned\n");
-  const result = await initMemory({ indexGroup: "descendant",
+  const result = await initMemory({
     targetDir: join(root, "physical/deep"),
     rootDir: root,
     memoryTypes: ["project"],
@@ -203,7 +204,7 @@ test("explicit init keeps an existing local owner and updates an explicitly supp
 
 test("Doctor diagnoses overlapping ownership groups without choosing an authored edge", async (t) => {
   const root = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
+  await initMemory({ targetDir: root, memoryTypes: ["project"] });
   put(root, "owned/AGENTS.md", "# Owned\n");
   const localLine =
     "- [Local label](owned/AGENTS.md) — Keep this local description.";
@@ -223,7 +224,7 @@ test("Doctor diagnoses overlapping ownership groups without choosing an authored
   const beforeLocal = read(root, "AGENTS.md").match(
     /<!-- project-harness-local:start -->[\s\S]*?<!-- project-harness-local:end -->/,
   )![0];
-  const result = await doctorMemory({ indexGroup: "descendant", targetDir: root, apply: true });
+  const result = await doctorMemory({ targetDir: root, apply: true });
   assert.ok(
     result.remaining.some(
       (f) =>
@@ -238,24 +239,24 @@ test("Doctor diagnoses overlapping ownership groups without choosing an authored
   );
   assert.equal(read(root, "AGENTS.md").split("owned/AGENTS.md").length - 1, 3);
   assert.deepEqual(
-    (await doctorMemory({ indexGroup: "descendant", targetDir: root, apply: true })).repaired,
+    (await doctorMemory({ targetDir: root, apply: true })).repaired,
     [],
   );
 });
 
 test("Doctor repairs an adopted child missing AGENTS and its missing registration in one pass", async (t) => {
   const root = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
+  await initMemory({ targetDir: root, memoryTypes: ["project"] });
   const child = join(root, "child");
   mkdirSync(child);
-  await initMemory({ indexGroup: "descendant",
+  await initMemory({
     targetDir: child,
     rootDir: child,
     memoryTypes: ["project"],
   });
   rmSync(join(child, "AGENTS.md"));
   put(root, "business/AGENTS.md", "# Business stays sparse\n");
-  const result = await doctorMemory({ indexGroup: "descendant", targetDir: root, apply: true });
+  const result = await doctorMemory({ targetDir: root, apply: true });
   assert.ok(
     result.findings.some(
       (finding) =>
@@ -275,14 +276,14 @@ test("Doctor repairs an adopted child missing AGENTS and its missing registratio
   assert.equal(read(root, "business/AGENTS.md"), "# Business stays sparse\n");
   assert.equal(existsSync(join(root, "business/.harness")), false);
   assert.deepEqual(
-    (await doctorMemory({ indexGroup: "descendant", targetDir: root, apply: true })).repaired,
+    (await doctorMemory({ targetDir: root, apply: true })).repaired,
     [],
   );
 });
 
 test("doctor repairs independent valid index while retaining invalid sibling and its reference", async (t) => {
   const root = fixture(t);
-  await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
+  await initMemory({ targetDir: root, memoryTypes: ["project"] });
   const index = ".harness/memory/projects/README.md";
   put(
     root,
@@ -298,7 +299,7 @@ test("doctor repairs independent valid index while retaining invalid sibling and
     "<!-- project-harness-descendants:start -->\n- [Broken](broken/AGENTS.md) — retain\n<!-- project-harness-descendants:end -->\n<!-- project-harness:end -->",
   );
   put(root, "AGENTS.md", agents);
-  const result = await doctorMemory({ indexGroup: "descendant",
+  const result = await doctorMemory({
     targetDir: root,
     rootDir: root,
     apply: true,

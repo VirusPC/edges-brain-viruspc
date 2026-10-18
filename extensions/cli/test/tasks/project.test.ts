@@ -17,7 +17,7 @@ import {
 import { realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { nodeBoardWriter } from "./utils/helpers.js";
+import { domainBoard, nodeBoardWriter } from "./utils/helpers.js";
 import {
   createProject,
   getProject,
@@ -44,7 +44,7 @@ test("create/list/get/update project metadata; create default on virgin board", 
   const repo = await virginRepo();
   try {
     const createdDefault = await createProject(
-      repo,
+      domainBoard(repo),
       {
         project: "default",
         title: "Default",
@@ -58,25 +58,25 @@ test("create/list/get/update project metadata; create default on virgin board", 
     assert.equal(createdDefault.path, "tasks/_default/README.md");
 
     const created = await createProject(
-      repo,
+      domainBoard(repo),
       { project: "cli", title: "CLI", description: "edges CLI work" },
       nodeBoardWriter(),
     );
     assert.equal(created.project, "cli");
     assert.equal(created.path, "tasks/cli/README.md");
 
-    const listed = await listProjects(repo, nodeBoardWriter());
+    const listed = await listProjects(domainBoard(repo), nodeBoardWriter());
     assert.deepEqual(
       listed.map((item) => item.project),
       ["default", "cli"],
     );
 
-    const got = await getProject(repo, "cli", nodeBoardWriter());
+    const got = await getProject(domainBoard(repo), "cli", nodeBoardWriter());
     assert.equal(got.title, "CLI");
     assert.equal(got.description, "edges CLI work");
 
     const updated = await updateProject(
-      repo,
+      domainBoard(repo),
       "cli",
       { description: "updated CLI" },
       nodeBoardWriter(),
@@ -97,14 +97,14 @@ test("createProject duplicate and getProject missing", async () => {
   const repo = await virginRepo();
   try {
     await createProject(
-      repo,
+      domainBoard(repo),
       { project: "cli", title: "CLI", description: "edges CLI work" },
       nodeBoardWriter(),
     );
     await assert.rejects(
       () =>
         createProject(
-          repo,
+          domainBoard(repo),
           { project: "cli", title: "CLI", description: "edges CLI work" },
           nodeBoardWriter(),
         ),
@@ -118,7 +118,7 @@ test("createProject duplicate and getProject missing", async () => {
       },
     );
     await assert.rejects(
-      () => getProject(repo, "docs", nodeBoardWriter()),
+      () => getProject(domainBoard(repo), "docs", nodeBoardWriter()),
       (error: unknown) => {
         assert.equal(
           (error as { errorCode: string }).errorCode,
@@ -137,7 +137,7 @@ test("updateProject preserves pointers and does not rewrite a Task file", async 
   const repo = await virginRepo();
   try {
     await createProject(
-      repo,
+      domainBoard(repo),
       { project: "cli", title: "CLI", description: "edges CLI work" },
       nodeBoardWriter(),
     );
@@ -153,7 +153,7 @@ test("updateProject preserves pointers and does not rewrite a Task file", async 
       "---\nmetadata:\n  edges-tasks-status: backlog\n  edges-task-priority: high\n---\n\nbody\n",
       "utf8",
     );
-    await updateProject(repo, "cli", { title: "CLI work" }, nodeBoardWriter());
+    await updateProject(domainBoard(repo), "cli", { title: "CLI work" }, nodeBoardWriter());
     const readme = await readFile(
       path.join(repo, "tasks/cli/README.md"),
       "utf8",
@@ -182,7 +182,7 @@ test("updateProject seeds a README org list when the project dir exists without 
     );
 
     const updated = await updateProject(
-      repo,
+      domainBoard(repo),
       "docs",
       { title: "Docs", description: "documentation work" },
       nodeBoardWriter(),
@@ -212,7 +212,7 @@ test("createProject rejects _default as the CLI id", async () => {
     await assert.rejects(
       () =>
         createProject(
-          repo,
+          domainBoard(repo),
           { project: "_default", title: "Default", description: "x" },
           nodeBoardWriter(),
         ),
@@ -324,7 +324,7 @@ test("README Task Projects are discovered, read and updated; a user-initialised 
   const repo = await virginRepo();
   try {
     const writer = nodeBoardWriter();
-    await createProject(repo, { project: "cli", title: "CLI", description: "edges CLI work" }, writer);
+    await createProject(domainBoard(repo), { project: "cli", title: "CLI", description: "edges CLI work" }, writer);
     const board = path.join(repo, "tasks/AGENTS.md");
     // This case intentionally covers a user-initialised legacy system entry.
     await writeFile(board, "# Tasks\n\n<!-- project-harness-local:start -->\n## 本层系统维护信息\n\n<!-- project-harness-local:end -->\n");
@@ -334,25 +334,25 @@ test("README Task Projects are discovered, read and updated; a user-initialised 
       (await readFile(board, "utf8")).replace("<!-- project-harness-local:end -->", "- [Legacy](legacy/AGENTS.md) — legacy work\n<!-- project-harness-local:end -->"),
     );
 
-    const listed = await listProjects(repo, writer);
+    const listed = await listProjects(domainBoard(repo), writer);
     assert.deepEqual(listed.map((item) => [item.project, path.basename(item.path)]).sort(), [
       ["cli", "README.md"],
       ["default", "README.md"],
       ["legacy", "AGENTS.md"],
     ]);
-    const got = await getProject(repo, "cli", writer);
+    const got = await getProject(domainBoard(repo), "cli", writer);
     assert.equal(got.title, "CLI");
     assert.equal(got.description, "edges CLI work");
     assert.equal(got.path, "tasks/cli/README.md");
 
-    const updated = await updateProject(repo, "cli", { description: "updated CLI" }, writer);
+    const updated = await updateProject(domainBoard(repo), "cli", { description: "updated CLI" }, writer);
     assert.equal(updated.path, "tasks/cli/README.md");
     const readme = await readFile(path.join(repo, "tasks/cli/README.md"), "utf8");
     assert.match(readme, /^# CLI\n\nupdated CLI\n/);
     assert.match(readme, /<!-- project-entries-local:start -->\n## 本层内容\n/);
     await assert.rejects(access(path.join(repo, "tasks/cli/AGENTS.md")));
 
-    await updateProject(repo, "legacy", { description: "legacy v2" }, writer);
+    await updateProject(domainBoard(repo), "legacy", { description: "legacy v2" }, writer);
     await assert.rejects(access(path.join(repo, "tasks/legacy/README.md")));
     const agentsBoard = await readFile(board, "utf8");
     assert.match(agentsBoard, /\[Legacy\]\(<?legacy\/AGENTS\.md>?\) — legacy v2/);
@@ -362,7 +362,7 @@ test("README Task Projects are discovered, read and updated; a user-initialised 
     assert.doesNotMatch(list, /legacy/);
 
     await assert.rejects(
-      createProject(repo, { project: "cli", title: "X", description: "dup" }, writer),
+      createProject(domainBoard(repo), { project: "cli", title: "X", description: "dup" }, writer),
       /project already exists/,
     );
   } finally {

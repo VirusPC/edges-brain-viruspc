@@ -16,6 +16,7 @@ import { addTasksCommand } from "./commands/tasks.js";
 import { addMemoryCommand } from "./commands/memory.js";
 import { addSkillsCommand } from "./commands/skills.js";
 import { addForestCommand } from "./commands/forest.js";
+import { addComposeCommand } from "./commands/compose.js";
 import { addInitCommand } from "./commands/init.js";
 import { acquireWriteLock } from "./services/node/node-lock.js";
 import { VERSION } from "./utils/version.js";
@@ -28,6 +29,9 @@ EXAMPLES
   edges --scope ./projects/demo --super tasks list
   edges --scope . forest list
   edges --scope . forest list --form innermost --no-super
+  edges --scope . compose clone
+  edges --scope . compose pull
+  edges --scope . compose push
   edges notes create --title "Daily" --body "Notes from the session."
   edges notes --help
   edges projects create --title "Demo" --body "What this project is."
@@ -135,6 +139,7 @@ function addRootCommand(
   addArtifactsCommand(program, ctx);
   addSchemaCommand(program, ctx);
   addForestCommand(program, ctx);
+  addComposeCommand(program, ctx);
   program.addHelpText("after", ROOT_AFTER_HELP);
   applyOutput(program, output);
   return program;
@@ -161,7 +166,9 @@ function commandWriteTarget(
     (parent === "memory" &&
       (["init", "add-type", "remember", "restore", "delete"].includes(name) ||
         (name === "doctor" && options.apply) ||
-        (name === "migrate" && !options.dryRun)));
+        (name === "migrate" && !options.dryRun))) ||
+    (parent === "compose" &&
+      ["register", "unregister", "clone", "pull", "push"].includes(name));
   if (!writes) return undefined;
   if (
     options.targetDir &&

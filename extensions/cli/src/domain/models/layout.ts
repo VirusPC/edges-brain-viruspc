@@ -30,10 +30,15 @@ export const ENTRIES_SECTIONS = {
     marker: "project-entries-descendants",
   },
 } as const;
+export const COMPOSE_SECTION = {
+  heading: "组合",
+  marker: "project-harness-compose",
+} as const;
 export const CODEC_SECTIONS = {
   constraints: INTERNAL_SECTIONS.constraints,
   memory: INTERNAL_SECTIONS.localChildren,
   children: INTERNAL_SECTIONS.descendantChildren,
+  compose: COMPOSE_SECTION,
 } as const;
 export const INDEX_MARKERS = {
   type: "project-memory-type",

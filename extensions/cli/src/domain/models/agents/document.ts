@@ -8,7 +8,7 @@ export type AgentsLink = { kind: 'link'; label: string; target: string };
 
 export type AgentsItem = { content: (AgentsText | AgentsLink)[] };
 
-export type SectionKey = 'constraints' | 'memory' | 'children';
+export type SectionKey = 'constraints' | 'memory' | 'children' | 'compose';
 
 /** AGENTS document representation, not a domain node; targets keep authored spelling. */
 export interface AgentsDocument {
@@ -16,13 +16,14 @@ export interface AgentsDocument {
   constraints: AgentsItem[];
   memory: AgentsItem[];
   children: AgentsItem[];
+  compose: AgentsItem[];
   references: AgentsLink[];
 }
 
 export type { Metadata, MetadataValue } from "../../../utils/markdown/types.js";
 
 export function createAgentsDocument(): AgentsDocument {
-  return { constraints: [], memory: [], children: [], references: [] };
+  return { constraints: [], memory: [], children: [], compose: [], references: [] };
 }
 
 export function agentsLinks(model: AgentsDocument) {

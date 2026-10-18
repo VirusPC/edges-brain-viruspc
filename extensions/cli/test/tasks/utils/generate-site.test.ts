@@ -17,6 +17,7 @@ test("generateTasksSite writes HTML with review payload and created title", asyn
       { env },
     );
     assert.equal(created.exitCode, 0);
+    await writeFixtureIndex(path.join(repo, "AGENTS.md"), ["tasks/README.md"]);
     const outPath = path.join(repo, "tasks/_site/index.html");
     const result = await generateTasksSite({ repoPath: repo, outPath, env });
     assert.equal(result.path, path.resolve(outPath));
@@ -70,7 +71,7 @@ test("aggregate site preserves duplicate stems with portable scope/purpose/proje
     await indexTaskFixtureBoard(path.join(repo,'tasks'));
     await writeFixtureIndex(path.join(repo,'AGENTS.md'), ['tasks/AGENTS.md','.harness/tasks/AGENTS.md']);
     const outPath = path.join(repo, "site/index.html");
-    await generateTasksSite({ repoPath: repo, outPath, env, purpose: "all" });
+    await generateTasksSite({ repoPath: repo, outPath, env });
     const html = await readFile(outPath, "utf8");
     const payload = JSON.parse(
       html.match(
@@ -113,7 +114,7 @@ test("standalone scope aggregate resolves nested sources relative to selected ro
     }
     await writeFixtureIndex(path.join(root,'AGENTS.md'), ['.harness/tasks/AGENTS.md'], ['.harness/evaluation/AGENTS.md']);
     const outPath = path.join(root, "site/index.html");
-    await generateTasksSite({ repoPath: root, outPath, purpose: "all" });
+    await generateTasksSite({ repoPath: root, outPath });
     const html = await readFile(outPath, "utf8");
     const payload = JSON.parse(
       html.match(

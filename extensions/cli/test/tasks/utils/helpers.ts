@@ -9,6 +9,12 @@ import {
   access,
 } from "node:fs/promises";
 import type { BoardFs } from "../../../src/services/tasks/board.js";
+import { taskBoardLocation, type TaskBoardLocation } from "../../../src/services/tasks/paths.js";
+
+/** Fixtures under `<scope>/tasks` are the virtual board. A string scope is the maintenance board. */
+export function domainBoard(scopeDir: string): TaskBoardLocation {
+  return taskBoardLocation(scopeDir, { super: true });
+}
 
 export type BoardWriter = BoardFs & {
   writeFile(abs: string, contents: string): Promise<void>;
@@ -109,7 +115,7 @@ export async function writeIndexedTaskFixture(...args: Parameters<typeof writeFi
 }
 
 export async function writeFixtureIndex(file: string, children: string[], descendants: string[] = []): Promise<void> {
-  const { AgentsNode } = await import("../../../src/domain/models/internal/agents-node.js");
+  const { AgentsNode } = await import("../../../src/domain/models/agents/agents-node.js");
   const path = await import('node:path');
   const { realpath } = await import('node:fs/promises');
   await mkdir(path.dirname(file),{recursive:true});

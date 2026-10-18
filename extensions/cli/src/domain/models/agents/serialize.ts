@@ -8,7 +8,11 @@ import {
   serializeDocument,
 } from "../../../utils/markdown/document.js";
 
-const keys: SectionKey[] = ["constraints", "memory", "children"];
+const keys: SectionKey[] = ["constraints", "memory", "children", "compose"];
+
+function renderedKeys(model: Pick<AgentsDocument, SectionKey>): SectionKey[] {
+  return keys.filter((key) => key !== "compose" || model[key].length > 0);
+}
 
 const escape = (value: string): string =>
   value
@@ -52,7 +56,7 @@ function serializeBody(model: AgentsDocument, originalSource?: string): string {
   if (originalSource === undefined) {
     const source = [
       OUTER_START,
-      ...keys.map((key) => renderSection(key, model[key], newline)),
+      ...renderedKeys(model).map((key) => renderSection(key, model[key], newline)),
       OUTER_END,
       "",
       ...model.references.map((ref) => `- ${renderLink(ref)}`),
