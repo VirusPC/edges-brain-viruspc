@@ -1,21 +1,24 @@
 import { Command } from "commander";
 import type { CliContext } from "../context.js";
-import { initScope } from "../services/init/service.js";
-import { fail, succeed } from "./result.js";
+import { initScope, SkillsInstallError } from "../services/init/service.js";
+import { fail, failWithExit, succeed } from "./result.js";
 
 const HELP = "See edges init --help for usage.\n";
 
 const AFTER_HELP = `
 This command does not read --super. Materials always land under <scope>/.harness.
+Tokens after -- are forwarded only to the bundled skills install step.
+  edges init -- -y --agent '*'
 
 CREATED WHEN NO MODULE IS GIVEN
   AGENTS.md
   memory types: feedback, project, reference
+  skills: managed and referenced type indexes, then install bundled skills
   harness organization lists: notes, projects
 
 NOT CREATED HERE
   tasks (not in the default set; edges tasks init creates only that board)
-  user memory, skills (edges skills init adopts skill types), evaluation, and observation
+  user memory, evaluation, and observation
 `;
 
 export function addInitCommand(program: Command, ctx: CliContext): void {
@@ -44,9 +47,23 @@ export function addInitCommand(program: Command, ctx: CliContext): void {
         },
       ) => {
         try {
-          const result = await initScope({ ...options, modules, env: ctx.env });
+          const result = await initScope({
+            ...options,
+            modules,
+            skillsInstallArgs: ctx.skillsInstallArgs,
+            env: ctx.env,
+          });
           ctx.result = succeed({ ...result, command: "init" });
         } catch (error) {
+          if (error instanceof SkillsInstallError) {
+            ctx.result = failWithExit(
+              error.exitCode || 1,
+              "SKILLS_INSTALL_FAILED",
+              error.message,
+              HELP,
+            );
+            return;
+          }
           const message = error instanceof Error ? error.message : String(error);
           ctx.result = fail("VALIDATION_ERROR", message, HELP);
         }

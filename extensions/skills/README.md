@@ -37,20 +37,20 @@ git log --oneline skill/project-memory-init@1.0.0..skill/project-memory-init@1.1
 git tag -l 'skill/project-memory-init@*'
 ```
 
-`name` 与目录名一致这条**没有机器校验了**（旧的 `install-skills` 脚本会拦，已退役）。`npx skills` 按 frontmatter 里的 `name` 决定安装后的目录名，本地目录名只是兜底；两个 skill 的 `name` 撞车时，后一个会被静默丢弃。
+`name` 与目录名一致这条**没有机器校验了**（旧的 `install-skills` 脚本会拦，已退役）。两个 skill 的 `name` 撞车时，后一个会被静默丢弃。
 
-### 一定要带 `@latest`
+## 安装
 
-**所有 `npx skills` 命令都写成 `npx skills@latest`。** 不带版本号时，npm 可能把 `skills` 这个命令名解析到已废弃的 `add-skill` 老包（本机上就是 `add-skill@1.0.29`，`--version` 报 `0.1.0`）：
+外部用户先 `npm install -g @viruspc/edges`（Node.js 22.20 及以上），再执行 `edges skills init` 或无参 `edges init`。命令会建 skill 类型索引，并把包内 skill 交给固定的 `skills@1.7.2`：`skills add <包内 skills 目录的绝对路径> --skill '*'`。要传给安装器的旗标写在 `--` 后面：
 
 ```bash
-npx skills --version         # 0.1.0   ← 老包，会静默丢文件
-npx skills@latest --version  # 1.5.23  ← 真包
+edges skills init -- -g -y --agent claude-code
+edges init -- -y --agent '*'
 ```
 
-老包（对应 `skills` ≤ 1.4.0 那一代）分发时会**静默丢弃** `README.md` 和所有 `_` 开头的文件，每层目录都生效，装完不报任何错。踩过一次：`project-memory-init` 的 `_entry_line.tmpl.md` 是脚本运行时要读的模板，丢了之后 `remember` 直接报「模板不存在」，但安装器照样打印 `✓ Installed 10 skills`。
+edges 不另选 agent，也不对用户开放 `--skill`。安装器的 stdout / stderr 原样出现在终端里。它非零退出时，init 也非零退出。
 
-本目录的命名已经避开了这两类（用 `entry_line.tmpl.md` 和 `OVERVIEW.md`），所以旧版也能正常装。但**新版 1.4.1 / 1.4.5 起已分别修掉 README 和下划线的排除**，不必为此约束新 skill——只有 `metadata.json` 是至今仍会被丢的（这条有文档）。
+不要再让外部用户执行 `npx skills add VirusPC/edges/extensions/skills`，也不要写不带版本的 `npx skills` 或 `npx skills@latest`。不带版本时，npm 可能把命令名解析到已废弃的 `add-skill` 老包。CLI 把 `skills@1.7.2` 锁在自己的依赖里。
 
 > 改完 skill 目录结构后，用这条复核，别只看退出码（`<安装目录>` 是 `~/.agents/skills` 或 `~/.claude/skills`，看用的哪种装法）：
 > ```bash
@@ -80,25 +80,11 @@ pnpm skills:link                   # 项目级：extensions/skills → .agents/s
 pnpm skills:install-claude-global  # 全局，只装给 Claude Code：实体拷贝到 ~/.claude/skills
 ```
 
-`skills:link` 只写仓库内的发现位。`skills:install-claude-global` 跑的是 `npx skills@latest add ./extensions/skills -g -a claude-code -y`。只选 Claude Code 一家时，`npx skills` 不经过中枢，直接把每个 skill 实体拷贝进 `~/.claude/skills/<name>/`，不建软链；`~/.agents/skills` 里不会出现这些 skill，只在 `~/.agents/.skill-lock.json` 记一笔（`skills` 1.7.1 实测）。只读中枢的 Agent 因此看不到这次安装。
+`skills:link` 只写仓库内的发现位。`skills:install-claude-global` 跑的是 `npx skills@1.7.2 add ./extensions/skills -g -a claude-code -y`。只选 Claude Code 一家时，安装器不经过中枢，直接把每个 skill 实体拷贝进 `~/.claude/skills/<name>/`。
 
-要装进中枢 `~/.agents/skills`，用[根 README 快速开始](../../README.md#快速开始)里的 `npx skills@latest add ./extensions/skills -g`，交互选择 Agent。Codex、Cursor、Gemini CLI、Factory、opencode 原生读中枢（Codex 源码里 `~/.codex/skills` 已标 deprecated）。同时选中一家读中枢的 Agent 和 Claude Code 时，中枢放实体，`~/.claude/skills/<name>` 是指回中枢的软链（例如 `-a codex claude-code`）。
+外部用户不要走这条作者脚本，用上一节的 `edges skills init`。
 
-> ⚠️ **改完必须重跑。** 两种装法里的 skill 内容都是从本目录拷出去的实体——`npx skills` 会把源目录里的软链一并 `dereference` 掉——所以改了本目录下的文件不会自动生效。`npx skills@latest update` 对本地路径源直接跳过（跳过理由就是 `Local path`），只能重跑安装命令。
-
-### 外部用户
-
-```bash
-npx skills@latest add VirusPC/edges/extensions/skills
-```
-
-**外部用户继续走子路径。** `npx skills@latest add VirusPC/edges` 会扫到 `.agents/skills`，里面除了本目录的软链（安装时会被 dereference 成实体）还有 grill-* 等 vendor 拷贝。只要 Edges 自有 skill，子路径把扫描根换到本目录，vendor 进不来。`extensions/` 本身不在 CLI 扫描根表里。
-
-单装某一个：
-
-```bash
-npx skills@latest add VirusPC/edges/extensions/skills --skill paper-10-questions
-```
+> ⚠️ **改完必须重跑。** `npx skills` 会把源目录里的软链一并 `dereference` 掉，所以改了本目录下的文件不会自动生效。对本地路径源，`skills update` 会跳过，只能重跑安装命令。
 
 > Project Memory 系列依赖提供 `edges memory` 的 Edges CLI。先构建或安装 CLI，并验证 `edges memory --help`；Skill 的安装不等于安装 CLI。建议一起安装 `project-memory-ask` / `-doctor` / `-init` / `-remember` / `-reshape`，以保留互相引用的工作流与协议资料。执行命令不再定位其他 Skill 的 Python 脚本，模板随 CLI 构建分发。
 
@@ -109,11 +95,11 @@ npx skills@latest add VirusPC/edges/extensions/skills --skill paper-10-questions
 ### 卸载
 
 ```bash
-npx skills@latest remove <name> -g
+npx skills@1.7.2 remove <name> -g
 ```
 
 它按名字删，会清掉所有 agent 目录下的同名条目，**不区分是谁装的**。
 
 ## 命名注意
 
-skill 名会跟各 agent 的内置 skill 处在同一命名空间，同名会遮蔽内置的。取名前先确认不撞车——例如 `deep-research` 是 Claude Code 的内置名，本仓库那份横纵分析法因此叫 `horizontal-vertical-research`。
+skill 名会跟各 agent 的内置 skill 处在同一命名空间，同名会遮蔽内置的。取名前先确认不撞车——例如 `deep-research` 是 Claude Code 的内置名，横纵分析法因此叫 `horizontal-vertical-research`（在 `shared-extensions/skills/`，不进 npm 包）。

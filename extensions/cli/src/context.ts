@@ -33,6 +33,8 @@ export type CliContext = {
   all?: boolean;
   /** Explicit `--with-composed`: include composed repository entry nodes in list and query. */
   withComposed?: boolean;
+  /** Tokens after `--` on `edges init` / `edges skills init`, forwarded to skills install. */
+  skillsInstallArgs?: readonly string[];
   result: CliResult | undefined;
 };
 

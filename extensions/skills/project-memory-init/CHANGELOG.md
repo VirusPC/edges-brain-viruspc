@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.8.0] - 2026-10-18
+
+### Changed
+
+- 无参 `edges init` 的默认集加入 skills：写 managed / referenced 类型索引，并安装 npm 包内的 Edges skill。`edges skills init` 同样安装。传给安装器的旗标写在 `--` 之后。不建的仍是 user、tasks。
+
 ## [3.7.0] - 2026-10-18
 
 ### Changed

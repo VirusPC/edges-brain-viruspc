@@ -137,6 +137,9 @@ importers:
       proper-lockfile:
         specifier: 4.1.2
         version: 4.1.2
+      skills:
+        specifier: 1.7.2
+        version: 1.7.2
       tar:
         specifier: ^7.5.22
         version: 7.5.22
@@ -3735,6 +3738,11 @@ packages:
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
+
+  skills@1.7.2:
+    resolution: {integrity: sha512-j+GzyF/oNahsjjjup6y3lJpFkC1lQjIkf4kAMXICA1hboBqi0fAGXAGoE4x9FRZiP1br/YE9+L3/Tqq6PIAe0A==}
+    engines: {node: '>=22.20.0'}
+    hasBin: true
 
   smart-buffer@4.2.0:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
@@ -7975,6 +7983,11 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
+  skills@1.7.2:
+    dependencies:
+      tar: 7.5.22
+      yaml: 2.9.1
+
   smart-buffer@4.2.0: {}
 
   socks@2.8.10:
@@ -8339,8 +8352,7 @@ snapshots:
 
   yallist@5.0.0: {}
 
-  yaml@2.9.1:
-    optional: true
+  yaml@2.9.1: {}
 
   yocto-queue@0.1.0: {}
 

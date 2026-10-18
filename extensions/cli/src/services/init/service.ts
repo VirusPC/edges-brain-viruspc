@@ -50,6 +50,9 @@ import {
   type InitModuleName,
 } from "./modules.js";
 import { migrateScopeMaterialIndex } from "./migrate-scope-readme.js";
+import { installBundledSkills, SkillsInstallError } from "../skills/install-bundled.js";
+
+export { SkillsInstallError };
 
 export type { InitMemoryOptions };
 
@@ -61,6 +64,8 @@ export interface InitScopeOptions {
   modules?: readonly string[];
   memoryTypes?: readonly string[];
   skillTypes?: readonly string[];
+  /** Tokens after `--`, forwarded only to the bundled skills install. */
+  skillsInstallArgs?: readonly string[];
 }
 
 function scopeReadmePath(scopeDir: string): string {
@@ -448,6 +453,9 @@ export async function initScope(options: InitScopeOptions) {
     preserved = [...preserved, ...boards.preserved];
   }
   await migrateScopeMaterialIndex(scope.targetDir);
+  if (requested.includes("skills")) {
+    await installBundledSkills(options.skillsInstallArgs ?? []);
+  }
   return {
     ...(typeResult ?? {}),
     targetDir: scope.targetDir,

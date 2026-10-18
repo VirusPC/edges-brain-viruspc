@@ -8,7 +8,7 @@
 
 ## 快速开始
 
-运行、构建与测试统一以 Node.js 22 为基线。以下命令在仓库根执行：
+运行、构建与测试以 Node.js 22.20 及以上为基线（与依赖 `skills@1.7.2` 的 `engines.node` 一致）。以下命令在仓库根执行：
 
 ```bash
 pnpm install --frozen-lockfile
@@ -21,14 +21,14 @@ node extensions/cli/dist/index.js --help
 
 开发时可以通过 tsx 直接运行源码；需要 Schema 的命令先运行 `build:schemas`，需要审阅页的命令先构建审阅应用。`pnpm --filter @viruspc/edges dev --help` 会先生成 Schema。
 
-公开包名是 `@viruspc/edges`，命令名只有 `edges`。另一台装了 Node.js 22 的机器上：
+公开包名是 `@viruspc/edges`，命令名只有 `edges`。另一台装了 Node.js 22.20 及以上的机器上：
 
 ```bash
 npm install -g @viruspc/edges
 edges --help
 ```
 
-`package.json` 的 bin 指向 `dist/index.js`。`prepack` 会执行完整构建，把审阅页编好的 HTML/JS/CSS、Schema 和 Memory 模板放进 `dist`。`tasks-review-app` 只在本仓构建时使用，不单独发布；安装包里没有它的 React 源码，也没有 `workspace:` 依赖。发布到 npm 用 `pnpm --filter @viruspc/edges publish`（`publishConfig.access` 为 `public`）。不要用 `npm publish` 或 `npm pack`：npm 不会去掉 workspace 协议。本仓打本地安装包仍是 `pnpm --filter @viruspc/edges pack`。只有 build 或 prepack 成功后，编译后的命令才可用。
+`package.json` 的 bin 指向 `dist/index.js`。`files` 还包含构建时从 `extensions/skills/` 拷来的 `skills/`。`prepack` 会执行完整构建，把审阅页编好的 HTML/JS/CSS、Schema、Memory 模板和这些 skill 放进安装包。`tasks-review-app` 只在本仓构建时使用，不单独发布；安装包里没有它的 React 源码，也没有 `workspace:` 依赖。发布到 npm 用 `pnpm --filter @viruspc/edges publish`（`publishConfig.access` 为 `public`）。不要用 `npm publish` 或 `npm pack`：npm 不会去掉 workspace 协议。本仓打本地安装包仍是 `pnpm --filter @viruspc/edges pack`。只有 build 或 prepack 成功后，编译后的命令才可用。
 
 直接运行 `edges` 而不带子命令会返回用法错误；没有 `edges-note` 别名，也没有根命令默认写入笔记的行为。
 
@@ -209,6 +209,8 @@ edges --scope /absolute/project init notes
 edges --scope /absolute/project notes init
 edges --scope /absolute/project memory init --memory-types project feedback
 edges --scope /absolute/project skills init --skill-types managed referenced
+edges --scope /absolute/project skills init -- -g -y --agent claude-code
+edges --scope /absolute/project init -- -y --agent '*'
 edges --scope /absolute/project tasks init
 edges --scope /absolute/project memory remember --type project --slug decision \
   --description "记录本项目的设计取舍" --content-file /tmp/decision.md
@@ -219,7 +221,7 @@ edges memory backup --repo-dir /absolute/project
 edges memory restore --repo-dir /absolute/project --archive /private/archive.tar.gz
 ```
 
-新作用域的 `edges memory init` 未选择类型时只返回推荐项，不创建 notes、projects、skills 或 tasks 的材料。`edges skills init` 只写 skill 类型索引。`edges tasks init` 只写任务看板。remember 不初始化缺失作用域；doctor 默认只诊断。旧 `.memory` 通过显式 migrate 转换，普通命令不兼容迁移。新建子作用域按路径登记到父级：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已经登记的保持原组。`edges memory doctor --apply` 按同一规则补上缺失的父级链接。
+新作用域的 `edges memory init` 未选择类型时只返回推荐项，不创建 notes、projects、skills 或 tasks 的材料。无参 `edges init` 的默认集包含 skills。`edges skills init` 既写 skill 类型索引，也把包内 skill 装给本机 agent：安装步骤是固定的 `skills@1.7.2`，只额外传入包内 skills 目录和 `--skill '*'`，`--` 之后的 token 原样转交。`edges tasks init` 只写任务看板。remember 不初始化缺失作用域；doctor 默认只诊断。旧 `.memory` 通过显式 migrate 转换，普通命令不兼容迁移。新建子作用域按路径登记到父级：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已经登记的保持原组。`edges memory doctor --apply` 按同一规则补上缺失的父级链接。
 
 用户记忆 restore 默认拒绝覆盖，明确使用 --force 才整份替换，失败时回滚。备份和恢复接受未压缩或 gzip tar，解包上限 256 MiB、10,000 文件，拒绝硬链接；中断后若报告 `.private-user-memory-*/previous`，应保留恢复副本。模板随包复制到 dist，运行不依赖相邻 Skill 源码或 Python。
 

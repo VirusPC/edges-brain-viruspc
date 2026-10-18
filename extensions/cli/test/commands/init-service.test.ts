@@ -45,10 +45,12 @@ test("edges init --help separates tasks from modules this command creates and ig
   const created = help.stdout.slice(createdAt, notCreatedAt);
   const rest = help.stdout.slice(notCreatedAt);
   assert.match(created, /feedback, project, reference/);
+  assert.match(created, /\bskills\b/);
   assert.match(created, /\bnotes\b/);
   assert.match(created, /\bprojects\b/);
   assert.doesNotMatch(created, /\btasks\b/);
   assert.match(rest, /\btasks\b/);
+  assert.doesNotMatch(rest, /adopts skill types/);
 });
 
 test("edges init on an empty scope writes AGENTS, public memory types, and harness boards", async (t) => {
@@ -58,7 +60,7 @@ test("edges init on an empty scope writes AGENTS, public memory types, and harne
   const body = JSON.parse(result.stdout) as { status: string; command: string; modules: string[] };
   assert.equal(body.status, "success");
   assert.equal(body.command, "init");
-  assert.deepEqual(body.modules, ["memory", "notes", "projects"]);
+  assert.deepEqual(body.modules, ["memory", "skills", "notes", "projects"]);
   for (const rel of [
     "AGENTS.md",
     ".harness/notes/README.md",
@@ -66,6 +68,8 @@ test("edges init on an empty scope writes AGENTS, public memory types, and harne
     ".harness/memory/feedbacks/README.md",
     ".harness/memory/projects/README.md",
     ".harness/memory/references/README.md",
+    ".harness/skills/managed/README.md",
+    ".harness/skills/referenced/README.md",
   ]) {
     assert.equal(existsSync(path.join(root, rel)), true, rel);
   }
@@ -73,7 +77,6 @@ test("edges init on an empty scope writes AGENTS, public memory types, and harne
     "notes/README.md",
     "projects/README.md",
     ".harness/memory/users/README.md",
-    ".harness/skills/managed/README.md",
     ".harness/tasks/README.md",
     ".harness/evaluation/README.md",
     ".harness/observation/README.md",
