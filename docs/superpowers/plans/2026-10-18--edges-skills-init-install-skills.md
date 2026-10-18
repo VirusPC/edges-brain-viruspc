@@ -99,12 +99,12 @@ edges init / edges skills init
 
 - 默认预览；`--apply` 才写。两边都已在目标且源已不存在时，计划为空，退出 0。源和目标同时存在则退出非零，不覆盖。
 - 移动整个目录，再删 `CHANGELOG.md`，并从 `SKILL.md` frontmatter 去掉 `version` 行。`name` 与目录名保持一致。
-- 升 `shared-extensions` 到 `1.1.0`（新增 skill，次版本）。changelog 记 Added。同一 commit 打 annotated tag `shared-extensions@1.1.0`。
+- `shared-extensions` 版本保持 `1.0.0`。changelog 把移入的 skill 记在这一版的 Added。本计划不打 tag。
 - 不改这 6 个 skill 的正文步骤。历史笔记、复盘里的旧路径不回写。
 
 - [ ] **Step 1:** 写脚本，对仓库预览，确认 6 条移动、无名字冲突。
 - [ ] **Step 2:** `--apply`。`pnpm skills:link` 去掉 `.agents/skills` 上已失效的软链。
-- [ ] **Step 3:** 再预览，计划为空。`git tag -a shared-extensions@1.1.0`。
+- [ ] **Step 3:** 再预览，计划为空。不在这一步打 tag。
 
 ### Task 2: 把剩下的 skill 打进 `@viruspc/edges`
 
@@ -226,7 +226,7 @@ spawn(process.execPath, [skillsBin, ...skillsAddArgs(dir, forwarded)], { stdio: 
 **Files:**
 
 - Modify: `extensions/cli/README.md`、`README.md`、`extensions/README.md`、`extensions/skills/README.md`、`shared-extensions/skills/README.md`、`CONTEXT.md`、`docs/adr/0036-edges-init-installs-bundled-skills.md`、`CHANGELOG.md`（边界变化的一条）
-- Modify: `extensions/skills/project-memory-init/SKILL.md`、`references/LAYOUT.md`、`references/runtime.md`、`CHANGELOG.md`（3.7.0 → 3.8.0，行为变化）
+- Modify: `extensions/skills/project-memory-init/SKILL.md`、`references/LAYOUT.md`、`references/runtime.md`、`CHANGELOG.md`（版本记为 `1.0.0`，行为变化）
 - Modify: 任务卡进展记录。不移动卡片目录。
 - Modify: `teaching/link-external-repo/NOTES.md` 里 `extensions/skills/learn-repo` 的路径。
 
@@ -236,7 +236,7 @@ spawn(process.execPath, [skillsBin, ...skillsAddArgs(dir, forwarded)], { stdio: 
 - Node 要求写成 22.20.0 及以上（根 README 快速开始、CLI README）。
 - `安装技能` 术语补上薄封装、`--skill '*'`、`--` 转交。
 - ADR 0036 的 Status 改为已实现；Consequences 改为实现后的事实（包内 `skills/`、依赖 `skills@1.7.2`、stdio 继承、无 TTY 时由 vercel skills 自己退出）。
-- `project-memory-init`：无参 `edges init` 现在包含 skills（类型索引 + 安装技能）。`edges skills init` 不只建索引。不建的仍是 user、tasks、evaluation、observation。按该 skill 的发版约定升到 3.8.0 并打 `skill/project-memory-init@3.8.0`。
+- `project-memory-init`：无参 `edges init` 现在包含 skills（类型索引 + 安装技能）。`edges skills init` 不只建索引。不建的仍是 user、tasks、evaluation、observation。版本记为 `1.0.0`。本计划不打 tag。
 - 任务卡追加一条进展：实现了什么、PR 链接。完成标准的勾选留在 PR 正文，不在卡上改成已完成状态目录。
 
 - [ ] **Step 1:** 改文档与 skill 正文。

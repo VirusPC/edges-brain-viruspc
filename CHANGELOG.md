@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### shared-extensions
 
-- **通用 skill 移出 extensions：** `paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`、`horizontal-vertical-research`、`learn-repo` 改到 `shared-extensions/skills/`，不打进 `@viruspc/edges`。整层版本记为 `1.2.0`（`shared-extensions@1.1.0` 已被尚未合入 main 的 tag 占用）。
+- **通用 skill 移出 extensions：** `paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`、`horizontal-vertical-research`、`learn-repo` 改到 `shared-extensions/skills/`，不打进 `@viruspc/edges`。整层版本保持 `1.0.0`。
 
 ### 组合仓库
 

@@ -1,16 +1,13 @@
 # Changelog
 
-## [3.9.0] - 2026-10-18
-
-### Changed
-
-- agent 调用无参 `edges init` 或 `edges skills init` 时，在 `--` 后传 `-g -y`。`skills@1.7.2` 没探测到 agent 且没有 TTY 时，不带这些旗标会退出 1。`-g -y` 仍把 agent 选择留给安装器：探测到当前 agent 就只装给它，否则按本机已安装的 agent 装。
-
-## [3.8.0] - 2026-10-18
+## [1.0.0] - 2026-10-18
 
 ### Changed
 
 - 无参 `edges init` 的默认集加入 skills：写 managed / referenced 类型索引，并安装 npm 包内的 Edges skill。`edges skills init` 同样安装。传给安装器的旗标写在 `--` 之后。不建的仍是 user、tasks。
+- agent 调用无参 `edges init` 或 `edges skills init` 时，在 `--` 后传 `-g -y`。`skills@1.7.2` 没探测到 agent 且没有 TTY 时，不带这些旗标会退出 1。`-g -y` 仍把 agent 选择留给安装器：探测到当前 agent 就只装给它，否则按本机已安装的 agent 装。
+
+合入前这份 skill 的版本记为 `1.0.0`。下方同号的 2026-09-01 条目是更早的首版记录。
 
 ## [3.7.0] - 2026-10-18
 

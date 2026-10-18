@@ -1,7 +1,7 @@
 ---
 name: project-memory-init
 description: 对用户选定的任意目录初始化或刷新系统入口 AGENTS.md（硬约束 + 组成登记），并按选择采用 Project Memory / Skills 类型。无参 edges init 与 edges skills init 还会安装包内 skill。仅当用户明确要求 init 时使用。标准命令是 edges init；各域 init 只初始化本模块。
-version: 3.9.0
+version: 1.0.0
 ---
 
 # Project harness init（`$project-memory-init`）
