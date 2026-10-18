@@ -33,7 +33,6 @@ jobs:
       - name: Assert tag commit is ancestor of origin/main
         run: |
           set -euo pipefail
-          git fetch origin main --depth=1 || git fetch origin main
           git merge-base --is-ancestor HEAD origin/main
 
       - uses: pnpm/action-setup@v4
@@ -69,16 +68,29 @@ jobs:
           node-version: '22.20'
           registry-url: 'https://registry.npmjs.org'
 
+      - run: npm install -g npm@^11.5.1
+
       - run: pnpm install --frozen-lockfile
 
       - name: Fail if version already on npm
         run: |
           set -euo pipefail
           VER="$(node -p "require('./extensions/cli/package.json').version")"
-          if npm view "@viruspc/edges@${VER}" version >/dev/null 2>&1; then
+          set +e
+          OUT="$(npm view "@viruspc/edges@${VER}" version 2>&1)"
+          CODE=$?
+          set -e
+          if [ "$CODE" -eq 0 ]; then
             echo "@viruspc/edges@${VER} already on npm"
             exit 1
           fi
+          if printf '%s\n' "$OUT" | grep -q 'E404'; then
+            echo "@viruspc/edges@${VER} is not on npm"
+            exit 0
+          fi
+          echo "npm view @viruspc/edges@${VER} failed (exit ${CODE})"
+          printf '%s\n' "$OUT"
+          exit 1
 
       - name: Publish
         run: pnpm --filter @viruspc/edges publish --no-git-checks --access public

@@ -36,7 +36,7 @@ edges --help
 
 CLI 运行时只读 `extensions/cli/package.json` 的 `version`。发版只升这一处，并写入 `CHANGELOG.md`。
 
-版本合进 `main` 之后，在该提交上打 annotated tag `@viruspc/edges@<version>`（例如 `@viruspc/edges@0.2.0`）。推送这个 tag 会跑 [`.github/workflows/publish-edges-cli.yml`](../../.github/workflows/publish-edges-cli.yml)：先测试，再经 GitHub Environment `npm-publish` 人工放行，用 npm Trusted Publishing（OIDC）执行 `pnpm --filter @viruspc/edges publish --no-git-checks --access public`（`publishConfig.access` 为 `public`）。不建 GitHub Release。决定见 [ADR 0037](../../docs/adr/0037-npm-publish-via-github-actions.md)。
+版本合进 `main` 之后，在该提交上打 annotated tag `@viruspc/edges@<version>`（例如 `@viruspc/edges@0.2.0`）。推送这个 tag 会跑 [`.github/workflows/publish-edges-cli.yml`](../../.github/workflows/publish-edges-cli.yml)：先测试，再经 GitHub Environment `npm-publish` 人工放行，用 npm Trusted Publishing（OIDC）执行 `pnpm --filter @viruspc/edges publish --no-git-checks --access public`（`publishConfig.access` 为 `public`）。Node 22.20 自带 npm 10.9.3，publish job 在 `pnpm install` 之前执行 `npm install -g npm@^11.5.1`，因为 Trusted Publishing 需要 npm >= 11.5.1，而 `pnpm publish` 会交给 npm 上传。不建 GitHub Release。决定见 [ADR 0037](../../docs/adr/0037-npm-publish-via-github-actions.md)。
 
 合并后做一次（npm 上的 Trusted Publisher 若两天内没有成功发布会过期）：
 
