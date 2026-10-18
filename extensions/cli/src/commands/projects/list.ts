@@ -15,7 +15,7 @@ export function addProjectListCommand(project: Command, ctx: CliContext): void {
     .option("--group-by <field>", "Group filtered projects by one field")
     .action(async (opts: { filter?: string[]; groupBy?: string }) => {
       try {
-        const items = await listProjects(ctx.env, { all: ctx.all, super: ctx.super });
+        const items = await listProjects(ctx.env, { all: ctx.all, super: ctx.super, withComposed: ctx.withComposed });
         ctx.result = succeed(presentListed("projects.list", items, opts));
       } catch (error) {
         failNodeCommand(ctx, error, HELP);

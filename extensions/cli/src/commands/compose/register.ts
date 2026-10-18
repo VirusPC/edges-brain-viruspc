@@ -12,13 +12,13 @@ export function addComposeRegisterCommand(compose: Command, ctx: CliContext): vo
     .command("register")
     .description("Record a composed repository in the scope Compose block")
     .requiredOption("--name <name>", "Entry name")
-    .requiredOption("--path <directory>", "Local directory for the checkout")
+    .option("--path <directory>", "Local checkout directory (default: ~/.edges/composed/<name>)")
     .option("--remote <url>", "Git remote used by clone")
     .option("--description <text>", "What this repository is")
     .allowExcessArguments(false)
     .action(async (opts: {
       name: string;
-      path: string;
+      path?: string;
       remote?: string;
       description?: string;
     }) => {

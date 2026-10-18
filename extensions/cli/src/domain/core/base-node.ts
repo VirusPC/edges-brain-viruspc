@@ -78,8 +78,8 @@ export class BaseNode<
   get children(): readonly Readonly<NodeReference>[] {
     return [];
   }
-  /** Compose-block edges. Undefined when this node has no compose section. */
-  get composeChildren(): readonly Readonly<NodeReference>[] | undefined {
+  /** One edge to a ComposeNode. Undefined when this node has no composed repositories. */
+  get compose(): Readonly<NodeReference> | undefined {
     return undefined;
   }
   get isLeaf(): boolean {

@@ -10,6 +10,8 @@ export { ProjectNode } from "./projects/project-node.js";
 export { SkillNode } from "./skills/skill-node.js";
 export { AgentsNode } from "./agents/agents-node.js";
 export { SuperAgentsNode } from "./super-agents/super-agents-node.js";
+export { ComposeNode } from "./compose/compose-node.js";
+export type { ComposeEntry, ComposeCheckout, ComposeChildInput } from "./compose/compose-node.js";
 export { ReadmeNode } from "./readme/readme-node.js";
 export type * from "../core/types.js";
 export type { TaskCreateInput, TaskUpdateInput, TaskStatus, TaskPriority } from "./tasks/types.js";

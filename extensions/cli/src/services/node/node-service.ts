@@ -45,7 +45,7 @@ import {
   type Model,
 } from "./node-layout.js";
 import { query, type AsyncQuery } from "../../domain/operations/query.js";
-import { traverse, contentFaceReadme, isComposeOnlyReference } from "../../domain/operations/traverse.js";
+import { traverse, contentFaceReadme } from "../../domain/operations/traverse.js";
 import { NodeCache } from "./node-cache.js";
 
 type Operation = "create" | "update" | "move" | "destroy" | "import";
@@ -94,25 +94,12 @@ export class NodeService {
   readonly #options: NodeServiceOptions;
   readonly #cache: NodeCache;
   readonly #navigationReadOnly = new WeakSet<BaseNode>();
-  /** Repository directories entered through a Compose edge during this service's queries. */
-  readonly #composeRoots: string[] = [];
   constructor(options: NodeServiceOptions) {
     if (!options?.managedRoot)
       throw new Error("NodeService requires an explicit managedRoot");
     this.managedRoot = canonicalPath(checkPath(options.managedRoot));
     this.#options = options;
     this.#cache = new NodeCache(this.managedRoot);
-  }
-  #insideEnteredCompose(parent: BaseNode, reference: NodeReference): boolean {
-    if (parent.composeChildren?.some((item) => item.id === reference.id)) {
-      const root = path.dirname(reference.id);
-      if (!this.#composeRoots.includes(root)) this.#composeRoots.push(root);
-      return true;
-    }
-    return this.#composeRoots.some(
-      (root) =>
-        isWithinPath(parent.path, root) && isWithinPath(reference.id, root),
-    );
   }
   #boundary(file: string): string {
     file = canonicalPath(checkPath(file));
@@ -249,9 +236,10 @@ export class NodeService {
       let readonly = false;
       yield* traverse(root, options, (parent, reference) => {
         if (options.excludeRoots?.has(reference.id)) return undefined;
-        const composed = service.#insideEnteredCompose(parent, reference);
+        if (reference.id === parent.compose?.id) return reference.id;
         if (!fs.existsSync(reference.id)) return undefined;
-        if (options.includeHarness && !composed) {
+        const composeEntry = parent.type === "compose";
+        if (options.includeHarness && !composeEntry) {
           if (!isWithinPath(reference.id, service.managedRoot)) return undefined;
           // Symlinked mirrors (e.g. installed .agents/skills) are discovered through their real path.
           if (firstSymlink(reference.id, service.managedRoot)) return undefined;
@@ -265,7 +253,11 @@ export class NodeService {
           !isWithinPath(reference.id, service.managedRoot) ||
           service.#referenceReadOnly(parent, reference);
         return reference.id;
-      }, (parent, reference) => service.#reference(parent, reference, readonly, options.types, false));
+      }, (parent, reference) => {
+        if (reference.id === parent.compose?.id && parent instanceof AgentsNode)
+          return Promise.resolve(parent.composeNode());
+        return service.#reference(parent, reference, readonly, options.types, false);
+      });
     });
   }
   /** Materialize query and capture lifecycle resource snapshots before resolving,
@@ -313,7 +305,7 @@ export class NodeService {
       node.harness?.id === ref.id && !node.children.some(child => child.id === ref.id);
     let readonly = false;
     const resolve = (parent: BaseNode, ref: NodeReference) => {
-      if (isComposeOnlyReference(parent, ref)) return undefined;
+      if (ref.id === parent.compose?.id) return undefined;
       if (!isWithinPath(ref.id, this.managedRoot) || deferred(ref.id)) return undefined;
       // Maintenance discovery tolerates a missing optional entry; composition does not.
       if (maintenanceOnly(parent, ref) &&
@@ -358,7 +350,7 @@ export class NodeService {
       roots(),
       {},
       (_parent, ref) => {
-        if (isComposeOnlyReference(_parent, ref)) return undefined;
+        if (ref.id === _parent.compose?.id) return undefined;
         if (removed(ref.id))
           throw new Error(`Reference to removed node: ${ref.id}`);
         readonly = this.#referenceReadOnly(_parent, ref);

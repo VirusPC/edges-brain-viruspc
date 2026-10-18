@@ -7,6 +7,12 @@ export const ENTRY_NAMES = {
   leaf: "INDEX.md",
 } as const;
 
+/** Directory segment of a ComposeNode id: `<owner dir>/.compose/README.md`. */
+export const COMPOSE_ENTRY_DIR = ".compose";
+
+/** Authored checkout root when `edges compose register` omits `--path`. */
+export const COMPOSED_CHECKOUT_ROOT = "~/.edges/composed";
+
 /** Pre-migration spelling of the leaf entry; still read everywhere, never created. */
 export const LEGACY_LEAF_ENTRY = "index.md";
 
