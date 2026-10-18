@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtemp, readdir, readFile, rename, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import test from 'node:test';
 
 async function files(directory: string): Promise<string[]> {
@@ -84,4 +85,28 @@ test('packed CLI works outside repo with production dependencies and fails clear
     const manifest = JSON.parse(await readFile(path.join(packageDir,'dist/schemas/manifest.json'),'utf8'));
     assert.equal(manifest[0].file,'task-doc.v1.json');
   } finally {await rm(directory,{recursive:true,force:true});}
+});
+
+test('npm pack is rejected when npm_execpath is npm even if the user agent says pnpm', () => {
+  const cli = fileURLToPath(new URL('../../', import.meta.url));
+  const script = fileURLToPath(new URL('../../scripts/assert-pnpm-publish.mjs', import.meta.url));
+  const pnpmAgent = 'pnpm/10.33.4 npm/? node/v22.14.0 linux x64';
+  const runGuard = (execpath: string, userAgent: string) => spawnSync(process.execPath, [script], {
+    encoding: 'utf8',
+    env: {...process.env, npm_config_user_agent: userAgent, npm_execpath: execpath},
+  });
+  const allowed = runGuard('/opt/corepack/v1/pnpm/10.33.4/dist/pnpm.cjs', 'npm/10.9.9 node/v22.14.0 linux x64');
+  assert.equal(allowed.status, 0, allowed.stderr);
+  const nestedNpm = runGuard('/opt/pnpm/npm/bin/npm-cli.js', pnpmAgent);
+  assert.notEqual(nestedNpm.status, 0);
+  assert.match(nestedNpm.stderr, /npm_execpath is npm, but npm_config_user_agent says pnpm/);
+  const packed = spawnSync('npm', ['pack', '--dry-run'], {
+    cwd: cli,
+    encoding: 'utf8',
+    env: {...process.env, npm_config_user_agent: pnpmAgent},
+  });
+  const output = `${packed.stdout}${packed.stderr}`;
+  assert.notEqual(packed.status, 0, output);
+  assert.match(output, /npm_execpath is npm, but npm_config_user_agent says pnpm/);
+  assert.equal(output.includes('viruspc-edges-0.1.0.tgz'), false);
 });
