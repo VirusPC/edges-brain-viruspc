@@ -1,159 +1,112 @@
 import { referenceOf, validateChild, validateGroup } from "./relations.js";
 import { BaseNode } from "./base-node.js";
-import type {
-  ChildGroup,
-  NodeCreateInput,
-  NodeReference,
-  NodeUpdateInput,
-} from "./types.js";
+import type { ChildGroup, NodeCreateInput, NodeReference, NodeUpdateInput } from "./types.js";
 
 export interface InternalCreateInput extends NodeCreateInput {
   localChildren?: readonly NodeReference[];
   descendantChildren?: readonly NodeReference[];
 }
 
-export interface InternalChildLists {
-  localChildren: NodeReference[];
-  descendantChildren: NodeReference[];
+function assertIndexed(path: string, lists: readonly (readonly NodeReference[])[]): void {
+  const seen = new Set<string>();
+  for (const reference of lists.flat()) {
+    validateChild(reference);
+    if (seen.has(reference.id))
+      throw new Error(`${path}: child already indexed in local/descendant sections: ${reference.id}`);
+    seen.add(reference.id);
+  }
 }
 
-const section = (group: ChildGroup) =>
-  group === "local" ? "localChildren" : "descendantChildren";
-
-/**
- * Shared composition indexes for entry nodes that own local and descendant children.
- * AgentsNode and ReadmeNode supply their own block format, parse, and serialize.
- */
+/** Local and descendant children shared by AgentsNode and ReadmeNode. */
 export abstract class InternalNode<
   CreateInput extends InternalCreateInput = InternalCreateInput,
   UpdateInput extends NodeUpdateInput = NodeUpdateInput,
 > extends BaseNode<CreateInput, UpdateInput> {
-  // #region Composition
-  #children: InternalChildLists = { localChildren: [], descendantChildren: [] };
+  protected locals: NodeReference[] = [];
+  protected descendants: NodeReference[] = [];
 
   override get localChildren(): readonly Readonly<NodeReference>[] {
-    return structuredClone(this.#children.localChildren);
+    return structuredClone(this.locals);
   }
   override get descendantChildren(): readonly Readonly<NodeReference>[] {
-    return structuredClone(this.#children.descendantChildren);
+    return structuredClone(this.descendants);
   }
   override get children(): readonly Readonly<NodeReference>[] {
     return [...this.localChildren, ...this.descendantChildren];
   }
-  // #endregion
 
-  // #region Composition methods
-  protected childLists(): InternalChildLists {
-    return {
-      localChildren: structuredClone(this.#children.localChildren),
-      descendantChildren: structuredClone(this.#children.descendantChildren),
-    };
-  }
-  protected installChildLists(next: InternalChildLists): void {
-    this.#children = {
-      localChildren: next.localChildren.map(referenceOf),
-      descendantChildren: next.descendantChildren.map(referenceOf),
-    };
-  }
-  protected assertChildLists(next: InternalChildLists): void {
-    const seen = new Set<string>();
-    for (const reference of [
-      ...next.localChildren,
-      ...next.descendantChildren,
-    ]) {
-      validateChild(reference);
-      if (seen.has(reference.id))
-        throw new Error(this.duplicateSectionError(reference.id));
-      seen.add(reference.id);
+  /** Store children, then let the subclass rewrite its document. */
+  protected replace(local: readonly NodeReference[], descendant: readonly NodeReference[]): void {
+    const nextLocal = local.map(referenceOf);
+    const nextDescendant = descendant.map(referenceOf);
+    assertIndexed(this.path, [nextLocal, nextDescendant]);
+    const previousLocal = this.locals;
+    const previousDescendant = this.descendants;
+    this.locals = nextLocal;
+    this.descendants = nextDescendant;
+    try {
+      this.sync();
+    } catch (error) {
+      this.locals = previousLocal;
+      this.descendants = previousDescendant;
+      throw error;
     }
   }
-  /** Validate, let the subclass refresh its document, then store the lists. */
-  protected commitChildLists(next: InternalChildLists): void {
-    this.assertChildLists(next);
-    this.installChildLists(next);
+  /** Rewrite the document from the current children. */
+  protected sync(): void {
+    this.serializeBody();
   }
-  protected duplicateChildError(id: string): string {
-    return `${this.path}: Child already indexed: ${id}`;
-  }
-  protected missingChildError(id: string): string {
-    return `${this.path}: Child is not indexed: ${id}`;
-  }
-  protected duplicateSectionError(id: string): string {
-    return `${this.path}: child already indexed in local/descendant sections: ${id}`;
-  }
-  protected structureConflictError(): string {
-    return `${this.path}: body conflicts with structured sections.`;
-  }
-  protected bodyConflictsWithStructure(input: CreateInput): boolean {
-    return (
-      input.body !== undefined &&
-      (input.localChildren !== undefined ||
-        input.descendantChildren !== undefined)
-    );
-  }
-  protected applyStructure(input: CreateInput): void {
-    const current = this.childLists();
-    this.commitChildLists({
-      localChildren: [...(input.localChildren ?? current.localChildren)],
-      descendantChildren: [
-        ...(input.descendantChildren ?? current.descendantChildren),
-      ],
-    });
-  }
+
   override addChild(group: ChildGroup, reference: NodeReference): this {
     validateGroup(group);
     validateChild(reference);
-    if (this.children.some((child) => child.id === reference.id))
-      throw new Error(this.duplicateChildError(reference.id));
-    const next = this.childLists();
-    next[section(group)].push(referenceOf(reference));
-    this.commitChildLists(next);
+    if ([...this.locals, ...this.descendants].some((child) => child.id === reference.id))
+      throw new Error(`${this.path}: Child already indexed: ${reference.id}`);
+    const local = [...this.locals];
+    const descendant = [...this.descendants];
+    (group === "local" ? local : descendant).push(referenceOf(reference));
+    this.replace(local, descendant);
     return this;
   }
-  updateChild(
-    id: string,
-    patch: Partial<Pick<NodeReference, "name" | "description">>,
-  ): this {
-    if (!this.children.some((child) => child.id === id))
-      throw new Error(this.missingChildError(id));
-    const next = this.childLists();
-    for (const group of ["localChildren", "descendantChildren"] as const)
-      next[group] = next[group].map((child) =>
-        child.id === id ? referenceOf({ ...child, ...patch, id }) : child,
-      );
-    this.commitChildLists(next);
+  updateChild(id: string, patch: Partial<Pick<NodeReference, "name" | "description">>): this {
+    if (![...this.locals, ...this.descendants].some((child) => child.id === id))
+      throw new Error(`${this.path}: Child is not indexed: ${id}`);
+    const apply = (list: readonly NodeReference[]) =>
+      list.map((child) => (child.id === id ? referenceOf({ ...child, ...patch, id }) : child));
+    this.replace(apply(this.locals), apply(this.descendants));
     return this;
   }
   removeChild(id: string): this {
-    const next = this.childLists();
-    for (const group of ["localChildren", "descendantChildren"] as const)
-      next[group] = next[group].filter((child) => child.id !== id);
-    this.commitChildLists(next);
+    const omit = (list: readonly NodeReference[]) => list.filter((child) => child.id !== id);
+    this.replace(omit(this.locals), omit(this.descendants));
     return this;
   }
   moveChild(id: string, group: ChildGroup): this {
     validateGroup(group);
-    const reference = this.children.find((child) => child.id === id);
-    if (!reference) throw new Error(this.missingChildError(id));
-    if (this.#children[section(group)].some((child) => child.id === id))
+    const reference = [...this.locals, ...this.descendants].find((child) => child.id === id);
+    if (!reference) throw new Error(`${this.path}: Child is not indexed: ${id}`);
+    if ((group === "local" ? this.locals : this.descendants).some((child) => child.id === id))
       return this;
-    const next = this.childLists();
-    for (const key of ["localChildren", "descendantChildren"] as const)
-      next[key] = next[key].filter((child) => child.id !== id);
-    next[section(group)].push(referenceOf(reference));
-    this.commitChildLists(next);
+    const local = this.locals.filter((child) => child.id !== id);
+    const descendant = this.descendants.filter((child) => child.id !== id);
+    (group === "local" ? local : descendant).push(reference);
+    this.replace(local, descendant);
     return this;
   }
-  // #endregion
 
   protected override applyInput(input: CreateInput): void {
-    if (this.bodyConflictsWithStructure(input))
-      throw new Error(this.structureConflictError());
+    if (
+      input.body !== undefined &&
+      (input.localChildren !== undefined || input.descendantChildren !== undefined)
+    )
+      throw new Error(`${this.path}: body conflicts with structured sections.`);
     super.applyInput(input);
-    this.applyStructure(input);
+    if (input.localChildren !== undefined || input.descendantChildren !== undefined)
+      this.replace(input.localChildren ?? this.locals, input.descendantChildren ?? this.descendants);
   }
   override validate(): void {
     super.validate();
-    this.assertChildLists(this.childLists());
+    assertIndexed(this.path, [this.locals, this.descendants]);
+    this.sync();
   }
 }

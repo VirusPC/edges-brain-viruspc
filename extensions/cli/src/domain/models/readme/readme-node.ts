@@ -1,11 +1,8 @@
 import { dirname, relative } from "node:path";
-import {
-  InternalNode,
-  type InternalChildLists,
-  type InternalCreateInput,
-} from "../core/internal-node.js";
+import { InternalNode, type InternalCreateInput } from "../core/internal-node.js";
 import { InternalSyntax, type SyntaxReference } from "../agents/syntax.js";
 import { identifyNodeType, resolveEntryHref } from "../layout.js";
+import type { NodeReference } from "../core/types.js";
 
 export interface ReadmeCreateInput extends InternalCreateInput {}
 
@@ -14,16 +11,6 @@ export class ReadmeNode extends InternalNode<ReadmeCreateInput, ReadmeCreateInpu
   override readonly type = "readme";
   #syntax = new InternalSyntax("", undefined, "entries");
   #hrefs = new Map<string, string>();
-
-  protected override duplicateChildError(id: string): string {
-    return `${this.path}: Child already listed: ${id}`;
-  }
-  protected override missingChildError(id: string): string {
-    return `${this.path}: Child is not listed: ${id}`;
-  }
-  protected override duplicateSectionError(id: string): string {
-    return `${this.path}: child already listed: ${id}`;
-  }
 
   protected override parseBody(markdown: string): void {
     const syntax = new InternalSyntax(
@@ -36,67 +23,45 @@ export class ReadmeNode extends InternalNode<ReadmeCreateInput, ReadmeCreateInpu
     );
     const parsed = syntax.content();
     const hrefs = new Map<string, string>();
-    const references = (entries: readonly SyntaxReference[]): InternalChildLists["localChildren"] =>
+    const references = (entries: readonly SyntaxReference[]): NodeReference[] =>
       entries.flatMap((entry) => {
         const id = resolveEntryHref(this.path, entry.target, true);
         if (!id) return [];
         hrefs.set(id, entry.target);
-        return [
-          {
-            id,
-            ...(entry.label === undefined ? {} : { name: entry.label }),
-            ...(entry.description === undefined
-              ? {}
-              : { description: entry.description }),
-          },
-        ];
+        return [{
+          id,
+          ...(entry.label === undefined ? {} : { name: entry.label }),
+          ...(entry.description === undefined ? {} : { description: entry.description }),
+        }];
       });
-    const next = {
-      localChildren: references(parsed.localChildren),
-      descendantChildren: references(parsed.descendantChildren),
-    };
-    this.assertChildLists(next);
-    this.installChildLists(next);
+    const previousSyntax = this.#syntax;
+    const previousHrefs = this.#hrefs;
     this.#syntax = syntax;
     this.#hrefs = hrefs;
+    try {
+      this.replace(references(parsed.localChildren), references(parsed.descendantChildren));
+    } catch (error) {
+      this.#syntax = previousSyntax;
+      this.#hrefs = previousHrefs;
+      throw error;
+    }
   }
 
-  #refs(items: readonly { id: string; name?: string; description?: string }[]): SyntaxReference[] {
+  #links(items: readonly NodeReference[]): SyntaxReference[] {
     return items.map((ref) => ({
       target:
         this.#hrefs.get(ref.id) ??
-        relative(dirname(this.path), ref.id)
-          .split("/")
-          .map((part) => encodeURIComponent(part))
-          .join("/"),
+        relative(dirname(this.path), ref.id).split("/").map((part) => encodeURIComponent(part)).join("/"),
       ...(ref.name === undefined ? {} : { label: ref.name }),
-      ...(ref.description === undefined
-        ? {}
-        : { description: ref.description }),
+      ...(ref.description === undefined ? {} : { description: ref.description }),
     }));
   }
 
   protected override serializeBody(): string {
-    const lists = this.childLists();
     return this.#syntax.serialize({
       constraints: [],
-      localChildren: this.#refs(lists.localChildren),
-      descendantChildren: this.#refs(lists.descendantChildren),
+      localChildren: this.#links(this.locals),
+      descendantChildren: this.#links(this.descendants),
     });
-  }
-
-  protected override commitChildLists(next: InternalChildLists): void {
-    this.assertChildLists(next);
-    this.#syntax.serialize({
-      constraints: [],
-      localChildren: this.#refs(next.localChildren),
-      descendantChildren: this.#refs(next.descendantChildren),
-    });
-    super.commitChildLists(next);
-  }
-
-  override validate(): void {
-    super.validate();
-    this.serializeBody();
   }
 }
