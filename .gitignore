@@ -93,3 +93,6 @@ extensions/cli/skills/
 
 # Local git worktrees for isolated implementation.
 .worktrees/
+
+# Retrieval eval clones and client logs.
+.harness/evaluation/.cache/

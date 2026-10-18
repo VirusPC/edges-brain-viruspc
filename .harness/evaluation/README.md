@@ -33,6 +33,7 @@
 
 - [`run_locomo_official.py`](run_locomo_official.py)：首选官方路径（VirusPC/locomo submodule → `task_eval/evaluate_qa.py` → official `evaluation.py` F1）
 - [`third_party/`](third_party/README.md)：评测用 git submodule（现有 [`third_party/locomo/`](third_party/locomo)）
+- [`retrieval_eval/`](retrieval_eval/run.py)：仓库 URL × agent client × samples 的检索评测。第一组克隆 `edges` 的 `main`，用 `codex exec` 交出路径，按簇打 P@5 / R@5 / nDCG@5。这是评测冒烟。
 - [`cases/`](cases/README.md)：用例与 benchmark 定义（[`cases/locomo-smoke/`](cases/locomo-smoke/README.md) 是历史 hand-port，legacy）
 - [`reports/`](reports/README.md)：某次运行的报告
 - 本 README
@@ -74,6 +75,18 @@ python3 .harness/evaluation/run_locomo_official.py crop
 ```
 
 Reports go to [`reports/`](reports/README.md) with titles that say **Evaluation Smoke / not Project Memory proof**. F1 is official `task_eval/evaluation.py`, not the hand-port in `cases/locomo-smoke/scoring.py`.
+
+Retrieval smoke prints the clone and `codex exec` commands without running them:
+
+```bash
+python3 .harness/evaluation/retrieval_eval/run.py print-command
+```
+
+A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harness/evaluation/.cache/` (gitignored), then runs `codex` once per sample. The report lands in [`reports/`](reports/README.md) and is an Evaluation Smoke, not a Benchmark Proof.
+
+```bash
+python3 .harness/evaluation/retrieval_eval/run.py run
+```
 
 Official-path tests (no API key):
 

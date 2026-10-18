@@ -1,0 +1,7 @@
+{
+  "codex": {
+    "command": "codex",
+    "sandbox": "read-only",
+    "timeout_seconds": 600
+  }
+}

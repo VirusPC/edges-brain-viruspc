@@ -1,0 +1,51 @@
+{
+  "type": "qa",
+  "domain": "edges",
+  "samples": [
+    {
+      "id": "edges_smoke_0008",
+      "prompt": "LoCoMo 冒烟的分数能不能当成项目记忆有效的证据？",
+      "ground_truth": [
+        "docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"
+      ]
+    },
+    {
+      "id": "edges_smoke_compose",
+      "prompt": "工作空间怎样把另一个 harness 仓库组合进来？",
+      "ground_truth": [
+        "docs/adr/0034-compose-harness-repos-into-workspace.md"
+      ]
+    },
+    {
+      "id": "edges_smoke_git_memory",
+      "prompt": "用 git 仓库和文件系统做 Agent 记忆，业界有哪些做法？",
+      "ground_truth": [
+        "notes/2026-10-14--基于-git-repo-与文件系统的-agent-memory/INDEX.md"
+      ]
+    },
+    {
+      "id": "edges_smoke_system_entry",
+      "prompt": "系统入口是哪个文件，它要不要带组成登记？",
+      "ground_truth": [
+        [
+          ".harness/memory/projects/project_recursive_system_two_entry/INDEX.md",
+          "CONTEXT.md"
+        ]
+      ]
+    },
+    {
+      "id": "edges_smoke_mem0",
+      "prompt": "mem0 怎样存长期记忆、怎样按 user 查询？",
+      "ground_truth": [
+        "edges/AI-LLM/知识&记忆/mem0/INDEX.md"
+      ]
+    },
+    {
+      "id": "edges_smoke_locomo_runner",
+      "prompt": "LoCoMo 官方冒烟该跑哪个入口，真实请求用什么环境变量？",
+      "ground_truth": [
+        ".harness/evaluation/.harness/memory/projects/project_locomo_official_submodule_path/INDEX.md"
+      ]
+    }
+  ]
+}
