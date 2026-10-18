@@ -38,3 +38,9 @@
 - [`metrics/`](metrics/README.md)：指标定义与仪表盘笔记
 - [`smoke/`](smoke/README.md)：不含密钥的可复现冒烟；Langfuse v4 events_only 的 OTLP 用法写在该处
 - 本 README
+
+<!-- project-harness-local:start -->
+## 本层系统维护信息
+
+- [本层 harness 材料索引](<.harness/README.md>) — 本层 harness 材料的组织清单。各材料只在这里登记。
+<!-- project-harness-local:end -->

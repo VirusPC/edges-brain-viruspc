@@ -28,7 +28,8 @@
     "migrate:type-index-readme": "pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-type-index-to-readme.mts",
     "migrate:split-type-index-readme": "pnpm --filter @viruspc/edges exec tsx ../../scripts/split-type-index-readme.mts",
     "migrate:index-case": "pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-index-to-INDEX.mts",
-    "migrate:task-project-lists": "pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-task-project-lists.mts"
+    "migrate:task-project-lists": "pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-task-project-lists.mts",
+    "migrate:harness-readme-index": "pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-harness-readme-index.mts"
   },
   "engines": {
     "node": ">=22"

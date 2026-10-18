@@ -81,9 +81,15 @@ test("edges init on an empty scope writes AGENTS, public memory types, and harne
     assert.equal(existsSync(path.join(root, rel)), false, rel);
   }
   const agents = await readFile(path.join(root, "AGENTS.md"), "utf8");
-  assert.match(agents, /\.harness\/notes\/README\.md/);
-  assert.match(agents, /\.harness\/projects\/README\.md/);
-  assert.match(agents, /\.harness\/memory\/feedbacks\/README\.md/);
+  assert.match(agents, /\.harness\/README\.md/);
+  assert.doesNotMatch(agents, /\.harness\/notes\/README\.md/);
+  assert.doesNotMatch(agents, /\.harness\/projects\/README\.md/);
+  assert.doesNotMatch(agents, /\.harness\/memory\/feedbacks\/README\.md/);
+  const index = await readFile(path.join(root, ".harness/README.md"), "utf8");
+  assert.match(index, /notes\/README\.md/);
+  assert.match(index, /projects\/README\.md/);
+  assert.match(index, /memory\/feedbacks\/README\.md/);
+  assert.doesNotMatch(index, /^---/m);
 });
 
 test("edges init notes and edges notes init write the same files", async (t) => {
@@ -107,7 +113,10 @@ test("edges init notes and edges notes init write the same files", async (t) => 
   assert.equal(domainBody.command, "notes.init");
   assert.equal(existsSync(path.join(left, ".harness/projects/README.md")), false);
   assert.equal(existsSync(path.join(left, "notes/README.md")), false);
-  assert.match(await readFile(path.join(left, "AGENTS.md"), "utf8"), /\.harness\/notes\/README\.md/);
+  const notesAgents = await readFile(path.join(left, "AGENTS.md"), "utf8");
+  assert.match(notesAgents, /\.harness\/README\.md/);
+  assert.doesNotMatch(notesAgents, /\.harness\/notes\/README\.md/);
+  assert.match(await readFile(path.join(left, ".harness/README.md"), "utf8"), /notes\/README\.md/);
 });
 
 test("edges init memory does not create notes or projects boards", async (t) => {
@@ -218,9 +227,11 @@ test("memory init does not create or register notes or projects", async (t) => {
     assert.equal(existsSync(path.join(root, rel)), false, rel);
   }
   const agents = await readFile(path.join(root, "AGENTS.md"), "utf8");
-  assert.match(agents, /\.harness\/memory\/projects\/README\.md/);
+  assert.match(agents, /\.harness\/README\.md/);
+  assert.doesNotMatch(agents, /\.harness\/memory\/projects\/README\.md/);
   assert.doesNotMatch(agents, /\.harness\/notes\/README\.md/);
   assert.doesNotMatch(agents, /\.harness\/projects\/README\.md/);
+  assert.match(await readFile(path.join(root, ".harness/README.md"), "utf8"), /memory\/projects\/README\.md/);
 });
 
 test("memory init rejects skill type flags and writes nothing", async (t) => {
@@ -298,7 +309,9 @@ test("edges init tasks and edges tasks init write only the tasks board", async (
   const board = await readFile(path.join(left, ".harness/tasks/README.md"), "utf8");
   assert.match(board, /project-entries-local:start/);
   const agents = await readFile(path.join(left, "AGENTS.md"), "utf8");
-  assert.match(agents, /\.harness\/tasks\/README\.md/);
+  assert.match(agents, /\.harness\/README\.md/);
+  assert.doesNotMatch(agents, /\.harness\/tasks\/README\.md/);
+  assert.match(await readFile(path.join(left, ".harness/README.md"), "utf8"), /tasks\/README\.md/);
   for (const rel of [
     ".harness/notes/README.md",
     ".harness/projects/README.md",

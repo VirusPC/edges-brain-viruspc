@@ -152,7 +152,7 @@ test("reviewed restored owners adopt and register their types with only expected
     );
   }
 });
-test("existing type files still require a local edge rather than a descendant or prose reference", async (t) => {
+test("existing type files still require a .harness/README.md edge rather than a descendant or prose reference", async (t) => {
   const root = fixture(t);
   await initMemory({ indexGroup: "descendant", targetDir: root, memoryTypes: ["project"] });
   const line =
@@ -164,6 +164,8 @@ test("existing type files still require a local edge rather than a descendant or
       `<!-- project-memory-children:start -->\n${line}\n<!-- project-memory-children:end -->\n`,
     ),
   );
+  const index = join(root, ".harness/README.md");
+  fs.writeFileSync(index, fs.readFileSync(index, "utf8").replace(/^- .*\n/gm, ""));
   const findings = (await doctorMemory({ indexGroup: "descendant", targetDir: root })).findings;
   assert.equal(
     findings.filter((f) => f.code === "unregistered-type").length,

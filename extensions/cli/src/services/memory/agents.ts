@@ -39,7 +39,7 @@ import {
   ownershipTarget,
 } from "./paths.js";
 import { ENTRY_LINE_TEMPLATE, renderLine } from "./templates.js";
-import { layerTypeSpecs, selectedLocalBlock, upsertLocalTypeLine, } from "./types.js";
+import { selectedLocalBlock } from "./types.js";
 export function classifyAgentsSource(source: string | undefined): "missing" | "managed" | "foreign" {
     if (source === undefined) return 'missing';
     return [
@@ -81,12 +81,9 @@ export async function syncAgentsBlocks(directory: string, local = "", children =
 export async function syncTargetAgents(target: string, _root: string, service = memoryNodes(target)): Promise<string> {
     const file = prepareMemoryWrite(target, join(target, AGENTS_FILE_NAME));
     const node = await service.get(file, AgentsNode);
-    const specs = layerTypeSpecs(target);
     const surface = node ? rewriteLayerSurface(node.body) : undefined;
-    let local =
-      extractLocalBlock(surface ?? "") ?? selectedLocalBlock([]);
-    for (const spec of specs) local = upsertLocalTypeLine(local, spec.indexFile, spec.description || spec.name);
-    return syncLoadedAgents(service, node, file, target, local, '');
+    const local = extractLocalBlock(surface ?? "") ?? selectedLocalBlock([]);
+    return syncLoadedAgents(service, node, file, target, local, "");
 }
 export const normalizeIndexDescription = (target: string, description?: string) => description?.trim().replace(/\s+/g, " ") ||
     `${basename(target)} 目录的项目记忆与规范入口。`;

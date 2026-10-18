@@ -1,13 +1,13 @@
 import { readEntry, saveEntries } from '../node/node-files.js';
 import { canonicalPath, findAncestor } from "../../utils/filesystem.js";
 import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import * as fs from "node:fs";
 import { ENTRY_NAMES, LEGACY_LEAF_ENTRY } from "../../domain/models/layout.js";
 import { join, dirname, basename, relative, resolve } from "node:path";
 import { assertPrivateIgnored } from "./ignore.js";
 import { parseDocument } from "../../utils/markdown/document.js";
 import {
-  LOCAL_START,
   LOCAL_END,
   TYPE_META_START,
   TYPE_META_END,
@@ -17,7 +17,6 @@ import {
   buildLocalBlock,
   escapeRegExp,
   indexFiles,
-  rewriteLayerSurface,
 } from "./blocks.js";
 import {
   AGENTS_FILE_NAME,
@@ -28,14 +27,16 @@ import {
   isDirectory,
   isFile,
   moduleForType,
-  ownershipTarget,
   readText,
   TYPE_INDEX_FILE_NAME,
   typeFromDirName,
   typeIndexRelpath,
   legacyTypeIndexRelpath,
 } from "./paths.js";
-import { ENTRY_LINE_TEMPLATE, renderLine } from "./templates.js";
+import {
+  SCOPE_README_ENTRY_DESCRIPTION,
+  SCOPE_README_ENTRY_NAME,
+} from "../init/modules.js";
 export const MEMORY_TYPE_NAMES = [
   "user",
   "feedback",
@@ -166,7 +167,7 @@ export function layerTypeSpecs(target: string): TypeSpec[] {
     string,
     { module: "memory" | "skills"; dirname: string }
   >();
-  for (const file of localOwnershipPaths(target)) {
+  for (const file of layerReadmePaths(target) ?? localOwnershipPaths(target)) {
     const rel = relative(canonicalPath(target), file);
     const [harness, module, directory, entry, ...rest] = rel.split("/");
     if (
@@ -281,38 +282,32 @@ export function ensureLayerTypeGitignore(
     assertPrivateIgnored(root ?? target, files, files.map(dirname));
   }
 }
-export function upsertLocalTypeLine(
-  document: string,
-  indexFile: string,
-  description: string,
-): string {
-  document = rewriteLayerSurface(document);
-  const block = document.match(blockPattern(LOCAL_START, LOCAL_END))?.[0];
-  if (!block) throw new Error("AGENTS.md 缺少本层系统维护信息区块，请先 init");
-  const owner = process.cwd();
-  const expected = ownershipTarget(owner, indexFile);
-  if (expected && localOwnershipPaths(owner, block).has(expected))
-    return document;
-  const line = renderLine(ENTRY_LINE_TEMPLATE, {
-    title: indexFile,
-    path: indexFile,
-    description,
-  });
-  return document.replace(blockPattern(LOCAL_START, LOCAL_END), () =>
-    block.replace(LOCAL_END, () => `${line}\n${LOCAL_END}`),
-  );
+/** Children of `<scope>/.harness/README.md` when that organization list exists. */
+export function layerReadmePaths(target: string): Set<string> | undefined {
+  const file = join(resolve(target), ".harness", ENTRY_NAMES.readme);
+  if (!isFile(file)) return undefined;
+  try {
+    const node = new ReadmeNode(file).parse(readText(file));
+    return new Set(
+      node.children.flatMap((reference) => {
+        const id = canonicalPath(reference.id);
+        return id ? [id] : [];
+      }),
+    );
+  } catch {
+    return undefined;
+  }
 }
-export function selectedLocalBlock(specs: TypeSpec[]): string {
+
+/** AGENTS 本层只留指向 `.harness/README.md` 的一条。类型行登记在那份 README 上。 */
+export function selectedLocalBlock(_specs: TypeSpec[] = []): string {
   let block = buildLocalBlock().replace(
     /^- \[.*\]\(\.harness\/.*\).*\n?/gm,
     "",
   );
-  for (const spec of specs)
-    block = upsertLocalTypeLine(
-      block,
-      spec.indexFile,
-      spec.description || spec.name,
-    );
+  const line = `- [${SCOPE_README_ENTRY_NAME}](.harness/README.md) — ${SCOPE_README_ENTRY_DESCRIPTION}`;
+  if (!block.includes("](.harness/README.md)") && !block.includes("](<.harness/README.md>)"))
+    block = block.replace(LOCAL_END, () => `${line}\n${LOCAL_END}`);
   return block;
 }
 
