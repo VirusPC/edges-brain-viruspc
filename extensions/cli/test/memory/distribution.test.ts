@@ -20,7 +20,7 @@ test('compiled memory CLI includes templates and runs with no source skills chec
   // tsc does not copy JSON resources; mirror the config copy in the normal build.
   await cp(path.join(cli, 'src/domain/config'), path.join(runtime, 'dist/domain/config'), { recursive: true });
   await symlink(path.join(cli, 'node_modules'), path.join(runtime, 'node_modules'), 'dir');
-  await writeFile(path.join(runtime, 'package.json'), '{"type":"module"}');
+  await writeFile(path.join(runtime, 'package.json'), '{"type":"module","version":"0.0.0"}');
   const scope = path.join(temporary, 'scope');
   await mkdir(scope);
   const output = execFileSync(process.execPath, [path.join(runtime, 'dist/index.js'), '--scope', scope, 'memory', 'init', '--memory-types', 'project'], { cwd: scope, encoding: 'utf8' });

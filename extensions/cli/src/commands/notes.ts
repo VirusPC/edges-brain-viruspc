@@ -1,12 +1,16 @@
 import { Command } from "commander";
 import { type CliContext, usageError } from "../context.js";
-import { VERSION } from "../utils/version.js";
+import { createRequire } from "node:module";
 import { addNoteCreateCommand } from "./notes/create.js";
 import { addNoteDeleteCommand } from "./notes/delete.js";
 import { addNoteGetCommand } from "./notes/get.js";
 import { addNoteListCommand } from "./notes/list.js";
 import { addNoteInitCommand } from "./notes/init.js";
 import { addNoteUpdateCommand } from "./notes/update.js";
+
+const VERSION = (createRequire(import.meta.url)("../../package.json") as {
+  version: string;
+}).version;
 
 const NOTE_AFTER_HELP = `
 STRUCTURED OUTPUT

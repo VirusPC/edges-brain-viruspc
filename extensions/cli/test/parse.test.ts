@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 import { run } from "../src/program.js";
+
+const packageVersion = (createRequire(import.meta.url)("../package.json") as {
+  version: string;
+}).version;
 
 const requiredNoteFlags = [
   "--title",
@@ -68,10 +73,10 @@ test("run note rejects removed ingest flags", async () => {
 test("run returns version", async () => {
   const version = await run(["--version"]);
   assert.equal(version.exitCode, 0);
-  assert.match(version.stdout, /\d+\.\d+\.\d+/);
+  assert.equal(version.stdout, `${packageVersion}\n`);
   const short = await run(["-v"]);
   assert.equal(short.exitCode, 0);
-  assert.match(short.stdout, /\d+\.\d+\.\d+/);
+  assert.equal(short.stdout, `${packageVersion}\n`);
 });
 
 test("run root without a subcommand is a usage error", async () => {

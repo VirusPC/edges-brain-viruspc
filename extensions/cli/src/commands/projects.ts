@@ -1,12 +1,16 @@
 import { Command } from "commander";
 import { type CliContext, usageError } from "../context.js";
-import { VERSION } from "../utils/version.js";
+import { createRequire } from "node:module";
 import { addProjectCreateCommand } from "./projects/create.js";
 import { addProjectDeleteCommand } from "./projects/delete.js";
 import { addProjectGetCommand } from "./projects/get.js";
 import { addProjectListCommand } from "./projects/list.js";
 import { addProjectInitCommand } from "./projects/init.js";
 import { addProjectUpdateCommand } from "./projects/update.js";
+
+const VERSION = (createRequire(import.meta.url)("../../package.json") as {
+  version: string;
+}).version;
 
 const PROJECT_AFTER_HELP = `
 STRUCTURED OUTPUT

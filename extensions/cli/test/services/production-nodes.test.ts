@@ -130,7 +130,10 @@ test("ordinary CLI startup works without the optional legacy migration implement
     path.join(cli, "node_modules"),
     path.join(isolated, "node_modules"),
   );
-  writeFileSync(path.join(isolated, "package.json"), '{"type":"module"}');
+  writeFileSync(
+    path.join(isolated, "package.json"),
+    '{"type":"module","version":"0.0.0"}',
+  );
   const output = execFileSync(
     process.execPath,
     [

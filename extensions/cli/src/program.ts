@@ -22,7 +22,11 @@ import { failWithExit } from "./commands/result.js";
 import { acquireWriteLock } from "./services/node/node-lock.js";
 import { installBundledSkills, SkillsInstallError } from "./services/skills/install-bundled.js";
 import { splitSkillsInstallArgs } from "./services/skills/split-skills-install-args.js";
-import { VERSION } from "./utils/version.js";
+import { createRequire } from "node:module";
+
+const VERSION = (createRequire(import.meta.url)("../package.json") as {
+  version: string;
+}).version;
 
 export type { CliContext, CliInput, CliResult };
 
