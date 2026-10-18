@@ -154,11 +154,13 @@ flowchart LR
 
 ```text
 domain/
-├── core/                    # BaseNode、InternalNode、LeafNode、引用、共享字段与关系协调
+├── core/                    # BaseNode、InternalNode、LeafNode、引用、共享字段、通用块机制
+│   └── syntax/              # parse / serialize / blocks / document：只认区块、标题、标记、条目
 └── models/
-    ├── index.ts             # 节点类、输入类型与布局的公共出口；基类从 domain/core 再导出
-    ├── layout.ts            # 跨模型的目录、入口、区块和生命周期单位协议
-    ├── syntax/              # README 与 AGENTS 共用的块语法和编解码
+    ├── index.ts             # 节点类、输入类型、布局与目录分类的公共出口；基类从 domain/core 再导出
+    ├── layout.ts            # 入口文件名、href、harness 路径、生命周期单位
+    ├── classify.ts          # 目录类型：memory → task → note → project，再加上入口文件名
+    ├── syntax.ts            # project-harness / project-entries 的标题、标记和换档；InternalSyntax 把文法交给 core
     ├── agents/              # AgentsNode、SuperAgentsNode、harness 判定与 Compose 登记
     ├── readme/              # ReadmeNode：组织清单
     ├── tasks/               # TaskNode、任务字段规则、TaskDoc 契约和文档适配
@@ -167,16 +169,17 @@ domain/
     └── skills/              # SkillNode：SKILL.md 入口、名称和描述校验
 ```
 
-同一节点的类与专属规则放在一起。节点基类在 `domain/core`。README 与 AGENTS 共用的块语法在 `syntax/`，不放进其中一方。不要求每个节点都有同样数量的 types、codec、factory 文件。
+同一节点的类与专属规则放在一起。节点基类在 `domain/core`。`core/syntax` 按调用方给出的标题、标记和条目解析、序列化区块。README 与 AGENTS 的具体文法在 `syntax.ts`，由 `InternalSyntax` 交给 core，不放进 Agents 或 Readme 其中一方。目录类型集中在 `classify.ts`。不要求每个节点都有同样数量的 types、codec、factory 文件。
 
 | 模块 | 值得保留的拆分 |
 | --- | --- |
-| [core](../core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写 |
-| [syntax](syntax/syntax.ts) | `syntax.ts` 的 InternalSyntax 转换索引与 Markdown 区块，README 用 entries 档，AGENTS 用 agents 档；`blocks.ts` 处理受控区块；`document.ts` 定义文档表示；`parse.ts`/`serialize.ts` 保留原文并处理格式 |
+| [core](../core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写。`core/syntax` 的 `parse.ts`/`serialize.ts` 按传入文法保留原文；`blocks.ts` 只提供与标记名无关的区块字符串操作；`document.ts` 是文档表示；`grammar.ts` 描述标题、标记如何对应到区块 |
+| [syntax.ts](syntax.ts) | `INTERNAL_SECTIONS`、`ENTRIES_SECTIONS`、`CODEC_SECTIONS` 是 project-harness / project-entries 的标题与标记。同一文件放这些标记的注释常量，以及按标记插入、替换、改写区块。`InternalSyntax` 在 agents 与 entries 两档之间换标记，并把 `HARNESS_GRAMMAR` 交给 core 的 parse/serialize |
 | [agents](agents/agents-node.ts) | `agents-node.ts` 管 AGENTS 引用、约束和 Compose 登记；`super-agents-node.ts` 是虚拟超节点；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘；`compose.ts` 读写组合条目 |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |
-| [layout.ts](layout.ts) | 集中管理 AGENTS.md、SKILL.md、INDEX.md（兼容旧 index.md）的识别、章节标记及 harness 路径。它涉及 Tasks 状态目录，因此保留在 models 根层，不伪装成业务无关的 core |
+| [layout.ts](layout.ts) | 入口文件名（AGENTS.md、README.md、SKILL.md、INDEX.md，兼容旧 index.md）、href 解析、harness 路径和生命周期单位 |
+| [classify.ts](classify.ts) | 目录类型。内置规则按 memory、task、note、project 的顺序写在同一数组里；`AGENTS.md` / `README.md` / `SKILL.md` 按入口文件名判定。`registerDirectoryClassifier` 把额外规则插到这个列表前面 |
 
 ## Model、operations 与 Service 的边界
 
@@ -201,7 +204,7 @@ Model 的 `create/update/destroy` 是内存领域方法，不会创建、写入�
 
 模型采用可变实例。同一个 NodeService 内，同路径节点共享实例；`create/update` 使用临时草稿校验后再更新当前实例，减少失败时的半修改状态。这不等于 immutable，也不构成跨进程事务。metadata 和关系 getter 返回受保护的视图/副本；修改 getter 返回值不会更新节点，内容应通过字段 setter 或模型方法更新。
 
-`domain/core` 不依赖具体节点，Model 不依赖 operations 或 Service。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用 `models/syntax`，不互相引用。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与文档解析器之间有类型引用，运行时仍无循环。
+`domain/core` 不依赖具体节点，也不引用 models。Model 不依赖 operations 或 Service。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用 `models/syntax.ts`，不互相引用。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与文档解析器之间有类型引用，运行时仍无循环。
 
 ## Markdown 如何进入模型
 
@@ -215,9 +218,10 @@ flowchart LR
     B --> N[InternalNode：本层 / 下层 children]
     N --> I[AgentsNode：AGENTS 结构]
     N --> R[ReadmeNode：README 结构]
-    I --> X[InternalSyntax]
+    I --> X[InternalSyntax：models 文法]
     R --> X
-    X --> D[AgentsDocument：文本项与链接项]
+    X --> P[core/syntax：按传入文法解析]
+    P --> D[AgentsDocument：文本项与链接项]
 ```
 
 AgentsNode 将索引链接变成具有绝对入口 ID 的 NodeReference；AgentsDocument 保存文档中的链接目标与文本项，InternalSyntax 和解析器负责保留原文及位置信息。**AgentsDocument 是文档表示，AgentsNode 是领域节点**，两者职责不同。原文位置等解析细节不进入公共节点模型。

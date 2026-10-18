@@ -1,6 +1,6 @@
 import { basename } from "node:path";
 import { ENTRY_NAMES } from "../layout.js";
-import { decodeBody } from "../syntax/parse.js";
+import { decodeBody } from "../syntax.js";
 
 const HARNESS_START =
   /<!--\s+(project-harness-constraints|project-harness-local|project-harness-descendants|project-harness-compose|project-memory-important|project-memory-local|project-memory-children):start\s+-->/;

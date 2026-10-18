@@ -5,7 +5,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { AgentsNode } from "../extensions/cli/src/domain/models/agents/agents-node.js";
-import { decodeBody } from '../extensions/cli/src/domain/models/syntax/parse.js';
+import { decodeBody } from '../extensions/cli/src/domain/models/syntax.js';
 import { readEntry, saveEntries, validateEntry, checkPath, type EntryFile } from '../extensions/cli/src/services/node/node-files.js';
 const start = '<!-- task-projects:start -->', end = '<!-- task-projects:end -->';
 const excluded = new Set(['.git', 'node_modules', 'dist', 'build', 'posts', '.agents', '.superpowers']);

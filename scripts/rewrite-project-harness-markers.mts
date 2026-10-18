@@ -1,6 +1,6 @@
 import { acquireWriteLock } from "../extensions/cli/src/services/node/node-lock.js";
 import { isGitBoundary } from "../extensions/cli/src/services/scope.js";
-import { rewriteLayerSurface } from "../extensions/cli/src/domain/models/syntax/blocks.js";
+import { rewriteLayerSurface } from "../extensions/cli/src/domain/models/syntax.js";
 import {
   readEntry,
   saveEntries,

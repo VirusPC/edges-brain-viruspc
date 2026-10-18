@@ -2,13 +2,13 @@ import { isWithinPath, findAncestor, canonicalPath, firstSymlink } from '../../u
 import fs from "node:fs";
 import path from "node:path";
 import { AgentsNode, TaskNode } from "../../domain/models/index.js";
+import { identifyNodeType } from "../../domain/models/classify.js";
 import {
   ENTRY_NAMES,
   LEAF_ENTRY_NAMES,
-  identifyNodeType,
   isLeafEntryName,
 } from "../../domain/models/layout.js";
-import { decodeBody } from "../../domain/models/syntax/parse.js";
+import { decodeBody } from "../../domain/models/syntax.js";
 import { projectIdFromDir } from "../../domain/models/tasks/project.js";
 import {
   readEntry,

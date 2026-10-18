@@ -6,11 +6,11 @@ import path from "node:path";
 import { BaseNode, AgentsNode, SuperAgentsNode } from "../../domain/models/index.js";
 import type { ChildGroup, NodeReference } from "../../domain/models/index.js";
 import type { ScopeTraversalOptions, NodeQueryOptions } from "../../domain/operations/traverse.js";
+import { identifyNodeType } from "../../domain/models/classify.js";
 import {
   ENTRY_NAMES,
   lifecycleUnits,
   assertMovableLayout,
-  identifyNodeType,
   normalizeNodeType,
 } from "../../domain/models/layout.js";
 import { referenceOf, setNodePath } from "../../domain/core/relations.js";

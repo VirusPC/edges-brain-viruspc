@@ -1,5 +1,6 @@
-import { CODEC_SECTIONS } from "../layout.js";
 import type { AgentsDocument, SectionKey, AgentsItem, AgentsLink } from "./document.js";
+import type { BlockGrammar } from "./grammar.js";
+import { escapeRegExp } from "./blocks.js";
 import type { Nodes as AstNode } from "mdast";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { parseDocument } from "../../../utils/markdown/document.js";
@@ -11,32 +12,6 @@ type Binding = {
   protected: boolean;
 };
 
-const LAYER_TO_KEY: Record<string, SectionKey> = {
-  "project-harness-constraints": "constraints",
-  "project-memory-important": "constraints",
-  "project-harness-local": "memory",
-  "project-memory-local": "memory",
-  "project-harness-descendants": "children",
-  "project-memory-children": "children",
-  "project-harness-compose": "compose",
-};
-
-const titles: Record<string, SectionKey> = {
-  ...Object.fromEntries(
-    Object.entries(CODEC_SECTIONS).map(([key, value]) => [value.heading, key]),
-  ),
-  本层重要约束: "constraints",
-  本层硬约束: "constraints",
-  本层记忆: "memory",
-  本层组成: "memory",
-  下层记忆索引: "children",
-  下层节点: "children",
-  下层作用域: "children",
-  本层系统维护信息: "memory",
-  下层系统维护信息: "children",
-  组合: "compose",
-};
-
 function start(node: AstNode): number {
   return node.position?.start.offset ?? 0;
 }
@@ -46,7 +21,10 @@ function end(node: AstNode): number {
 }
 
 /** Private codec representation: source ranges never enter AgentsDocument. */
-export function decodeBody(source: string) {
+export function decodeBody(source: string, grammar: BlockGrammar) {
+  const markerPattern = new RegExp(
+    `^<!-- (${Object.keys(grammar.markers).map(escapeRegExp).join("|")}):(start|end) -->$`,
+  );
   const ast = fromMarkdown(source);
   const model: AgentsDocument = { constraints: [], memory: [], children: [], compose: [], references: [] };
 
@@ -186,11 +164,9 @@ export function decodeBody(source: string) {
     if (block.type === "html") {
       const marker = block.value
         .trim()
-        .match(
-          /^<!-- (project-harness-constraints|project-harness-local|project-harness-descendants|project-harness-compose|project-memory-important|project-memory-local|project-memory-children):(start|end) -->$/,
-        );
+        .match(markerPattern);
       if (marker) {
-        const section = LAYER_TO_KEY[marker[1]];
+        const section = grammar.markers[marker[1]];
         if (marker[2] === "start") {
           if (marked) unsafe = true;
           close(start(block));
@@ -204,10 +180,7 @@ export function decodeBody(source: string) {
         if (!active) outsideInsert = end(block);
         continue;
       }
-      if (
-        block.value.trim() === "<!-- project-harness:end -->" ||
-        block.value.trim() === "<!-- project-memory:end -->"
-      ) {
+      if (grammar.outerEnds.includes(block.value.trim())) {
         appendAt = start(block);
         if (!marked) close(start(block));
       }
@@ -218,7 +191,7 @@ export function decodeBody(source: string) {
       let isSectionHeading = false;
       if (!marked) {
         if (active && block.depth <= headingDepth) close(start(block));
-        const section = titles[text(block)];
+        const section = grammar.headings[text(block)];
         if (section) {
           if (active) close(start(block));
           open(section);
@@ -256,9 +229,9 @@ export function decodeBody(source: string) {
   };
 }
 
-export function parseNode(source: string): AgentsDocument {
+export function parseNode(source: string, grammar: BlockGrammar): AgentsDocument {
   const document = parseDocument(source);
-  const model = decodeBody(document.body).model;
+  const model = decodeBody(document.body, grammar).model;
   if (document.metadata !== undefined) model.metadata = document.metadata;
   return model;
 }
