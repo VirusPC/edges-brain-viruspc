@@ -1,8 +1,34 @@
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { readTemplate } from "./templates.js";
 import { typeFromDirName } from "./paths.js";
-import { OUTER_START, OUTER_END, IMPORTANT_START, IMPORTANT_END, LOCAL_START, LOCAL_END, CHILDREN_START, CHILDREN_END, AUTO_START, AUTO_END, ENTRIES_START, ENTRIES_END, TYPE_META_START, TYPE_META_END, INNER_BLOCK_ORDER, INDEX_ENTRY_PATTERN, escapeRegExp, blockPattern, appendBlock, insertInnerBlock, upsertBlock, hasConstraintsMarker } from '../../domain/models/syntax.js';
-export * from '../../domain/models/syntax.js';
+import {
+  OUTER_START,
+  OUTER_END,
+  IMPORTANT_START,
+  IMPORTANT_END,
+  LOCAL_START,
+  LOCAL_END,
+  CHILDREN_START,
+  CHILDREN_END,
+  AUTO_START,
+  AUTO_END,
+  ENTRIES_START,
+  ENTRIES_END,
+  TYPE_META_START,
+  TYPE_META_END,
+  INNER_BLOCK_ORDER,
+  INDEX_ENTRY_PATTERN,
+} from '../../domain/config/sections.js';
+import {
+  escapeRegExp,
+  blockPattern,
+  appendBlock,
+  insertInnerBlock,
+  upsertBlock,
+  hasConstraintsMarker,
+} from '../../domain/models/node/document.js';
+export * from '../../domain/config/sections.js';
+export * from '../../domain/models/node/document.js';
 export function loadAgentsTemplate(): string {
   const text = readTemplate(ENTRY_NAMES.internal);
   let position = -1;

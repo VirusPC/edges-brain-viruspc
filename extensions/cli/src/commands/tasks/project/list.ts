@@ -3,7 +3,7 @@ import { Command } from "commander";
 import type { CliContext } from "../../../context.js";
 import { ReadmeNode } from "../../../domain/models/readme/readme-node.js";
 import { runTasksCommand, succeed } from "../run.js";
-import { ENTRY_NAMES } from "../../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../../domain/config/layout.js";
 import {
   buildSystemForest,
   gitRoot,

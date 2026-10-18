@@ -1,4 +1,4 @@
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { isScope } from "../scope.js";
 import * as fs from "node:fs";
 import * as path from "node:path";

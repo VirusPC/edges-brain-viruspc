@@ -32,7 +32,7 @@ Task、Memory、Note 等统一采用目录与 `index.md` 入口，标准 Skill �
 
 ## 文件系统
 
-目录是存储与生命周期单元，入口和附件同处；模型只管理 Markdown 节点，不建资源对象。目录与 AGENTS 章节约定集中在 `models/layout.ts`。移动、删除和导入按目录执行；删除 Skill 包含其 harness。共址 AGENTS 的单独删除保留宿主内容。没有公开的独立 reparent，改变父归属必须通过物理移动并协调索引。当前采用原地更新，immutable 是后续优化。
+目录是存储与生命周期单元，入口和附件同处；模型只管理 Markdown 节点，不建资源对象。入口文件名和叶子目录规则在 `domain/config/layout.ts`，区块标题与标记在 `domain/config/sections.ts`。路径类型、href 和生命周期在 `models/node/layout.ts`。移动、删除和导入按目录执行；删除 Skill 包含其 harness。共址 AGENTS 的单独删除保留宿主内容。没有公开的独立 reparent，改变父归属必须通过物理移动并协调索引。当前采用原地更新，immutable 是后续优化。
 
 parse/serialize 使用 gray-matter 默认 YAML 能力；保留 Markdown 非受控章节、注释和正文，不追求 YAML 注释与样式保真。系统权限交给操作系统，Git 忽略规则与来源只读约束另行保持。
 

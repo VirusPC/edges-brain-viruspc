@@ -9,7 +9,7 @@ import { sortTasksByPriority } from "../../domain/operations/tasks.js";
 import { TASK_PRIORITIES, TASK_STATUSES, type TaskPriority, type TaskProjectId, type TaskStatus } from "../../domain/models/tasks/types.js";
 import { runTasksCommand, succeed } from "./run.js";
 import { TasksError } from "../../domain/models/tasks/types.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import {
   buildSystemForest,
   gitRoot,

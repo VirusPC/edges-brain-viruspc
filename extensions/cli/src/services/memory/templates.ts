@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join, parse } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { readText, typeDirName } from "./paths.js";
 export const ENTRY_LINE_TEMPLATE = "entry_line.md";
 export function templateRoot(): string {

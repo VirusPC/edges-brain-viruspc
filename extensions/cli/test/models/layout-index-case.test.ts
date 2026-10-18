@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { identifyNodeType } from "../../src/domain/models/classify.js";
+import { ENTRY_NAMES } from "../../src/domain/config/layout.js";
 import {
-  ENTRY_NAMES,
+  identifyNodeType,
   isLeafEntryName,
   normalizeNodeType,
   resolveEntryHref,
-} from "../../src/domain/models/layout.js";
+} from "../../src/domain/models/node/layout.js";
 import { TASK_STATUSES } from "../../src/domain/models/tasks/types.js";
 
 test("new leaf entries default to INDEX.md", () => {

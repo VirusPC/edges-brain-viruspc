@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseNode, serializeNode } from "../../../src/domain/models/syntax.js";
+import { parseNode, serializeNode } from "../../../src/domain/models/node/document.js";
 import { parseDocument, serializeDocument } from "../../../src/utils/markdown/document.js";
 import type { MarkdownDocument } from '../../../src/utils/markdown/types.js';
 

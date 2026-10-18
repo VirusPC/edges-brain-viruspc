@@ -15,5 +15,4 @@ export type * from "../core/types.js";
 export type { TaskCreateInput, TaskUpdateInput, TaskStatus, TaskPriority } from "./tasks/types.js";
 export type { MemoryCreateInput, MemoryUpdateInput } from "./memory/memory-node.js";
 export type { AgentsCreateInput, AgentsUpdateInput, AgentsContent } from "./agents/agents-node.js";
-export * from "./layout.js";
-export * from "./classify.js";
+export * from "./node/layout.js";

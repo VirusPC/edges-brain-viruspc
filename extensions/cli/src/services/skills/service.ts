@@ -1,7 +1,7 @@
 import path from "node:path";
 import { materialHarnessRoot } from "../../domain/config/harness-materials.js";
 import { initScope, type InitScopeOptions } from "../init/service.js";
-import { ENTRY_NAMES } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { SkillNode } from "../../domain/models/skills/skill-node.js";
 import { isWithinPath } from "../../utils/filesystem.js";
 import { parseMetadata } from "../metadata.js";

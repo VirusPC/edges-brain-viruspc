@@ -1,6 +1,6 @@
 import path from "node:path";
 import { homedir } from "node:os";
-import { ENTRY_NAMES } from "../layout.js";
+import { ENTRY_NAMES } from "../../config/layout.js";
 
 const REMOTE = /(?:^|\s)remote:\s*(\S+)/;
 

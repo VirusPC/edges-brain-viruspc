@@ -1,5 +1,5 @@
 import { dirname, join } from "node:path";
-import { ENTRY_NAMES } from "../layout.js";
+import { ENTRY_NAMES } from "../../config/layout.js";
 import { AgentsNode } from "./agents-node.js";
 import type { NodeReference } from "../../core/types.js";
 

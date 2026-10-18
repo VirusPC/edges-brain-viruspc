@@ -1,7 +1,7 @@
 import { isWithinPath } from '../utils/filesystem.js';
 import { dirname, join, resolve } from "node:path";
 import { existsSync } from "node:fs";
-import { identifyNodeType } from "../domain/models/classify.js";
+import { identifyNodeType } from "../domain/models/node/layout.js";
 import { indexContract, physicalParentNode } from "./node/node-layout.js";
 import { checkPath } from "./node/node-files.js";
 

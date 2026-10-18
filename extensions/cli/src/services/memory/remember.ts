@@ -1,4 +1,5 @@
-import { ENTRY_NAMES, isLeafEntryName } from "../../domain/models/layout.js";
+import { ENTRY_NAMES } from "../../domain/config/layout.js";
+import { isLeafEntryName } from "../../domain/models/node/layout.js";
 import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { typeIndexPath } from './types.js';
 import { assertImportType } from "../import-entry.js";
