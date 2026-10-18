@@ -13,7 +13,7 @@ export class BaseNode<
   CreateInput extends NodeCreateInput = NodeCreateInput,
   UpdateInput extends NodeUpdateInput = NodeUpdateInput,
 > implements NodeReference {
-  // Identity and path.
+  // #region Identity and path
   readonly type: string = "base";
   readonly #initialPath: string;
   get path(): string {
@@ -25,8 +25,9 @@ export class BaseNode<
   get id(): string {
     return this.path;
   }
+  // #endregion
 
-  // Metadata.
+  // #region Metadata
   #metadata: Metadata | undefined;
   get name(): string | undefined {
     return this.#metadata?.name as string | undefined;
@@ -45,8 +46,9 @@ export class BaseNode<
   get metadata(): Readonly<Metadata> | undefined {
     return structuredClone(this.#metadata);
   }
+  // #endregion
 
-  // Body.
+  // #region Body
   #body = "";
   get body(): string {
     return this.serializeBody();
@@ -54,16 +56,18 @@ export class BaseNode<
   set body(markdown: string) {
     this.parseBody(markdown);
   }
+  // #endregion
 
-  // Relations.
+  // #region Relations
   get parent(): Readonly<NodeReference> | undefined {
     return nodeRelations(this).parent;
   }
   get harness(): Readonly<NodeReference> | undefined {
     return nodeRelations(this).harness;
   }
+  // #endregion
 
-  // Composition.
+  // #region Composition
   /** Present only on nodes that own composition; undefined means no composition fields. */
   get localChildren(): readonly Readonly<NodeReference>[] | undefined {
     return undefined;
@@ -81,13 +85,14 @@ export class BaseNode<
   get isLeaf(): boolean {
     return this.localChildren === undefined && this.children.length === 0;
   }
+  // #endregion
 
   constructor(path: string) {
     if (!isAbsolute(path)) throw new Error("Node path must be absolute.");
     this.#initialPath = normalize(path);
   }
 
-  // Parse and serialize.
+  // #region Parse and serialize
   parse(markdown: string): this {
     try {
       const document = parseDocument(markdown);
@@ -114,8 +119,9 @@ export class BaseNode<
   protected serializeBody(): string {
     return this.#body;
   }
+  // #endregion
 
-  // Metadata.
+  // #region Metadata methods
   protected validateMetadata(metadata: Metadata | undefined): void {
     if (
       metadata !== undefined &&
@@ -141,14 +147,16 @@ export class BaseNode<
     this.validateMetadata(next);
     this.#metadata = next;
   }
+  // #endregion
 
-  // Composition.
+  // #region Composition methods
   /** Composite nodes (AgentsNode, ReadmeNode) override; other nodes own no composition. */
   addChild(_group: ChildGroup, _reference: NodeReference): this {
     throw new Error(`${this.path}: node does not own composition; cannot add child.`);
   }
+  // #endregion
 
-  // Lifecycle.
+  // #region Lifecycle
   protected applyInput(input: NodeCreateInput): void {
     if (input.metadata !== undefined) {
       this.validateMetadata(input.metadata);
@@ -190,4 +198,5 @@ export class BaseNode<
   validate(): void {
     this.validateMetadata(this.#metadata);
   }
+  // #endregion
 }
