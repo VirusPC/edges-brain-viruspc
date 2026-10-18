@@ -66,4 +66,4 @@ status: accepted
 - 经 dream 整理并提升的经验要等下一轮和 PR 合并后才对他人可见，可能隔天；在本机直接写组合仓库的，按该仓库自己的提交、推送节奏对他人可见。
 - 检索质量依赖目录结构和 name / description 写得好不好；edges 不承诺几千篇文档规模的检索。
 - 以后可做：为组合进来的仓库加读写权限控制，且要和底层 Git 仓库权限关联，不另造独立 ACL；本轮不定方案。
-- 术语见 `CONTEXT.md` 的「组合（Compose）」「记忆入口登记」（均指向 AGENTS.md 的 Compose block）与「dream」。
+- 术语见 `CONTEXT.md` 的「组合（Compose）」「外部记忆仓库登记」（均指向 AGENTS.md 的 Compose block）与「dream」。
