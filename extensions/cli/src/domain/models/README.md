@@ -6,7 +6,7 @@ Model 表达一个文件系统节点的身份、内容、关系与自身行为�
 
 ## 设计原则（树与入口）
 
-下列原则以 2026-10-06 grill、2026-10-07 澄清与根 `CONTEXT.md` 为准；类图已与现行实现一致：`AgentsNode` / `ReadmeNode` 与各业务节点直继 `BaseNode`，无 Internal/Leaf 层次。
+下列原则以 2026-10-06 grill、2026-10-07 澄清与根 `CONTEXT.md` 为准；类图已与现行实现一致：`AgentsNode` / `ReadmeNode` 继承 `InternalNode`，业务节点直继 `BaseNode`，`LeafNode` 是纯 text 节点。
 
 1. **递归系统二：** 系统入口是 `AGENTS.md`，带组成登记。CLI **默认**从 scope 下真 `AGENTS.md` 出发，只做该系统的**系统二**操作。经登记可达才算节点。
 2. **组成边 ≠ 维护边：** `harness` 不进 `children`。默认遍历不跟随 harness。
@@ -42,7 +42,7 @@ flowchart TB
 
 ## 类与节点关系
 
-> 各节点直继 BaseNode；`type` 含 `agents`/`readme`/`text`；组成登记（`localChildren` 是否存在）派生组织/叶子。`InternalNode` 仅作为 `AgentsNode` 的 deprecated 别名保留一个版本；`LeafNode` 仅为 deprecated 的纯 text 节点，业务节点不再继承它。
+> `InternalNode` 与 `LeafNode` 都在 `core/`，分别承接组成索引和纯 text。`AgentsNode` / `ReadmeNode` 继承 `InternalNode`；Task、Memory、Note、Skill、Project 直继 `BaseNode`。`type` 含 `agents`/`readme`/`text`。组成登记（`localChildren` 是否存在）派生组织/叶子。`LeafNode` 是 deprecated 的纯 text 节点。
 
 ```mermaid
 classDiagram
@@ -62,7 +62,6 @@ classDiagram
         parent?: NodeReference
         harness?: NodeReference
         children: NodeReference[]
-        addChild(group, reference)
         metadata?: Metadata
         body: string
         parse(markdown)
@@ -72,33 +71,41 @@ classDiagram
         update(input, context)
         destroy(context)
     }
-    class AgentsNode {
-        type = "agents"
-        constraints: string[]
+    class InternalNode {
         localChildren: NodeReference[]
         descendantChildren: NodeReference[]
+        children: NodeReference[]
         addChild(group, reference)
         updateChild(id, patch)
         removeChild(id)
         moveChild(id, group)
     }
+    class LeafNode {
+        type = "text"
+    }
+    class AgentsNode {
+        type = "agents"
+        constraints: string[]
+        composeEntries
+        registerCompose()
+        unregisterCompose()
+    }
     class ReadmeNode {
         type = "readme"
-        localChildren: NodeReference[]
-        descendantChildren: NodeReference[]
-        addChild(group, reference)
     }
     NodeReference <|.. BaseNode
-    BaseNode <|-- AgentsNode
-    BaseNode <|-- ReadmeNode
+    BaseNode <|-- InternalNode
+    BaseNode <|-- LeafNode
     BaseNode <|-- TaskNode
     BaseNode <|-- MemoryNode
     BaseNode <|-- NoteNode
     BaseNode <|-- SkillNode
+    InternalNode <|-- AgentsNode
+    InternalNode <|-- ReadmeNode
     BaseNode ..> NodeReference : parent / harness / children
 ```
 
-图中列出可读取的关系；不表示这些属性允许随意赋值。具体签名与只读限定见 [BaseNode](core/base-node.ts)、[NodeReference](core/types.ts) 和 [AgentsNode](agents/agents-node.ts)。
+图中列出可读取的关系；不表示这些属性允许随意赋值。具体签名与只读限定见 [BaseNode](core/base-node.ts)、[InternalNode](core/internal-node.ts)、[NodeReference](core/types.ts) 和 [AgentsNode](agents/agents-node.ts)。
 
 - `id` 等于规范化的绝对入口路径，例如 `/repo/notes/example/index.md`；`directoryPath` 是入口所在目录。移动节点会改变路径与 ID，由 Service 协调。
 - `name`、`description` 是可选内容字段。引用只携带 `id/name/description`，无需先加载完整节点。
@@ -149,7 +156,7 @@ flowchart LR
 models/
 ├── index.ts                 # 节点类、输入类型与布局的公共出口
 ├── layout.ts                # 跨模型的目录、入口、区块和生命周期单位协议
-├── core/                    # BaseNode、LeafNode、引用、共享字段与关系协调
+├── core/                    # BaseNode、InternalNode、LeafNode、引用、共享字段与关系协调
 ├── agents/                  # AgentsNode 与 AGENTS 文档解析、索引维护
 ├── tasks/                   # TaskNode、任务字段规则、TaskDoc 契约和文档适配
 ├── memory/                  # MemoryNode 与记忆文档规则
@@ -161,7 +168,7 @@ models/
 
 | 模块 | 值得保留的拆分 |
 | --- | --- |
-| [core](core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写 |
+| [core](core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写 |
 | [agents](agents/agents-node.ts) | `agents-node.ts` 管领域引用；`syntax.ts` 转换领域内容与 Markdown 索引；`document.ts` 定义 AgentsDocument；`parse.ts`/`serialize.ts` 保留原文并处理格式；`blocks.ts` 处理受控区块；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘 |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |
@@ -201,8 +208,11 @@ flowchart LR
     MD[Markdown 文本] --> GM[gray-matter：metadata / body]
     GM --> B[BaseNode.parse]
     B --> L[业务节点：领域字段 / 正文]
-    B --> I[AgentsNode：AGENTS 结构]
+    B --> N[InternalNode：本层 / 下层 children]
+    N --> I[AgentsNode：AGENTS 结构]
+    N --> R[ReadmeNode：README 结构]
     I --> X[InternalSyntax]
+    R --> X
     X --> D[AgentsDocument：文本项与链接项]
 ```
 
@@ -230,7 +240,7 @@ TaskNode 负责节点行为；TaskDoc 是可交换的纯数据。契约与节点
 
 ## 扩展一个节点
 
-1. 在所属类型目录定义类。普通内容直继 BaseNode，维护索引结构的节点按需要扩展 AgentsNode；没有专属行为的 index.md 可使用（deprecated 的）LeafNode 或 BaseNode。
+1. 在所属类型目录定义类。业务内容直继 BaseNode。维护本层/下层索引的入口继承 InternalNode：系统入口用 AgentsNode，组织清单用 ReadmeNode。没有专属行为的 index.md 可使用（deprecated 的）LeafNode 或 BaseNode。
 2. 保持只传绝对入口路径即可构造。通过现有 hooks 扩展字段、校验及解析序列化；正文的 serialize → parse 必须能恢复状态，因为生命周期草稿复用这条路径。
 3. 定义该类型的输入与规则；共享后再下沉，不预先新增空抽象层。
 4. 若需要自动识别，通过 layout 的目录分类机制和 NodeService 的 `models` 映射接入。分类只决定模型类型，不推断 local/descendant 归属。

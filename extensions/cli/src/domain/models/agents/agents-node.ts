@@ -1,13 +1,17 @@
 import path, { relative, dirname } from "node:path";
-import { BaseNode } from "../core/base-node.js";
+import {
+  InternalNode,
+  type InternalChildLists,
+  type InternalCreateInput,
+} from "../core/internal-node.js";
 import { InternalSyntax, type SyntaxContent, type SyntaxReference } from "./syntax.js";
-import { referenceOf, validateChild, validateGroup } from "../core/relations.js";
+import { validateChild } from "../core/relations.js";
 import {
   resolveEntryHref,
   identifyNodeType,
   isHarnessMaterial,
 } from "../layout.js";
-import type { ChildGroup, NodeReference, NodeCreateInput } from "../core/types.js";
+import type { NodeReference } from "../core/types.js";
 import {
   composeAgentsPath,
   readComposeSuffix,
@@ -23,10 +27,8 @@ type Content = {
   -readonly [Key in keyof AgentsContent]: Array<AgentsContent[Key][number]>;
 };
 
-export interface AgentsCreateInput extends NodeCreateInput {
+export interface AgentsCreateInput extends InternalCreateInput {
   constraints?: readonly string[];
-  localChildren?: readonly NodeReference[];
-  descendantChildren?: readonly NodeReference[];
 }
 
 export interface AgentsUpdateInput extends AgentsCreateInput {}
@@ -37,36 +39,25 @@ export interface AgentsContent {
   readonly descendantChildren: readonly Readonly<NodeReference>[];
 }
 
-const section = (group: ChildGroup) =>
-  group === "local" ? "localChildren" : "descendantChildren";
-
-export class AgentsNode extends BaseNode<
+export class AgentsNode extends InternalNode<
   AgentsCreateInput,
   AgentsUpdateInput
 > {
   override readonly type = "agents";
-  #content: Content = {
-    constraints: [],
-    localChildren: [],
-    descendantChildren: [],
-  };
+  #constraints: string[] = [];
   #compose: ComposeRecord[] = [];
   #syntax = new InternalSyntax("");
   #hrefs = new Map<string, string>();
   get content(): AgentsContent {
-    return structuredClone(this.#content);
+    const lists = this.childLists();
+    return {
+      constraints: [...this.#constraints],
+      localChildren: lists.localChildren,
+      descendantChildren: lists.descendantChildren,
+    };
   }
   get constraints(): readonly string[] {
-    return [...this.#content.constraints];
-  }
-  get localChildren(): readonly Readonly<NodeReference>[] {
-    return structuredClone(this.#content.localChildren);
-  }
-  get descendantChildren(): readonly Readonly<NodeReference>[] {
-    return structuredClone(this.#content.descendantChildren);
-  }
-  override get children(): readonly Readonly<NodeReference>[] {
-    return [...this.localChildren, ...this.descendantChildren];
+    return [...this.#constraints];
   }
   get composeEntries(): readonly ComposeEntry[] {
     return this.#compose.map(toComposeEntry);
@@ -112,7 +103,8 @@ export class AgentsNode extends BaseNode<
     );
     this.#validateContent(next);
     this.#validateCompose(compose);
-    this.#content = next;
+    this.#constraints = next.constraints;
+    this.installChildLists(next);
     this.#compose = compose;
     this.#syntax = syntax;
     this.#hrefs = hrefs;
@@ -146,6 +138,14 @@ export class AgentsNode extends BaseNode<
       };
     });
   }
+  #indexed(): Content {
+    const lists = this.childLists();
+    return {
+      constraints: [...this.#constraints],
+      localChildren: lists.localChildren,
+      descendantChildren: lists.descendantChildren,
+    };
+  }
   #syntaxContent(content: Content): SyntaxContent {
     const references = (items: NodeReference[]): SyntaxReference[] =>
       items.map((ref) => ({
@@ -168,7 +168,7 @@ export class AgentsNode extends BaseNode<
     };
   }
   protected override serializeBody(): string {
-    return this.#syntax.serialize(this.#syntaxContent(this.#content));
+    return this.#syntax.serialize(this.#syntaxContent(this.#indexed()));
   }
   #validateContent(content: Content): void {
     const seen = new Set<string>();
@@ -217,15 +217,19 @@ export class AgentsNode extends BaseNode<
       directories.add(entry.directory);
     }
   }
-  #replaceContent(next: Content): this {
+  #commitAll(next: Content): this {
     this.#validateContent(next);
     this.#syntax.serialize(this.#syntaxContent(next));
-    this.#content = next;
+    super.commitChildLists(next);
+    this.#constraints = [...next.constraints];
     return this;
+  }
+  protected override commitChildLists(next: InternalChildLists): void {
+    this.#commitAll({ constraints: [...this.#constraints], ...next });
   }
   override validate(): void {
     super.validate();
-    this.#validateContent(this.#content);
+    this.#validateContent(this.#indexed());
     this.#validateCompose(this.#compose);
     this.serializeBody();
   }
@@ -252,7 +256,7 @@ export class AgentsNode extends BaseNode<
     ];
     this.#validateCompose(next);
     this.#compose = next;
-    this.#syntax.serialize(this.#syntaxContent(this.#content));
+    this.#syntax.serialize(this.#syntaxContent(this.#indexed()));
     return this;
   }
   unregisterCompose(name: string): this {
@@ -262,71 +266,32 @@ export class AgentsNode extends BaseNode<
     if (!this.#compose.some((entry) => entry.name === trimmed))
       throw new Error(`${this.path}: compose entry not found: ${trimmed}`);
     this.#compose = this.#compose.filter((entry) => entry.name !== trimmed);
-    this.#syntax.serialize(this.#syntaxContent(this.#content));
+    this.#syntax.serialize(this.#syntaxContent(this.#indexed()));
     return this;
   }
-  protected override applyInput(input: AgentsCreateInput): void {
-    const structured =
-      input.constraints !== undefined ||
-      input.localChildren !== undefined ||
-      input.descendantChildren !== undefined;
-    if (input.body !== undefined && structured)
-      throw new Error(
-        `${this.path}: body conflicts with structured Internal sections.`,
-      );
-    super.applyInput(input);
-    this.#replaceContent({
-      constraints: [...(input.constraints ?? this.#content.constraints)],
-      localChildren: (input.localChildren ?? this.#content.localChildren).map(
-        referenceOf,
-      ),
-      descendantChildren: (
-        input.descendantChildren ?? this.#content.descendantChildren
-      ).map(referenceOf),
+  protected override structureConflictError(): string {
+    return `${this.path}: body conflicts with structured Internal sections.`;
+  }
+  protected override bodyConflictsWithStructure(input: AgentsCreateInput): boolean {
+    return (
+      input.body !== undefined &&
+      (input.constraints !== undefined ||
+        input.localChildren !== undefined ||
+        input.descendantChildren !== undefined)
+    );
+  }
+  protected override applyStructure(input: AgentsCreateInput): void {
+    const current = this.childLists();
+    this.#commitAll({
+      constraints: [...(input.constraints ?? this.#constraints)],
+      localChildren: [...(input.localChildren ?? current.localChildren)],
+      descendantChildren: [
+        ...(input.descendantChildren ?? current.descendantChildren),
+      ],
     });
   }
   setConstraints(items: readonly string[]): this {
-    return this.#replaceContent({ ...this.#content, constraints: [...items] });
-  }
-  addChild(group: ChildGroup, reference: NodeReference): this {
-    validateGroup(group);
-    validateChild(reference);
-    if (this.children.some((child) => child.id === reference.id))
-      throw new Error(`${this.path}: Child already indexed: ${reference.id}`);
-    const next = structuredClone(this.#content);
-    next[section(group)].push(referenceOf(reference));
-    return this.#replaceContent(next);
-  }
-  updateChild(
-    id: string,
-    patch: Partial<Pick<NodeReference, "name" | "description">>,
-  ): this {
-    if (!this.children.some((child) => child.id === id))
-      throw new Error(`${this.path}: Child is not indexed: ${id}`);
-    const next = structuredClone(this.#content);
-    for (const group of ["localChildren", "descendantChildren"] as const)
-      next[group] = next[group].map((child) =>
-        child.id === id ? referenceOf({ ...child, ...patch, id }) : child,
-      );
-    return this.#replaceContent(next);
-  }
-  removeChild(id: string): this {
-    const next = structuredClone(this.#content);
-    for (const group of ["localChildren", "descendantChildren"] as const)
-      next[group] = next[group].filter((child) => child.id !== id);
-    return this.#replaceContent(next);
-  }
-  moveChild(id: string, group: ChildGroup): this {
-    validateGroup(group);
-    const reference = this.children.find((child) => child.id === id);
-    if (!reference)
-      throw new Error(`${this.path}: Child is not indexed: ${id}`);
-    if (this.#content[section(group)].some((child) => child.id === id))
-      return this;
-    const next = structuredClone(this.#content);
-    for (const key of ["localChildren", "descendantChildren"] as const)
-      next[key] = next[key].filter((child) => child.id !== id);
-    next[section(group)].push(reference);
-    return this.#replaceContent(next);
+    const lists = this.childLists();
+    return this.#commitAll({ ...lists, constraints: [...items] });
   }
 }

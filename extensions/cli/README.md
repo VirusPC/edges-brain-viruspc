@@ -96,7 +96,7 @@ edges --scope /absolute/project memory doctor
 
 AGENTS 的本层硬约束、本层记忆、下层索引分别对应 constraints、localChildren、descendantChildren。NodeReference 只有 id，以及可选的 name、description；作者写下的相对链接由解析和序列化层维护。
 
-每个节点可以有独立的 harness。内容叶节点的 harness 是同目录 AGENTS.md；InternalNode 的下一层 harness 位于 `.harness/AGENTS.md`。harness 不混入 children，普通查询不会自动进入维护系统的下一层。
+每个节点可以有独立的 harness。内容叶节点的 harness 是同目录 AGENTS.md；AgentsNode 的下一层 harness 位于 `.harness/AGENTS.md`。harness 不混入 children，普通查询不会自动进入维护系统的下一层。
 
 新增父级登记跟着主体系统走。路径在该系统的 `.harness` 里进本层；另一套系统入口进下层。已有关系保留原分组。缺少 owner 时不会自动初始化；生成的 Task 项目与 Memory 类型入口使用其固定本层系统维护信息关系。
 

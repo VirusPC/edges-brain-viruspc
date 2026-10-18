@@ -29,8 +29,8 @@ _避免使用_：index.md（迁移前史料）、把叶子叫 README.md、把 IN
 _避免使用_：目录扫描结果、把任意 Markdown 链接当子节点、宣称 AGENTS.md 永不登记子项、把系统一孩子双写进 AGENTS 与 README、两套标记混用、把同目录 README 持久化挂成该 AGENTS 的 child、在 edges 作用域的 AGENTS 本层与 `.harness/README.md` 双写材料列表、把材料直接挂在 AGENTS 本层而不经 `.harness/README.md`
 
 **组织节点 / 叶子节点（派生状态）**：
-同一文档节点的当前状态：有组成登记为组织节点，否则为叶子。不是固定类型，模型不持久化 isLeaf，任意节点都可增加子节点。具体节点直接继承 BaseNode；`type` 为 `agents` / `readme` / `task` / `memory` / `note` / `skill` / `text`（普通文本兜底），无 `internal`。
-_避免使用_：InternalNode/LeafNode 类层次、type internal、按文件名区分组织/叶子、另造 entryKind
+同一文档节点的当前状态：有组成登记为组织节点，否则为叶子。不是固定类型，模型不持久化 isLeaf。`AgentsNode` 与 `ReadmeNode` 继承 `InternalNode`（本层/下层 children 与索引编辑）；业务节点继承 `BaseNode`。`LeafNode` 是纯 text 节点。`type` 为 `agents` / `readme` / `task` / `memory` / `note` / `skill` / `text`（普通文本兜底），无 `internal`。
+_避免使用_：用类层次代替组成登记来区分组织/叶子、type internal、按文件名区分组织/叶子、另造 entryKind
 
 **维护关系（harness）**：
 节点指向自身维护系统（系统二）的独立关系；系统入口即该关系在文件上的落点。默认不跟随 harness。真系统入口上的组成是该系统的系统二材料；内容面另经组织清单或 `SuperAgentsNode` 进入，不自动从真 AGENTS 并进。

@@ -3,12 +3,22 @@ import test from "node:test";
 import {
   BaseNode,
   AgentsNode,
+  InternalNode,
+  LeafNode,
+  ReadmeNode,
   SkillNode,
   TaskNode,
   MemoryNode,
 } from "../../src/domain/models/index.js";
 const create = { operation: "create" as const },
   update = { operation: "update" as const };
+test("entry nodes extend InternalNode and business nodes extend BaseNode", () => {
+  assert.ok(new AgentsNode("/repo/AGENTS.md") instanceof InternalNode);
+  assert.ok(new ReadmeNode("/repo/README.md") instanceof InternalNode);
+  assert.equal(new TaskNode("/repo/tasks/a/INDEX.md") instanceof InternalNode, false);
+  assert.ok(new LeafNode("/repo/plain.md") instanceof BaseNode);
+  assert.equal(new LeafNode("/repo/plain.md") instanceof InternalNode, false);
+});
 test("directory identity is independent of YAML and references project only public fields", () => {
   const skill = new SkillNode("/repo/skills/../skills/a/SKILL.md");
   assert.equal(skill.id, "/repo/skills/a/SKILL.md");

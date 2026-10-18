@@ -88,7 +88,7 @@ Schema 从登记的 TS 数据契约生成，不扫描完整模型类，生成物
 
 ## 扩展与维护
 
-- 新节点行为放到 models 对应目录，复用 BaseNode/LeafNode hooks；共用后再下沉到 core。
+- 新节点行为放到 models 对应目录。业务节点继承 BaseNode；带本层/下层索引的入口继承 core 里的 InternalNode。LeafNode 只表示纯 text。
 - 集合或遍历算法放 operations，通过参数或回调取得外部能力，不引入 Service 依赖。
 - 涉及文件、多个节点、发布或权限策略的完整动作由 Service 编排。
 - 新外部 JSON 合同用纯 TS 类型定义，按实际需求登记到 Schema 生成器。

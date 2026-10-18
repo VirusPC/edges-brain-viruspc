@@ -150,7 +150,7 @@ export class BaseNode<
   // #endregion
 
   // #region Composition methods
-  /** Composite nodes (AgentsNode, ReadmeNode) override; other nodes own no composition. */
+  /** InternalNode implements index editing. Other nodes own no composition. */
   addChild(_group: ChildGroup, _reference: NodeReference): this {
     throw new Error(`${this.path}: node does not own composition; cannot add child.`);
   }
