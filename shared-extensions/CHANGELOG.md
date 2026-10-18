@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-10-18
+
+### Added
+
+- 从 `extensions/skills/` 移入 6 个不调用 edges CLI 的通用 skill：`paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`、`horizontal-vertical-research`、`learn-repo`。按本层约定去掉单个 skill 的 `version` 与 `CHANGELOG.md`。
+
 ## [1.0.0] - 2026-09-08
 
 ### Added
@@ -19,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 收录标准：不绑定 Edges 的跨机器 harness；与 `extensions/` 互斥。
 - 整层一份 `VERSION`、本 changelog、tag `shared-extensions@<version>`。
 - 本层项目记忆（`AGENTS.md` + `.memory/`）。
-- 2026-10-18：从 `extensions/skills/` 移入 6 个不调用 edges CLI 的通用 skill：`paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`、`horizontal-vertical-research`、`learn-repo`。按本层约定去掉单个 skill 的 `version` 与 `CHANGELOG.md`。合入前整层版本保持 `1.0.0`。
 
-[Unreleased]: https://github.com/VirusPC/edges/compare/shared-extensions@1.0.0...HEAD
+[Unreleased]: https://github.com/VirusPC/edges/compare/shared-extensions@4.0.0...HEAD
+[4.0.0]: https://github.com/VirusPC/edges/compare/shared-extensions@1.0.0...shared-extensions@4.0.0
 [1.0.0]: https://github.com/VirusPC/edges/releases/tag/shared-extensions@1.0.0
