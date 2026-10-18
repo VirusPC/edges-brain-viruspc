@@ -4,17 +4,17 @@ import {
   appendBlock,
   blockPattern,
   escapeRegExp,
-} from "../core/syntax/blocks.js";
-import type { AgentsDocument, AgentsItem } from "../core/syntax/document.js";
-import type { BlockGrammar } from "../core/syntax/grammar.js";
+} from "../core/node-content/blocks.js";
+import type { AgentsDocument, AgentsItem } from "../core/node-content/document.js";
+import type { BlockGrammar } from "../core/node-content/grammar.js";
 import {
   decodeBody as readBody,
   parseNode as readNode,
-} from "../core/syntax/parse.js";
-import { serializeNode as writeNode } from "../core/syntax/serialize.js";
+} from "../core/node-content/parse.js";
+import { serializeNode as writeNode } from "../core/node-content/serialize.js";
 
-export type { AgentsDocument, AgentsItem, AgentsLink, SectionKey } from "../core/syntax/document.js";
-export { agentsLinks, createAgentsDocument } from "../core/syntax/document.js";
+export type { AgentsDocument, AgentsItem, AgentsLink, SectionKey } from "../core/node-content/document.js";
+export { agentsLinks, createAgentsDocument } from "../core/node-content/document.js";
 export { appendBlock, blockPattern, escapeRegExp };
 
 const layer = (name: string, edge: string) =>

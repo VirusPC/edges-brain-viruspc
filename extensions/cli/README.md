@@ -58,8 +58,8 @@ flowchart TD
 | --- | --- | --- |
 | commands | 命令注册、参数与 stdin 适配、stdout/stderr 和退出码 | 把 `notes create` 转成 `services/notes/service` 的创建请求 |
 | services | 加载、跨节点协调、文件操作与完整业务流程 | 各领域 `service.ts`；创建 Task 后登记父 AGENTS、保存、移动整个任务目录 |
-| core | 节点基类、本层/下层索引、关系和通用块机制 | BaseNode、InternalNode.addChild、core/syntax 按传入文法解析区块 |
-| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验；layout.ts 按 memory、task、note、project 判定目录类型；AgentsNode 与 ReadmeNode 经 models/syntax.ts 使用 core/syntax |
+| core | 节点基类、本层/下层索引、关系和通用块机制 | BaseNode、InternalNode.addChild、core/node-content 按传入文法解析区块 |
+| models | 节点自身的字段、校验、解析序列化和索引编辑 | Task 优先级校验；layout.ts 按 memory、task、note、project 判定目录类型；AgentsNode 与 ReadmeNode 经 models/syntax.ts 使用 core/node-content |
 | operations | 对多个元素进行遍历、筛选、分组、查找 | traverse、filter、groupBy、Task 数组排序 |
 | utils | 可复用的底层格式与文件机制 | gray-matter 适配、路径与文件原语 |
 

@@ -9,7 +9,7 @@ import { ENTRIES_SECTIONS } from "../../domain/models/syntax.js";
 import {
   escapeIndexText,
   encodeIndexPath,
-} from "../../domain/core/syntax/serialize.js";
+} from "../../domain/core/node-content/serialize.js";
 import { listTypeFiles, typeContentDir, typeIndexPath } from './types.js';
 import { canonicalPath, isWithinPath } from '../../utils/filesystem.js';
 
