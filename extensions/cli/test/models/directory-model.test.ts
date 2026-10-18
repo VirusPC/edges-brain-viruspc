@@ -115,14 +115,13 @@ test("ordinary navigation links remain authored prose rather than children", () 
 
 test("layout follows canonical task statuses, registered contracts and recursive harness paths", async () => {
   const {
+    identifyNodeType,
     harnessPath,
     lifecycleUnits,
     assertMovableLayout,
+    registerDirectoryClassifier,
     resolveHref,
   } = await import("../../src/domain/models/layout.js");
-  const { identifyNodeType, registerDirectoryClassifier } = await import(
-    "../../src/domain/models/classify.js"
-  );
   for (const status of ["cancelled", "in_review", "blocked"])
     assert.equal(
       identifyNodeType(`/repo/tasks/_default/${status}/a/index.md`),

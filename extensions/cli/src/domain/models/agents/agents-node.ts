@@ -2,8 +2,7 @@ import path, { relative, dirname } from "node:path";
 import { InternalNode, type InternalCreateInput } from "../../core/internal-node.js";
 import { InternalSyntax, type SyntaxContent, type SyntaxReference } from "../syntax.js";
 import { validateChild } from "../../core/relations.js";
-import { identifyNodeType } from "../classify.js";
-import { resolveEntryHref, isHarnessMaterial } from "../layout.js";
+import { identifyNodeType, resolveEntryHref, isHarnessMaterial } from "../layout.js";
 import type { NodeReference } from "../../core/types.js";
 import {
   composeAgentsPath,

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { identifyNodeType } from "../../src/domain/models/classify.js";
 import {
   ENTRY_NAMES,
+  identifyNodeType,
   isLeafEntryName,
   normalizeNodeType,
   resolveEntryHref,

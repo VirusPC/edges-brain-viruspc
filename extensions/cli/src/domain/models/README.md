@@ -158,8 +158,7 @@ domain/
 │   └── syntax/              # parse / serialize / blocks / document：只认区块、标题、标记、条目
 └── models/
     ├── index.ts             # 节点类、输入类型、布局与目录分类的公共出口；基类从 domain/core 再导出
-    ├── layout.ts            # 入口文件名、href、harness 路径、生命周期单位
-    ├── classify.ts          # 目录类型：memory → task → note → project，再加上入口文件名
+    ├── layout.ts            # 入口文件名、href、harness 路径、生命周期；目录类型按 memory、task、note、project
     ├── syntax.ts            # project-harness / project-entries 的标题、标记和换档；InternalSyntax 把文法交给 core
     ├── agents/              # AgentsNode、SuperAgentsNode、harness 判定与 Compose 登记
     ├── readme/              # ReadmeNode：组织清单
@@ -169,7 +168,7 @@ domain/
     └── skills/              # SkillNode：SKILL.md 入口、名称和描述校验
 ```
 
-同一节点的类与专属规则放在一起。节点基类在 `domain/core`。`core/syntax` 按调用方给出的标题、标记和条目解析、序列化区块。README 与 AGENTS 的具体文法在 `syntax.ts`，由 `InternalSyntax` 交给 core，不放进 Agents 或 Readme 其中一方。目录类型集中在 `classify.ts`。不要求每个节点都有同样数量的 types、codec、factory 文件。
+同一节点的类与专属规则放在一起。节点基类在 `domain/core`。`core/syntax` 按调用方给出的标题、标记和条目解析、序列化区块。README 与 AGENTS 的具体文法在 `syntax.ts`，由 `InternalSyntax` 交给 core，不放进 Agents 或 Readme 其中一方。目录类型在 `layout.ts`，叶子规则按 memory、task、note、project 排列。不要求每个节点都有同样数量的 types、codec、factory 文件。
 
 | 模块 | 值得保留的拆分 |
 | --- | --- |
@@ -178,8 +177,7 @@ domain/
 | [agents](agents/agents-node.ts) | `agents-node.ts` 管 AGENTS 引用、约束和 Compose 登记；`super-agents-node.ts` 是虚拟超节点；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘；`compose.ts` 读写组合条目 |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |
-| [layout.ts](layout.ts) | 入口文件名（AGENTS.md、README.md、SKILL.md、INDEX.md，兼容旧 index.md）、href 解析、harness 路径和生命周期单位 |
-| [classify.ts](classify.ts) | 目录类型。内置规则按 memory、task、note、project 的顺序写在同一数组里；`AGENTS.md` / `README.md` / `SKILL.md` 按入口文件名判定。`registerDirectoryClassifier` 把额外规则插到这个列表前面 |
+| [layout.ts](layout.ts) | 入口文件名（AGENTS.md、README.md、SKILL.md、INDEX.md，兼容旧 index.md）、href 解析、harness 路径和生命周期单位。目录类型单独一段：`AGENTS.md` / `README.md` / `SKILL.md` 按文件名判定；叶子 `INDEX.md` 按 memory、task、note、project 的顺序判定。`registerDirectoryClassifier` 把额外规则插到这个列表前面 |
 
 ## Model、operations 与 Service 的边界
 
