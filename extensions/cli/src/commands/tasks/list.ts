@@ -17,8 +17,10 @@ import {
   groupRecords,
   listTaskNodes,
   matchesFilters,
+  nativeTaskPath,
   NodeService,
   parseFieldFilter,
+  relativePathInsideScope,
   subjectTaskBoard,
   tasksBoardDirName,
   tasksBoardReadmeExists,
@@ -152,7 +154,7 @@ async function collectTasks(scopeDir: string, mode: { all: boolean; super: boole
 }
 
 function taskItem(node: TaskNode, root: string) {
-  const rel = path.relative(root, node.path).split(path.sep).join("/");
+  const rel = relativePathInsideScope(nativeTaskPath(root), node.path).split(path.sep).join("/");
   const parts = rel.split("/");
   const at = parts.lastIndexOf(tasksBoardDirName());
   const projectDir = at >= 0 ? parts[at + 1] : undefined;

@@ -1,4 +1,5 @@
 import { isWithinPath } from '../../utils/filesystem.js';
+import { nativeTaskPath } from "./realpath.js";
 import * as fs from "node:fs";
 import path from "node:path";
 import { harnessMaterialById, tasksBoardDirName } from "../../domain/config/harness-materials.js";
@@ -39,7 +40,7 @@ export async function taskBoardQuery(
     return query(async function* (): AsyncGenerator<BaseNode> {});
   const root = checkPath(
     path.resolve(
-      fs.realpathSync(target.scopeDir),
+      nativeTaskPath(target.scopeDir),
       path.relative(target.scopeDir, target.boardDir),
     ),
   );
@@ -135,7 +136,7 @@ export async function listRepositoryTaskNodes(
   root: string,
   options: { super?: boolean } = {},
 ): Promise<TaskNode[]> {
-  const canonicalRoot = fs.realpathSync(root);
+  const canonicalRoot = nativeTaskPath(root);
   const service = new NodeService({ managedRoot: canonicalRoot });
   if (options.super) {
     return service

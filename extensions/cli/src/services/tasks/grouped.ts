@@ -1,6 +1,6 @@
 import { validateTaskDocInput } from "./task-doc.js";
 import path from "node:path";
-import { realpathSync } from "node:fs";
+import { nativeTaskPath } from "./realpath.js";
 import { AgentsNode } from "../../domain/models/index.js";
 import { query } from "../../domain/operations/query.js";
 import { projectLocationOf } from "./node-query.js";
@@ -270,7 +270,7 @@ export async function listGroupedByProject(
 export async function listRepositoryGroupedByProject(
   root: string, opts: TaskListOpts = {},
 ): Promise<GroupedList> {
-  root = realpathSync(root);
+  root = nativeTaskPath(root);
   const tasks = await listRepositoryTasksWithDocs(root, opts);
   const groupedTasks = await query(async function* () { yield* tasks; })
     .groupBy(task => sourceIdentity(task.source, task.project)).value();
