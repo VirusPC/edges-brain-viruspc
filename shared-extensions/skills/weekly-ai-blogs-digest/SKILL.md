@@ -1,7 +1,6 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域各大博客的新文章时使用此技能。会逐站收集新发布链接、逐篇做 200 字内摘要、总结整体技术风向，并按固定模版输出为 markdown 文件。在以下短语触发："本周 AI 资讯"、"汇总一下 AI 博客"、"weekly AI digest"、"看看这周 AI Coding 有什么新东西"。不要为单篇文章总结（用 summarize-ai-article）或非博客类信源触发。
-version: 1.1.0
 ---
 
 ## 任务执行流程

@@ -1,7 +1,6 @@
 ---
 name: learn-repo
 description: 当用户想长期学习、精读某个外部代码仓库，并把它关联进 teaching 教学工作区时使用。以 git submodule 把仓库挂到对应主题的 repos/ 下——主仓库只记一个提交指针，不涨克隆体积——并在 RESOURCES.md 登记来源与 commit。触发短语如「我想学一下 XX 仓库」「把 XX 仓库挂进来学」。只是临时看看、总结一下某个仓库时不触发；往 teaching 之外的路径挂载也不归本技能管。
-version: 2.0.0
 ---
 
 # learn-repo — 把要学的仓库挂进教学工作区
