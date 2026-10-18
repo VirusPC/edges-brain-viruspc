@@ -120,6 +120,14 @@ _避免使用_：独立全局 vault、edges-private 当真源、机器级单一�
 在指定记忆目录通过 skill（如 `$project-memory-add-type`）登记新的 Memory Type（name / description / 可选特权 metadata），与内置种子类型同构（类型入口 + 同处条目 + 层入口一行）、可被 remember / ask / doctor 发现；官方 init 种子不因示例类型膨胀。扩展面仍只在 LAYOUT，不另开类型注册表。
 _避免使用_：单独 JSON/YAML 总配置平面、把示例 type 写进默认种子、把加 type 写成改 PROTOCOL
 
+**检索评测（Retrieval Eval）**：
+给定问题，被测系统返回文档路径，并按相关簇计算截断排序指标的评测。不判断答案文本对错。
+_避免使用_：问答评测、评测冒烟（那是目的级别）、把分数当成项目记忆有效
+
+**检索语料（Retrieval Corpus）**：
+检索评测里被查找的那个 git repository。文档 id 是该仓库内的相对路径。仓库有没有组合别的仓库，由该仓库自己决定，不是评测配置的另一维。
+_避免使用_：项目记忆、sandbox、memory 轴、把组合单独做成评测维度、MCP 的 team/scope
+
 **评测冒烟（Evaluation Smoke）**：
 以复现公开基准上「写入→检索→作答→打分」链路并产出可复查记录为目的的试跑；不构成项目记忆或 Agent Memory 有效性证据。
 _避免使用_：记忆评测通过、benchmark 证明有效、把冒烟分数当成项目记忆增益
@@ -269,6 +277,10 @@ _避免使用_：本机某个物理父目录（如 `~/projects/`）、只给 per
 **共享范围（Sharing Scope）**：
 一份 harness 文件对谁成立、给谁读写，由它提交进哪个仓库、谁能访问该仓库来表达：目录所在仓库的 harness 对该仓库的协作者成立；大脑 harness 仓库对此人及其装入的 Agent 成立；团队自己的 harness 仓库对团队成员成立。「谁」按人或人群算，Agent 只负责写入。目录决定经验沉淀在哪里，共享范围决定它属于谁。gitignore 只用于把密码等隐私材料挡在仓库外，不构成「谁」的一层。
 _避免使用_：按写入的 Agent 划分归属、把公开仓库的可读范围当成协作者范围、把用户记忆当成个人经验的沉淀层
+
+**Agent 客户端（Agent Client）**：
+在仓库工作目录里阅读并给出结果的程序，例如 Claude Code、Codex、Cursor。检索评测里它负责交出文档路径。
+_避免使用_：Harness 客户端、通用 SDK、codewiz、把 Project Harness 或 `.harness/` 当成客户端
 
 **Personal Agent**：
 harness 对象是大脑这个虚拟目录的 Agent 客户端；它跨应用和渠道长期为同一个人服务，如 ChatGPT dots、Meta Muse、Manus Cue、Grok Bot。code agent、work agent 的 harness 对象是仓库或子目录。各类 Agent 同等重要，机制相同，区别只在对象是哪个目录。
