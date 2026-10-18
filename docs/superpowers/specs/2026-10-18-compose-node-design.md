@@ -26,7 +26,8 @@
 - 被组合的仓库是 `ComposeNode` 的普通 children。增删走 `addChild` / `removeChild`。
 - `AgentsNode` 只多一条指向这个 `ComposeNode` 的边，形状对齐 `harness`：一条 `NodeReference`，不是一列。
 - `BaseNode` / `AgentsNode` 去掉 `composeChildren`。
-- traverse 走到 `ComposeNode` 之后按普通 children 往下。本层 / `localOnly` 看得见并走进这条边，与本层 harness 一致。无类型 list 不 yield `ComposeNode`。
+- 默认 list / query 只含当前 scope 内的节点，不走进 Compose 边。根级 `--compose` 才把被组合仓库的入口纳入结果，并且只到该入口这一层。
+- 无类型 list 不 yield `ComposeNode`。`--compose` 时 traverse 穿过挂载点，yield 外部仓库的真实入口。
 - 序列化时 `AgentsNode` 读写该子节点，写回 `project-harness-compose`。
 - clone / pull / push 的目录和 remote 由 `ComposeNode` 给出。git 进程仍在 Service。
 - 依赖方向保持 models → core。core 不知道标记名、remote 语法和 git。
@@ -109,21 +110,21 @@ Compose 实现 PR 不再夹带这次搬家。`ComposeNode` 从第一天就放在
 
 ## 图与 traverse
 
-`expandedChildren` 只返回结构 children：`localOnly` 时用 `localChildren`，否则用 `children`。不再拼接 `composeChildren`。
+`expandedChildren` 只含结构 children：`localOnly` 时用 `localChildren`，否则用 `children`。
 
-访问一个节点时，边的顺序是：结构 children，然后 `node.compose`（有则一条），然后在 `includeHarness` 时的下一层 `harness`。`ComposeNode` 自己的 `compose` 为空，它的仓库列表走普通 children。
+默认 list / query 只展示当前 scope 内的节点。访问顺序是结构 children，然后在 `includeHarness` 时的下一层 harness。Compose 边不在这条默认路径上，外部挂载仓库不进入结果。
 
-**本层 / `localOnly` 走进 Compose 边。** Compose 的定位是本层 harness，只是其中一部分挂在外部仓库。本层看得到这条边，也会走进去，与本层 harness 对齐。`localOnly` 排除的是所属 `AgentsNode` 的下层索引。走进被组合仓库的 `AGENTS.md` 之后，那个节点自己的 `localOnly` 照常生效。对外结果里，`/repo/AGENTS.md` 在 `localOnly` 下走到 `/brain/AGENTS.md`，不走到 `/brain/nested/AGENTS.md`。
+**`--compose` 才走 Compose 边。** 这是根级参数，与 `--scope`、`--super`、`--all` 同级，对应 `NodeQueryOptions.compose`。打开后，访问顺序在结构 children 之后加上 `node.compose` 这一条。traverse 穿过 `<所属目录>/.compose/README.md`，yield 每个被组合仓库的入口 `AGENTS.md`。停在这一层：不沿该入口的 children 再往下，包括它的下层。该入口若同时由当前 scope 里的普通组成边指到，那条边按既有的 `localOnly` 与 `includeHarness` 展开。
 
-`includeHarness` 仍只打开下一层维护边（`.harness/AGENTS.md` 再往下）。Compose 边不看这个开关：它是本层 harness，不是下一层。
+`localOnly` 只收当前 scope 的本层 children。它不打开 Compose 边。`includeHarness` 只打开下一层 `.harness/AGENTS.md`。Compose 用自己的开关，不复用 `includeHarness`。
 
-**无类型 list 不 yield `ComposeNode`。** traverse 经过 `<所属目录>/.compose/README.md`，用它展开 children；`compose` 边和 `checkout` 也用这个实例。无类型 `NodeService.list` / query 的结果里没有它，不和真实节点混在一起。按类型过滤的查询同样穿过挂载点再往下，结果里不出现 `type === "compose"`。实现在交给调用方的结果边界丢掉该节点；展开 children 的那一步仍然访问它。
+参数名用 `--compose`。它和 `--scope`、`--super`、`--all` 一样是根上的短选项，表示这次遍历带上组合挂载。`edges compose` 仍是登记与 git 子命令，和这个遍历开关不是同一个入口。`--include-compose` 会写成和 `includeHarness` 同一类的内部开关，根级选项不用这个名字。
 
-`#registered` 与写前 `#validateGraph` 不跟随 `parent.compose` 这条边。被组合仓库不属于本仓的写图。这取代现在的 `isComposeOnlyReference`。该函数删除。
+**无类型 list 不 yield `ComposeNode`。** 挂载点给 traverse、`compose` 边和 `checkout` 用。无类型 list / query 的结果里没有 `.compose/README.md`。打开 `--compose` 之后，结果里有外部仓库的入口节点，仍然没有挂载点。按类型过滤的查询同样穿过挂载点，结果里不出现 `type === "compose"`。
 
-查询的 resolve：若 `reference.id === parent.compose?.id`，直接返回该 id，不要求磁盘上存在 `.compose/README.md`。load 返回所属 `AgentsNode` 已持有的那一个 `ComposeNode` 实例。其子节点是真实 `AGENTS.md`，继续走现有的存在性检查。
+`#registered` 与写前 `#validateGraph` 不跟随 `parent.compose`。被组合仓库不进入本仓写图。`isComposeOnlyReference` 删除。
 
-`#insideEnteredCompose`：父节点 `type === "compose"` 时，把子 id 的目录记为组合根，并允许这次查询走出 `managedRoot`。已经走进某个组合根之后，仍用路径前缀判断。组合根之外的节点，`includeHarness` 时仍限制在 `managedRoot` 内。落在 `managedRoot` 外的节点维持现在的只读标记；本方案不新开跨仓写入。
+查询在 `--compose` 下解析这条边：`reference.id === parent.compose?.id` 时直接返回该 id，不要求磁盘上存在 `.compose/README.md`。load 返回所属 `AgentsNode` 持有的那个 `ComposeNode`。它的子节点是外部仓库的真实 `AGENTS.md`；这些入口可以落在 `managedRoot` 外，并且只装载入口本身。`includeHarness` 下，组合边以外的引用仍限制在 `managedRoot` 内。落在 `managedRoot` 外的入口保持只读。本方案不新开跨仓写入。
 
 环检测沿用 path。`.compose/README.md` 与所属 `AGENTS.md`、与被组合仓库的 `AGENTS.md` 都不是同一 path。
 
@@ -157,9 +158,9 @@ Service 不再自己展开 `~`、不再自己算相对 href。登记是 `compose
 | 磁盘 | 不读不写 | 不读不写；内容写在所属 `AGENTS.md` 的 Compose block |
 | 子节点 | 构造时的材料 README，之后拒绝增删 | 被组合仓库的 `AGENTS.md`，经 `addChild` / `removeChild` |
 | 谁把它接进图 | 它自己就是根 | 所属 `AgentsNode.compose` 一条边 |
-| traverse | 当普通 `AgentsNode` 走 `children` | 本层走进这条边，再走它的 children；节点本身不进入无类型 list |
+| traverse | 当普通 `AgentsNode` 走 `children` | 默认不走；`--compose` 穿过挂载点，只 yield 外部仓库入口 |
 
-两者都是按需建出的虚拟节点。超节点是另一个系统入口。Compose 节点是本层 harness 的挂载点，其中一部分在外部仓库；无类型 list 不包含它。
+两者都是按需建出的虚拟节点。超节点是另一个系统入口。Compose 节点是外部挂载的索引；默认遍历不进入它，`--compose` 才把外部仓库入口纳入结果。无类型 list 不包含挂载点本身。
 
 ## 未采用
 
@@ -172,9 +173,10 @@ Service 不再自己展开 `~`、不再自己算相对 href。登记是 `compose
 - **把 `ComposeNode` 写成 `.compose/README.md` 文件。** 持久化位置仍是所属 `AGENTS.md` 的区块。
 - **改掉说明里的 `remote:` 写法，另起字段或文件。** 磁盘形式保持 ADR 0034。变的是解析之后 remote 成为节点字段，说明原文只负责往返。
 - **让 `ComposeNode` 自己执行 git。** 模型不做 IO。
-- **`localOnly` 不进 Compose。** Compose 是本层 harness，本层看得见并走进这条边。
-- **Compose 边要等 `includeHarness`。** 那个开关打开的是下一层 `.harness/AGENTS.md`。Compose 是本层 harness。
-- **无类型 list yield `ComposeNode`。** 挂载点只给 traverse、图和 `checkout` 用，不混进真实节点列表。
+- **用 `localOnly` 打开 Compose 边。** `localOnly` 只决定当前 scope 的本层范围。Compose 由 `--compose` 决定。
+- **用 `includeHarness` 打开 Compose 边。** `includeHarness` 只打开下一层 `.harness/AGENTS.md`。
+- **默认 list 带上外部仓库，或 `--compose` 继续展开该仓库的下层。** 默认只含当前 scope。`--compose` 只到外部仓库入口这一层。
+- **无类型 list yield `ComposeNode`。** 挂载点只给 traverse、图和 `checkout` 用。
 - **先把 `ComposeNode` 放进 `agents/`，以后再拆目录。** 目录规则在本方案里一次定清。
 - **搬家 `SuperAgentsNode` 和 Compose 实现放进同一个 PR。** 搬家没有行为变化，和换图混在一起会让 diff 难以读。
 
@@ -195,10 +197,11 @@ Compose 实现 PR：
 - `models/super-agents/super-agents-node.ts`：`compose` 固定为空
 - `models/index.ts`：导出 `ComposeNode`
 - `core/base-node.ts`：删除 `composeChildren`，增加默认空的 `compose`
-- `operations/traverse.ts`：跟随 `node.compose`；删除 `isComposeOnlyReference`
-- `services/node/node-service.ts`：装载虚拟节点；组合根记在 `type === "compose"` 的那一步；登记图与写前校验不跟随这条边
+- 根级 `--compose`，与 `--scope`、`--super`、`--all` 一起传入 `NodeQueryOptions.compose`
+- `operations/traverse.ts`：仅 `compose: true` 时穿过 `node.compose`，yield 外部仓库入口后停止；删除 `isComposeOnlyReference`
+- `services/node/node-service.ts`：`--compose` 时装载虚拟节点与外部入口；登记图与写前校验不跟随这条边
 - `services/compose/service.ts`：登记/注销改走 `addChild` / `removeChild`；git 使用 `checkout(name)`
-- 测试：`test/models/compose-node.test.ts`、compose 命令测试；无类型 list 的断言不含 `ComposeNode`，仍含被组合仓库里的真实节点
+- 测试：`test/models/compose-node.test.ts`、compose 命令测试；默认 list 不含外部仓库和挂载点，`--compose` 的 list 含外部入口、不含挂载点、不含该入口的下层
 - 现状文档：`models/README.md`、`domain/README.md`、CLI README 里描述 Compose 边的句子；`CONTEXT.md` 里「Domain 把 Compose block 收成 Compose 节点」改成现在的虚拟节点和目录。历史 plan / spec / ADR 0034 的决定记录不动
 
 命令文件 `commands/compose/` 只在 Service 的函数签名变了的时候跟着改。子命令集合不变。
@@ -214,8 +217,9 @@ Compose 实现 PR：
 - 现有区块往返：name、目录、说明、remote；说明未改时后缀原样；`remote:` 仍出现在说明里。
 - `addChild` / `removeChild` 写回区块，本层系统维护信息链接仍在。去掉最后一条后正文里没有该链接。
 - 同名替换、目录重复、指向自身目录、空名字，仍报错。
-- traverse 的对外结果：结构 children 之后是被组合仓库的 `AGENTS.md` 及其下层，中间不出现 `ComposeNode`。`localOnly` 含该仓库入口，不含该仓库的下层，也不含挂载点。
-- 无类型 `NodeService.list` 能跨过这条边读到仓库内的 `AGENTS.md`，结果里没有 `.compose/README.md`。尚不存在的检出目录仍可先 `addChild` 再保存区块。`checkout` 仍从 `ComposeNode` 取目录和 remote。
+- 默认 traverse / 无类型 list：结果只有当前 scope 内的节点，没有 `.compose/README.md`，也没有被组合仓库的 `AGENTS.md`。
+- `--compose`：结果含每个被组合仓库的入口 `AGENTS.md`，不含 `.compose/README.md`，不含该入口的下层（例如 `/brain/nested/AGENTS.md`）。`localOnly` 与 `includeHarness` 都不单独打开这条边。
+- 尚不存在的检出目录仍可先 `addChild` 再保存区块。`checkout` 从 `ComposeNode` 取目录和 remote，不依赖 `--compose`。
 - 登记路径只解析一次：`~`、相对路径、绝对路径得到同一个 directory 和写回用的 href。
 - `checkout(name)` 给出的 directory / remote 与 clone、pull、push 使用的是同一份。
 - `#registered` 与写前校验不要求 `.compose/README.md` 存在，也不把仓外组合树纳入本仓写图。
