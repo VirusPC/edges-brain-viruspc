@@ -1,8 +1,8 @@
 import { basename, extname } from "node:path";
-import { BaseNode } from "../core/base-node.js";
-import { domainFields, scalar, setDomainField } from "../core/fields.js";
+import { BaseNode } from "../../core/base-node.js";
+import { domainFields, scalar, setDomainField } from "../../core/fields.js";
 import { TASK_PRIORITIES, TASK_STATUSES } from "./types.js";
-import type { Metadata, NodeContext } from "../core/types.js";
+import type { Metadata, NodeContext } from "../../core/types.js";
 import type { TaskPriority, TaskStatus, TaskCreateInput, TaskUpdateInput } from "./types.js";
 
 export class TaskNode extends BaseNode<TaskCreateInput, TaskUpdateInput> {

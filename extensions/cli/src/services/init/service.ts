@@ -3,7 +3,7 @@ import { dirname, join, relative } from "node:path";
 import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
 import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
-import type { NodeReference } from "../../domain/models/core/types.js";
+import type { NodeReference } from "../../domain/core/types.js";
 import { parseDocument } from "../../utils/markdown/document.js";
 import { NodeService } from "../node/node-service.js";
 import {

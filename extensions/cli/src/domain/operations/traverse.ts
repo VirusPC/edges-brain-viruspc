@@ -1,8 +1,8 @@
 import { basename, dirname, join } from "node:path";
-import { BaseNode } from "../models/core/base-node.js";
+import { BaseNode } from "../core/base-node.js";
 import { ENTRY_NAMES, normalizeNodeType } from "../models/layout.js";
-import type { NodeReference } from "../models/core/types.js";
-import { validateChild } from "../models/core/relations.js";
+import type { NodeReference } from "../core/types.js";
+import { validateChild } from "../core/relations.js";
 
 export interface ScopeTraversalOptions {
   /** When true, expand only localChildren. Default false: local ∪ descendants. */

@@ -9,7 +9,8 @@ src/
 ├── commands/             # CLI 参数、输入输出与命令适配
 ├── services/             # 完整用例、加载、跨节点协调、持久化
 ├── domain/
-│   ├── models/           # 单节点身份、内容、关系与行为
+│   ├── core/             # BaseNode、InternalNode、LeafNode、引用与关系
+│   ├── models/           # 各节点类型；README 与 AGENTS 共用的块语法在 models/syntax
 │   └── operations/       # 树遍历、惰性查询与集合算法
 └── utils/                # Markdown、文件系统等基础工具
 ```
@@ -20,6 +21,8 @@ flowchart TD
     S --> M[Models：单节点规则]
     S --> O[Operations：集合与树]
     O --> M
+    M --> Core[Core：节点基类与关系]
+    O --> Core
     M --> U[通用 Markdown 工具]
     S --> F[文件 IO 与写入协调]
     S -. 注入加载回调 .-> O
@@ -30,7 +33,7 @@ flowchart TD
 | 问题 | 归属 |
 | --- | --- |
 | 一个 Task 的优先级是否合法？怎样更新标题？ | models/tasks |
-| 怎样解析 AGENTS，并修改它持有的索引？ | models/agents |
+| 怎样解析 AGENTS，并修改它持有的索引？ | models/agents；块语法在 models/syntax |
 | 怎样按属性过滤、分组，递归访问已登记的节点？ | operations |
 | 怎样创建目录、登记父索引、检查外部修改并保存？ | services |
 | 怎样把命令参数变成请求、返回 JSON 或表格？ | commands |
@@ -39,7 +42,7 @@ Model 不做 IO，不依赖 Service 或 operations；operations 不依赖 Servic
 
 ## 共同的数据基础
 
-节点跟随文件系统，以目录组织、以入口 Markdown 标识。`BaseNode` 实现只有 `id/name/description` 的 `NodeReference`；ID 是规范化的绝对入口路径。`AgentsNode`、`ReadmeNode` 及 Task、Memory、Note、Skill 均直继 `BaseNode`。
+节点跟随文件系统，以目录组织、以入口 Markdown 标识。`BaseNode` 在 `domain/core`，实现只有 `id/name/description` 的 `NodeReference`；ID 是规范化的绝对入口路径。`AgentsNode` 与 `ReadmeNode` 继承 `InternalNode`；Task、Memory、Note、Project、Skill 直继 `BaseNode`。
 
 AgentsNode 分开维护 `localChildren` 和 `descendantChildren`，分别表达本层与下层索引。`harness` 是独立的维护关系，不混入 children；遍历因此可以选择是否跨维护层。引用可以跨目录，parent 的恢复仍遵循物理目录与 Service 的管理边界。
 
@@ -88,7 +91,7 @@ Schema 从登记的 TS 数据契约生成，不扫描完整模型类，生成物
 
 ## 扩展与维护
 
-- 新节点行为放到 models 对应目录。业务节点继承 BaseNode；带本层/下层索引的入口继承 core 里的 InternalNode。LeafNode 只表示纯 text。
+- 新节点行为放到 models 对应目录。业务节点继承 `domain/core` 的 BaseNode；带本层/下层索引的入口继承同目录的 InternalNode。LeafNode 只表示纯 text。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用的块语法在 `models/syntax`。
 - 集合或遍历算法放 operations，通过参数或回调取得外部能力，不引入 Service 依赖。
 - 涉及文件、多个节点、发布或权限策略的完整动作由 Service 编排。
 - 新外部 JSON 合同用纯 TS 类型定义，按实际需求登记到 Schema 生成器。

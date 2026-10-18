@@ -1,6 +1,6 @@
-import { BaseNode } from "../core/base-node.js";
-import { domainFields, scalar, setDomainField } from "../core/fields.js";
-import type { Metadata, NodeCreateInput } from "../core/types.js";
+import { BaseNode } from "../../core/base-node.js";
+import { domainFields, scalar, setDomainField } from "../../core/fields.js";
+import type { Metadata, NodeCreateInput } from "../../core/types.js";
 
 export interface MemoryCreateInput extends NodeCreateInput {
   memoryType?: string;

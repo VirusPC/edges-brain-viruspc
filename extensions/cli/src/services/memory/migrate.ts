@@ -5,7 +5,7 @@ import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { assertPrivateIgnored } from "./ignore.js";
-import { escapeIndexText, encodeIndexPath } from "../../domain/models/agents/serialize.js";
+import { escapeIndexText, encodeIndexPath } from "../../domain/models/syntax/serialize.js";
 import {
   isDirectory,
   isFile,

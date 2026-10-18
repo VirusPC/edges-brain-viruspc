@@ -1,5 +1,5 @@
 import * as nodePath from "node:path";
-import { BaseNode } from "../core/base-node.js";
+import { BaseNode } from "../../core/base-node.js";
 import { ENTRY_NAMES } from "../layout.js";
 export class SkillNode extends BaseNode {
   override readonly type = "skill" as const;

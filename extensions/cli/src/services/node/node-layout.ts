@@ -1,6 +1,6 @@
 import { isWithinPath, findAncestor } from "../../utils/filesystem.js";
 import { WRITE_LOCK_NAME } from "./node-lock.js";
-import { InternalSyntax, type SyntaxReference } from "../../domain/models/agents/syntax.js";
+import { InternalSyntax, type SyntaxReference } from "../../domain/models/syntax/syntax.js";
 import { ENTRY_NAMES, LEAF_ENTRY_NAMES, resolveEntryHref } from "../../domain/models/layout.js";
 /** Filesystem facts and source-preserving relocation; no domain resources. */
 import * as fs from "node:fs";

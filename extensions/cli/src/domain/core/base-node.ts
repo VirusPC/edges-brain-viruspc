@@ -1,5 +1,5 @@
 import { dirname, isAbsolute, normalize } from "node:path";
-import { parseDocument, serializeDocument } from "../../../utils/markdown/document.js";
+import { parseDocument, serializeDocument } from "../../utils/markdown/document.js";
 import { nodeRelations, nodePath } from "./relations.js";
 import type { ChildGroup, Metadata, NodeReference, NodeCreateInput, NodeUpdateInput, NodeContext } from "./types.js";
 

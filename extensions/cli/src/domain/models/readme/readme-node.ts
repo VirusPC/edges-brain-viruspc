@@ -1,8 +1,8 @@
 import { dirname, relative } from "node:path";
-import { InternalNode, type InternalCreateInput } from "../core/internal-node.js";
-import { InternalSyntax, type SyntaxReference } from "../agents/syntax.js";
+import { InternalNode, type InternalCreateInput } from "../../core/internal-node.js";
+import { InternalSyntax, type SyntaxReference } from "../syntax/syntax.js";
 import { identifyNodeType, resolveEntryHref } from "../layout.js";
-import type { NodeReference } from "../core/types.js";
+import type { NodeReference } from "../../core/types.js";
 
 export interface ReadmeCreateInput extends InternalCreateInput {}
 
