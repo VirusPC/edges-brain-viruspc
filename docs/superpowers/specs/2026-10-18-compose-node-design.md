@@ -57,7 +57,7 @@ extensions/cli/src/domain/models/
 
 `models/agents/compose.ts` 删除，其中的说明解析和路径解析进 `compose/compose-node.ts`。`models/agents/super-agents-node.ts` 移到 `super-agents/`。
 
-运行时虚拟路径 `<所属目录>/.compose/AGENTS.md` 是 `ComposeNode.path`，不是源码目录。源码目录是 `models/compose/`。
+运行时虚拟路径 `<所属目录>/.compose/README.md` 是 `ComposeNode.path`，不是源码目录。源码目录是 `models/compose/`。文件名用 `README.md`（`ENTRY_NAMES.readme`）：这条边是组合索引，贴近组织清单，不是系统入口。类仍是 `ComposeNode extends BaseNode`，`type` 仍是 `"compose"`；不从磁盘按 README 装载。
 
 ## SuperAgentsNode 搬家
 
@@ -77,7 +77,7 @@ Compose 实现 PR 不再夹带这次搬家。`ComposeNode` 从第一天就放在
 
 构造只接受所属 `AGENTS.md` 的绝对路径。`path` 每次从所属节点的当前 path 算出：
 
-`join(dirname(ownerPath), ".compose", "AGENTS.md")`
+`join(dirname(ownerPath), ".compose", "README.md")`
 
 所属 `AgentsNode` 被 `setNodePath` 搬走之后，这条边的 id 跟着变。`parse` 与 `serialize` 抛错，与 `SuperAgentsNode` 一样不落自己的文件。
 
@@ -113,7 +113,7 @@ Compose 实现 PR 不再夹带这次搬家。`ComposeNode` 从第一天就放在
 
 访问一个节点时，边的顺序是：结构 children，然后 `node.compose`（有则一条），然后在 `includeHarness` 时的 `harness`。`ComposeNode` 自己的 `compose` 为空，它的仓库列表走普通 children。
 
-**localOnly 走进 Compose 边。** Compose block 属本层，和本层硬约束、本层系统维护信息同一层。`localOnly` 排除的是所属 `AgentsNode` 的下层索引，不是这条边。走进某个被组合仓库的 `AGENTS.md` 之后，那个节点自己的 `localOnly` 照常生效：它的下层不再展开。仓库入口是否展开下层，与现在相同：`/repo/AGENTS.md` 在 `localOnly` 下走到 `/brain/AGENTS.md`，不走到 `/brain/nested/AGENTS.md`。路径序列中间多出 `/repo/.compose/AGENTS.md`。
+**localOnly 走进 Compose 边。** Compose block 属本层，和本层硬约束、本层系统维护信息同一层。`localOnly` 排除的是所属 `AgentsNode` 的下层索引，不是这条边。走进某个被组合仓库的 `AGENTS.md` 之后，那个节点自己的 `localOnly` 照常生效：它的下层不再展开。仓库入口是否展开下层，与现在相同：`/repo/AGENTS.md` 在 `localOnly` 下走到 `/brain/AGENTS.md`，不走到 `/brain/nested/AGENTS.md`。路径序列中间多出 `/repo/.compose/README.md`。
 
 harness 仍是显式 `includeHarness` 才走。Compose 边不看这个开关。
 
@@ -121,11 +121,11 @@ traverse 照常 yield `ComposeNode`（`type === "compose"`）。不在 traverse 
 
 `#registered` 与写前 `#validateGraph` 不跟随 `parent.compose` 这条边。被组合仓库不属于本仓的写图。这取代现在的 `isComposeOnlyReference`。该函数删除。
 
-查询的 resolve：若 `reference.id === parent.compose?.id`，直接返回该 id，不要求磁盘上存在 `.compose/AGENTS.md`。load 返回所属 `AgentsNode` 已持有的那一个 `ComposeNode` 实例。其子节点是真实 `AGENTS.md`，继续走现有的存在性检查。
+查询的 resolve：若 `reference.id === parent.compose?.id`，直接返回该 id，不要求磁盘上存在 `.compose/README.md`。load 返回所属 `AgentsNode` 已持有的那一个 `ComposeNode` 实例。其子节点是真实 `AGENTS.md`，继续走现有的存在性检查。
 
 `#insideEnteredCompose`：父节点 `type === "compose"` 时，把子 id 的目录记为组合根，并允许这次查询走出 `managedRoot`。已经走进某个组合根之后，仍用路径前缀判断。组合根之外的节点，`includeHarness` 时仍限制在 `managedRoot` 内。落在 `managedRoot` 外的节点维持现在的只读标记；本方案不新开跨仓写入。
 
-环检测沿用 path。`.compose/AGENTS.md` 与所属 `AGENTS.md`、与被组合仓库的 `AGENTS.md` 都不是同一 path。
+环检测沿用 path。`.compose/README.md` 与所属 `AGENTS.md`、与被组合仓库的 `AGENTS.md` 都不是同一 path。
 
 ## 持久化
 
@@ -153,7 +153,7 @@ Service 不再自己展开 `~`、不再自己算相对 href。登记是 `compose
 | 目录 | `models/super-agents/` | `models/compose/` |
 | 父类 | `AgentsNode` | `BaseNode` |
 | 何时出现 | 显式 `--super`，作为遍历根 | 所属 `AGENTS.md` 有组合条目，或调用方要添加第一条 |
-| 路径 | `<scope 的父目录>/.super/AGENTS.md` | `<所属目录>/.compose/AGENTS.md` |
+| 路径 | `<scope 的父目录>/.super/AGENTS.md` | `<所属目录>/.compose/README.md` |
 | 磁盘 | 不读不写 | 不读不写；内容写在所属 `AGENTS.md` 的 Compose block |
 | 子节点 | 构造时的材料 README，之后拒绝增删 | 被组合仓库的 `AGENTS.md`，经 `addChild` / `removeChild` |
 | 谁把它接进图 | 它自己就是根 | 所属 `AgentsNode.compose` 一条边 |
@@ -168,7 +168,8 @@ Service 不再自己展开 `~`、不再自己算相对 href。登记是 `compose
 - **`ComposeNode extends AgentsNode`，照搬超节点。** 组合索引不是系统入口。超节点继承 `AgentsNode` 是因为它有系统入口的组成形状。
 - **`ComposeNode extends InternalNode`，增删一律 `addChild("local", reference)`。** 分组参数没有对应的本层/下层；remote 和目录只能再塞回 description。
 - **在 core 做边的注册表。** `BaseNode.compose` 一条可选引用就够，和 `harness` 同级。core 不出现标记名。
-- **把 `ComposeNode` 写成 `.compose/AGENTS.md` 文件。** 持久化位置仍是所属 `AGENTS.md` 的区块。
+- **虚拟 id 用 `.compose/AGENTS.md`。** 这条边是组合索引，文件名用 `README.md`。
+- **把 `ComposeNode` 写成 `.compose/README.md` 文件。** 持久化位置仍是所属 `AGENTS.md` 的区块。
 - **改掉说明里的 `remote:` 写法，另起字段或文件。** 磁盘形式保持 ADR 0034。变的是解析之后 remote 成为节点字段，说明原文只负责往返。
 - **让 `ComposeNode` 自己执行 git。** 模型不做 IO。
 - **`localOnly` 不进 Compose。** 与「Compose block 属本层」和现有遍历测试相反。
@@ -216,4 +217,4 @@ Compose 实现 PR：
 - `NodeService.list` 能跨过这条边读到仓库内的 `AGENTS.md`；尚不存在的检出目录仍可先 `addChild` 再保存区块。
 - 登记路径只解析一次：`~`、相对路径、绝对路径得到同一个 directory 和写回用的 href。
 - `checkout(name)` 给出的 directory / remote 与 clone、pull、push 使用的是同一份。
-- `#registered` 与写前校验不要求 `.compose/AGENTS.md` 存在，也不把仓外组合树纳入本仓写图。
+- `#registered` 与写前校验不要求 `.compose/README.md` 存在，也不把仓外组合树纳入本仓写图。
