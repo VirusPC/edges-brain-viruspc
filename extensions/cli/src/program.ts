@@ -106,6 +106,10 @@ function addRootCommand(
       "--all",
       "Traverse the system forest from the current scope",
     )
+    .option(
+      "--with-composed",
+      "Include composed repository entries in the current scope result (one layer)",
+    )
     .description("Edges CLI: notes, tasks, artifacts, and more")
     .version(VERSION, "-v, --version", "Print version")
     .helpOption("-h, --help", "Show this help")
@@ -115,9 +119,15 @@ function addRootCommand(
     .helpCommand(false);
 
   program.hook("preAction", async (_program, command) => {
-    const { scope, super: useSuper, all } = program.opts<{ scope?: string; super?: boolean; all?: boolean }>();
+    const { scope, super: useSuper, all, withComposed } = program.opts<{
+      scope?: string;
+      super?: boolean;
+      all?: boolean;
+      withComposed?: boolean;
+    }>();
     if (useSuper) ctx.super = true;
     if (all) ctx.all = true;
+    if (withComposed) ctx.withComposed = true;
     if (scope !== undefined) ctx.env = { ...ctx.env, EDGES_SCOPE: scope };
     const target = commandWriteTarget(command, ctx.env);
     if (all && target !== undefined) {

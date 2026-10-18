@@ -15,7 +15,7 @@ export function addNoteListCommand(note: Command, ctx: CliContext): void {
     .option("--group-by <field>", "Group filtered notes by one field")
     .action(async (opts: { filter?: string[]; groupBy?: string }) => {
       try {
-        const items = await listNotes(ctx.env, { all: ctx.all, super: ctx.super });
+        const items = await listNotes(ctx.env, { all: ctx.all, super: ctx.super, withComposed: ctx.withComposed });
         ctx.result = succeed(presentListed("notes.list", items, opts));
       } catch (error) {
         failNodeCommand(ctx, error, HELP);

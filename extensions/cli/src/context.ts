@@ -31,6 +31,8 @@ export type CliContext = {
   super?: boolean;
   /** Explicit `--all`: traverse the system forest from the current scope. */
   all?: boolean;
+  /** Explicit `--with-composed`: include composed repository entry nodes in list and query. */
+  withComposed?: boolean;
   result: CliResult | undefined;
 };
 
@@ -56,7 +58,7 @@ export function usageError(reason: string, scope: "root" | "notes" | "projects" 
 }
 
 export function usageScope(argv: string[]): "root" | "notes" | "projects" | "tasks" | "artifacts" | "memory" | "skills" | "schema" | "compose" {
-  const command = argv.filter((arg, i) => arg !== "--scope" && argv[i - 1] !== "--scope" && !arg.startsWith("--scope=") && arg !== "--super")[0];
+  const command = argv.filter((arg, i) => arg !== "--scope" && argv[i - 1] !== "--scope" && !arg.startsWith("--scope=") && arg !== "--super" && arg !== "--all" && arg !== "--with-composed" && !arg.startsWith("--with-composed="))[0];
   if (command === "notes") return "notes";
   if (command === "projects") return "projects";
   if (command === "tasks") return "tasks";

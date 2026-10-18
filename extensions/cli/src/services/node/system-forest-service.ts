@@ -10,6 +10,8 @@ export type SystemForestOptions = {
   form?: ForestForm;
   /** When false, omit the runtime SuperAgentsNode root. Default true. */
   includeSuper?: boolean;
+  /** Pass through ComposeNode and yield external entry nodes. */
+  withComposed?: boolean;
 };
 
 type RootSpec =
@@ -45,7 +47,7 @@ export async function buildSystemForest(
         const peers = new Set(rootSet);
         peers.delete(spec.path);
         const hits = new Set<string>();
-        await listTree(service, spec, recordingExclude(peers, hits));
+        await listTree(service, spec, recordingExclude(peers, hits), options.withComposed === true);
         reachability.set(spec.path, hits);
       }),
     );
@@ -66,7 +68,7 @@ export async function buildSystemForest(
     active.map((spec) => {
       const exclude = new Set(activeSet);
       exclude.delete(spec.path);
-      return listTree(service, spec, exclude);
+      return listTree(service, spec, exclude, options.withComposed === true);
     }),
   );
 }
@@ -75,9 +77,11 @@ function listTree(
   service: NodeService,
   spec: RootSpec,
   excludeRoots: ReadonlySet<string>,
+  withComposed: boolean,
 ): Promise<BaseNode[]> {
   return service.list(spec.kind === "super" ? spec.scopeDir : spec.path, {
     super: spec.kind === "super",
+    ...(withComposed ? { withComposed: true } : {}),
     excludeRoots,
   });
 }

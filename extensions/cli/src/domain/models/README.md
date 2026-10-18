@@ -86,9 +86,15 @@ classDiagram
     class AgentsNode {
         type = "agents"
         constraints: string[]
-        composeEntries
-        registerCompose()
-        unregisterCompose()
+        composeNode()
+        compose
+    }
+    class ComposeNode {
+        type = "compose"
+        children
+        addChild()
+        removeChild()
+        checkout()
     }
     class ReadmeNode {
         type = "readme"
@@ -102,6 +108,8 @@ classDiagram
     BaseNode <|-- SkillNode
     InternalNode <|-- AgentsNode
     InternalNode <|-- ReadmeNode
+    BaseNode <|-- ComposeNode
+    AgentsNode --> ComposeNode : compose
     BaseNode ..> NodeReference : parent / harness / children
 ```
 
@@ -122,9 +130,9 @@ AgentsNode 对应 `AGENTS.md`，把受管部分映射为：
 | 本层硬约束 | `constraints` | 本节点的重要约束 |
 | 本层系统维护信息 | `localChildren` | 本层系统二材料与维护入口引用（现行标题；旧称本层组成） |
 | 下层系统维护信息 | `descendantChildren` | 下层系统入口引用（现行标题；旧称下层节点） |
-| 组合 | `composeEntries` / `composeChildren` | 被组合仓库的本地目录。`composeChildren` 的 id 是该目录下的 `AGENTS.md` |
+| 组合 | `compose` / `ComposeNode` | 一条指向 `<所属目录>/.compose/README.md` 的边。被组合仓库是 `ComposeNode` 的 children，id 是该目录下的 `AGENTS.md` |
 
-`children` 是 `localChildren` 与 `descendantChildren` 的有序合并，不含 Compose 边。Compose 边在同一次 traverse 里跟在结构 children 后面；只走本层时也包含它们。这里的 descendant 是下层索引组，不是已经加载完的所有后代；两组存的都只是当前入口登记的引用。物理目录深度或节点类型不能替代本层/下层的判断，新增登记由调用方明确给出 `local` 或 `descendant`。`moveChild` 只修改当前 AGENTS 中引用的分组，不移动目录、不改变 parent。
+`children` 是 `localChildren` 与 `descendantChildren` 的有序合并，不含 Compose 边。默认 list / query 停在当前 scope。根级 `--with-composed` 穿过 `ComposeNode`，把外部仓库入口 `AGENTS.md` 纳入结果，并且只到这一层；无类型 list 不包含挂载点 `.compose/README.md`。这里的 descendant 是下层索引组，不是已经加载完的所有后代；两组存的都只是当前入口登记的引用。物理目录深度或节点类型不能替代本层/下层的判断，新增登记由调用方明确给出 `local` 或 `descendant`。`moveChild` 只修改当前 AGENTS 中引用的分组，不移动目录、不改变 parent。
 
 已有 Memory 类型入口的 `project-memory-entries` 区块也按本层索引处理；不要求为了使用 AgentsNode 而改写成另一套标题。普通导航链接和非受控 Markdown 保持为正文。
 
@@ -148,7 +156,7 @@ flowchart LR
 
 同目录的 SKILL.md 与 AGENTS.md 是两个节点，入口和角色不同。一般叶节点的 harness 入口是同目录 AGENTS.md；AgentsNode 的下一层 harness 是 `.harness/AGENTS.md`，可以继续递归。目录的移动、删除及附件随迁由 Service 根据布局确定完整操作单位。
 
-遍历策略属于 [operations/traverse.ts](../operations/traverse.ts)：**目标默认**走全部组成 `children`（local∪descendants）；只要本层时显式 `localOnly`。`includeHarness` 仍默认 false——例如从 `/repo/.harness/AGENTS.md` 检索且 `includeHarness: false` 时，不沿维护边进入下一层 harness。
+遍历策略属于 [operations/traverse.ts](../operations/traverse.ts)：默认走全部组成 `children`（local∪descendants）；只要本层时显式 `localOnly`。`includeHarness` 默认 false——例如从 `/repo/.harness/AGENTS.md` 检索且 `includeHarness: false` 时，不沿维护边进入下一层 harness。`--with-composed` 才穿过 Compose 边。
 
 ## 文件按什么规则组织
 
@@ -166,8 +174,9 @@ domain/
     │   ├── layout.ts        # 路径类型、href、harness 材料、生命周期；叶子按 memory、task、note、project
     │   ├── document.ts      # 绑好文法的 parse/serialize，区块改写，Agents 与 README 换档
     │   └── stem.ts          # 目录名清理
-    ├── agents/              # AgentsNode、harness 判定与 Compose 登记
+    ├── agents/              # AgentsNode、harness 判定；一条 compose 边
     ├── super-agents/        # SuperAgentsNode：显式 --super 的虚拟系统入口
+    ├── compose/             # ComposeNode：虚拟组合索引，id 为 .compose/README.md
     ├── readme/              # ReadmeNode：组织清单
     ├── tasks/               # TaskNode、任务字段规则、TaskDoc 契约和文档适配
     ├── memory/              # MemoryNode 与记忆文档规则
@@ -182,8 +191,9 @@ domain/
 | [core](../core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`internal-node.ts` 管本层/下层 children 与索引编辑；`leaf-node.ts` 是纯 text；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写。`core/node-content` 的 `parse.ts`/`serialize.ts` 按传入文法保留原文；`blocks.ts` 只提供与标记名无关的区块字符串操作；`document.ts` 是文档表示；`grammar.ts` 描述标题、标记如何对应到区块 |
 | [config/sections.ts](../config/sections.ts) | `INTERNAL_SECTIONS`、`ENTRIES_SECTIONS`、`CODEC_SECTIONS` 是 project-harness / project-entries 的标题与标记。同一文件放这些标记的注释常量、改写表和 `HARNESS_GRAMMAR` |
 | [node/document.ts](node/document.ts) | 按标记插入、替换、改写区块。`decodeBody` / `parseNode` / `serializeNode` 把 `HARNESS_GRAMMAR` 交给 core。`InternalSyntax` 在 agents 与 entries 两档之间换标记 |
-| [agents](agents/agents-node.ts) | `agents-node.ts` 管 AGENTS 引用、约束和 Compose 登记；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘；`compose.ts` 读写组合条目 |
-| [super-agents](super-agents/super-agents-node.ts) | `super-agents-node.ts` 是显式 `--super` 的虚拟超节点，继承 `AgentsNode`，不落盘 |
+| [agents](agents/agents-node.ts) | `agents-node.ts` 管 AGENTS 引用、约束，并持有一条 `compose` 边；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘 |
+| [super-agents](super-agents/super-agents-node.ts) | `super-agents-node.ts` 是显式 `--super` 的虚拟超节点，继承 `AgentsNode`，不落盘。`compose` 为空 |
+| [compose](compose/compose-node.ts) | `compose-node.ts` 是虚拟组合索引，继承 `BaseNode`。children 是被组合仓库的 `AGENTS.md`；`checkout` 给出已展开的目录和 remote |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |
 | [config/layout.ts](../config/layout.ts) | 入口文件名（AGENTS.md、README.md、SKILL.md、INDEX.md，兼容旧 index.md）、旧类型拼写，以及叶子目录规则表。规则顺序是 memory、task、note、project |
@@ -212,7 +222,7 @@ Model 的 `create/update/destroy` 是内存领域方法，不会创建、写入�
 
 模型采用可变实例。同一个 NodeService 内，同路径节点共享实例；`create/update` 使用临时草稿校验后再更新当前实例，减少失败时的半修改状态。这不等于 immutable，也不构成跨进程事务。metadata 和关系 getter 返回受保护的视图/副本；修改 getter 返回值不会更新节点，内容应通过字段 setter 或模型方法更新。
 
-`domain/core` 不依赖具体节点，也不引用 models 或 config。Model 不依赖 operations 或 Service。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用 `config/sections.ts` 和 `models/node/document.ts`，不互相引用。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与文档解析器之间有类型引用，运行时仍无循环。
+`domain/core` 不依赖具体节点，也不引用 models 或 config。Model 不依赖 operations 或 Service。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode`，`AgentsNode` 持有 `ComposeNode` 除外）。README 与 AGENTS 共用 `config/sections.ts` 和 `models/node/document.ts`，不互相引用。通用 Markdown 工具不依赖任何节点模型。跨模块的 type-only 引用不等于运行时依赖环；例如 BaseNode/relations 与文档解析器之间有类型引用，运行时仍无循环。
 
 ## Markdown 如何进入模型
 

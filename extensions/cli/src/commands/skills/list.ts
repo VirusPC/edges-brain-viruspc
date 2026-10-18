@@ -15,7 +15,7 @@ export function addSkillListCommand(skill: Command, ctx: CliContext): void {
     .option("--group-by <field>", "Group filtered skills by one field")
     .action(async (opts: { filter?: string[]; groupBy?: string }) => {
       try {
-        const items = await listSkills(ctx.env, { all: ctx.all, super: ctx.super });
+        const items = await listSkills(ctx.env, { all: ctx.all, super: ctx.super, withComposed: ctx.withComposed });
         ctx.result = succeed(presentListed("skills.list", items, opts));
       } catch (error) {
         failNodeCommand(ctx, error, HELP);

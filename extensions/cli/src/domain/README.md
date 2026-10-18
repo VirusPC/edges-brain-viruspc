@@ -92,7 +92,7 @@ Schema 从登记的 TS 数据契约生成，不扫描完整模型类，生成物
 
 ## 扩展与维护
 
-- 新节点行为放到 models 对应目录。业务节点继承 `domain/core` 的 BaseNode；带本层/下层索引的入口继承同目录的 InternalNode。LeafNode 只表示纯 text。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。`core/node-content` 只按调用方传入的标题、标记和条目解析区块。README 与 AGENTS 的标题和标记在 `config/sections.ts`，换档和绑好文法的 parse/serialize 在 `models/node/document.ts`。入口文件名和叶子规则在 `config/layout.ts`，路径类型判定在 `models/node/layout.ts`，叶子规则顺序是 memory、task、note、project。
+- 新节点行为放到 models 对应目录。业务节点继承 `domain/core` 的 BaseNode；带本层/下层索引的入口继承同目录的 InternalNode。LeafNode 只表示纯 text。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode`，`AgentsNode` 持有 `ComposeNode` 除外）。`core/node-content` 只按调用方传入的标题、标记和条目解析区块。README 与 AGENTS 的标题和标记在 `config/sections.ts`，换档和绑好文法的 parse/serialize 在 `models/node/document.ts`。入口文件名和叶子规则在 `config/layout.ts`，路径类型判定在 `models/node/layout.ts`，叶子规则顺序是 memory、task、note、project。
 - 集合或遍历算法放 operations，通过参数或回调取得外部能力，不引入 Service 依赖。
 - 涉及文件、多个节点、发布或权限策略的完整动作由 Service 编排。
 - 新外部 JSON 合同用纯 TS 类型定义，按实际需求登记到 Schema 生成器。

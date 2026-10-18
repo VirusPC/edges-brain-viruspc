@@ -17,16 +17,17 @@ function slugOf(file: string, type: string, skill: boolean): string {
 export async function listMemoryEntries(
   targetDir: string | undefined,
   type?: string,
-  mode: { all?: boolean; super?: boolean } = {},
+  mode: { all?: boolean; super?: boolean; withComposed?: boolean } = {},
 ) {
   const target = resolveTarget(targetDir ?? process.cwd());
   const { NodeService } = await import("../node/node-service.js");
   const { MemoryNode } = await import("../../domain/models/memory/memory-node.js");
   const { buildSystemForest } = await import("../node/system-forest-service.js");
+  const { scopeTraversal } = await import("../../domain/operations/traverse.js");
   const nodes = mode.all
-    ? (await buildSystemForest(target, { includeSuper: mode.super === true, form: "independent" })).flat()
+    ? (await buildSystemForest(target, { includeSuper: mode.super === true, withComposed: mode.withComposed === true, form: "independent" })).flat()
     : await new NodeService({ managedRoot: target })
-      .query(target, { types: ["memory"], ...(mode.super ? { super: true as const } : {}) })
+      .query(target, { types: ["memory"], ...scopeTraversal(mode) })
       .value();
   const items = nodes.flatMap((node) => {
     if (!(node instanceof MemoryNode)) return [];

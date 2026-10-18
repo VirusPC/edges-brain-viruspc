@@ -4,6 +4,7 @@ import type { CliContext } from "../../../context.js";
 import { ReadmeNode } from "../../../domain/models/readme/readme-node.js";
 import { runTasksCommand, succeed } from "../run.js";
 import { ENTRY_NAMES } from "../../../domain/config/layout.js";
+import { scopeTraversal } from "../../../domain/operations/traverse.js";
 import {
   buildSystemForest,
   gitRoot,
@@ -23,9 +24,9 @@ export function addProjectListCommand(project: Command, ctx: CliContext): void {
         const scopeDir = runtime.location.scopeDir;
         const managed = gitRoot(scopeDir) ?? scopeDir;
         const nodes = ctx.all
-          ? (await buildSystemForest(scopeDir, { includeSuper: ctx.super === true, form: "independent" })).flat()
+          ? (await buildSystemForest(scopeDir, { includeSuper: ctx.super === true, withComposed: ctx.withComposed === true, form: "independent" })).flat()
           : await new NodeService({ managedRoot: managed })
-            .query(scopeDir, { types: ["readme"], ...(ctx.super ? { super: true as const } : {}) })
+            .query(scopeDir, { types: ["readme"], ...scopeTraversal(ctx) })
             .value();
         const projects = nodes.flatMap((node) => {
           if (!(node instanceof ReadmeNode)) return [];
