@@ -229,3 +229,15 @@ Compose 实现 PR：
 - 显式 `--path` 优先于默认目录。`~/custom` 写入区块时以 `~` 开头，`checkout` 展开为绝对路径。绝对路径写入该绝对路径。相对路径相对所属 `AGENTS.md` 解析一次，区块与 `checkout` 使用该绝对路径。
 - 登记路径只在 `addChild` 解析一次。`checkout(name)` 给出的已展开 directory / remote 与 clone、pull、push 使用的是同一份。
 - `#registered` 与写前校验不要求 `.compose/README.md` 存在，也不把仓外组合树纳入本仓写图。
+
+## 待定
+
+本方案按单份 clone 落地：`~/.edges/composed/<name>` 一份检出，pull / push 直接在这份检出上。
+
+每个登记该仓库的工作空间是否从这份主 clone 检出独立 git worktree，并在 worktree 上读写，尚未决定。待定的问题：
+
+- worktree 放在哪
+- Compose 条目的链接指向 worktree，还是指向主 clone
+- 分支如何命名，worktree 如何回收
+
+本方案不实现 worktree。
