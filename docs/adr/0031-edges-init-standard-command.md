@@ -2,9 +2,11 @@
 
 模块初始化原先只有 `edges memory init`，notes 与 projects 的 harness 桩顺手挂在这条命令上。根命令 `edges init` 成为标准入口；`edges memory init`、`edges notes init`、`edges projects init` 只委托 `services/init/service.ts`。挂载表 `harness-materials.json` 仍只提供 path，init 模块表用 material id 引用，path 只经 `placeHarnessMaterial`。
 
-**Status:** accepted（ADR 0031；grill 确认于 2026-10-08）
+**Status:** accepted（ADR 0031；grill 确认于 2026-10-08；2026-10-18 由 ADR 0036 修订默认集与 skills init）
 
 **See also:** ADR 0027（CRUD 动词）、ADR 0030（叶子 CRUD 经 NodeService；该决定不改 memory / tasks / README 命令）
+
+**Amended by:** [ADR 0036](0036-edges-init-installs-bundled-skills.md) — 无参 `edges init` 的默认集加入 skills；`edges skills init` 在建类型索引之外，还把 npm 包内的 skill 装给本机 agent。下文「不建 user、skills……」「`edges skills init` 只采用 skill 类型」两处以 0036 为准；其余不变。
 
 ## Decision
 

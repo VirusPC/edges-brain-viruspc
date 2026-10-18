@@ -5,7 +5,7 @@ Edges 采用通用的递归记忆与改进模型，当前以个人递归自我�
 ## Language
 
 **系统入口（System Entry）**：
-引出并承载系统二的入口文件，文件名为 `AGENTS.md`。它登记本层系统维护信息与下层系统维护信息，并可写硬约束与 Compose block；从作用域根起经系统维护信息登记可达的系统入口构成递归系统二树。任意目录都可由用户自行 init 出系统入口（`$project-memory-init` / project harness init；命令 `edges init` 只编排各模块，`edges <module> init` 只初始化该模块），以标记该目录为重点维护作用域；不是路径白名单。CLI 默认遍历根是 `--scope` 下的真实 `AGENTS.md`，只覆盖该系统的系统二；从真 AGENTS 出发到不了同目录 README 上的 tasks/notes 等是预期。对 edges 作用域（`isScope`：目录有可解析为带 edges 标记的 `AgentsNode` 的 `AGENTS.md`），本层系统维护信息**只**登记一条指向 `.harness/README.md` 的组成（材料索引）；各材料不再直接列在 AGENTS 本层。下层系统维护信息、本层硬约束与 Compose block 仍写在 AGENTS 上。见 ADR 0035。
+引出并承载系统二的入口文件，文件名为 `AGENTS.md`。它登记本层系统维护信息与下层系统维护信息，并可写硬约束与 Compose block；从作用域根起经系统维护信息登记可达的系统入口构成递归系统二树。任意目录都可由用户自行 init 出系统入口（`$project-memory-init` / project harness init；命令 `edges init` 只编排各模块，`edges <module> init` 只初始化该模块；`edges skills init` 另含安装技能，见 ADR 0036），以标记该目录为重点维护作用域；不是路径白名单。CLI 默认遍历根是 `--scope` 下的真实 `AGENTS.md`，只覆盖该系统的系统二；从真 AGENTS 出发到不了同目录 README 上的 tasks/notes 等是预期。对 edges 作用域（`isScope`：目录有可解析为带 edges 标记的 `AgentsNode` 的 `AGENTS.md`），本层系统维护信息**只**登记一条指向 `.harness/README.md` 的组成（材料索引）；各材料不再直接列在 AGENTS 本层。下层系统维护信息、本层硬约束与 Compose block 仍写在 AGENTS 上。见 ADR 0035。
 _避免使用_：把内容叶子当成系统入口、未经用户 init 就自动给所有目录铺 AGENTS.md、从真 AGENTS 遍历时自动并进 README 组成边、在 edges 作用域的 AGENTS 本层逐条列出各 `.harness/` 材料、把无 edges 标记的普通 AGENTS.md 当成 edges 作用域
 
 **虚拟超节点（SuperAgentsNode）**：
@@ -245,6 +245,10 @@ _避免使用_：仅指 Agent 生成的技能、未安装技能、全部本地�
 **引用技能（Referenced Skill）**：
 由 Project Memory 维护发现索引、正文及安装关系由原有机制维护的技能；可以是本仓自写或接入的技能。
 _避免使用_：仅指第三方技能、全部 Agent 技能、Project Memory 可直接改写的正文
+
+**安装技能（Install Skill）**：
+把随 `@viruspc/edges` npm 包分发的 Edges 自有 Skill 装进本机 Agent 的 skill 目录（如 `~/.agents/skills`、`~/.claude/skills`），由 vercel-labs/skills 执行。是 `edges skills init` 的一步：`edges skills init` 既建 skill 类型索引（Managed / Referenced），也安装包内 Skill；重跑即刷新。无参 `edges init` 的默认集含 skills。安装失败则 init 失败。与 Managed / Referenced 的类型索引是两件事：装进 Agent 目录不等于登记进作用域的索引。见 ADR 0036。
+_避免使用_：`edges skills install`、把安装当成可跳过的附加步骤、安装时从 GitHub 拉 skill、把 shared-extensions 里的通用 skill 算进安装范围
 
 **MCP（Edges）**：
 在无 shell 宿主上暴露 Edges 扩展能力的机器入口；与 CLI、Skill 同属能力面，调用同一套领域契约而非另一套产品。
