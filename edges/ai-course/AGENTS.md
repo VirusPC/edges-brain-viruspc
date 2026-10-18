@@ -32,3 +32,9 @@
 - 用主动语态："模型被训练" → "训练模型"
 - 数据支撑："效果更好" → "pass@1 提升 15%"
 
+
+<!-- project-harness-local:start -->
+## 本层系统维护信息
+
+- [本层 harness 材料索引](<.harness/README.md>) — 本层 harness 材料的组织清单。各材料只在这里登记。
+<!-- project-harness-local:end -->

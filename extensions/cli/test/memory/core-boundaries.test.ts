@@ -478,11 +478,8 @@ test("unregistered custom types are rediscovered and metadata/manual introductio
   await addMemoryType({ targetDir: d, name: "docs", description: "Docs" });
   put(
     d,
-    "AGENTS.md",
-    read(d, "AGENTS.md").replace(
-      /^- .*\.harness\/memory\/docs\/README.md.*\n/gm,
-      "",
-    ),
+    ".harness/README.md",
+    read(d, ".harness/README.md").replace(/^- .*memory\/docs\/README\.md.*\n/gm, ""),
   );
   const index = ".harness/memory/docs/README.md";
   put(
@@ -501,7 +498,8 @@ test("unregistered custom types are rediscovered and metadata/manual introductio
   await initMemory({ indexGroup: "descendant", targetDir: d });
   assert.match(read(d, index), /unknown-key: retain/);
   assert.match(read(d, index), /^Manual type preface/);
-  assert.match(read(d, "AGENTS.md"), /\.harness\/memory\/docs\/README.md/);
+  assert.match(read(d, ".harness/README.md"), /memory\/docs\/README\.md/);
+  assert.doesNotMatch(read(d, "AGENTS.md"), /memory\/docs\/README\.md/);
 });
 test("standard YAML parsing supports quoted, multiline and nested metadata; nested values win", async (t) => {
   const d = await base(t);

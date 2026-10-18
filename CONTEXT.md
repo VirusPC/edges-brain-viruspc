@@ -5,28 +5,28 @@ Edges 采用通用的递归记忆与改进模型，当前以个人递归自我�
 ## Language
 
 **系统入口（System Entry）**：
-引出并承载系统二的入口文件，文件名为 `AGENTS.md`。它登记本层系统维护信息与下层系统维护信息，并可写硬约束；从作用域根起经系统维护信息登记可达的系统入口构成递归系统二树。任意目录都可由用户自行 init 出系统入口（`$project-memory-init` / project harness init；命令 `edges init` 只编排各模块，`edges <module> init` 只初始化该模块），以标记该目录为重点维护作用域；不是路径白名单。CLI 默认遍历根是 `--scope` 下的真实 `AGENTS.md`，只覆盖该系统的系统二；从真 AGENTS 出发到不了同目录 README 上的 tasks/notes 等是预期。
-_避免使用_：把内容叶子当成系统入口、未经用户 init 就自动给所有目录铺 AGENTS.md、从真 AGENTS 遍历时自动并进 README 组成边
+引出并承载系统二的入口文件，文件名为 `AGENTS.md`。它登记本层系统维护信息与下层系统维护信息，并可写硬约束与 Compose block；从作用域根起经系统维护信息登记可达的系统入口构成递归系统二树。任意目录都可由用户自行 init 出系统入口（`$project-memory-init` / project harness init；命令 `edges init` 只编排各模块，`edges <module> init` 只初始化该模块），以标记该目录为重点维护作用域；不是路径白名单。CLI 默认遍历根是 `--scope` 下的真实 `AGENTS.md`，只覆盖该系统的系统二；从真 AGENTS 出发到不了同目录 README 上的 tasks/notes 等是预期。对 edges 作用域（`isScope`：目录有可解析为带 edges 标记的 `AgentsNode` 的 `AGENTS.md`），本层系统维护信息**只**登记一条指向 `.harness/README.md` 的组成（材料索引）；各材料不再直接列在 AGENTS 本层。下层系统维护信息、本层硬约束与 Compose block 仍写在 AGENTS 上。见 ADR 0035。
+_避免使用_：把内容叶子当成系统入口、未经用户 init 就自动给所有目录铺 AGENTS.md、从真 AGENTS 遍历时自动并进 README 组成边、在 edges 作用域的 AGENTS 本层逐条列出各 `.harness/` 材料、把无 edges 标记的普通 AGENTS.md 当成 edges 作用域
 
 **虚拟超节点（SuperAgentsNode）**：
-相对当前 `--scope` 的运行时系统入口，不落盘。实现类 **`SuperAgentsNode`，继承 `AgentsNode`**。仅当显式 **`--super`** 时启用。典型叙事：把整个仓库视为上一级主体（如个人）的系统二，向上为该系统构建虚拟根。traverse 时**当作普通 AgentsNode**（只走 `children`，无跨系统特判）。挂载表来自 `extensions/cli/src/domain/config/harness-materials.json`（材料 README；`scope`+path；不挂其它系统 `AGENTS.md`；可空）。缺 AGENTS 且未开 `--super` 不得自动合成。系统森林在 traverse 之外由 `SystemForestService` / `edges forest list` 拼装为 `BaseNode[][]`（`independent` 早停；`innermost` 只留内层）。
-_避免使用_：虚拟系统入口、虚拟根、virtual-root、VirtualSuperNode、缺 AGENTS 就静默加上超节点、把超节点落盘、用真 AGENTS 遍历并边代替 `--super`、让一次 traverse 跨系统拼森林、Super 挂其它系统 AGENTS
+相对当前 `--scope` 的运行时系统入口，不落盘。实现类 **`SuperAgentsNode`，继承 `AgentsNode`**。仅当显式 **`--super`** 时启用。典型叙事：把整个仓库视为上一级主体（如个人）的系统二，向上为该系统构建虚拟根。traverse 时**当作普通 AgentsNode**（只走 `children`，无跨系统特判）。挂载优先 `<scope>/.harness/README.md` 并从它展开；这份组织清单不存在时，再回退按 `extensions/cli/src/domain/config/harness-materials.json` 扁平挂已有材料（材料 README；`scope`+path；不挂其它系统 `AGENTS.md`；可空）。不把作用域根 `README.md` 当作中间优先层。见 ADR 0035。缺 AGENTS 且未开 `--super` 不得自动合成。系统森林在 traverse 之外由 `SystemForestService` / `edges forest list` 拼装为 `BaseNode[][]`（`independent` 早停；`innermost` 只留内层）。
+_避免使用_：虚拟系统入口、虚拟根、virtual-root、VirtualSuperNode、缺 AGENTS 就静默加上超节点、把超节点落盘、用真 AGENTS 遍历并边代替 `--super`、让一次 traverse 跨系统拼森林、Super 挂其它系统 AGENTS、在入口 README 已存在时仍只按 harness-materials.json 扁平挂载（目标行为）
 
 **文档节点（Document Node）**：
 模型中的 Markdown 单位：系统入口，组织清单，或内容叶子（Task / Note / Memory / Skill 等）。从作用域根（CLI scope 对应的真系统入口，或显式 `--super` 的虚拟超节点）起经登记可达才算节点。
 _避免使用_：仅指文件夹、磁盘上未登记的 md
 
 **组织清单（README.md）**：
-用 `README.md` 承载组成登记的文档节点：本层内容挂系统一孩子（如 `tasks/`、Task、类型条目）；下层内容只挂其它 `README.md`（与 AGENTS 下层只挂 AGENTS 同理）。标记为 `project-entries-local` / `project-entries-descendants`，标题为「本层内容 / 下层内容」。给人看的说明与 entries 可同文件；工具只改标记区块。在「真系统」视角下这些是系统一材料；经 `SuperAgentsNode` 遍历时，同一批材料被当作**虚拟系统的系统二**展开。
-_避免使用_：把叶子正文写成 README、把 README 当成真系统入口、无 entries 的普通包说明自动当节点、把 README 组成写成 project-harness-*、下层内容挂成 INDEX/SKILL
+用 `README.md` 承载组成登记的文档节点：本层内容挂系统一孩子（如 `tasks/`、Task、类型条目）；下层内容只挂其它 `README.md`（与 AGENTS 下层只挂 AGENTS 同理）。标记为 `project-entries-local` / `project-entries-descendants`，标题为「本层内容 / 下层内容」。给人看的说明与 entries 可同文件；工具只改标记区块。在「真系统」视角下这些是系统一材料；经 `SuperAgentsNode` 遍历时，同一批材料被当作**虚拟系统的系统二**展开。edges 作用域的 **`.harness/README.md`** 是该层的**材料索引**（标准组织清单，无 YAML frontmatter）：本层各 harness 材料挂在它的 entries 下，由上层 `AGENTS.md` 本层以单条组成指向它。见 ADR 0035。
+_避免使用_：把叶子正文写成 README、把 README 当成真系统入口、无 entries 的普通包说明自动当节点、把 README 组成写成 project-harness-*、下层内容挂成 INDEX/SKILL、在 AGENTS 与 `.harness/README.md` 双写同一份材料索引
 
 **内容叶子入口（INDEX.md）**：
 Task / Note / Memory 等的入口文件，名为 `INDEX.md`。Skill 仍为 `SKILL.md`。有无子项仍看是否出现组成登记，不靠文件名分 Internal / Leaf。
 _避免使用_：index.md（迁移前史料）、把叶子叫 README.md、把 INDEX.md 当成系统入口
 
 **组成登记（entries）**：
-系统入口或组织清单正文里受管 HTML 注释所登记的直属子节点；有登记则该节点当前有子节点，否则为叶子。普通正文链接与附件不构成组成。系统入口用 `project-harness-local` / `project-harness-descendants`（标题「本层系统维护信息 / 下层系统维护信息」）；组织清单用 `project-entries-local` / `project-entries-descendants`（标题「本层内容 / 下层内容」）。系统入口带组成登记是递归系统二的基础假设。同目录并存 `AGENTS.md` 与 `README.md` 时：系统一孩子只登记在 README；AGENTS 只登记系统二材料与下级系统入口——两套登记并列，持久化上互不为对方的 child。上层系统入口可以把 `.harness/` 下的材料组织清单 README（类型入口、任务看板）登记进本层系统维护信息，这条边是该上层 AGENTS 的 child。目标模型下真 AGENTS 的 traverse **不**自动并同目录 README 边；要逛当前 scope 的内容面须换根到 `SuperAgentsNode`。
-_避免使用_：目录扫描结果、把任意 Markdown 链接当子节点、宣称 AGENTS.md 永不登记子项、把系统一孩子双写进 AGENTS 与 README、两套标记混用、把同目录 README 持久化挂成该 AGENTS 的 child
+系统入口或组织清单正文里受管 HTML 注释所登记的直属子节点；有登记则该节点当前有子节点，否则为叶子。普通正文链接与附件不构成组成。系统入口用 `project-harness-local` / `project-harness-descendants`（标题「本层系统维护信息 / 下层系统维护信息」）；组织清单用 `project-entries-local` / `project-entries-descendants`（标题「本层内容 / 下层内容」）。系统入口带组成登记是递归系统二的基础假设。同目录并存 `AGENTS.md` 与 `README.md` 时：系统一孩子只登记在 README；AGENTS 只登记系统二材料与下级系统入口——两套登记并列，持久化上互不为对方的 child。对 edges 作用域：各 `.harness/` 材料组织清单挂在 **`.harness/README.md`** 的 entries 下；上层 `AGENTS.md` 本层**只**登记这一条指向 `.harness/README.md` 的组成（不再在本层逐条挂各材料）。下层系统入口仍登记在 AGENTS 下层区块。目标模型下真 AGENTS 的 traverse **不**自动并同目录 README 边；要逛当前 scope 的内容面须换根到 `SuperAgentsNode`。见 ADR 0035。
+_避免使用_：目录扫描结果、把任意 Markdown 链接当子节点、宣称 AGENTS.md 永不登记子项、把系统一孩子双写进 AGENTS 与 README、两套标记混用、把同目录 README 持久化挂成该 AGENTS 的 child、在 edges 作用域的 AGENTS 本层与 `.harness/README.md` 双写材料列表、把材料直接挂在 AGENTS 本层而不经 `.harness/README.md`
 
 **组织节点 / 叶子节点（派生状态）**：
 同一文档节点的当前状态：有组成登记为组织节点，否则为叶子。不是固定类型，模型不持久化 isLeaf，任意节点都可增加子节点。具体节点直接继承 BaseNode；`type` 为 `agents` / `readme` / `task` / `memory` / `note` / `skill` / `text`（普通文本兜底），无 `internal`。
@@ -251,8 +251,8 @@ _避免使用_：仅指第三方技能、全部 Agent 技能、Project Memory �
 _避免使用_：唯一入口、替代 CLI、直连仓根脚本（已否决）
 
 **Project Harness（Edges 语境）**：
-Git 项目里递归系统二落在系统入口 `AGENTS.md` 上的写法：本层硬约束、本层系统维护信息、下层系统维护信息；`.harness/` 是材料目录，不是另一套入口形状。内容节点由组织清单或系统入口的组成登记挂入，不必自身也是系统入口。
-_避免使用_：Agent Harness 的同义词、只等于 `.harness/` 目录、本层组成/下层节点（旧标题）、Project Memory 三章的旧称、要求每个内容目录都有 AGENTS.md
+Git 项目里递归系统二落在系统入口 `AGENTS.md` 上的写法：本层硬约束、本层系统维护信息（edges 作用域下本层只指向 `.harness/README.md`）、下层系统维护信息，以及 Compose block；`.harness/` 是材料目录，**`.harness/README.md` 是该层材料索引**（标准组织清单），不是另一套系统入口。各材料挂在该 README 的 entries 下，不必在 AGENTS 本层逐条列出；内容节点由组织清单或系统入口的组成登记挂入，不必自身也是系统入口。见 ADR 0035。
+_避免使用_：Agent Harness 的同义词、只等于 `.harness/` 目录、本层组成/下层节点（旧标题）、Project Memory 三章的旧称、要求每个内容目录都有 AGENTS.md、把「AGENTS 本层列出每个材料」当成目标形状
 
 **Agent Harness（Edges 语境）**：
 让 Agent 持续有效工作的支撑机制，组织上下文、记忆、工具、约束与反馈；它可承担系统二的角色，也可作为被维护的系统一，不与系统二严格同义。
