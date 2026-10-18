@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseNode } from "../../../src/domain/models/internal/parse.js";
+import { parseNode } from "../../../src/domain/models/agents/parse.js";
 import { parseDocument, serializeDocument } from "../../../src/utils/markdown/document.js";
-import { serializeNode } from "../../../src/domain/models/internal/serialize.js";
+import { serializeNode } from "../../../src/domain/models/agents/serialize.js";
 import type { MarkdownDocument } from '../../../src/utils/markdown/types.js';
 
 const body = '## 本层记忆\n\n- [Memory](memory/AGENTS.md)\n';

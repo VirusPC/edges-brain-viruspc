@@ -2,7 +2,7 @@ import { existsSync, lstatSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { discoverDirectories, findAncestor } from '../utils/filesystem.js';
 import { ENTRY_NAMES } from "../domain/models/layout.js";
-import { AgentsNode } from "../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../domain/models/agents/agents-node.js";
 
 export function isScope(dir: string): boolean {
   const file = path.join(path.resolve(dir), ENTRY_NAMES.internal);

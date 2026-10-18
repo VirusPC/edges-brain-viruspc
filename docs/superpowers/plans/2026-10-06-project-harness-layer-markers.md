@@ -112,7 +112,7 @@ git commit -m "docs: 层入口协议与模板改用 project-harness"
 
 **Files:**
 - Modify: `extensions/cli/src/domain/models/layout.ts`
-- Modify: `extensions/cli/src/domain/models/internal/blocks.ts`
+- Modify: `extensions/cli/src/domain/models/agents/blocks.ts`
 - Test: `extensions/cli/test/models/layer-markers.test.ts`
 
 **Interfaces:**
@@ -140,7 +140,7 @@ import {
   ENTRIES_START,
   TYPE_META_START,
   rewriteLayerSurface,
-} from "../../src/domain/models/internal/blocks.js";
+} from "../../src/domain/models/agents/blocks.js";
 
 test("canonical layer markers are project-harness, type markers stay project-memory", () => {
   assert.equal(INTERNAL_SECTIONS.constraints.marker, "project-harness-constraints");
@@ -301,7 +301,7 @@ Expected: PASS
 
 ```bash
 git add extensions/cli/src/domain/models/layout.ts \
-  extensions/cli/src/domain/models/internal/blocks.ts \
+  extensions/cli/src/domain/models/agents/blocks.ts \
   extensions/cli/test/models/layer-markers.test.ts
 git commit -m "feat: 拆开 project-harness 层标记与 type 标记"
 ```
@@ -311,10 +311,10 @@ git commit -m "feat: 拆开 project-harness 层标记与 type 标记"
 ### Task 3: parse 双读、serialize 新稿、entries 适配
 
 **Files:**
-- Modify: `extensions/cli/src/domain/models/internal/parse.ts`
-- Modify: `extensions/cli/src/domain/models/internal/serialize.ts`
-- Modify: `extensions/cli/src/domain/models/internal/syntax.ts`
-- Test: `extensions/cli/test/models/internal.test.ts`
+- Modify: `extensions/cli/src/domain/models/agents/parse.ts`
+- Modify: `extensions/cli/src/domain/models/agents/serialize.ts`
+- Modify: `extensions/cli/src/domain/models/agents/syntax.ts`
+- Test: `extensions/cli/test/models/agents-node.test.ts`
 - Test: `extensions/cli/test/utils/node-tree/codec.test.ts`
 
 **Interfaces:**
@@ -359,7 +359,7 @@ test("fresh serialize emits project-harness markers", () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `pnpm --filter edges-cli exec node --test --import tsx './test/models/internal.test.ts' './test/utils/node-tree/codec.test.ts'`
+Run: `pnpm --filter edges-cli exec node --test --import tsx './test/models/agents-node.test.ts' './test/utils/node-tree/codec.test.ts'`
 
 Expected: FAIL，parse 不认 `project-harness-constraints`；无原稿 serialize 仍写 `project-memory`。
 
@@ -414,17 +414,17 @@ source
 
 - [ ] **Step 4: Run tests**
 
-Run: `pnpm --filter edges-cli exec node --test --import tsx './test/models/internal.test.ts' './test/utils/node-tree/codec.test.ts' './test/models/layer-markers.test.ts'`
+Run: `pnpm --filter edges-cli exec node --test --import tsx './test/models/agents-node.test.ts' './test/utils/node-tree/codec.test.ts' './test/models/layer-markers.test.ts'`
 
 Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add extensions/cli/src/domain/models/internal/parse.ts \
-  extensions/cli/src/domain/models/internal/serialize.ts \
-  extensions/cli/src/domain/models/internal/syntax.ts \
-  extensions/cli/test/models/internal.test.ts \
+git add extensions/cli/src/domain/models/agents/parse.ts \
+  extensions/cli/src/domain/models/agents/serialize.ts \
+  extensions/cli/src/domain/models/agents/syntax.ts \
+  extensions/cli/test/models/agents-node.test.ts \
   extensions/cli/test/utils/node-tree/codec.test.ts
 git commit -m "feat: 层入口标记双读，新稿只写 project-harness"
 ```
@@ -451,7 +451,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { classifyAgentsSource } from "../../src/services/memory/agents.js";
 import { ensureImportantBlock } from "../../src/services/memory/blocks.js";
-import { rewriteLayerSurface } from "../../src/domain/models/internal/blocks.js";
+import { rewriteLayerSurface } from "../../src/domain/models/agents/blocks.js";
 
 const legacy = `<!-- project-memory:start -->
 <!-- project-memory-important:start -->

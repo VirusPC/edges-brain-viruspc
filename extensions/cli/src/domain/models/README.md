@@ -21,7 +21,7 @@ Model 表达一个文件系统节点的身份、内容、关系与自身行为�
 flowchart TB
   CFG["domain/config/harness-materials.json<br/>materials id + path"]
   CFG --> SUPER["SuperAgentsNode<br/>挂存在的材料 README"]
-  MARK["isProjectHarnessAgentsFile<br/>internal/harness-agents.ts<br/>只看传入文本"] --> SCAN["services/node/system-roots.ts<br/>collectSystemRoots 扫盘"]
+  MARK["isProjectHarnessAgentsFile<br/>agents/harness-agents.ts<br/>只看传入文本"] --> SCAN["services/node/system-roots.ts<br/>collectSystemRoots 扫盘"]
   SCAN --> SFS
   SUPER --> SFS["SystemForestService<br/>BaseNode[][]"]
   TRAV["traverse<br/>children 与 Compose 边"] --> SFS
@@ -98,7 +98,7 @@ classDiagram
     BaseNode ..> NodeReference : parent / harness / children
 ```
 
-图中列出可读取的关系；不表示这些属性允许随意赋值。具体签名与只读限定见 [BaseNode](core/base-node.ts)、[NodeReference](core/types.ts) 和 [AgentsNode](internal/agents-node.ts)。
+图中列出可读取的关系；不表示这些属性允许随意赋值。具体签名与只读限定见 [BaseNode](core/base-node.ts)、[NodeReference](core/types.ts) 和 [AgentsNode](agents/agents-node.ts)。
 
 - `id` 等于规范化的绝对入口路径，例如 `/repo/notes/example/index.md`；`directoryPath` 是入口所在目录。移动节点会改变路径与 ID，由 Service 协调。
 - `name`、`description` 是可选内容字段。引用只携带 `id/name/description`，无需先加载完整节点。
@@ -150,7 +150,7 @@ models/
 ├── index.ts                 # 节点类、输入类型与布局的公共出口
 ├── layout.ts                # 跨模型的目录、入口、区块和生命周期单位协议
 ├── core/                    # BaseNode、LeafNode、引用、共享字段与关系协调
-├── internal/                # AgentsNode 与 AGENTS 文档解析、索引维护
+├── agents/                  # AgentsNode 与 AGENTS 文档解析、索引维护
 ├── tasks/                   # TaskNode、任务字段规则、TaskDoc 契约和文档适配
 ├── memory/                  # MemoryNode 与记忆文档规则
 ├── notes/                   # NoteNode：当前主要是正文标题访问与更新
@@ -162,7 +162,7 @@ models/
 | 模块 | 值得保留的拆分 |
 | --- | --- |
 | [core](core/base-node.ts) | `base-node.ts` 管通用内容与生命周期 hooks；`types.ts` 管基础契约；`fields.ts` 管共享 metadata 字段；`relations.ts` 保存 Service 协调的路径、parent、harness，不从公共入口开放身份改写 |
-| [internal](internal/agents-node.ts) | `agents-node.ts` 管领域引用；`syntax.ts` 转换领域内容与 Markdown 索引；`document.ts` 定义 AgentsDocument；`parse.ts`/`serialize.ts` 保留原文并处理格式；`blocks.ts` 处理受控区块；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘 |
+| [agents](agents/agents-node.ts) | `agents-node.ts` 管领域引用；`syntax.ts` 转换领域内容与 Markdown 索引；`document.ts` 定义 AgentsDocument；`parse.ts`/`serialize.ts` 保留原文并处理格式；`blocks.ts` 处理受控区块；`harness-agents.ts` 只根据传入路径与正文判断是不是带 project-harness 的 `AGENTS.md`，不读盘 |
 | [tasks](tasks/task-node.ts) | `types.ts` 放任务枚举、输入及数据类型；`priority.ts`/`project.ts` 放单值规则；`frontmatter.ts`/`task-doc.ts` 适配文档；`task-doc-contract.ts` 单独服务前端与 Schema 生成 |
 | [memory](memory/memory-node.ts) | `memory-node.ts` 管 memoryType；`documents.ts` 管已有记忆字段的读取、兼容和保留 |
 | [layout.ts](layout.ts) | 集中管理 AGENTS.md、SKILL.md、INDEX.md（兼容旧 index.md）的识别、章节标记及 harness 路径。它涉及 Tasks 状态目录，因此保留在 models 根层，不伪装成业务无关的 core |
@@ -200,7 +200,7 @@ core 不依赖具体节点，Model 不依赖 operations 或 Service。通用 Mar
 flowchart LR
     MD[Markdown 文本] --> GM[gray-matter：metadata / body]
     GM --> B[BaseNode.parse]
-    B --> L[LeafNode 子类：领域字段 / 正文]
+    B --> L[业务节点：领域字段 / 正文]
     B --> I[AgentsNode：AGENTS 结构]
     I --> X[InternalSyntax]
     X --> D[AgentsDocument：文本项与链接项]
@@ -210,7 +210,7 @@ AgentsNode 将索引链接变成具有绝对入口 ID 的 NodeReference；Agents
 
 序列化保留 AGENTS 的非受控正文、可保留的原链接及区块结构；YAML 使用库的正常输出，不承诺编辑后仍保留 YAML 注释和排版。`parse` 会执行解析与 metadata 校验，完整领域校验仍通过 `validate` 及 Service 的写前检查完成；不要把所有节点的 parse 等同于完整写入校验。
 
-文档 codec 只是 `type + parse + serialize` 的格式适配接口。通用工厂与 base codec 位于 Markdown 工具；Memory、Task、AGENTS 的适配分别位于自己的模块。Tasks 不再为了使用通用 Markdown 而导入 Internal。
+文档 codec 只是 `type + parse + serialize` 的格式适配接口。通用工厂与 base codec 位于 Markdown 工具；Memory、Task、AGENTS 的适配分别位于自己的模块。Tasks 的文档适配位于 `tasks/`，使用通用 Markdown 工具。
 
 ## Schema 与模型的关系
 

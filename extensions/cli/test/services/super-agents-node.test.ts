@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { NodeService } from "../../src/services/node/node-service.js";
 import { AgentsNode } from "../../src/domain/models/index.js";
-import { SuperAgentsNode } from "../../src/domain/models/internal/super-agents-node.js";
+import { SuperAgentsNode } from "../../src/domain/models/agents/super-agents-node.js";
 
 function fixture(withAgents = false) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(tmpdir(), "edges-super-")));

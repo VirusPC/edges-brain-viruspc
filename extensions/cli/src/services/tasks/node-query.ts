@@ -5,7 +5,7 @@ import { harnessMaterialById, tasksBoardDirName } from "../../domain/config/harn
 import { ENTRY_NAMES, identifyNodeType } from "../../domain/models/layout.js";
 import { BaseNode, AgentsNode, ReadmeNode, TaskNode } from "../../domain/models/index.js";
 import { domainFields, scalar } from "../../domain/models/core/fields.js";
-import { decodeBody } from "../../domain/models/internal/parse.js";
+import { decodeBody } from "../../domain/models/agents/parse.js";
 import {
   assertProjectDualWrite,
   projectIdFromDir,

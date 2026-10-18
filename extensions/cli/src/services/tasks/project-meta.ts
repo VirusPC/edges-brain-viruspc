@@ -1,10 +1,10 @@
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
-import { decodeBody } from '../../domain/models/internal/parse.js';
-import { createAgentsDocument } from "../../domain/models/internal/document.js";
+import { decodeBody } from '../../domain/models/agents/parse.js';
+import { createAgentsDocument } from "../../domain/models/agents/document.js";
 import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
 import { ENTRIES_SECTIONS, ENTRY_NAMES } from "../../domain/models/layout.js";
-import { serializeNode } from '../../domain/models/internal/serialize.js';
+import { serializeNode } from '../../domain/models/agents/serialize.js';
 import { NodeService } from '../node/node-service.js';
 import { assertBoardPath } from './board.js';
 import { scopeDir, boardRel, type BoardTarget } from "./paths.js";

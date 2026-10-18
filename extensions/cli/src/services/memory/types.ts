@@ -1,6 +1,6 @@
 import { readEntry, saveEntries } from '../node/node-files.js';
 import { canonicalPath, findAncestor } from "../../utils/filesystem.js";
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import * as fs from "node:fs";
 import { ENTRY_NAMES, LEGACY_LEAF_ENTRY } from "../../domain/models/layout.js";

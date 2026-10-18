@@ -4,7 +4,7 @@
 
 **Goal:** 让节点类及其专属规则集中可读，移除错位依赖，保持已有行为。
 
-**Architecture:** models 按 core/internal/tasks/memory/notes/skills 归组。Model 管单节点，operations 管集合，Service 管完整用例与 IO；通用 Markdown 留在 utils。完整目标与文件映射以 spec 为准。
+**Architecture:** models 按 core/agents/tasks/memory/notes/skills 归组。Model 管单节点，operations 管集合，Service 管完整用例与 IO；通用 Markdown 留在 utils。完整目标与文件映射以 spec 为准。
 
 **Tech Stack:** Node 22、TypeScript、既有 pnpm/tsx/TypeScript AST；无新增依赖。
 

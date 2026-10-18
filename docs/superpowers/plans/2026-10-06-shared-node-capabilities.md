@@ -10,7 +10,7 @@
 
 **Spec:** [通用能力收敛设计](../specs/2026-10-06-shared-node-capabilities.md)
 
-状态：已完成（2026-10-06）；本轮已确认统一索引与独立旧格式迁移。关系位置由 LLM 判断、CLI 显式执行已确认；按本轮执行授权，完整 TaskDoc JSON 输入统一使用生成 Schema 校验，不能按旧补救流程实施。本版替代最初新增 node-documents、node-query、internal/documents、utils/markdown/index-rendering 文件的方案。此前[节点职责简化计划](2026-10-06-node-identity-simplification.md)已经完成，不重复执行。
+状态：已完成（2026-10-06）；本轮已确认统一索引与独立旧格式迁移。关系位置由 LLM 判断、CLI 显式执行已确认；按本轮执行授权，完整 TaskDoc JSON 输入统一使用生成 Schema 校验，不能按旧补救流程实施。本版替代最初新增 node-documents、node-query、agents/documents、utils/markdown/index-rendering 文件的方案。此前[节点职责简化计划](2026-10-06-node-identity-simplification.md)已经完成，不重复执行。
 
 ## 架构审查结论与简化验收
 
@@ -157,7 +157,7 @@ Schema 仅描述明确的 TS 对外数据契约，不要求节点类变成纯数
 | --- | --- |
 | `src/services/node-service.ts` | 节点 get/create/update/move/destroy/import/query；保留接口，补齐业务接入 |
 | `src/services/node-files.ts`、`node-lock.ts`、`node-cache.ts` | 保存、锁、缓存的内部实现；职责不合并、不套新包装 |
-| `src/domain/models/internal-node.ts`、`internal/{parse,serialize,blocks}.ts` | AGENTS 解析/序列化及受控区块；复用已有骨架生成，索引编码收在 serialize.ts |
+| `src/domain/models/agents/agents-node.ts`、`agents/{parse,serialize,blocks}.ts` | AGENTS 解析/序列化及受控区块；复用已有骨架生成，索引编码收在 serialize.ts |
 | `src/utils/filesystem.ts` | 公共路径原语 |
 | `src/services/memory/node-documents.ts` → `service.ts` | 保留 Memory 特有的 Service 配置与写前准备，删除文档句柄及 load/save 包装 |
 | `src/services/tasks/`、`src/services/note/` | 现有业务流程直接调用通用 Service，保留业务规则 |
@@ -292,11 +292,11 @@ export const typeContentDir = (target: string, name: string): string =>
 ## Task 2：统一 AGENTS 索引，旧 task-projects 由独立脚本迁移
 
 **Files:**
-- Modify: extensions/cli/src/domain/models/internal/{blocks,serialize}.ts、internal-node.ts 的既有索引接口（只在已有接口确实缺能力时修改）
+- Modify: extensions/cli/src/domain/models/agents/{blocks,serialize,agents-node}.ts 的既有索引接口（只在已有接口确实缺能力时修改）
 - Remove after migration: extensions/cli/src/domain/models/memory/index-rendering.ts
 - Modify: extensions/cli/src/services/tasks/project-meta.ts、services/memory/{blocks,entries,agents}.ts
 - Create: scripts/migrate-agents-indexes.mts（只处理显式选定范围的旧 task-projects 索引）
-- Extend tests: extensions/cli/test/models/internal.test.ts、test/tasks/utils/project-meta.test.ts、test/tasks/owner-board.test.ts、test/memory/core.test.ts
+- Extend tests: extensions/cli/test/models/agents-node.test.ts、test/tasks/utils/project-meta.test.ts、test/tasks/owner-board.test.ts、test/memory/core.test.ts
 - Create: extensions/cli/test/tasks/agents-index-migration.test.ts
 
 **Interfaces and policy:**
@@ -309,7 +309,7 @@ export const typeContentDir = (target: string, name: string): string =>
 - [x] 先为普通 local 索引加行为用例：创建/更新项目后只有一条通用引用，标题/描述正确；不出现 task-projects 标记；其他关系、约束和非受控正文保留；重复更新幂等。用现有 InternalNode 读取结果断言，而非依赖 Tasks 专属标记。
 - [x] Tasks 新项目骨架复用 serializeNode(createNodeModel())，保留标题/描述及原 tail。删除 renderTaskProjectsSection、Tasks 专属区块 upsert/迁位分支；相关逻辑仅允许存在于迁移脚本，不让运行时代码 import 脚本。
 - [x] 更新项目索引时从当前 InternalNode 取得引用，按实际项目入口 id 修改属于本操作的条目，其余原样保留；通过 NodeService.update 保存。新登记项目的分组使用明确的调用参数；不把整个 localChildren 替换为项目列表，也不把 NodeService 自动登记和项目描述更新做成两套索引。
-- [x] 将 escapeIndexText/encodeIndexPath 原实现迁入 internal/serialize.ts，批量引用修改使用 TS 脚本，删除旧路径。Memory 模板仍校验必需区块，纯区块更新保留外部正文/CRLF；畸形区块返回错误，不自动修复。
+- [x] 将 escapeIndexText/encodeIndexPath 原实现迁入 agents/serialize.ts，批量引用修改使用 TS 脚本，删除旧路径。Memory 模板仍校验必需区块，纯区块更新保留外部正文/CRLF；畸形区块返回错误，不自动修复。
 - [x] 实现独立脚本接口：默认 --check 只输出显式 --root 范围内候选和差异；--write 才应用。跳过 Git/依赖目录、符号链接和受保护的 posts；不扫描范围外路径，不自动运行全仓迁移。批量写入前全量检查冲突并保留可恢复原文；写操作使用既有锁/快照/原子保存机制，不自写另一套。
 
 目标用法（待实施）：
@@ -321,7 +321,7 @@ pnpm --filter edges-cli exec tsx ../../scripts/migrate-agents-indexes.mts --root
 
 - [x] 迁移时解析唯一完整的旧区块，将链接转为普通 local 引用，按解析后的入口 id 去重；仅去掉旧标记与可识别的机器提示，保留自定义正文、链接标题/描述及其他章节。与已有引用分组或描述冲突、链接无法识别、重复/半缺失/逆序标记时明确报告该文件，不猜测或静默覆盖。全部成功迁移的文件再次 --check 不产生差异。
 - [x] 迁移测试覆盖旧区块在 local 内/外、已有相同引用、冲突引用、自定义正文、CRLF、畸形标记；检查预览不写、重复执行幂等、源文件在预览后变化时报错。正常 Tasks 测试覆盖旧格式得到迁移提示，迁移后同一操作成功。旧“自动搬区块”测试改为脚本测试，不继续约束正常命令。
-- [x] 回归运行：pnpm --filter edges-cli exec node --test --test-concurrency=1 --import tsx test/models/internal.test.ts test/tasks/utils/project-meta.test.ts test/tasks/owner-board.test.ts test/tasks/agents-index-migration.test.ts test/memory/core.test.ts test/memory/distribution.test.ts。
+- [x] 回归运行：pnpm --filter edges-cli exec node --test --test-concurrency=1 --import tsx test/models/agents-node.test.ts test/tasks/utils/project-meta.test.ts test/tasks/owner-board.test.ts test/tasks/agents-index-migration.test.ts test/memory/core.test.ts test/memory/distribution.test.ts。
 - [x] 提交统一格式及脚本，附 Co-authored-by；不在本次实现时自动迁移真实仓库内容。
 
 ## Task 3：业务写操作统一经过 NodeService

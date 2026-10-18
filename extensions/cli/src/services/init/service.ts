@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import type { ChildGroup, NodeReference } from "../../domain/models/core/types.js";
 import { parseDocument } from "../../utils/markdown/document.js";

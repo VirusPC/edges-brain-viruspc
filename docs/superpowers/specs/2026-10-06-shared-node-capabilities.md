@@ -87,8 +87,8 @@ src/
 | --- | --- | --- |
 | 节点 CRUD、查询与关联保存 | `services/node-service.ts` | 业务直接复用已有接口；不新增 `services/node-documents.ts` 或 `services/node-query.ts` |
 | 文件冲突检查、原子保存、恢复 | `services/node-files.ts` | 保持现有实现；Memory 的 `.gitignore` 写也复用它 |
-| AGENTS 结构与文本格式 | `domain/models/internal-node.ts`、已有 `domain/models/internal/` | 骨架使用现有 serializeNode；区块算法集中到 blocks.ts；不新增 internal/documents.ts |
-| 索引转义与路径编码 | 现有 `domain/models/internal/serialize.ts` | 迁入 Memory 的两个纯函数，所有索引生成者复用；不新建 utils/markdown/index-rendering.ts |
+| AGENTS 结构与文本格式 | `domain/models/agents/agents-node.ts`、同目录 `domain/models/agents/` | 骨架使用现有 serializeNode；区块算法集中到 blocks.ts；不新增 agents/documents.ts |
+| 索引转义与路径编码 | 现有 `domain/models/agents/serialize.ts` | 迁入 Memory 的两个纯函数，所有索引生成者复用；不新建 utils/markdown/index-rendering.ts |
 | 基础路径机制 | 现有 `utils/filesystem.ts` | 包含关系、真实路径、链接检查与祖先查找共用 |
 | Memory 的节点访问政策 | `services/memory/node-documents.ts` 改名为 `service.ts` | 保留 Service 构造和写入准备政策，删除 MemoryDocument/load/save 包装 |
 | Tasks / Note 业务流程 | 各自现有 Service | 删除重复基础机制，不迁走业务规则 |

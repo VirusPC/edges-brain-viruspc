@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseNode } from '../../../src/domain/models/internal/parse.js';
-import { serializeNode } from '../../../src/domain/models/internal/serialize.js';
-import { createAgentsDocument } from "../../../src/domain/models/internal/document.js";
+import { parseNode } from '../../../src/domain/models/agents/parse.js';
+import { serializeNode } from '../../../src/domain/models/agents/serialize.js';
+import { createAgentsDocument } from "../../../src/domain/models/agents/document.js";
 
 const source = '# Manual identity\n\nKeep this introduction.\n\n<!-- project-memory:start -->\n<!-- project-memory-important:start -->\n## 本层硬约束\n\n- Keep **secrets** private.\n<!-- project-memory-important:end -->\n\n<!-- project-memory-local:start -->\n## 本层记忆\n\nHuman explanation.\n\n- [Tasks](tasks/AGENTS.md) — work in progress\n<!-- custom-extension: untouched -->\n<!-- project-memory-local:end -->\n\n<!-- project-memory-children:start -->\n## 下层记忆索引\n\n- [Child](nested/AGENTS.md)\n<!-- project-memory-children:end -->\n<!-- project-memory:end -->\n\n## Custom module\n\nDo not rewrite `this`.\n';
 

@@ -109,7 +109,7 @@ export async function writeIndexedTaskFixture(...args: Parameters<typeof writeFi
 }
 
 export async function writeFixtureIndex(file: string, children: string[], descendants: string[] = []): Promise<void> {
-  const { AgentsNode } = await import("../../../src/domain/models/internal/agents-node.js");
+  const { AgentsNode } = await import("../../../src/domain/models/agents/agents-node.js");
   const path = await import('node:path');
   const { realpath } = await import('node:fs/promises');
   await mkdir(path.dirname(file),{recursive:true});

@@ -30,7 +30,7 @@ flowchart TD
 | 问题 | 归属 |
 | --- | --- |
 | 一个 Task 的优先级是否合法？怎样更新标题？ | models/tasks |
-| 怎样解析 AGENTS，并修改它持有的索引？ | models/internal |
+| 怎样解析 AGENTS，并修改它持有的索引？ | models/agents |
 | 怎样按属性过滤、分组，递归访问已登记的节点？ | operations |
 | 怎样创建目录、登记父索引、检查外部修改并保存？ | services |
 | 怎样把命令参数变成请求、返回 JSON 或表格？ | commands |

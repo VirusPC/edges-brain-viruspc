@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { AgentsNode } from "../../src/domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../src/domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../src/domain/models/readme/readme-node.js";
 import { initScope } from "../../src/services/init/service.js";
 import { migrateScopeMaterialIndex } from "../../src/services/init/migrate-scope-readme.js";

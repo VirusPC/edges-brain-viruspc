@@ -217,7 +217,7 @@ format: ordinary
 
 test("layer AGENTS owns README type indexes under .harness but not ordinary README links", async () => {
   const { AgentsNode } = await import(
-    "../../src/domain/models/internal/agents-node.js"
+    "../../src/domain/models/agents/agents-node.js"
   );
   const node = new AgentsNode("/repo/AGENTS.md").parse(
     [

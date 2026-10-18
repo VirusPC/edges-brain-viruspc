@@ -1,4 +1,4 @@
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import {
   ENTRIES_SECTIONS,
@@ -15,7 +15,7 @@ import { parseDocument } from '../../utils/markdown/document.js';
 import {
   escapeIndexText,
   encodeIndexPath,
-} from "../../domain/models/internal/serialize.js";
+} from "../../domain/models/agents/serialize.js";
 import * as fs from "node:fs";
 import { basename, dirname, join, parse } from "node:path";
 import {

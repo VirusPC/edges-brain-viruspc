@@ -4,7 +4,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { AgentsNode } from "../../domain/models/index.js";
 import { ENTRY_NAMES } from "../../domain/models/layout.js";
-import type { ComposeEntry } from "../../domain/models/internal/compose.js";
+import type { ComposeEntry } from "../../domain/models/agents/compose.js";
 import { expandHomePath } from "../../utils/filesystem.js";
 import { openNodeSession } from "../node/scope-session.js";
 import type { NodeService } from "../node/node-service.js";

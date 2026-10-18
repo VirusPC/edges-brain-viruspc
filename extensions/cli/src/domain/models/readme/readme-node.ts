@@ -1,6 +1,6 @@
 import { dirname, relative } from "node:path";
 import { BaseNode } from "../core/base-node.js";
-import { InternalSyntax, type SyntaxReference } from "../internal/syntax.js";
+import { InternalSyntax, type SyntaxReference } from "../agents/syntax.js";
 import {
   referenceOf,
   validateChild,

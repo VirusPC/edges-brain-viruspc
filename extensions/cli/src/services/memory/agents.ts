@@ -1,6 +1,6 @@
 import { canonicalPath, isWithinPath } from '../../utils/filesystem.js';
 export { ownershipTarget } from './paths.js';
-import { AgentsNode } from "../../domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { discoverScopes } from '../scope.js';
 import { memoryNodes, prepareMemoryWrite } from './service.js';
 import { NodeService } from '../node/node-service.js';

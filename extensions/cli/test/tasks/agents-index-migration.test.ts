@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { AgentsNode } from "../../src/domain/models/internal/agents-node.js";
+import { AgentsNode } from "../../src/domain/models/agents/agents-node.js";
 import { planAgentsIndexes, applyAgentsIndexes } from '../../../../scripts/migrate-agents-indexes.mts';
 function fixture(t: { after(fn: () => void): void }, source: string) {
  const root=fs.mkdtempSync(path.join(fs.realpathSync(tmpdir()),'agents-migration-'));

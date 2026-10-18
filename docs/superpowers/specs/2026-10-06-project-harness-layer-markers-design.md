@@ -44,7 +44,7 @@
 - 组成关系、parent / harnessPath、遍历默认只走 localChildren。
 - 硬约束种子点名 `$project-memory-ask` / `$project-memory-remember`；只改包裹它的标记和章节标题。
 
-实现约束：`internal/blocks.ts` 今天用同一个 `project-memory` 工厂生成外层、三章、type、entries。实施时必须拆开前缀，不能把 type / entries 一并改成 `project-harness-*`。
+实现约束：`agents/blocks.ts` 今天用同一个 `project-memory` 工厂生成外层、三章、type、entries。实施时必须拆开前缀，不能把 type / entries 一并改成 `project-harness-*`。
 
 ## 协议与布局
 
