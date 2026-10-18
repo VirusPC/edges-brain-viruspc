@@ -15,6 +15,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Assert tag is annotated
+        run: |
+          set -euo pipefail
+          if [ "$(git cat-file -t "refs/tags/${GITHUB_REF_NAME}")" != "tag" ]; then
+            echo "tag ${GITHUB_REF_NAME} must be annotated"
+            exit 1
+          fi
+
       - name: Assert tag == package.json version
         run: |
           set -euo pipefail
