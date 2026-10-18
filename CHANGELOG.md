@@ -15,51 +15,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### CLI
 
-- **init 安装包内 skills：** `edges skills init` 和无参 `edges init` 在建 skill 类型索引之后，用依赖里的 `skills@1.7.2` 把包内 Edges skill 装给本机 agent。edges 只补包内目录和 `--skill '*'`；`--` 之后的旗标原样转交。没有 TTY、安装器又没探测到 agent 时，在 `--` 后加 `-g -y`（例如 `edges init -- -g -y`），否则安装器退出 1，init 用同一退出码失败，信封里的 `errorCode` 是 `SKILLS_INSTALL_FAILED`。Node.js 要求改为 22.20 及以上。
+- **正式发布到公共 npm：** `@viruspc/edges` 已可在装了 Node.js 22.20 及以上的机器上执行 `npm install -g @viruspc/edges`，然后 `edges --help`；`edges init` 与 `edges memory remember` 不必再克隆本仓。命令名仍是 `edges`。审阅页随安装包 `dist` 里编好的 HTML/JS/CSS 走，不另发 `tasks-review-app`。仓库里开发用 `pnpm --filter @viruspc/edges`（旧名 `edges-cli` 已改掉）。命令行包已可发布，不再保持 private。版本记录见 [`extensions/cli/CHANGELOG.md`](extensions/cli/CHANGELOG.md)。
+- **推 annotated tag 经 GitHub Actions 发版：** 在 main 上把 `extensions/cli/package.json` 的 `version` 对齐后，打 annotated tag `@viruspc/edges@x.y.z` 并推送，会跑 `.github/workflows/publish-edges-cli.yml`：先测，再进入 Environment `npm-publish` 等人批，批准后用 OIDC Trusted Publishing 执行 `pnpm --filter @viruspc/edges publish --no-git-checks --access public`，不放长效 `NPM_TOKEN`。版本号必须和 `package.json` 一致。
+- **init 安装包内 skills：** `edges skills init` 和无参 `edges init` 在建 skill 类型索引之后，用依赖里的 `skills@1.7.2` 把包内 Edges skill 装给本机 agent。edges 只补包内目录和 `--skill '*'`；`--` 之后的旗标原样转交。没有 TTY、安装器又没探测到 agent 时，在 `--` 后加 `-g -y`（例如 `edges init -- -g -y`），否则安装器退出 1，init 用同一退出码失败，信封里的 `errorCode` 是 `SKILLS_INSTALL_FAILED`。
 
-### shared-extensions
+### 评测与观测
 
-- **通用 skill 移出 extensions：** `paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`、`horizontal-vertical-research`、`learn-repo` 改到 `shared-extensions/skills/`，不打进 `@viruspc/edges`。整层版本记为 `4.0.0`。
+- **检索评测冒烟可按仓库 URL 跑：** `.harness/evaluation/retrieval_eval/run.py` 用三维配置（git 仓库 URL 与可选 ref、agent client、样本集）克隆仓库后执行 `codex exec --sandbox read-only`，按簇算 P@5 / R@5 / nDCG@5；有序题综合分用 R@5。`print-command` 只打印克隆与执行命令。第一组是本仓 `main`、`codex` 与 6 道自有题，实跑 R@5 为 `0.8333`。这是评测冒烟，不是公开基准证明。
+- **MemoryBench 小规模对照可复跑：** 新增 `.harness/evaluation/cases/memorybench-smoke/run.py`，固定官方代码和 NFCats 数据，比较无记忆与 BM25-M；`--prepare-only` 准备数据且不调用模型，`--output` 指定新的运行目录。默认最多 40 次模型请求，保存真实检索、作答、评分和用量，接口失败时终止并标记失败。附 MiniMax-M2.5 的实际试跑报告；该用例验证官方基准链路，尚未接入 Edges 项目记忆。
+- **自建 Langfuse 的仓库记录与实例对齐：** 在仓库根执行 `bash .harness/observation/smoke/langfuse-otlp-smoke.sh`，可以向自建 Langfuse 发一条名为 `edges-langfuse-smoke` 的 OTLP trace，并用 v2 observations 回查。先在环境里设置 `LANGFUSE_HOST`、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`，脚本和仓库都不存放这些值。公网入口记为经 Cloudflare Tunnel 的 HTTPS，仓库不写实例域名。
 
 ### 组合仓库
 
-- **组合进来的仓库可以 clone、pull 和 push：** 在作用域 `AGENTS.md` 的组合区块登记本地目录、名字、说明和 git 地址后，`edges compose clone` 把仓库拉到登记路径，`edges compose pull` 和 `edges compose push` 在该目录执行这个仓库自己的 git pull / git push。`edges compose register` 写入登记，`edges compose list` 列出登记，`edges compose unregister` 按名字去掉一条登记且不删除已 clone 的目录。顺着节点树走时会进入这些本地仓库的 `AGENTS.md` 再往下。
+- **组合进来的仓库可以登记、clone、pull 和 push：** `edges compose register --name <名字> [--path <目录>] [--remote <git 地址>] [--description <说明>]` 把仓库写进作用域 `AGENTS.md` 的组合区块，不传 `--path` 时目录是 `~/.edges/composed/<名字>`。`edges compose list` 列出已登记的仓库；`edges compose unregister --name <名字>` 删掉一条登记，已经 clone 的目录不动。`edges compose clone` 把 remote 拉到登记目录，如果那里已经是同一 origin 的检出就不动；`edges compose pull`、`edges compose push` 在这个目录里执行该仓库自己的 `git pull` / `git push`，不额外建提交。
+- **查询可以带上一层组合仓库：** 默认的 list 和查询只看当前作用域，不进组合仓库。根命令加 `--with-composed` 时，结果里多一层组合仓库的入口 `AGENTS.md`，只到这一层，不能代替 `--all`。
 
-### 笔记入库与能力面
+### 项目记忆（project-memory）
 
-- **中文标题的笔记和项目目录保留汉字：** 用 `edges notes create` 或 `edges projects create` 新建叶子时，日期目录会留下标题里的汉字和数字。标题「中文标题」得到形如 `YYYY-MM-DD--中文标题` 的目录，不再收成 `untitled-` 加时间。英文单词仍转成小写，词与词之间用 `-`；连续空白会折成一个 `-`。标题里没有任何字母或数字时，目录名仍是 `untitled-` 加时间。很长的标题会被截短，使整个日期目录名不超过 255 字节。
-
-### 项目记忆
-
+- **本层材料清单移到 `.harness/README.md`：** 对 edges 作用域执行 `edges init` 时，会创建或保留 `<scope>/.harness/README.md`，这份 README 是普通组织清单，没有 YAML frontmatter。笔记、项目、记忆类型索引和任务看板都登记在它上面，`AGENTS.md` 的本层区块只留一条「本层 harness 材料索引」指向它。根命令 `--super` 先挂这份 README 再展开，找不到时退回 `harness-materials.json`。已有仓库执行 `pnpm migrate:harness-readme-index` 预览迁移，加 `--apply` 写入，重复执行不会多改。
 - **初始化按路径登记子作用域：** `edges init`、`edges memory init`、`edges notes init`、`edges projects init`、`edges skills init` 和 `edges tasks init` 不再接受 `--index-group`。新的子作用域按路径挂到父级：`AGENTS.md` 在父级 `.harness` 下记入本层，否则记入下层。已经登记的保持原来的组。`edges memory doctor --apply` 按同一规则补上缺失的父级链接。
 
 ### 任务看板与项目
 
 - **中文标题的任务名保留汉字：** 用 `edges tasks create` 新建任务、又没有写 `--name` 时，生成的名字会留下标题里的汉字和数字，不再只剩夹在中间的英文词。已有任务可以用 `edges tasks update <目标> --name <名字>` 改这个字段。标题里没有任何字母或数字时，名字仍是 `task`。
+- **写命令拒绝森林开关：** `edges --all tasks create`、`edges --all tasks update` 和 `edges --all tasks status` 现在会明确报错且不修改文件；其他内容写命令也采用同一检查，避免把森林查询开关误用于写入。
+- **项目列表保留完整描述：** `edges tasks project list` 与 `edges tasks project get` 返回一致的项目信息，包括自定义标题和多段描述；`--all` 列表也沿用同一解析方式。查询只读取当前范围内已登记的项目，不补建元数据或系统入口。
+- **旧任务入口继续可用：** `edges tasks status` 对旧 `index.md` 任务仍能正常流转，保留入口文件的拼写，并一起移动日志和附件；索引迁移不会因同一文件的 `INDEX.md` 别名重复登记。
+- **持久看板汇总该根下的全部任务板：** 生成页的 `extensions/cli/scripts/generate-tasks-site.ts` 不再接受 `--purpose`。传入 `--scope` 后，它汇总这个根下面发现到的 domain 与 maintenance 板，列表和页面里的 `source.purpose` 仍从目录推出来。
 
-### 评测与观测
+### 笔记入库与能力面
 
-- **自建 Langfuse 的仓库记录与实例对齐：** 在仓库根执行 `bash .harness/observation/smoke/langfuse-otlp-smoke.sh`，可以向自建 Langfuse 发一条名为 `edges-langfuse-smoke` 的 OTLP trace，并用 v2 observations 回查。先在环境里设置 `LANGFUSE_HOST`、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`，脚本和仓库都不存放这些值。这台 v4.38.0 实例的 events_only 写模式不接受旧 ingestion 接口上的 trace-create；健康检查仍看 `/api/public/health`。自部署任务按「界面健康，再由一到两个客户端发出 trace」记成完成。公网入口记为经 Cloudflare Tunnel 的 HTTPS，仓库不写实例域名。旧的「只走 Tailscale」不再作为现行访问面。
+- **中文标题的笔记和项目目录保留汉字：** 用 `edges notes create` 或 `edges projects create` 新建叶子时，日期目录会留下标题里的汉字和数字。标题「中文标题」得到形如 `YYYY-MM-DD--中文标题` 的目录，不再收成 `untitled-` 加时间。英文单词仍转成小写，词与词之间用 `-`；连续空白会折成一个 `-`。标题里没有任何字母或数字时，目录名仍是 `untitled-` 加时间。很长的标题会被截短，使整个日期目录名不超过 255 字节。
 
-- **MemoryBench 小规模对照可复跑：** 新增 `.harness/evaluation/cases/memorybench-smoke/run.py`，固定官方代码和 NFCats 数据，比较无记忆与 BM25-M；`--prepare-only` 准备数据且不调用模型，`--output` 指定新的运行目录。默认最多 40 次模型请求，保存真实检索、作答、评分和用量，接口失败时终止并标记失败。附 MiniMax-M2.5 的实际试跑报告；该用例验证基准链路，尚未接入 Edges 项目记忆。
+### shared-extensions
+
+- **通用 skill 移出 extensions：** `paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`、`horizontal-vertical-research`、`learn-repo` 改到 `shared-extensions/skills/`，不打进 `@viruspc/edges`。整层版本记为 `4.0.0`。
 
 ### 文档与系统
 
-- **日复盘把扫描候选直接写进 PR：** `projects/routines/daily-conversation-deposit` 扫完过去 24 小时的对话后，按根 `AGENTS.md` 判断去向，把笔记、任务、记忆和 feedback 等候选直接落成文件，并和当天的 `retrospectives/daily/<日期>--日复盘/INDEX.md` 放进同一个开到 `main` 的 PR。个人内容在 edges-private 另开 PR。审阅在 PR 上，不自动合并。看板任务同样进这个 PR，不直接推进 `main`。当天这篇的「建议补充内容清单」列出本次 PR 里落了哪些候选。公开仓仍按「隐私与脱敏」来写，原始对话不入库。
-
-- **周复盘和日复盘有单独目录：** 阶段性回看写在 `retrospectives/`。周复盘是 `retrospectives/weekly/<周一日期>--周复盘/INDEX.md`，一级标题下用二级标题写六节：范围、本该怎样、实际怎样、为什么、下次做什么、建议补充内容清单。日复盘是 `retrospectives/daily/<日期>--日复盘/INDEX.md`，必写范围与建议补充内容清单，同样用二级标题。命名，以及 Memory / Skill / Note / Task / `AGENTS.md` 硬约束候选的去向，在 `retrospectives/README.md`。根 README 的目录表和本层内容列入了这个目录。
-
-- **一行安装 edges 命令：** 在装了 Node.js 22 的机器上执行 `npm install -g @viruspc/edges`，然后 `edges --help`。命令名仍是 `edges`。`edges init` 与 `edges memory remember` 不需要克隆本仓。审阅页随安装包 `dist` 里编好的 HTML/JS/CSS 走，不另发 `tasks-review-app`。仓库里开发用 `pnpm --filter @viruspc/edges`；已发布条目里的 `pnpm --filter edges-cli` 现在也写成这个名字。发到 npm 用 `pnpm --filter @viruspc/edges publish`（`publishConfig.access` 为 `public`）。1.3.0 里「包保持 private、不发布」已经不再适用。
-
-- **README 改为对外门面：** 根 README 现在先回答外部访客「这是什么、能不能拿去用」：标语「harness 任何目录。你的大脑，也是一个目录。」、六条要点、一张知识闭环图、照着就能跑通的快速开始（`npm install -g @viruspc/edges` 后对任意仓库执行 `edges init`），以及本仓的目录地图。原来写在 README 里的内容标准下放到所属目录：Edge 准入与演化在 `edges/README.md`，归档与附件规则在新的 `archive/README.md`；原「理念」「系统实现」原文保存在 `docs/architecture.md`。
-
-### 任务看板与项目
-
-- **持久看板汇总该根下的全部任务板：** 生成页的 `extensions/cli/scripts/generate-tasks-site.ts` 不再接受 `--purpose`。传入 `--scope` 后，它汇总这个根下面发现到的 domain 与 maintenance 板，列表和页面里的 `source.purpose` 仍从目录推出来。`edges tasks` 继续用 `--scope` 和 `--super` 选定要写的那一块目录：不传 `--super` 写 `<scope>/.harness/tasks`，`--super` 写 `<scope>/tasks`。
-
-- **旧任务入口继续可用：** `edges tasks status` 对旧 `index.md` 任务仍能正常流转，保留入口文件的拼写，并一起移动日志和附件；索引迁移不会因同一文件的 `INDEX.md` 别名重复登记。
-- **项目列表保留完整描述：** `edges tasks project list` 与 `edges tasks project get` 返回一致的项目信息，包括自定义标题和多段描述；`--all` 列表也沿用同一解析方式。查询只读取当前范围内已登记的项目，不补建元数据或系统入口。
-- **写命令拒绝森林开关：** `edges --all tasks create`、`edges --all tasks update` 和 `edges --all tasks status` 现在会明确报错且不修改文件；其他内容写命令也采用同一检查，避免把森林查询开关误用于写入。
+- **README 改为对外门面：** 根 README 现在先回答外部访客「这是什么、能不能拿去用」：标语「harness 任何目录。你的大脑，也是一个目录。」、七条要点、一张知识闭环图、照着就能跑通的快速开始（`npm install -g @viruspc/edges` 后对任意仓库执行 `edges init`），以及本仓的目录地图。根目录有 `memory/`，放跨主题的短备忘，专题长文仍放在 `projects/`。原来写在 README 里的内容标准下放到所属目录：Edge 准入与演化在 `edges/README.md`，归档与附件规则在新的 `archive/README.md`；原「理念」「系统实现」原文保存在 `docs/architecture.md`。
+- **周复盘和日复盘有单独目录：** 阶段性回看写在 `retrospectives/`。周复盘是 `retrospectives/weekly/<周一日期>--周复盘/INDEX.md`，一级标题下用二级标题写六节：范围、本该怎样、实际怎样、为什么、下次做什么、建议补充内容清单。日复盘是 `retrospectives/daily/<日期>--日复盘/INDEX.md`，必写范围与建议补充内容清单，同样用二级标题。命名，以及 Memory / Skill / Note / Task / `AGENTS.md` 硬约束候选的去向，在 `retrospectives/README.md`。根 README 的目录表和本层内容列入了这个目录。日复盘和周复盘的 routine 示例分别在 `projects/routines/daily-conversation-deposit/` 和 `projects/routines/weekly-retrospective/`：`SKILL.md` 放提示词，同目录的 `schedule.md` 只放日程并引用这份 Skill。
+- **全局 skill 安装脚本按实际行为改名：** `pnpm skills:install` 改名为 `pnpm skills:install-claude-global`，旧名不保留。它执行 `npx -y skills@1.7.2 add ./extensions/skills -g -a claude-code -y`，只把每个 skill 实体拷进 `~/.claude/skills`，不写中枢 `~/.agents/skills`，也不建软链。外部用户改用 `edges skills init`。
+- **仓库固定使用 pnpm 10：** 根 `package.json` 的 `packageManager` 固定为 `pnpm@10.34.7`。开了 Corepack 的机器会自动换到这个版本，`pnpm install --frozen-lockfile` 不再因为 pnpm 9 的 `pnpmfileChecksum` 对不上而失败。不要把锁文件降到 pnpm 9。
 
 ## [1.4.0] - 2026-10-08
 
@@ -95,7 +92,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 文档与系统
 
-- **全局 skill 安装脚本按实际行为改名：** `pnpm skills:install` 改为 `pnpm skills:install-claude-global`，命令不变，不留旧名。它只装给 Claude Code，把每个 skill 实体拷贝进 `~/.claude/skills`，不写中枢 `~/.agents/skills`，也不建软链；文档原先写的「写入中枢、Claude Code 走软链」与实测不符。装进中枢改用 `npx skills@latest add ./extensions/skills -g`。
 - **统一 Node 22 环境：** CLI、MCP 和扩展应用的运行与构建最低要求为 Node 22；从源码使用 `pnpm test`、`pnpm build` 时也采用同一版本基线。
 - **按归属迁移目录：** 根维护记忆、技能、任务、评测和观测进入 `.harness/`，领域任务位于 `tasks/`，研究与教学分别位于 `projects/`、`teaching/`。`pnpm migrate:recursive-layout --worktree <独立工作树绝对路径> --dry-run` 审阅实例清单，改用 `--apply` 执行并保留本机恢复记录；各克隆的私有旧材料须分别迁移。
 
