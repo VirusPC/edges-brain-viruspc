@@ -16,3 +16,4 @@ export type { TaskCreateInput, TaskUpdateInput, TaskStatus, TaskPriority } from 
 export type { MemoryCreateInput, MemoryUpdateInput } from "./memory/memory-node.js";
 export type { AgentsCreateInput, AgentsUpdateInput, AgentsContent } from "./agents/agents-node.js";
 export * from "./layout.js";
+export * from "./classify.js";

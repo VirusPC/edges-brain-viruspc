@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   INTERNAL_SECTIONS,
   INDEX_MARKERS,
-} from "../../src/domain/models/layout.js";
+} from "../../src/domain/models/syntax.js";
 import {
   CONSTRAINTS_START,
   LOCAL_START,
@@ -12,7 +12,7 @@ import {
   ENTRIES_START,
   TYPE_META_START,
   rewriteLayerSurface,
-} from "../../src/domain/core/syntax/blocks.js";
+} from "../../src/domain/models/blocks.js";
 
 test("canonical layer markers are project-harness, type markers stay project-memory", () => {
   assert.equal(

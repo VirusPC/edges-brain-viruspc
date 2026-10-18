@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { AgentsNode } from "../../src/domain/models/index.js";
-import { INTERNAL_SECTIONS } from "../../src/domain/models/layout.js";
+import { INTERNAL_SECTIONS } from "../../src/domain/models/syntax.js";
 
 const source = `# Context
 
@@ -308,7 +308,7 @@ test("ownership hrefs retain filename escapes, Unicode, spaces and fragments acr
 });
 
 test('managed block replacement preserves CRLF and refuses malformed boundaries', async () => {
- const {upsertBlock}=await import('../../src/domain/core/syntax/blocks.js');
+ const {upsertBlock}=await import('../../src/domain/models/blocks.js');
  const start='<!-- project-memory-local:start -->',end='<!-- project-memory-local:end -->';
  const source='Intro  \r\n'+start+'\r\nOld\r\n'+end+'\r\nTail  \r\n';
  assert.equal(upsertBlock(source,start,end,start+'\nNew\n'+end),'Intro  \r\n'+start+'\r\nNew\r\n'+end+'\r\nTail  \r\n');

@@ -9,8 +9,8 @@ src/
 ├── commands/             # CLI 参数、输入输出与命令适配
 ├── services/             # 完整用例、加载、跨节点协调、持久化
 ├── domain/
-│   ├── core/             # BaseNode、InternalNode、LeafNode、块语法与目录登记入口
-│   ├── models/           # 各节点类型；目录规则由 model 登记到 core
+│   ├── core/             # BaseNode、InternalNode、LeafNode、通用块机制
+│   ├── models/           # 各节点类型、具体文法与目录分类
 │   └── operations/       # 树遍历、惰性查询与集合算法
 └── utils/                # Markdown、文件系统等基础工具
 ```
@@ -21,7 +21,7 @@ flowchart TD
     S --> M[Models：单节点规则]
     S --> O[Operations：集合与树]
     O --> M
-    M --> Core[Core：节点基类、块语法与目录登记]
+    M --> Core[Core：节点基类与通用块机制]
     O --> Core
     M --> U[通用 Markdown 工具]
     S --> F[文件 IO 与写入协调]
@@ -33,7 +33,7 @@ flowchart TD
 | 问题 | 归属 |
 | --- | --- |
 | 一个 Task 的优先级是否合法？怎样更新标题？ | models/tasks |
-| 怎样解析 AGENTS，并修改它持有的索引？ | models/agents；块语法在 core/syntax |
+| 怎样解析 AGENTS，并修改它持有的索引？ | models/agents；文法在 models/syntax.ts，通用解析在 core/syntax |
 | 怎样按属性过滤、分组，递归访问已登记的节点？ | operations |
 | 怎样创建目录、登记父索引、检查外部修改并保存？ | services |
 | 怎样把命令参数变成请求、返回 JSON 或表格？ | commands |
@@ -46,7 +46,7 @@ Model 不做 IO，不依赖 Service 或 operations；operations 不依赖 Servic
 
 AgentsNode 分开维护 `localChildren` 和 `descendantChildren`，分别表达本层与下层索引。`harness` 是独立的维护关系，不混入 children；遍历因此可以选择是否跨维护层。引用可以跨目录，parent 的恢复仍遵循物理目录与 Service 的管理边界。
 
-节点只建模 Markdown 入口，附件不扩展成资源节点。目录识别、入口名称、AGENTS 章节与生命周期单位集中在 [models/layout.ts](models/layout.ts)；Service 在此基础上读取实际文件并决定操作范围。完整类图、目录职责、解析流程和扩展方式见 [models/README.md](models/README.md)。
+节点只建模 Markdown 入口，附件不扩展成资源节点。入口文件名、href、harness 路径和生命周期单位在 [models/layout.ts](models/layout.ts)。目录类型在 [models/classify.ts](models/classify.ts)。AGENTS 与 README 的区块标题和标记在 [models/syntax.ts](models/syntax.ts)，交给 [core/syntax](core/syntax/parse.ts) 解析。Service 在此基础上读取实际文件并决定操作范围。完整类图、目录职责、解析流程和扩展方式见 [models/README.md](models/README.md)。
 
 ## 两条主要执行路径
 
@@ -91,7 +91,7 @@ Schema 从登记的 TS 数据契约生成，不扫描完整模型类，生成物
 
 ## 扩展与维护
 
-- 新节点行为放到 models 对应目录。业务节点继承 `domain/core` 的 BaseNode；带本层/下层索引的入口继承同目录的 InternalNode。LeafNode 只表示纯 text。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。README 与 AGENTS 共用的块语法在 `core/syntax`。目录类型规则放在对应 model，由 `models/layout.ts` 按固定顺序装入 `core/directory.ts`。
+- 新节点行为放到 models 对应目录。业务节点继承 `domain/core` 的 BaseNode；带本层/下层索引的入口继承同目录的 InternalNode。LeafNode 只表示纯 text。节点类型依赖 core，彼此不互相引用（`SuperAgentsNode` 继承 `AgentsNode` 除外）。`core/syntax` 只按调用方传入的标题、标记和条目解析区块。README 与 AGENTS 的具体文法在 `models/syntax.ts`。目录类型规则在 `models/classify.ts`，顺序是 memory、task、note、project。
 - 集合或遍历算法放 operations，通过参数或回调取得外部能力，不引入 Service 依赖。
 - 涉及文件、多个节点、发布或权限策略的完整动作由 Service 编排。
 - 新外部 JSON 合同用纯 TS 类型定义，按实际需求登记到 Schema 生成器。

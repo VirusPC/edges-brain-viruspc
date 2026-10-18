@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { classifyAgentsSource } from "../../src/services/memory/agents.js";
 import { ensureImportantBlock } from "../../src/services/memory/blocks.js";
-import { rewriteLayerSurface } from "../../src/domain/core/syntax/blocks.js";
+import { rewriteLayerSurface } from "../../src/domain/models/blocks.js";
 
 const legacy = `<!-- project-memory:start -->
 <!-- project-memory-important:start -->

@@ -1,6 +1,4 @@
-import type { Metadata, DocumentCodec } from "../../../utils/markdown/types.js";
-import { parseNode } from "./parse.js";
-import { serializeNode } from "./serialize.js";
+import type { Metadata } from "../../../utils/markdown/types.js";
 
 export type AgentsText = { kind: 'text'; value: string };
 
@@ -33,9 +31,3 @@ export function agentsLinks(model: AgentsDocument) {
     references: [...links(model.constraints), ...links(model.memory), ...model.references],
   };
 }
-
-export const agentsDocumentCodec: DocumentCodec<AgentsDocument, 'agents'> = {
-  type: 'agents',
-  parse: parseNode,
-  serialize: serializeNode,
-};

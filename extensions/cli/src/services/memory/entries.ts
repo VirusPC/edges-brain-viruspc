@@ -1,21 +1,21 @@
 import { AgentsNode } from "../../domain/models/agents/agents-node.js";
 import { ReadmeNode } from "../../domain/models/readme/readme-node.js";
 import {
-  ENTRIES_SECTIONS,
   ENTRY_NAMES,
   LEGACY_LEAF_ENTRY,
   isLeafEntryName,
 } from "../../domain/models/layout.js";
+import { ENTRIES_SECTIONS } from "../../domain/models/syntax.js";
+import {
+  escapeIndexText,
+  encodeIndexPath,
+} from "../../domain/core/syntax/serialize.js";
 import { listTypeFiles, typeContentDir, typeIndexPath } from './types.js';
 import { canonicalPath, isWithinPath } from '../../utils/filesystem.js';
 
 import { memoryNodes, prepareMemoryWrite } from './service.js';
 import { NodeService } from '../node/node-service.js';
 import { parseDocument } from '../../utils/markdown/document.js';
-import {
-  escapeIndexText,
-  encodeIndexPath,
-} from "../../domain/core/syntax/serialize.js";
 import * as fs from "node:fs";
 import { basename, dirname, join, parse } from "node:path";
 import {

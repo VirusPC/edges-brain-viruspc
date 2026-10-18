@@ -1,8 +1,99 @@
 import { isDeepStrictEqual } from "node:util";
-import { decodeBody } from "./parse.js";
-import { serializeNode } from "./serialize.js";
-import { ENTRIES_SECTIONS, INTERNAL_SECTIONS } from "./sections.js";
-import type { AgentsItem, AgentsDocument } from "./document.js";
+import type { DocumentCodec } from "../../utils/markdown/types.js";
+import { OUTER_END, OUTER_START } from "./blocks.js";
+import type { AgentsDocument, AgentsItem } from "../core/syntax/document.js";
+import type { BlockGrammar } from "../core/syntax/grammar.js";
+import {
+  decodeBody as readBody,
+  parseNode as readNode,
+} from "../core/syntax/parse.js";
+import { serializeNode as writeNode } from "../core/syntax/serialize.js";
+
+export type { AgentsDocument, AgentsItem, AgentsLink, SectionKey } from "../core/syntax/document.js";
+export { agentsLinks, createAgentsDocument } from "../core/syntax/document.js";
+
+/** AGENTS (project-harness) section headings and markers. */
+export const INTERNAL_SECTIONS = {
+  constraints: { heading: "本层硬约束", marker: "project-harness-constraints" },
+  localChildren: { heading: "本层系统维护信息", marker: "project-harness-local" },
+  descendantChildren: {
+    heading: "下层系统维护信息",
+    marker: "project-harness-descendants",
+  },
+} as const;
+/** README (project-entries) section headings and markers. */
+export const ENTRIES_SECTIONS = {
+  localChildren: { heading: "本层内容", marker: "project-entries-local" },
+  descendantChildren: {
+    heading: "下层内容",
+    marker: "project-entries-descendants",
+  },
+} as const;
+export const COMPOSE_SECTION = {
+  heading: "组合",
+  marker: "project-harness-compose",
+} as const;
+export const CODEC_SECTIONS = {
+  constraints: INTERNAL_SECTIONS.constraints,
+  memory: INTERNAL_SECTIONS.localChildren,
+  children: INTERNAL_SECTIONS.descendantChildren,
+  compose: COMPOSE_SECTION,
+} as const;
+export const INDEX_MARKERS = {
+  type: "project-memory-type",
+  entries: "project-memory-entries",
+} as const;
+
+/** Harness document grammar passed into the core block parser. */
+export const HARNESS_GRAMMAR: BlockGrammar = {
+  markers: {
+    "project-harness-constraints": "constraints",
+    "project-memory-important": "constraints",
+    "project-harness-local": "memory",
+    "project-memory-local": "memory",
+    "project-harness-descendants": "children",
+    "project-memory-children": "children",
+    "project-harness-compose": "compose",
+  },
+  headings: {
+    本层重要约束: "constraints",
+    本层硬约束: "constraints",
+    本层记忆: "memory",
+    本层组成: "memory",
+    下层记忆索引: "children",
+    下层节点: "children",
+    下层作用域: "children",
+    本层系统维护信息: "memory",
+    下层系统维护信息: "children",
+    组合: "compose",
+  },
+  outerEnds: [OUTER_END, "<!-- project-memory:end -->"],
+  sections: CODEC_SECTIONS,
+  outerStart: OUTER_START,
+  outerEnd: OUTER_END,
+};
+
+export function decodeBody(source: string) {
+  return readBody(source, HARNESS_GRAMMAR);
+}
+
+export function parseNode(source: string) {
+  return readNode(source, HARNESS_GRAMMAR);
+}
+
+export function serializeNode(
+  model: AgentsDocument,
+  originalSource?: string,
+) {
+  return writeNode(model, originalSource, HARNESS_GRAMMAR);
+}
+
+export const agentsDocumentCodec: DocumentCodec<AgentsDocument, "agents"> = {
+  type: "agents",
+  parse: parseNode,
+  serialize: serializeNode,
+};
+
 export interface SyntaxReference {
   target: string;
   label?: string;

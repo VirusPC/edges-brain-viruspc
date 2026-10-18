@@ -1,31 +1,5 @@
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { harnessMaterialById, tasksBoardDirName } from "../config/harness-materials.js";
-import {
-  classifyDirectory,
-  installDirectoryClassifiers,
-  type DirectoryContract,
-} from "../core/directory.js";
-import { memoryDirectory } from "./memory/directory.js";
-import { noteDirectory } from "./notes/directory.js";
-import { projectDirectory } from "./projects/directory.js";
-import { taskDirectory } from "./tasks/directory.js";
-
-export {
-  CODEC_SECTIONS,
-  COMPOSE_SECTION,
-  ENTRIES_SECTIONS,
-  INDEX_MARKERS,
-  INTERNAL_SECTIONS,
-} from "../core/syntax/sections.js";
-export type { DirectoryClassifier, DirectoryContract } from "../core/directory.js";
-export { registerDirectoryClassifier } from "../core/directory.js";
-
-installDirectoryClassifiers([
-  memoryDirectory,
-  taskDirectory,
-  noteDirectory,
-  projectDirectory,
-]);
 
 export const ENTRY_NAMES = {
   internal: "AGENTS.md",
@@ -59,17 +33,6 @@ export function legacyNodeType(type: string): string {
 /** Old persisted/queried spellings still read; new writes only use agents/text. */
 export function normalizeNodeType(type: string): NodeType {
   return LEGACY_NODE_TYPES[type] ?? type;
-}
-export function identifyNodeType(
-  entryPath: string,
-  contract?: DirectoryContract,
-): NodeType | undefined {
-  const filename = basename(entryPath);
-  if (filename === ENTRY_NAMES.internal) return "agents";
-  if (filename === ENTRY_NAMES.readme) return "readme";
-  if (filename === ENTRY_NAMES.skill) return "skill";
-  if (!isLeafEntryName(filename)) return undefined;
-  return (classifyDirectory(entryPath, contract) as NodeType | undefined) ?? "text";
 }
 export function harnessPath(entryPath: string): string {
   return join(
