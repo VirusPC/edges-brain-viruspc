@@ -25,10 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MemoryBench 小规模对照可复跑：** 新增 `.harness/evaluation/cases/memorybench-smoke/run.py`，固定官方代码和 NFCats 数据，比较无记忆与 BM25-M；`--prepare-only` 准备数据且不调用模型，`--output` 指定新的运行目录。默认最多 40 次模型请求，保存真实检索、作答、评分和用量，接口失败时终止并标记失败。附 MiniMax-M2.5 的实际试跑报告；该用例验证官方基准链路，尚未接入 Edges 项目记忆。
 - **自建 Langfuse 的仓库记录与实例对齐：** 在仓库根执行 `bash .harness/observation/smoke/langfuse-otlp-smoke.sh`，可以向自建 Langfuse 发一条名为 `edges-langfuse-smoke` 的 OTLP trace，并用 v2 observations 回查。先在环境里设置 `LANGFUSE_HOST`、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`，脚本和仓库都不存放这些值。公网入口记为经 Cloudflare Tunnel 的 HTTPS，仓库不写实例域名。
 
+### 复盘与 routines
+
+- **周复盘和日复盘有单独目录：** 阶段性回看写在 `retrospectives/`。周复盘是 `retrospectives/weekly/<周一日期>--周复盘/INDEX.md`，一级标题下用二级标题写六节：范围、本该怎样、实际怎样、为什么、下次做什么、建议补充内容清单。日复盘是 `retrospectives/daily/<日期>--日复盘/INDEX.md`，必写范围与建议补充内容清单，同样用二级标题。命名，以及 Memory / Skill / Note / Task / `AGENTS.md` 硬约束候选的去向，在 `retrospectives/README.md`。根 README 的目录表和本层内容列入了这个目录。
+- **日复盘和周复盘各有一份 routine：** `projects/routines/daily-conversation-deposit/` 与 `projects/routines/weekly-retrospective/` 各放一份。`SKILL.md` 放提示词，同目录的 `schedule.md` 只放日程并引用这份 Skill。
+
 ### 组合仓库
 
 - **组合进来的仓库可以登记、clone、pull 和 push：** `edges compose register --name <名字> [--path <目录>] [--remote <git 地址>] [--description <说明>]` 把仓库写进作用域 `AGENTS.md` 的组合区块，不传 `--path` 时目录是 `~/.edges/composed/<名字>`。`edges compose list` 列出已登记的仓库；`edges compose unregister --name <名字>` 删掉一条登记，已经 clone 的目录不动。`edges compose clone` 把 remote 拉到登记目录，如果那里已经是同一 origin 的检出就不动；`edges compose pull`、`edges compose push` 在这个目录里执行该仓库自己的 `git pull` / `git push`，不额外建提交。
-- **查询可以带上一层组合仓库：** 默认的 list 和查询只看当前作用域，不进组合仓库。根命令加 `--with-composed` 时，结果里多一层组合仓库的入口 `AGENTS.md`，只到这一层，不能代替 `--all`。
+- **查询可以带上一层组合仓库：** 默认的 list 和查询只看当前作用域，不进组合仓库。根命令加 `--with-composed` 时，结果里多一层组合仓库的入口 `AGENTS.md`，只到这一层，不能代替 `--all`，写命令也不顺着这条边走。
 
 ### 项目记忆（project-memory）
 
@@ -54,7 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 文档与系统
 
 - **README 改为对外门面：** 根 README 现在先回答外部访客「这是什么、能不能拿去用」：标语「harness 任何目录。你的大脑，也是一个目录。」、七条要点、一张知识闭环图、照着就能跑通的快速开始（`npm install -g @viruspc/edges` 后对任意仓库执行 `edges init`），以及本仓的目录地图。根目录有 `memory/`，放跨主题的短备忘，专题长文仍放在 `projects/`。原来写在 README 里的内容标准下放到所属目录：Edge 准入与演化在 `edges/README.md`，归档与附件规则在新的 `archive/README.md`；原「理念」「系统实现」原文保存在 `docs/architecture.md`。
-- **周复盘和日复盘有单独目录：** 阶段性回看写在 `retrospectives/`。周复盘是 `retrospectives/weekly/<周一日期>--周复盘/INDEX.md`，一级标题下用二级标题写六节：范围、本该怎样、实际怎样、为什么、下次做什么、建议补充内容清单。日复盘是 `retrospectives/daily/<日期>--日复盘/INDEX.md`，必写范围与建议补充内容清单，同样用二级标题。命名，以及 Memory / Skill / Note / Task / `AGENTS.md` 硬约束候选的去向，在 `retrospectives/README.md`。根 README 的目录表和本层内容列入了这个目录。日复盘和周复盘的 routine 示例分别在 `projects/routines/daily-conversation-deposit/` 和 `projects/routines/weekly-retrospective/`：`SKILL.md` 放提示词，同目录的 `schedule.md` 只放日程并引用这份 Skill。
 - **全局 skill 安装脚本按实际行为改名：** `pnpm skills:install` 改名为 `pnpm skills:install-claude-global`，旧名不保留。它执行 `npx -y skills@1.7.2 add ./extensions/skills -g -a claude-code -y`，只把每个 skill 实体拷进 `~/.claude/skills`，不写中枢 `~/.agents/skills`，也不建软链。外部用户改用 `edges skills init`。
 - **仓库固定使用 pnpm 10：** 根 `package.json` 的 `packageManager` 固定为 `pnpm@10.34.7`。开了 Corepack 的机器会自动换到这个版本，`pnpm install --frozen-lockfile` 不再因为 pnpm 9 的 `pnpmfileChecksum` 对不上而失败。不要把锁文件降到 pnpm 9。
 
