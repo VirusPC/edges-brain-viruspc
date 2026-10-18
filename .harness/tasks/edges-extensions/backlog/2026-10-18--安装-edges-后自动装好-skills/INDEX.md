@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-18T13:10:00.000Z'
+  edges-updated-at: '2026-10-18T13:20:00.000Z'
   edges-title: 安装 edges 后自动装好 skills
   edges-tasks-status: backlog
   edges-task-priority: none
@@ -19,7 +19,7 @@ description: 只装 npm 包拿不到 edges skills；目标是一次安装加一�
 新用户执行 `npm install -g @viruspc/edges` 加一次初始化命令后，同时拿到 CLI 和一套可用的 edges skills，本地 agent 能直接按 skill 调用 CLI。
 
 **决策记录：**
-2026-10-18 grill-with-docs，由 peng cheng 逐题拍板；同日追加 Q12、Q13，两次修订 Q7，20:53（Asia/Shanghai）定下总原则并据此修订 Q4–Q9、Q12。长期决定见 [ADR 0036](../../../../../docs/adr/0036-edges-init-installs-bundled-skills.md)，术语见 `CONTEXT.md`「安装技能」。
+2026-10-18 grill-with-docs，由 peng cheng 逐题拍板；同日追加 Q12、Q13，两次修订 Q7，20:53（Asia/Shanghai）定下总原则并据此修订 Q4–Q9、Q12；21:00 追加 Q14、Q15。长期决定见 [ADR 0036](../../../../../docs/adr/0036-edges-init-installs-bundled-skills.md)，术语见 `CONTEXT.md`「安装技能」。
 
 - **总原则：安装技能是 vercel skills 的薄封装**（2026-10-18 20:53，Asia/Shanghai）
   - 结论：`edges skills init` 的安装步骤运行固定版本的 `skills@1.7.2`：`skills add <包内 skills 目录的绝对路径> --skill '*'`。edges 只补两样：skill 源地址、选中全部 skill。agent、`-g`、`-y`、有无 TTY、同名覆盖等其余行为一律按 vercel skills 默认，用户给的旗标原样透传。edges 不加任何额外逻辑：不替用户选无 TTY 默认旗标、不强制 `--agent`、不比较版本、不另行筛选 skill。这一块有疑问都以 vercel skills 的行为为准
@@ -87,6 +87,17 @@ description: 只装 npm 包拿不到 edges skills；目标是一次安装加一�
   - 选项：A 把 `engines.node` 提到 `>=22.20.0`；B 保持 `>=22`，init 前检查并报错
   - 结论：A。`extensions/cli/package.json` 的 `engines.node` 改为 `>=22.20.0`
   - 理由（用户原话）：提到 `>=22.20.0`（vercel skills@1.7.2 要求）。
+- **Q14 用户能否自带 `--skill`**（2026-10-18 21:00）
+  - 问题：edges 固定补 `--skill '*'`，用户再传 `--skill` 怎么办？
+  - 选项：A 不开放，CLI 写死 `--skill '*'`；B 开放，用户的 `--skill` 取代 `'*'`；C 两者都传给 vercel skills
+  - 结论：A。`--skill` 不对用户开放，CLI 总是写死 `--skill '*'`（选中全部）
+  - 理由（用户原话）：`--skill` 不开放，CLI 写死 `--skill '*'`（全选），用户不能自己传 `--skill`
+- **Q15 用户旗标怎么转交给 vercel skills**（2026-10-18 21:00）
+  - 问题：用户的 `-g`、`-y`、`--agent` 等旗标怎么传到 `skills add`，`edges init` 又怎么转交给 skills 模块？
+  - 选项：A 用 `--` 分隔，`--` 之后的内容原样转交；B 在 edges 上重新声明 `-g`、`-y`、`--agent` 等旗标；C 一个字符串选项（如 `--skills-args "<...>"`）
+  - 结论：A。`--` 之后的所有 token 原样转交给 vercel skills，如 `edges skills init -- -g -y --agent claude-code`；`edges init -- -y --agent '*'` 只转交给其中的 skills 安装步骤
+  - 理由（用户原话）：用 `--` 分隔，`--` 之后的内容原样转交给 vercel skills
+  - 实现注意：commander 会把 `--` 之后的 token 当成 `edges init` 的 `[module...]` 操作数，因此要在 commander 解析前先在 `--` 处切开 argv；只做转交，不改变其他行为
 - **合入 PR #274**：用户同意（2026-10-18）
 - **CONTEXT.md**：新增术语「安装技能」（把包内 skill 装给 agent），写明 `edges skills init` 现在既建索引也安装；与 Skill / Managed Skill / Referenced Skill 保持一致
 
@@ -95,9 +106,10 @@ description: 只装 npm 包拿不到 edges skills；目标是一次安装加一�
 - [ ] `extensions/cli/package.json` 的 `files` 含 skills 目录；`pnpm --filter @viruspc/edges pack` 出的 tgz 里有 `extensions/skills/` 剩下的全部 skill（每个带 `SKILL.md`），不含上面 6 个，也不含 `shared-extensions` 里的 skill
 - [ ] CLI 里调用的 vercel skills 是固定的确切版本（不是 `@latest`，也不是范围），版本号在一处常量里，有测试或脚本覆盖它
 - [ ] `edges skills init` 传给 vercel skills 的是包内 skills 目录的绝对路径
-- [ ] 安装步骤是薄封装：实际执行的命令等于 `skills@1.7.2 add <包内 skills 目录> --skill '*'` 加上用户给的旗标，edges 不再自加 `-g`、`-y`、`--agent` 等任何旗标；有测试断言实际参数
-- [ ] edges 侧没有 TTY 判断、`--agent` 必填校验、版本比较、本地改动检测、skill 筛选、`-f` / `--force`（代码审查可核对）
-- [ ] 用户给的 `--agent '*'`、`--agent <a> <b>`、`-g`、`-y`、`--all` 原样传给 vercel skills；有测试
+- [ ] 安装步骤是薄封装：实际执行的命令等于 `skills@1.7.2 add <包内 skills 目录> --skill '*'` 加上 `--` 之后的 token（原样、同顺序），edges 不再自加 `-g`、`-y`、`--agent` 等任何旗标；有测试断言实际参数
+- [ ] edges 侧没有 TTY 判断、`--agent` 必填校验、版本比较、本地改动检测、skill 筛选、`-f` / `--force`，也不对用户开放 `--skill`（Q14；代码审查可核对）
+- [ ] `edges skills init -- -g -y --agent claude-code` 把 `-g -y --agent claude-code` 原样传给 vercel skills；`--agent '*'`、`--all` 同理；有测试
+- [ ] `edges init a b -- x`：模块仍是 `a b`，`x` 只转交给 skills 安装步骤；`edges init -- -y --agent '*'` 不把 `-y`、`--agent`、`'*'` 当成模块；argv 在 commander 解析前于 `--` 处切开；有测试
 - [ ] vercel skills 的 stdin / stdout / stderr 直接继承，交互提示（含 `overwrites:` 清单与确认）原样呈现给用户
 - [ ] `edges skills init` 仍建 managed / referenced 类型索引（行为同 ADR 0031），同时完成安装；重跑即再跑一次 `skills add`
 - [ ] 无参 `edges init` 的默认集含 skills，`edges init --help` 的「本次会创建」里列出 skills
@@ -107,7 +119,6 @@ description: 只装 npm 包拿不到 edges skills；目标是一次安装加一�
 - [ ] `extensions/cli/package.json` 的 `engines.node` 为 `>=22.20.0`（Q13，与 `skills@1.7.2` 一致）；README 等处写到的 Node 版本要求同步
 - [ ] `extensions/skills/README.md` 按新分发方式更新：主路径改为 `edges skills init`，删掉或改写「外部用户走 `npx skills add VirusPC/edges/extensions/skills`」与「一律 `@latest`」两段；`shared-extensions/skills/README.md` 的分工表同步。（本次 grill 的 PR 不改 README，实现时再改）
 - [ ] CLI README 的 init 段（「`edges skills init` 只写 skill 类型索引」）与 `project-memory-init` 等相关 skill 文案同步为新行为
-- [ ] 待定并记录：`edges init` 如何把用户的安装旗标转交给 skills 模块；用户自带 `--skill` 时与 edges 补的 `--skill '*'` 如何并存（按总原则，以 vercel skills 行为为准）
 - [ ] ADR 0036 的 Status 与 Consequences 更新为已实现；经 PR 合入 main
 
 **进展记录：**
@@ -115,3 +126,4 @@ description: 只装 npm 包拿不到 edges skills；目标是一次安装加一�
 - 2026-10-18 追加决策（peng cheng）：Q12 无 TTY 时必须用 `--agent` 显式指定（`*` / `all` / 部分 agent），未指定则报错，修订 Q5 / Q6 原先的无 TTY 默认；Q13 `engines.node` 提到 `>=22.20.0`；Q7 补充：本地版本更高、或本地改过 → 跳过并提示，`-f` / `--force` 强制覆盖。ADR 0036 同步，完成标准改为可逐条核对。用户同意合入 PR #274。卡仍在 backlog，实现未开始。
 - 2026-10-18 再次修订 Q7（peng cheng）：核对 vercel skills 1.7.2 源码后决定「抄他的行为」，edges 不做版本比较、不加 `-f` / `--force`，同名 skill 由 vercel skills 列出覆盖清单并确认（无 TTY 时 `-y` 直接覆盖）；上一条里的 Q7 补充已被取代，保留为决策历史。Q12、Q13 不变。ADR 0036 Decision 6 同步，完成标准相应调整。用户同意合入 PR #274。卡仍在 backlog。
 - 2026-10-18 20:53（Asia/Shanghai）定下总原则（peng cheng）：安装技能是 vercel skills 的薄封装，edges 只补 skill 源地址与 `--skill '*'`，其余按 vercel skills 默认、旗标透传，不加额外逻辑。据此修订 Q12（无 TTY 不再强制 `--agent`，改为按默认行为），并对齐 Q4–Q9 的表述；Q13 不变。ADR 0036 精简重写，完成标准相应调整。待定：stdout 上 vercel 输出与 edges JSON 信封并存（ADR 记为继承 stdio 的后果）、`edges init` 如何转交旗标、用户自带 `--skill` 的处理。卡仍在 backlog，实现未开始。
+- 2026-10-18 21:00（Asia/Shanghai）追加决策（peng cheng）：Q14 `--skill` 不开放，CLI 写死 `--skill '*'`；Q15 用 `--` 分隔，之后的 token 原样转交 vercel skills，`edges init` 只转交给 skills 安装步骤，commander 解析前在 `--` 处切开 argv。上一条的两个待定（旗标转交、自带 `--skill`）已定；stdout 与 JSON 信封并存仍记为继承 stdio 的后果。完成标准相应调整。卡仍在 backlog。

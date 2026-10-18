@@ -18,7 +18,9 @@ status: accepted
 2. **安装是 vercel skills 的薄封装**：`edges skills init` 的安装步骤运行固定版本的 `skills@1.7.2`：`skills add <包内 skills 目录的绝对路径> --skill '*'`。edges 只补这两样：skill 源地址、选中全部 skill。agent、`-g`、`-y`、有无 TTY、同名覆盖等其余行为一律按 vercel skills 的默认，用户给的旗标原样透传。edges 不加任何额外逻辑；这一块有问题都以 vercel skills 的行为为准。
 3. **装在 init 里**：不新开 `edges skills install`。`edges skills init` 既建 skill 类型索引（同 ADR 0031），也安装；重跑即刷新。根 `edges init` 默认集加 skills。
 4. **失败即失败**：vercel skills 非零退出时，`edges skills init` / `edges init` 也非零退出。不提供 `--no-skills`。
-5. **Node 版本**：`engines.node` 提到 `>=22.20.0`，与 `skills@1.7.2` 一致。
+5. **不开放 `--skill`**：CLI 总是写死 `--skill '*'`。
+6. **旗标用 `--` 转交**：`--` 之后的 token 原样传给 vercel skills；`edges init -- …` 只转交给 skills 安装步骤。
+7. **Node 版本**：`engines.node` 提到 `>=22.20.0`，与 `skills@1.7.2` 一致。
 
 ## Considered Options
 
