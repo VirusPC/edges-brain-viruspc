@@ -32,4 +32,5 @@ edges CLI/脚手架/发布/鉴权等平台层。
 - [入库类\_skill\_增加无工作区降级模式](<backlog/2026-10-15--%E5%85%A5%E5%BA%93%E7%B1%BB-skill-%E5%A2%9E%E5%8A%A0%E6%97%A0%E5%B7%A5%E4%BD%9C%E5%8C%BA%E9%99%8D%E7%BA%A7%E6%A8%A1%E5%BC%8F/INDEX.md>) — 聊天窗口没有工作区时，skill 只输出完整 Markdown 和目标路径，交给有工作区的 Agent 入库
 - [安装\_edges\_后自动装好\_skills](<done/2026-10-18--%E5%AE%89%E8%A3%85-edges-%E5%90%8E%E8%87%AA%E5%8A%A8%E8%A3%85%E5%A5%BD-skills/INDEX.md>) — 只装 npm 包拿不到 edges skills；目标是一次安装加一次初始化，同时装好 CLI 和 skills。
 - [配置\_github\_actions\_oidc\_发布\_viruspc\_edges](<backlog/2026-10-18--%E9%85%8D%E7%BD%AE-GitHub-ActionsOIDC-%E5%8F%91%E5%B8%83-viruspcedges/INDEX.md>) — 推约定 tag 后，用 GitHub Actions 和 npm Trusted Publishing（OIDC）把 @viruspc/edges 发到 npm，发版前经过测试和 Environment 审批。本卡只锁定 grill 已定范围，保持 backlog。
+- [重合\_208211软链登记与\_scope\_大小写\_path\_修复](<backlog/2026-10-18--%E9%87%8D%E5%90%88-208211%E8%BD%AF%E9%93%BE%E7%99%BB%E8%AE%B0%E4%B8%8E-scope-%E5%A4%A7%E5%B0%8F%E5%86%99-path-%E4%BF%AE%E5%A4%8D/INDEX.md>) — PR \#208 的父级软链登记和 \#211 的 scope 大小写 path 修复只留在叠层分支，main 上从未落地。本卡跟踪把这两处丢失的修复重新合进 main。
 <!-- project-entries-local:end -->
