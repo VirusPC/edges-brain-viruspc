@@ -18,7 +18,7 @@ version: 2.3.1
 在仓库根：
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts --scope <目录> notes create \
+pnpm --filter @viruspc/edges exec tsx src/index.ts --scope <目录> notes create \
   --title "<1–120 chars>" \
   --body "<markdown>" \
   --json

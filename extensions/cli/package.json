@@ -1,17 +1,24 @@
 {
-  "name": "edges-cli",
+  "name": "@viruspc/edges",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
   "type": "module",
   "description": "Multi-command Edges CLI (notes, tasks, skills, and more)",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VirusPC/edges.git",
+    "directory": "extensions/cli"
+  },
   "bin": {
     "edges": "./dist/index.js"
   },
   "scripts": {
     "build:tasks-review-app": "pnpm --filter tasks-review-app run build",
     "build": "node --input-type=module -e \"import {rmSync} from 'node:fs'; rmSync('dist', {recursive:true, force:true})\" && pnpm run build:schemas && pnpm run build:tasks-review-app && tsc -p tsconfig.json && node ./scripts/copy-review-page-asset.mjs && node --import tsx ./scripts/copy-memory-templates.ts",
-    "prepack": "pnpm run build",
+    "prepack": "node ./scripts/assert-pnpm-publish.mjs && pnpm run build",
     "start": "node dist/index.js",
     "dev": "pnpm run build:schemas && tsx src/index.ts",
     "dev:tasks-review-app": "pnpm --filter tasks-review-app run dev",

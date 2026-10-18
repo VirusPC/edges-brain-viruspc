@@ -163,7 +163,7 @@ export function defaultReviewPageAssetDir(): string {
 }
 
 function missingAsset(abs: string): never {
-  fail(`review-page asset missing: ${abs} (run pnpm --filter edges-cli run build:tasks-review-app)`);
+  fail(`review-page asset missing: ${abs} (run pnpm --filter @viruspc/edges run build:tasks-review-app)`);
 }
 
 async function readAsset(

@@ -125,7 +125,7 @@ test("loadBuiltReviewShell names the build command when an asset is missing", as
       (error: unknown) => {
         assert.equal((error as TasksError).errorCode, "VALIDATION_ERROR");
         assert.match((error as Error).message, /review-page asset missing:/);
-        assert.match((error as Error).message, /pnpm --filter edges-cli run build:tasks-review-app/);
+        assert.match((error as Error).message, /pnpm --filter @viruspc\/edges run build:tasks-review-app/);
         return true;
       },
     );

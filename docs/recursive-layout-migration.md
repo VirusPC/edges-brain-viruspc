@@ -34,7 +34,7 @@ Git 不分发 ignored 用户材料，也不证明别的克隆已完成私有纠�
 
 通用迁移器的 `.project-memory-migration/journal.json` 与实例迁移、纠正 journal 各自独立。升级前未完成且缺目录权限记录的通用日志会报 `journal-directory-permissions-missing`；需在受保护副本核实可信权限及文件状态，不能删日志重跑。详见[迁移 Skill 的旧版日志恢复说明](../extensions/skills/project-memory-migrate/SKILL.md#旧版未完成日志的恢复)。
 
-在独立工作树内，可只读运行 `pnpm --filter edges-cli exec tsx src/index.ts memory doctor --target-dir <节点目录>`、`edges tasks --scope <工作树> --purpose domain list` 与 `--purpose maintenance list`。Doctor 对不存在的 referenced 安装来源给出诊断，不意味着可制造空 `.agents/skills` 或正文；公共索引刷新只针对实际存在的源，并保留人工前缀。`scripts/link-agent-skills --dry-run` 与 `--check` 只检查安装关系。`project-tasks-propose-types` 尚无实际源码目录；通用 Task Skill/MCP、自动复盘与 Agent Teams 编排也不因这次归属纠正而完成。
+在独立工作树内，可只读运行 `pnpm --filter @viruspc/edges exec tsx src/index.ts memory doctor --target-dir <节点目录>`、`edges tasks --scope <工作树> --purpose domain list` 与 `--purpose maintenance list`。Doctor 对不存在的 referenced 安装来源给出诊断，不意味着可制造空 `.agents/skills` 或正文；公共索引刷新只针对实际存在的源，并保留人工前缀。`scripts/link-agent-skills --dry-run` 与 `--check` 只检查安装关系。`project-tasks-propose-types` 尚无实际源码目录；通用 Task Skill/MCP、自动复盘与 Agent Teams 编排也不因这次归属纠正而完成。
 
 前述归属及目录入口迁移不改动博客。2026-10-05 用户另行明确要求去掉 `knowledge/` 层：当前博客目录为 `posts/`，本次只移动目录、保留文件字节；今后仍禁止 AI 自动修改博客正文。未初始化 submodule 只保留精确 gitlink，不据此宣称其内部测试已运行。迁移不执行 benchmark、部署、全局安装、合并或发布。
 

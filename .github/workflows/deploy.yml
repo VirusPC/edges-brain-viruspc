@@ -83,14 +83,14 @@ jobs:
                export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
                . "$NVM_DIR/nvm.sh"
              fi
-             pnpm install --frozen-lockfile --filter edges-cli... --filter tasks-review-app...
+             pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...
              pnpm --filter tasks-review-app run build
              test -s extensions/cli/src/commands/tasks/project/assets/review-page/index.html
              test -s extensions/cli/src/commands/tasks/project/assets/review-page/review.js
              test -s extensions/cli/src/commands/tasks/project/assets/review-page/review.css
              # dist/schemas is gitignored. Review-page doc checks read it at runtime.
-             pnpm --filter edges-cli run build:schemas
-             pnpm --filter edges-cli exec -- tsx scripts/generate-tasks-site.ts \
+             pnpm --filter @viruspc/edges run build:schemas
+             pnpm --filter @viruspc/edges exec -- tsx scripts/generate-tasks-site.ts \
                --scope "$PWD" --out "$PWD/tasks/_site/index.html"
              test -s tasks/_site/index.html
              grep -q "id=\"edges-review-payload\"" tasks/_site/index.html
@@ -137,14 +137,14 @@ jobs:
                # Pull already succeeded. Failure here fails the job so a
                # dead artifacts unit is visible; teach files are already new.
                if ! command -v edges >/dev/null 2>&1; then
-                 pnpm install --frozen-lockfile --filter edges-cli...
+                 pnpm install --frozen-lockfile --filter @viruspc/edges...
                fi
                if command -v edges >/dev/null 2>&1; then
                  edges artifacts server install
                  edges artifacts server restart
                else
-                 pnpm --filter edges-cli exec -- tsx src/index.ts artifacts server install
-                 pnpm --filter edges-cli exec -- tsx src/index.ts artifacts server restart
+                 pnpm --filter @viruspc/edges exec -- tsx src/index.ts artifacts server install
+                 pnpm --filter @viruspc/edges exec -- tsx src/index.ts artifacts server restart
                fi
              else
                echo "skip artifacts server: $env_file missing or token unused (one-time: artifacts-preview README)"

@@ -243,7 +243,7 @@ async function prepareProjectWrite(target: BoardTarget, service: NodeService): P
     if (!file) continue;
     const node = file === owner?.path ? owner : await service.get(file, AgentsNode);
     if (node && /<!-- task-projects:(?:start|end) -->/.test(node.body))
-      throw new TasksError('VALIDATION_ERROR', 'migration-required: run pnpm --filter edges-cli exec tsx ../../scripts/migrate-agents-indexes.mts --root ' + scopeDir(target) + ' --write');
+      throw new TasksError('VALIDATION_ERROR', 'migration-required: run pnpm --filter @viruspc/edges exec tsx ../../scripts/migrate-agents-indexes.mts --root ' + scopeDir(target) + ' --write');
   }
   if (owner && decodeBody(owner.body).unsafe) throw new TasksError('VALIDATION_ERROR', 'Malformed owning scope index: ' + owner.path);
 }

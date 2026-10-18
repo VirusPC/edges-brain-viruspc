@@ -33,21 +33,14 @@ harness 就是一组 Markdown 文件加 Git。仓库里的那套，给 Cursor、
 
 ## 快速开始
 
-需要 Node.js 22 及以上和 pnpm。
+需要 Node.js 22 及以上。
 
 ```bash
-# 1. 安装 edges CLI，并让你的 Agent 学会什么时候调用它
-git clone https://github.com/VirusPC/edges.git && cd edges
-pnpm install
-pnpm --filter edges-cli pack --pack-destination /tmp
-npm install -g /tmp/edges-cli-0.1.0.tgz
-npx skills@latest add ./extensions/skills -g
-
-# 2. 给任何目录配一套 harness
+npm install -g @viruspc/edges
 cd ~/your-repo && edges init
 ```
 
-最后一条命令会让你选择把 skill 装给哪些 Agent。
+让 Agent 学会什么时候调用这些命令，见 [`extensions/skills`](extensions/skills/README.md) 的「外部用户」。
 
 想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges init`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
 

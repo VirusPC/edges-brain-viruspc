@@ -178,7 +178,7 @@ npm test
 
 ## Troubleshooting
 
-- 报 `SCRIPT_NOT_FOUND`：`edges-cli` 入口缺失。执行 `pnpm --filter edges-cli build`，或设置 `EDGES_CLI` 指向 `dist/index.js` / `src/index.ts`。
+- 报 `SCRIPT_NOT_FOUND`：`@viruspc/edges` 入口缺失。执行 `pnpm --filter @viruspc/edges build`，或设置 `EDGES_CLI` 指向 `dist/index.js` / `src/index.ts`。
 - 报校验错误：确认 `title` 为 1–120 字，并且 `EDGES_SCOPE` 指向可写的内容作用域。
 
 ## Rollback
@@ -186,5 +186,5 @@ npm test
 如果线上出现异常，可通过停止该 MCP server 或从客户端配置中移除 `new_note` 工具，回退到手工执行：
 
 ```bash
-pnpm --filter edges-cli exec tsx src/index.ts --scope <目录> notes create --title "…" --body "…" --json
+pnpm --filter @viruspc/edges exec tsx src/index.ts --scope <目录> notes create --title "…" --body "…" --json
 ```
