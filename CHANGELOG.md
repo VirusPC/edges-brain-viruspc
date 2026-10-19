@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### CLI
+
+- **npm 发版工作流使用仓库锁定的 pnpm：** `.github/workflows/publish-edges-cli.yml` 不再在 `pnpm/action-setup` 里写 `version: 10`。根 `package.json` 的 `packageManager` 已是 `pnpm@10.34.7`，两边同时指定会让 `@viruspc/edges@*` 的发布在安装前失败。
+
 ### 项目记忆（project-memory）
 
 - **旧平铺记忆可以迁到当前布局：** 在仍使用早期 `.memory/` 平铺文件的仓库里，先跑 `edges memory migrate --dry-run`，确认映射后再跑 `edges memory migrate`。它按 `project` / `feedback` / `reference` / `user` 前缀把 `<type>_<slug>.md` 收进 `.harness/memory/<plural>/<type>_<slug>/INDEX.md`，大写的 `FEEDBACK.md`、`PROJECT.md`、`REFERENCE.md`、`USER.md` 重写成类型 `README.md`。条目用相对路径引用的附件目录一起搬走。对不上的路径列在结果的 `diagnostics` 里，正式迁移时进 `.project-memory-migration/unclassified/`，不再因为一个文件让整次迁移失败。`edges init` 碰到旧层时，会直接提示这两条命令。
