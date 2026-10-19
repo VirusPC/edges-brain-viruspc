@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-10-19
+
 ### Fixed
 
 - `edges init` 在旧 `.memory` 上的 `migration-required` 改为提示 `edges memory migrate --dry-run`，然后再执行 `edges memory migrate`。
