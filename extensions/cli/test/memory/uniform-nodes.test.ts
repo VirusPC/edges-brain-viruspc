@@ -140,6 +140,11 @@ test("Task Project index lives once in local ownership while preserving authored
   const tail =
     "\n<!-- project-memory:start -->\n<!-- project-memory-local:start -->\n## 本层记忆\n\n- [guide](../guide.md) — shared guide\n<!-- project-memory-local:end -->\n<!-- project-memory:end -->\n\n## Authored\nkeep exactly\n";
   put(root, "tasks/demo/AGENTS.md", "# Demo\n\nBusiness purpose\n" + tail);
+  put(
+    root,
+    "tasks/demo/README.md",
+    "# Demo\n\nBusiness purpose\n\n<!-- project-entries-local:start -->\n## 本层内容\n<!-- project-entries-local:end -->\n",
+  );
   const agentsBefore = read(root, "tasks/demo/AGENTS.md");
   const parsed = parseProjectAgents(agentsBefore);
   assert.equal(parsed.description, "Business purpose");

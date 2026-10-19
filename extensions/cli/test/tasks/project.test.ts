@@ -168,39 +168,37 @@ test("updateProject preserves pointers and does not rewrite a Task file", async 
   }
 });
 
-test("updateProject seeds a README org list when the project dir exists without metadata", async () => {
+test("updateProject rejects a project directory that has no README.md", async () => {
   const repo = await virginRepo();
   try {
-    await mkdir(path.join(repo, "tasks/docs/backlog"), { recursive: true });
+    const task = path.join(repo, "tasks/docs/backlog/2026-09-17--orphan/index.md");
+    const body = "---\nmetadata:\n  edges-tasks-status: backlog\n  edges-task-project: docs\n---\n\nbody\n";
+    await writeFile(task, body, "utf8");
     await writeFile(
-      path.join(repo, "tasks/docs/backlog/2026-09-17--orphan/index.md"),
-      "---\nmetadata:\n  edges-tasks-status: backlog\n  edges-task-project: docs\n---\n\nbody\n",
-      "utf8",
+      path.join(repo, "tasks/README.md"),
+      "# Tasks\n\n<!-- project-entries-local:start -->\n## 本层内容\n<!-- project-entries-local:end -->\n",
     );
-    await assert.rejects(() =>
-      readFile(path.join(repo, "tasks/docs/README.md"), "utf8"),
+    const writer = nodeBoardWriter();
+    await assert.rejects(
+      () => updateProject(domainBoard(repo), "docs", { title: "Docs", description: "documentation work" }, writer),
+      (error: unknown) => {
+        assert.equal((error as { errorCode: string }).errorCode, "VALIDATION_ERROR");
+        assert.match((error as Error).message, /missing README\.md/);
+        assert.match((error as Error).message, /tasks\/docs\/README\.md/);
+        return true;
+      },
     );
-
-    const updated = await updateProject(
-      domainBoard(repo),
-      "docs",
-      { title: "Docs", description: "documentation work" },
-      nodeBoardWriter(),
+    await assert.rejects(
+      () => getProject(domainBoard(repo), "docs", writer),
+      (error: unknown) => {
+        assert.match((error as Error).message, /missing README\.md/);
+        assert.match((error as Error).message, /tasks\/docs\/README\.md/);
+        return true;
+      },
     );
-    assert.equal(updated.project, "docs");
-    assert.equal(updated.dir, "docs");
-    assert.equal(updated.title, "Docs");
-    assert.equal(updated.description, "documentation work");
-    assert.equal(updated.path, "tasks/docs/README.md");
-
-    const readme = await readFile(
-      path.join(repo, "tasks/docs/README.md"),
-      "utf8",
-    );
-    assert.match(readme, /^# Docs\n/);
-    assert.match(readme, /documentation work/);
-    assert.match(readme, /<!-- project-entries-local:start -->/);
-    await assert.rejects(access(path.join(repo, "tasks/docs/AGENTS.md")));
+    assert.equal(await readFile(task, "utf8"), body);
+    await assert.rejects(access(path.join(repo, "tasks/docs/README.md")));
+    assert.match(await readFile(path.join(repo, "tasks/README.md"), "utf8"), /## 本层内容\n<!-- project-entries-local:end -->/);
   } finally {
     await rm(repo, { recursive: true, force: true });
   }
@@ -320,7 +318,7 @@ for (const all of [false, true]) {
   });
 }
 
-test("update seeds only the requested existing project and writes nothing when it is missing", async () => {
+test("update does not seed a README when the directory is missing or AGENTS-only", async () => {
   const repo = await virginRepo();
   try {
     const writer = nodeBoardWriter();
@@ -359,17 +357,30 @@ test("update seeds only the requested existing project and writes nothing when i
       await assert.rejects(access(path.join(repo, rel)));
     }
 
-    await updateProject(domainBoard(repo), "alpha", { description: "alpha v2" }, writer);
-    const alphaReadme = await readFile(path.join(repo, "tasks/alpha/README.md"), "utf8");
-    assert.match(alphaReadme, /^# alpha\n\nalpha v2\n/);
-    assert.match(alphaReadme, /project-entries-local:start/);
+    await assert.rejects(
+      () => updateProject(domainBoard(repo), "alpha", { description: "alpha v2" }, writer),
+      (error: unknown) => {
+        assert.equal((error as { errorCode: string }).errorCode, "VALIDATION_ERROR");
+        assert.match((error as Error).message, /missing README\.md/);
+        assert.match((error as Error).message, /tasks\/alpha\/README\.md/);
+        return true;
+      },
+    );
+    await assert.rejects(
+      () => getProject(domainBoard(repo), "alpha", writer),
+      (error: unknown) => {
+        assert.equal((error as { errorCode: string }).errorCode, "VALIDATION_ERROR");
+        assert.match((error as Error).message, /missing README\.md/);
+        assert.match((error as Error).message, /tasks\/alpha\/README\.md/);
+        return true;
+      },
+    );
     assert.equal(await readFile(path.join(repo, "tasks/alpha/AGENTS.md"), "utf8"), alphaAgents);
     assert.equal(await readFile(path.join(repo, "tasks/beta/AGENTS.md"), "utf8"), betaAgents);
+    await assert.rejects(access(path.join(repo, "tasks/alpha/README.md")));
     await assert.rejects(access(path.join(repo, "tasks/beta/README.md")));
     await assert.rejects(access(path.join(repo, "tasks/_default/README.md")));
-    const list = await readFile(path.join(repo, "tasks/README.md"), "utf8");
-    assert.match(list, /alpha\/README\.md/);
-    assert.doesNotMatch(list, /beta\/README\.md/);
+    await assert.rejects(access(path.join(repo, "tasks/README.md")));
     assert.equal(await readFile(board, "utf8"), before);
   } finally {
     await rm(repo, { recursive: true, force: true });
@@ -398,7 +409,9 @@ test("README Task Projects are discovered, read and updated; a user-initialised 
     await assert.rejects(
       () => getProject(domainBoard(repo), "legacy", writer),
       (error: unknown) => {
-        assert.equal((error as { errorCode: string }).errorCode, "PROJECT_NOT_FOUND");
+        assert.equal((error as { errorCode: string }).errorCode, "VALIDATION_ERROR");
+        assert.match((error as Error).message, /missing README\.md/);
+        assert.match((error as Error).message, /tasks\/legacy\/README\.md/);
         return true;
       },
     );
@@ -415,16 +428,24 @@ test("README Task Projects are discovered, read and updated; a user-initialised 
     await assert.rejects(access(path.join(repo, "tasks/cli/AGENTS.md")));
 
     const legacyAgentsBefore = await readFile(path.join(repo, "tasks/legacy/AGENTS.md"), "utf8");
-    await updateProject(domainBoard(repo), "legacy", { description: "legacy v2" }, writer);
+    const listBefore = await readFile(path.join(repo, "tasks/README.md"), "utf8");
+    await assert.rejects(
+      () => updateProject(domainBoard(repo), "legacy", { description: "legacy v2" }, writer),
+      (error: unknown) => {
+        assert.equal((error as { errorCode: string }).errorCode, "VALIDATION_ERROR");
+        assert.match((error as Error).message, /missing README\.md/);
+        assert.match((error as Error).message, /tasks\/legacy\/README\.md/);
+        return true;
+      },
+    );
     assert.equal(await readFile(path.join(repo, "tasks/legacy/AGENTS.md"), "utf8"), legacyAgentsBefore);
-    const legacyReadme = await readFile(path.join(repo, "tasks/legacy/README.md"), "utf8");
-    assert.match(legacyReadme, /^# legacy\n\nlegacy v2\n/);
-    assert.match(legacyReadme, /<!-- project-entries-local:start -->/);
+    await assert.rejects(access(path.join(repo, "tasks/legacy/README.md")));
     const agentsBoard = await readFile(board, "utf8");
     assert.match(agentsBoard, /\[Legacy\]\(<?legacy\/AGENTS\.md>?\) — legacy work/);
     const list = await readFile(path.join(repo, "tasks/README.md"), "utf8");
+    assert.equal(list, listBefore);
     assert.match(list, /cli\/README\.md>?\) — updated CLI/);
-    assert.match(list, /legacy\/README\.md>?\) — legacy v2/);
+    assert.doesNotMatch(list, /legacy\/README\.md/);
 
     await assert.rejects(
       createProject(domainBoard(repo), { project: "cli", title: "X", description: "dup" }, writer),

@@ -6,7 +6,7 @@
 
 ### Fixed
 
-- `edges tasks project list` / `get` / `update` 只把看板直接子目录里的 `README.md` 当作 Task Project 元数据。同目录的 `AGENTS.md` 是系统入口，不提供标题或描述。`tasks/.harness/README.md` 不再被当成项目。某个项目的 README 不合法时，失败原因里带上该文件路径。
+- `edges tasks project list` / `get` / `update` 只把看板直接子目录里的 `README.md` 当作 Task Project 元数据。同目录的 `AGENTS.md` 是系统入口，不提供标题或描述，也不会被补成 README。项目目录已存在但缺少 `README.md` 时，`get` / `update` 失败并在原因里带上该路径；`list` 跳过这个目录。`tasks/.harness/README.md` 不再被当成项目。某个项目的 README 不合法时，失败原因里带上该文件路径。
 
 ## [0.2.1] - 2026-10-19
 

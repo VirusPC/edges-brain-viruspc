@@ -374,6 +374,9 @@ export async function ensureProjectMetadata(
     }
     const entry = await resolveProjectEntry(repoPath, id, writer);
     if (!entry.exists) {
+      const agents = path.join(boardRoot(repoPath), projectDirName(id), ENTRY_NAMES.internal);
+      // An existing AGENTS.md without README.md is a data error, not a project to repair.
+      if (await writer.exists(agents)) continue;
       await service.create(new ReadmeNode(entry.abs), { body: renderProjectReadme({
           title: seedTitleFor(id),
           description: seedDescriptionFor(id),
@@ -392,10 +395,15 @@ export async function listProjects(
 ): Promise<TaskProjectRecord[]> {
   const records: TaskProjectRecord[] = [];
   for (const id of await listProjectIds(repoPath, writer)) {
+    // The list envelope has no warning field. A directory without README.md is skipped.
     if (!(await resolveProjectEntry(repoPath, id, writer)).exists) continue;
     records.push(await readProjectRecord(repoPath, id, writer));
   }
   return records;
+}
+
+function missingReadmeError(id: TaskProjectId, rel: string): TasksError {
+  return new TasksError("VALIDATION_ERROR", `project ${id} is missing README.md: ${rel}`);
 }
 
 export async function getProject(
@@ -406,7 +414,16 @@ export async function getProject(
   const id = parseTaskProject(raw);
   // A missing board is a board error. A directory without README.md is not a project.
   await listProjectIds(repoPath, writer);
-  return readProjectRecord(repoPath, id, writer);
+  const entry = await resolveProjectEntry(repoPath, id, writer);
+  if (!entry.exists) {
+    const dir = path.join(boardRoot(repoPath), projectDirName(id));
+    if (await writer.exists(dir)) throw missingReadmeError(id, entry.rel);
+    throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
+  }
+  return projectRecordFromEntry(nativeTaskPath(scopeDir(repoPath)), {
+    path: entry.abs,
+    body: await writer.readFile(entry.abs),
+  });
 }
 
 export async function createProject(
@@ -452,15 +469,10 @@ export async function updateProject(
   if (!(await writer.exists(projectDir))) {
     throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
   }
+  const entry = await resolveProjectEntry(repoPath, id, writer);
+  if (!entry.exists) throw missingReadmeError(id, entry.rel);
   const service = projectNodes(repoPath);
   await prepareProjectWrite(repoPath, service);
-  const entry = await resolveProjectEntry(repoPath, id, writer);
-  if (!entry.exists) {
-    await service.create(new ReadmeNode(entry.abs), { body: renderProjectReadme({
-      title: seedTitleFor(id),
-      description: seedDescriptionFor(id),
-    }) }, { indexGroup: "local" });
-  }
   const rel = entry.rel;
   const node = await service.get(entry.abs, ReadmeNode);
   if (!node) throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
