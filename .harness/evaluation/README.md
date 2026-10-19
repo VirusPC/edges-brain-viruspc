@@ -88,15 +88,24 @@ A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harnes
 python3 .harness/evaluation/retrieval_eval/run.py run
 ```
 
-过程痕迹留在缓存，不进 `reports/`。一次 `run` 后，样本 `<sample_id>` 的事件流（`command_execution`、`reasoning`、`agent_message`、`turn.completed` 里的 token usage）在：
+第二个 client 是 [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent)（CLI `pi`，已在 1.3.0 上核对，需要 Node.js >= 22.19）。默认配置块仍是 `codex`。单样本冒烟用 `--client` 和 `--samples` 换 client 与样本集，不改 `config.json`：
+
+```bash
+python3 .harness/evaluation/retrieval_eval/run.py print-command --client pi --samples retrieval-smoke/edges-one
+MINIMAX_API_KEY=... python3 .harness/evaluation/retrieval_eval/run.py run --client pi --samples retrieval-smoke/edges-one
+```
+
+`retrieval-smoke/edges-one` 只有 `edges_smoke_0008`。`pi` 的 provider / model 是 `minimax-cn` / `MiniMax-M3`，thinking 是 `high`，工具是 `read,grep,find,ls,bash`。命令是最小内核：`--mode json --no-session -ne -ns -np -nc --no-themes --no-mcp -na --offline`，工作目录是克隆下来的仓库，stdin 关闭。没有 sandbox，也没有 `-o` 和 max-turns，只靠 `timeout_seconds`（默认 600）。`clients.json` 里 `MINIMAX_CN_API_KEY` 写成 `$MINIMAX_API_KEY`，运行时从进程环境展开；变量缺失则该样本记 `parse_error`，错误里只有变量名。`PI_TELEMETRY` 固定为 `0`。每次运行另建一个空的临时 `PI_CODING_AGENT_DIR`，结束后删除。认证失败时退出码仍可能是 0，最后一条 assistant `message_end` 的 `stopReason` 为 `error` 或 `aborted` 时记为失败。`pi --version` 的第一行写入 trace metadata `client_version`。
+
+过程痕迹留在缓存，不进 `reports/`。一次 `run` 后，样本 `<sample_id>` 的事件流（Codex 的 `command_execution`、`reasoning`、`agent_message`、`turn.completed`，或 pi 的 `message_end` / `tool_execution_*`）在：
 
 `.harness/evaluation/.cache/retrieval/sessions/<时间戳>/<cell_id>/<sample_id>.events.jsonl`
 
-同目录的 `<sample_id>.last.txt` 是 `-o` 写下的最终消息，打分优先读它；`<sample_id>.stderr.txt` 是该次进程的 stderr。文件搜索和读取没有单独的事件类型，它们出现在 `command_execution`（`rg`、`cat` 等）里。
+同目录的 `<sample_id>.last.txt`：Codex 是 `-o` 写下的最终消息，打分优先读它；pi 没有 `-o`，runner 把最后一条 `stopReason=stop` 的 assistant 文本写到同一路径。`<sample_id>.stderr.txt` 是该次进程的 stderr。Codex 的文件搜索和读取没有单独的事件类型，它们出现在 `command_execution`（`rg`、`cat` 等）里。pi 的工具调用在 `tool_execution_start` / `tool_execution_end`。
 
 可选上报走 Observation 的 [`TraceExporter`](../observation/langfuse_sink/)（[ADR 0038](../../docs/adr/0038-observation-trace-exporter.md)）。`import retrieval_eval` 时把 `.harness/observation` 放进 `sys.path`，然后 `import langfuse_sink`。这个包不安装，也不带第三方依赖。三个环境变量都设置时，`exporter_from_env()` 返回会 POST 的 exporter，每个样本打分后调用 `export(trace)`；缺任何一个则是 no-op。变量是 `LANGFUSE_HOST`（未设置时用 `LANGFUSE_BASE_URL`）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。上传失败只往 stderr 打一行，不影响分数。密钥和实例域名不要写进仓库，轨迹也不进 `reports/`。`service.name` 仍由评测写成 `edges-retrieval-eval`。
 
-同一次 `run` 共用一个 session，每个样本仍是一条 trace。session id 由 `make_session_id(namespace="retrieval", ...)` 生成，格式仍是 `retrieval/{样本集}:{仓库}:{client}/{时间戳}/{4位hex}`，不是单独的时间戳。样本集路径里的 `/` 写成 `:`；仓库 id 若已是样本集最后一段就不再重复。多个 cell 用 `+` 连起来。例如 `retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12`。事件流里若已有 `model` 或 `cli_version`，会抄进 trace metadata；不会再跑 `codex --version`。
+同一次 `run` 共用一个 session，每个样本仍是一条 trace。session id 由 `make_session_id(namespace="retrieval", ...)` 生成，格式仍是 `retrieval/{样本集}:{仓库}:{client}/{时间戳}/{4位hex}`，不是单独的时间戳。样本集路径里的 `/` 写成 `:`；仓库 id 若已是样本集最后一段就不再重复。多个 cell 用 `+` 连起来。例如 `retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12`。Codex 事件流里若已有 `model` 或 `cli_version`，会抄进 trace metadata；不会再跑 `codex --version`。pi 的 `model` / `provider` 从事件里的嵌套字段读取，版本来自 `pi --version`。child span 按 `client.kind` 分派：Codex 走 `spans_from_codex_jsonl`，pi 走 `spans_from_pi_jsonl`。
 
 Official-path tests (no API key):
 

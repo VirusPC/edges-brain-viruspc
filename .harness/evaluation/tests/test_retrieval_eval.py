@@ -23,13 +23,16 @@ from retrieval_eval.client import (
     build_prompt,
     codex_command,
     parse_client_answer,
+    parse_pi_answer,
     parse_predicted,
+    pi_command,
+    read_command_version,
     run_client,
 )
-from retrieval_eval.config import Client, load_cells, load_samples
+from retrieval_eval.config import Client, load_cells, load_samples, override_cells
 from retrieval_eval.git_repo import sync_clone
 from retrieval_eval.report import write_report
-from retrieval_eval.run import record_scored_sample, write_sample_trace
+from retrieval_eval.run import main, record_scored_sample, write_sample_trace
 from retrieval_eval.score import aggregate, parse_clusters, score_prediction
 from retrieval_eval.trace import SERVICE_NAME, build_sample_trace, session_id_for_run, session_label
 import langfuse_sink
@@ -630,6 +633,316 @@ class CloneTests(unittest.TestCase):
             env=GIT_ENV,
         )
         return result.stdout
+
+
+def _pi_client(**overrides: object) -> Client:
+    body: dict[str, object] = {
+        "id": "pi",
+        "command": "pi",
+        "timeout_seconds": 600,
+        "kind": "pi",
+        "provider": "minimax-cn",
+        "model": "MiniMax-M3",
+        "thinking": "high",
+        "tools": "read,grep,find,ls,bash",
+        "env": {"MINIMAX_CN_API_KEY": "$MINIMAX_API_KEY", "PI_TELEMETRY": "0"},
+    }
+    body.update(overrides)
+    return Client(**body)  # type: ignore[arg-type]
+
+
+class PiClientTests(unittest.TestCase):
+    def test_registry_keeps_codex_default_and_stores_env_references(self) -> None:
+        cells = load_cells()
+        self.assertEqual(len(cells), 1)
+        self.assertEqual(cells[0].client.kind, "codex")
+        self.assertEqual(cells[0].client.sandbox, "read-only")
+        selected = override_cells(
+            cells,
+            client_ids=["pi"],
+            sample_ids=["retrieval-smoke/edges-one"],
+        )
+        self.assertEqual(len(selected), 1)
+        client = selected[0].client
+        self.assertEqual(client.kind, "pi")
+        self.assertEqual(client.command, "pi")
+        self.assertIsNone(client.sandbox)
+        self.assertEqual(client.provider, "minimax-cn")
+        self.assertEqual(client.model, "MiniMax-M3")
+        self.assertEqual(client.thinking, "high")
+        self.assertEqual(client.tools, "read,grep,find,ls,bash")
+        self.assertEqual(client.timeout_seconds, 600)
+        self.assertEqual(client.env, {"MINIMAX_CN_API_KEY": "$MINIMAX_API_KEY", "PI_TELEMETRY": "0"})
+        self.assertEqual(
+            client.reasoning_metadata(),
+            {"provider": "minimax-cn", "model": "MiniMax-M3", "thinking": "high"},
+        )
+        samples = load_samples(selected[0].sample_path)
+        self.assertEqual([sample["id"] for sample in samples], ["edges_smoke_0008"])
+
+    def test_pi_command_is_minimal_kernel(self) -> None:
+        prompt = build_prompt("问题")
+        command = pi_command(_pi_client(), prompt)
+        self.assertEqual(
+            command,
+            [
+                "pi",
+                "--mode",
+                "json",
+                "--no-session",
+                "-ne",
+                "-ns",
+                "-np",
+                "-nc",
+                "--no-themes",
+                "--no-mcp",
+                "-na",
+                "--offline",
+                "--tools",
+                "read,grep,find,ls,bash",
+                "--model",
+                "minimax-cn/MiniMax-M3",
+                "--thinking",
+                "high",
+                "--",
+                prompt,
+            ],
+        )
+        self.assertNotIn("--sandbox", command)
+        self.assertNotIn("-o", command)
+        self.assertNotIn("MINIMAX", " ".join(command))
+
+    def test_print_command_for_pi_single_sample(self) -> None:
+        stderr = io.StringIO()
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = main(["print-command", "--client", "pi", "--samples", "retrieval-smoke/edges-one"])
+        text = stdout.getvalue()
+        self.assertEqual(code, 0)
+        self.assertIn("--mode json", text)
+        self.assertIn("--model minimax-cn/MiniMax-M3", text)
+        self.assertIn("--thinking high", text)
+        self.assertIn("--tools read,grep,find,ls,bash", text)
+        self.assertIn("--offline", text)
+        self.assertNotIn("codex exec", text)
+        self.assertNotIn("--sandbox", text)
+        self.assertNotIn("MINIMAX_API_KEY=", text)
+        self.assertEqual(stderr.getvalue(), "")
+
+    def test_run_closes_stdin_uses_repo_cwd_and_cleans_agent_dir(self) -> None:
+        secret = "test-minimax-key"
+        prompt = "问题"
+        answer = '{"predicted":["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"]}\n'
+        stdout = "\n".join(
+            [
+                json.dumps({"type": "session", "version": 3}),
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "stopReason": "stop",
+                            "content": [{"type": "text", "text": answer}],
+                            "provider": "minimax-cn",
+                            "model": "MiniMax-M3",
+                        },
+                    }
+                ),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            last = root / "last.txt"
+            seen: dict[str, object] = {}
+
+            def fake_run(command, **kwargs):
+                agent_dir = kwargs["env"]["PI_CODING_AGENT_DIR"]
+                seen["dir"] = agent_dir
+                self.assertTrue(Path(agent_dir).is_dir())
+                self.assertEqual(kwargs["cwd"], root)
+                self.assertIs(kwargs["stdin"], subprocess.DEVNULL)
+                self.assertEqual(kwargs["env"]["PI_TELEMETRY"], "0")
+                self.assertEqual(kwargs["env"]["MINIMAX_CN_API_KEY"], secret)
+                self.assertEqual(command[0], "pi")
+                self.assertNotIn(secret, command)
+                return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="pi-stderr\n")
+
+            with patch.dict(os.environ, {"MINIMAX_API_KEY": secret}, clear=False):
+                with patch("retrieval_eval.client.subprocess.run", side_effect=fake_run):
+                    call = run_client(_pi_client(), root, prompt, last)
+            self.assertFalse(Path(seen["dir"]).exists())
+            self.assertEqual(call.predicted, ["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"])
+            self.assertIsNone(call.parse_error)
+            self.assertEqual(call.stdout, stdout)
+            self.assertEqual(call.stderr, "pi-stderr\n")
+            self.assertEqual(last.read_text(encoding="utf-8"), answer)
+            self.assertNotIn(secret, call.stdout)
+            self.assertNotIn(secret, call.stderr or "")
+
+    def test_exit_zero_with_error_stop_reason_is_parse_error(self) -> None:
+        stdout = (EVAL_DIR / "tests" / "fixtures" / "pi_error.jsonl").read_text(encoding="utf-8")
+        predicted, error = parse_pi_answer(stdout, 0)
+        self.assertEqual(predicted, [])
+        self.assertEqual(error, "401 authentication_error: invalid api key")
+
+    def test_final_answer_joins_text_blocks_of_last_stop(self) -> None:
+        earlier = '{"predicted":["wrong.md"]}'
+        stdout = "\n".join(
+            [
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "stopReason": "stop",
+                            "content": [{"type": "text", "text": earlier}],
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "stopReason": "toolUse",
+                            "content": [{"type": "toolCall", "id": "1", "name": "read", "arguments": {}}],
+                        },
+                    }
+                ),
+                json.dumps({"type": "compaction_start"}),
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "stopReason": "stop",
+                            "content": [
+                                {"type": "thinking", "thinking": "ignore"},
+                                {"type": "text", "text": '{"predicted":'},
+                                {"type": "text", "text": '["a.py"]}'},
+                            ],
+                        },
+                    }
+                ),
+            ]
+        )
+        predicted, error = parse_pi_answer(stdout, 0)
+        self.assertIsNone(error)
+        self.assertEqual(predicted, ["a.py"])
+
+    def test_missing_referenced_env_skips_process_without_leaking(self) -> None:
+        secret = "test-minimax-key"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            env = os.environ.copy()
+            env.pop("MINIMAX_API_KEY", None)
+            with patch.dict(os.environ, env, clear=True):
+                with patch("retrieval_eval.client.subprocess.run") as run:
+                    call = run_client(_pi_client(), root, "问题", root / "last.txt")
+            run.assert_not_called()
+        self.assertEqual(call.parse_error, "missing environment variable MINIMAX_API_KEY")
+        self.assertNotIn(secret, call.parse_error or "")
+        self.assertEqual(call.predicted, [])
+        self.assertEqual(call.stdout, "")
+
+    def test_version_is_first_stdout_line(self) -> None:
+        with patch("retrieval_eval.client.subprocess.run") as run:
+            run.return_value = subprocess.CompletedProcess(["pi", "--version"], 0, stdout="1.3.0\n", stderr="")
+            self.assertEqual(read_command_version("pi"), "1.3.0")
+            self.assertIs(run.call_args.kwargs["stdin"], subprocess.DEVNULL)
+        with patch("retrieval_eval.client.subprocess.run") as run:
+            run.return_value = subprocess.CompletedProcess(["pi", "--version"], 1, stdout="", stderr="no")
+            self.assertIsNone(read_command_version("pi"))
+
+    def test_sample_trace_dispatches_on_client_kind(self) -> None:
+        events = (EVAL_DIR / "tests" / "fixtures" / "pi_error.jsonl").read_text(encoding="utf-8")
+        codex_trace = build_sample_trace(
+            events_jsonl=events,
+            cell_id="cell",
+            sample_id="edges_smoke_0008",
+            client_id="pi",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="问题",
+            score_row={"predicted": [], "parse_error": "401 authentication_error: invalid api key"},
+        )
+        self.assertEqual(len(codex_trace.spans), 1)
+        pi_trace = build_sample_trace(
+            events_jsonl=events,
+            cell_id="cell",
+            sample_id="edges_smoke_0008",
+            client_id="pi",
+            client_kind="pi",
+            client_version="1.3.0",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="问题",
+            score_row={"predicted": [], "parse_error": "401 authentication_error: invalid api key"},
+            reasoning={"provider": "minimax-cn", "model": "MiniMax-M3", "thinking": "high"},
+        )
+        self.assertEqual(pi_trace.metadata["model"], "MiniMax-M3")
+        self.assertEqual(pi_trace.metadata["provider"], "minimax-cn")
+        self.assertEqual(pi_trace.metadata["client_version"], "1.3.0")
+        self.assertNotIn("codex_version", pi_trace.metadata)
+        self.assertGreater(len(pi_trace.spans), 1)
+        self.assertEqual(pi_trace.spans[0].attributes["thinking"], "high")
+        generation = next(span for span in pi_trace.spans if span.kind == "generation")
+        self.assertEqual(generation.status, "error")
+        self.assertEqual(generation.attributes["stopReason"], "error")
+
+    def test_pi_root_span_covers_fixture_children(self) -> None:
+        events = (
+            EVAL_DIR.parent / "observation" / "langfuse_sink" / "tests" / "fixtures" / "pi_success.jsonl"
+        ).read_text(encoding="utf-8")
+        upload = 2_000_000_000_000_000_000
+        with patch("retrieval_eval.trace._now_ns", return_value=upload):
+            trace = build_sample_trace(
+                events_jsonl=events,
+                cell_id="edges__pi__retrieval-smoke_edges-one",
+                sample_id="edges_smoke_0008",
+                client_id="pi",
+                client_kind="pi",
+                repository_id="edges",
+                repository_url="https://github.com/VirusPC/edges.git",
+                repository_ref="main",
+                repository_commit="abc",
+                prompt="问题",
+                score_row={"predicted": ["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"], "score": 1.0},
+            )
+        root, *children = trace.spans
+        self.assertGreater(len(children), 1)
+        child_start = min(span.start_time_unix_nano for span in children)
+        child_end = max(span.end_time_unix_nano for span in children)
+        self.assertLess(child_start, upload)
+        self.assertEqual(root.start_time_unix_nano, child_start)
+        self.assertEqual(root.end_time_unix_nano, max(upload + 1_000_000, child_end))
+        for child in children:
+            self.assertGreaterEqual(child.start_time_unix_nano, root.start_time_unix_nano)
+            self.assertLessEqual(child.end_time_unix_nano, root.end_time_unix_nano)
+
+    def test_codex_root_span_stays_on_upload_clock(self) -> None:
+        upload = 5_000_000_000
+        with patch("retrieval_eval.trace._now_ns", return_value=upload):
+            trace = build_sample_trace(
+                events_jsonl=_events(),
+                cell_id="cell",
+                sample_id="s1",
+                client_id="codex",
+                repository_id="edges",
+                repository_url="https://github.com/VirusPC/edges.git",
+                repository_ref="main",
+                repository_commit="abc",
+                prompt="问题",
+                score_row={"predicted": ["a"], "score": 1.0},
+            )
+        root, *children = trace.spans
+        self.assertGreater(len(children), 0)
+        self.assertEqual(root.start_time_unix_nano, upload)
+        self.assertEqual(root.end_time_unix_nano, upload + (len(children) + 1) * 1_000_000)
 
 
 if __name__ == "__main__":

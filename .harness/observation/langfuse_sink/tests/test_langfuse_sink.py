@@ -22,7 +22,9 @@ from langfuse_sink import (  # noqa: E402
     codex_event_value,
     exporter_from_env,
     make_session_id,
+    pi_event_value,
     spans_from_codex_jsonl,
+    spans_from_pi_jsonl,
 )
 from langfuse_sink.model import new_span_id, new_trace_id  # noqa: E402
 from langfuse_sink.smoke import smoke_trace  # noqa: E402
@@ -279,6 +281,242 @@ class CodexSpanTests(unittest.TestCase):
         )
 
 
+class PiSpanTests(unittest.TestCase):
+    def test_success_fixture_becomes_reasoning_message_generation_and_tool(self) -> None:
+        events = Path(__file__).parent.joinpath("fixtures", "pi_success.jsonl").read_text(encoding="utf-8")
+        trace_id = "c" * 32
+        parent = "d" * 16
+        start = 5_000
+        spans = spans_from_pi_jsonl(
+            events,
+            trace_id=trace_id,
+            parent_id=parent,
+            start_time_unix_nano=start,
+        )
+        self.assertEqual(
+            [span.name for span in spans],
+            [
+                "reasoning",
+                "generation",
+                "grep",
+                "reasoning",
+                "generation",
+                "grep",
+                "generation",
+                "bash",
+                "read",
+                "reasoning",
+                "agent_message",
+                "generation",
+            ],
+        )
+        self.assertEqual(pi_event_value(events, ("model",)), "MiniMax-M3")
+        self.assertEqual(pi_event_value(events, ("provider",)), "minimax-cn")
+        self.assertIsNone(pi_event_value("not json\n", ("model",)))
+        first_gen = spans[1]
+        self.assertEqual(first_gen.kind, "generation")
+        assert first_gen.usage is not None
+        self.assertEqual(first_gen.usage.input_tokens, 1619 + 128 + 0)
+        self.assertEqual(first_gen.usage.output_tokens, 88)
+        self.assertEqual(first_gen.usage.reasoning_tokens, 59)
+        self.assertEqual(first_gen.usage.cached_input_tokens, 128)
+        self.assertEqual(first_gen.usage.model, "MiniMax-M3")
+        self.assertEqual(first_gen.attributes["stopReason"], "toolUse")
+        self.assertNotIn("cost.total", first_gen.attributes)
+        self.assertEqual(json.dumps(first_gen.usage.cost), json.dumps(0.00059898))
+        self.assertIsNone(first_gen.status)
+        third_gen = spans[6]
+        assert third_gen.usage is not None
+        self.assertIsNone(third_gen.usage.reasoning_tokens)
+        self.assertEqual(third_gen.usage.input_tokens, 60 + 1853 + 0)
+        tool = spans[2]
+        self.assertEqual(tool.kind, "tool")
+        self.assertEqual(tool.input, json.dumps({"pattern": "function needle"}, ensure_ascii=False))
+        self.assertEqual(tool.output, "No matches found")
+        self.assertIsNone(tool.status)
+        self.assertEqual(spans[7].input, json.dumps({"command": "wc -l a.py"}, ensure_ascii=False))
+        self.assertEqual(spans[7].output, "2 a.py\n")
+        self.assertEqual(spans[10].kind, "span")
+        self.assertEqual(spans[10].output, "`a.py` returns 2.")
+        self.assertEqual(spans[0].kind, "span")
+        self.assertTrue(spans[0].output)
+        self.assertNotIn("thinkingSignature", spans[0].output or "")
+        for span in spans:
+            self.assertEqual(span.trace_id, trace_id)
+            self.assertEqual(span.parent_id, parent)
+            self.assertFalse(any(key.startswith("langfuse.") for key in span.attributes))
+        ms = 1_000_000
+        self.assertEqual(spans[0].start_time_unix_nano, 1792384899455 * ms)
+        self.assertEqual(spans[0].end_time_unix_nano, (1792384899455 + 2571) * ms)
+        self.assertEqual(spans[1].start_time_unix_nano, spans[0].start_time_unix_nano)
+        self.assertEqual(spans[1].end_time_unix_nano, spans[0].end_time_unix_nano)
+        self.assertEqual(spans[2].start_time_unix_nano, spans[0].end_time_unix_nano)
+        self.assertEqual(spans[2].end_time_unix_nano, spans[2].start_time_unix_nano + 12 * ms)
+        self.assertEqual(spans[7].start_time_unix_nano, spans[8].start_time_unix_nano)
+        self.assertEqual(spans[7].end_time_unix_nano, spans[7].start_time_unix_nano + 7 * ms)
+        self.assertEqual(spans[8].end_time_unix_nano, spans[8].start_time_unix_nano + 8 * ms)
+        self.assertNotEqual(spans[0].start_time_unix_nano, start + ms)
+        self.assertEqual(len(spans), 12)
+
+    def test_span_times_use_event_clock_and_fall_back_to_steps(self) -> None:
+        events = "\n".join(
+            [
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "timestamp": 1_000,
+                            "durationMs": 40,
+                            "stopReason": "toolUse",
+                            "content": [
+                                {"type": "thinking", "thinking": "a"},
+                                {"type": "text", "text": "b"},
+                            ],
+                            "usage": {"input": 1, "output": 1},
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_start",
+                        "toolCallId": "t1",
+                        "toolName": "read",
+                        "args": {},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_start",
+                        "toolCallId": "t2",
+                        "toolName": "bash",
+                        "args": {},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_end",
+                        "toolCallId": "t1",
+                        "toolName": "read",
+                        "durationMs": 5,
+                        "result": {"content": [{"type": "text", "text": "x"}]},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_end",
+                        "toolCallId": "t2",
+                        "toolName": "bash",
+                        "durationMs": 9,
+                        "result": {"content": [{"type": "text", "text": "y"}]},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_start",
+                        "toolCallId": "t3",
+                        "toolName": "grep",
+                        "args": {},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_end",
+                        "toolCallId": "t3",
+                        "toolName": "grep",
+                        "durationMs": 3,
+                        "result": {"content": [{"type": "text", "text": "z"}]},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "stopReason": "stop",
+                            "content": [{"type": "text", "text": "no time"}],
+                        },
+                    }
+                ),
+            ]
+        )
+        base = 5_000
+        spans = spans_from_pi_jsonl(events, trace_id="c" * 32, parent_id="d" * 16, start_time_unix_nano=base)
+        ms = 1_000_000
+        self.assertEqual(
+            [span.name for span in spans],
+            ["reasoning", "agent_message", "generation", "read", "bash", "grep", "agent_message", "generation"],
+        )
+        for span in spans[:3]:
+            self.assertEqual(span.start_time_unix_nano, 1_000 * ms)
+            self.assertEqual(span.end_time_unix_nano, 1_040 * ms)
+        self.assertEqual(spans[3].start_time_unix_nano, 1_040 * ms)
+        self.assertEqual(spans[3].end_time_unix_nano, 1_045 * ms)
+        self.assertEqual(spans[4].start_time_unix_nano, 1_040 * ms)
+        self.assertEqual(spans[4].end_time_unix_nano, 1_049 * ms)
+        self.assertEqual(spans[5].start_time_unix_nano, 1_049 * ms)
+        self.assertEqual(spans[5].end_time_unix_nano, 1_052 * ms)
+        self.assertEqual(spans[6].start_time_unix_nano, base + 7 * ms)
+        self.assertEqual(spans[6].end_time_unix_nano, base + 8 * ms)
+        self.assertEqual(spans[7].start_time_unix_nano, base + 8 * ms)
+        self.assertEqual(spans[7].end_time_unix_nano, base + 9 * ms)
+
+    def test_error_fixture_marks_generation_status(self) -> None:
+        events = Path(__file__).parent.joinpath("fixtures", "pi_error.jsonl").read_text(encoding="utf-8")
+        spans = spans_from_pi_jsonl(events, trace_id="c" * 32, parent_id="d" * 16, start_time_unix_nano=0)
+        self.assertEqual([span.kind for span in spans], ["generation"])
+        self.assertEqual(spans[0].status, "error")
+        self.assertEqual(spans[0].attributes["stopReason"], "error")
+        self.assertEqual(spans[0].attributes["errorMessage"], "401 authentication_error: invalid api key")
+        assert spans[0].usage is not None
+        self.assertEqual(spans[0].usage.input_tokens, 0)
+        self.assertIsNone(spans[0].usage.reasoning_tokens)
+
+    def test_tool_error_unknown_events_and_span_cap(self) -> None:
+        lines = [
+            "not-json",
+            "{",
+            json.dumps({"type": "message_update", "delta": "x"}),
+            json.dumps({"type": "tool_execution_update", "toolCallId": "1"}),
+            json.dumps({"type": "auto_retry_start"}),
+            json.dumps({"type": "compaction_end"}),
+            json.dumps(
+                {
+                    "type": "tool_execution_start",
+                    "toolCallId": "1",
+                    "toolName": "bash",
+                    "args": {"command": "false"},
+                }
+            ),
+            json.dumps(
+                {
+                    "type": "tool_execution_end",
+                    "toolCallId": "1",
+                    "toolName": "bash",
+                    "isError": True,
+                    "result": {"content": [{"type": "text", "text": "boom"}]},
+                }
+            ),
+        ]
+        for index in range(45):
+            lines.append(
+                json.dumps(
+                    {
+                        "type": "tool_execution_end",
+                        "toolCallId": f"extra-{index}",
+                        "toolName": "read",
+                        "isError": False,
+                        "result": {"content": [{"type": "text", "text": str(index)}]},
+                    }
+                )
+            )
+        spans = spans_from_pi_jsonl("\n".join(lines), trace_id="c" * 32, parent_id="d" * 16, start_time_unix_nano=0)
+        self.assertEqual(len(spans), 40)
+        self.assertEqual(spans[0].status, "error")
+        self.assertEqual(spans[0].output, "boom")
+        self.assertEqual(spans[0].input, json.dumps({"command": "false"}, ensure_ascii=False))
+
+
 class ExporterTests(unittest.TestCase):
     def test_missing_env_is_noop_and_does_not_post(self) -> None:
         capture = _Capture()
@@ -343,10 +581,11 @@ class ExporterTests(unittest.TestCase):
         self.assertNotIn("pk-test", joined)
         turn = next(span for span in spans if span["name"] == "turn.completed")
         usage = json.loads(turn["langfuse.observation.usage_details"])
-        self.assertEqual(usage["input"], 11)
+        self.assertEqual(usage["input"], 7)
         self.assertEqual(usage["output"], 3)
         self.assertEqual(usage["input_cached_tokens"], 4)
         self.assertEqual(usage["reasoning_output_tokens"], 1)
+        self.assertEqual(usage["input"] + usage["input_cached_tokens"] + usage["output"], 14)
         self.assertEqual(turn["gen_ai.usage.input_tokens"], "11")
         self.assertEqual(turn["gen_ai.usage.output_tokens"], "3")
         self.assertEqual(turn["langfuse.observation.type"], "generation")
@@ -443,6 +682,76 @@ class ExporterTests(unittest.TestCase):
         self.assertEqual(timed_out.status, "failed")
         self.assertEqual(timed_out.error, "TimeoutError")
         self.assertEqual(stderr.getvalue(), "")
+
+    def test_usage_details_subtract_cache_and_keep_genai_input(self) -> None:
+        trace = Trace(
+            name="usage",
+            spans=[
+                Span(
+                    trace_id="c" * 32,
+                    span_id="d" * 16,
+                    name="generation",
+                    start_time_unix_nano=1,
+                    end_time_unix_nano=2,
+                    kind="generation",
+                    usage=Usage(
+                        input_tokens=13839,
+                        output_tokens=701,
+                        cached_input_tokens=13056,
+                        reasoning_tokens=10,
+                        cost=0.5,
+                    ),
+                )
+            ],
+        )
+        capture = _Capture()
+        exporter_from_env(
+            {
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        ).export(trace)
+        span = _span_attributes(json.loads(capture.requests[0].data.decode("utf-8")))[0]
+        usage = json.loads(span["langfuse.observation.usage_details"])
+        self.assertEqual(usage["input"], 783)
+        self.assertEqual(usage["output"], 701)
+        self.assertEqual(usage["input_cached_tokens"], 13056)
+        self.assertEqual(usage["reasoning_output_tokens"], 10)
+        self.assertEqual(usage["input"] + usage["input_cached_tokens"] + usage["output"], 14540)
+        self.assertEqual(span["gen_ai.usage.input_tokens"], "13839")
+        self.assertEqual(json.loads(span["langfuse.observation.cost_details"]), {"total": 0.5})
+
+        floor = Trace(
+            name="floor",
+            spans=[
+                Span(
+                    trace_id="e" * 32,
+                    span_id="f" * 16,
+                    name="generation",
+                    start_time_unix_nano=1,
+                    end_time_unix_nano=2,
+                    kind="generation",
+                    usage=Usage(input_tokens=3, cached_input_tokens=10),
+                )
+            ],
+        )
+        capture = _Capture()
+        exporter_from_env(
+            {
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        ).export(floor)
+        span = _span_attributes(json.loads(capture.requests[0].data.decode("utf-8")))[0]
+        usage = json.loads(span["langfuse.observation.usage_details"])
+        self.assertEqual(usage["input"], 0)
+        self.assertEqual(usage["input_cached_tokens"], 10)
+        self.assertEqual(span["gen_ai.usage.input_tokens"], "3")
+        self.assertNotIn("langfuse.observation.cost_details", span)
 
     def test_status_and_long_attribute_are_mapped(self) -> None:
         trace = Trace(

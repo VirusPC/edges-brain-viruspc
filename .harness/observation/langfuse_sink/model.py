@@ -37,6 +37,7 @@ class Usage:
     reasoning_tokens: int | None = None
     model: str | None = None
     cached_input_tokens: int | None = None
+    cost: int | float | None = None
 
 
 @dataclass

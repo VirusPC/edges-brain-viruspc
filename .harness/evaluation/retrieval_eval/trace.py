@@ -20,8 +20,10 @@ from langfuse_sink import (
     make_session_id,
     new_span_id,
     new_trace_id,
+    pi_event_value,
     sanitize_label,
     spans_from_codex_jsonl,
+    spans_from_pi_jsonl,
 )
 
 SERVICE_NAME = "edges-retrieval-eval"
@@ -75,12 +77,19 @@ def build_sample_trace(
     score_row: Mapping[str, Any],
     session_id: str | None = None,
     reasoning: Mapping[str, str] | None = None,
+    client_kind: str = "codex",
+    client_version: str | None = None,
 ) -> Trace:
-    """One sample: root span plus Codex child spans. No Langfuse key names."""
+    """One sample: root span plus client child spans. No Langfuse key names.
+
+    `client_kind` selects the JSONL adapter. `codex` reads Codex `exec --json`.
+    `pi` reads pi `--mode json`.
+    """
     trace_id = new_trace_id()
     root_id = new_span_id()
     start = _now_ns()
-    children = spans_from_codex_jsonl(
+    adapter = spans_from_pi_jsonl if client_kind == "pi" else spans_from_codex_jsonl
+    children = adapter(
         events_jsonl,
         trace_id=trace_id,
         parent_id=root_id,
@@ -88,12 +97,13 @@ def build_sample_trace(
     )
     predicted = score_row.get("predicted")
     output = json.dumps(predicted if isinstance(predicted, list) else [], ensure_ascii=False)
+    root_start, root_end = _root_window(start, children)
     root = Span(
         trace_id=trace_id,
         span_id=root_id,
         name=f"retrieval-eval {sample_id}",
-        start_time_unix_nano=start,
-        end_time_unix_nano=start + (len(children) + 1) * _STEP_NS,
+        start_time_unix_nano=root_start,
+        end_time_unix_nano=root_end,
         kind="span",
         input=prompt,
         output=output,
@@ -114,12 +124,29 @@ def build_sample_trace(
             repository_url=repository_url,
             repository_ref=repository_ref,
             repository_commit=repository_commit,
+            client_kind=client_kind,
+            client_version=client_version,
         ),
     )
 
 
 def _now_ns() -> int:
     return time.time_ns()
+
+
+def _root_window(start: int, children: Sequence[Span]) -> tuple[int, int]:
+    """Cover every child. Codex children sit just after `start`, so this matches the old window.
+
+    Pi children use event time, which can be earlier than the upload clock.
+    """
+    root_start = start
+    root_end = start + _STEP_NS
+    for child in children:
+        if child.start_time_unix_nano < root_start:
+            root_start = child.start_time_unix_nano
+        if child.end_time_unix_nano > root_end:
+            root_end = child.end_time_unix_nano
+    return root_start, root_end
 
 
 def _identity_metadata(
@@ -132,6 +159,8 @@ def _identity_metadata(
     repository_url: str,
     repository_ref: str | None,
     repository_commit: str | None,
+    client_kind: str = "codex",
+    client_version: str | None = None,
 ) -> dict[str, str]:
     metadata = {
         "cell_id": cell_id,
@@ -140,12 +169,21 @@ def _identity_metadata(
         "repository_id": repository_id,
         "repository_url": repository_url,
     }
-    optional = {
-        "repository_ref": _blank(repository_ref),
-        "repository_commit": _blank(repository_commit),
-        "model": codex_event_value(events_jsonl, ("model",)),
-        "codex_version": codex_event_value(events_jsonl, ("cli_version", "codex_version")),
-    }
+    if client_kind == "pi":
+        optional = {
+            "repository_ref": _blank(repository_ref),
+            "repository_commit": _blank(repository_commit),
+            "model": pi_event_value(events_jsonl, ("model",)),
+            "provider": pi_event_value(events_jsonl, ("provider",)),
+            "client_version": _blank(client_version),
+        }
+    else:
+        optional = {
+            "repository_ref": _blank(repository_ref),
+            "repository_commit": _blank(repository_commit),
+            "model": codex_event_value(events_jsonl, ("model",)),
+            "codex_version": codex_event_value(events_jsonl, ("cli_version", "codex_version")),
+        }
     for key, value in optional.items():
         if value is not None:
             metadata[key] = value
