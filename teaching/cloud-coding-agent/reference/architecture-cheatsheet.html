@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>架构速查 · coding-agent-template</title>
+<link rel="stylesheet" href="../assets/style.css">
+
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0001-life-of-a-task.html">第 1 课 · 任务的一生</a>
+  <a href="../lessons/0002-sandbox-lifecycle.html">第 2 课 · Sandbox 的生与死</a>
+  <a href="../lessons/0003-prebuilt-environments-and-isolation.html">第 3 课 · 预制环境与隔离</a>
+  <a href="../lessons/0004-caging-the-agent-cli.html">第 4 课 · CLI 关进笼子</a>
+  <a href="../lessons/0005-progress-back-to-the-browser.html">第 5 课 · 进度怎么回到网页</a>
+  <a href="../lessons/0006-secrets-and-trust-boundaries.html">第 6 课 · 密钥与信任边界</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html" aria-current="page">架构速查</a>
+  <a href="../notes/2026-10-19--cloud-coding-agent-architecture.html">学习笔记 · 10-19</a>
+</nav>
+
+<h1>架构速查</h1>
+<p class="subtitle">coding-agent-template 一页纸。面试前扫一遍就够。</p>
+
+<div class="cards">
+  <div class="card"><h3>一句话</h3><p>Next.js 应用接任务、写进 Postgres，用 <code>after()</code> 在后台开 Vercel Sandbox，把仓库拉进去，让现成的 Agent CLI 改代码，模型请求走 AI Gateway，最后推送到任务分支，用户再点一下开 PR。</p></div>
+  <div class="card"><h3>技术栈（以 package.json 为准）</h3><ul>
+    <li>Next.js 16.0.10、React 19.2.1 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/package.json#L57-L61">L57–61</a></li>
+    <li><code>@vercel/sandbox</code> ^0.0.21 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/package.json#L42">package.json L42</a></li>
+    <li>AI SDK <code>ai</code> 5.0.51 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/package.json#L45">package.json L45</a></li>
+    <li>Postgres（Neon）+ Drizzle <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/package.json#L23-L50">L23–50</a></li>
+    <li>Octokit 调 GitHub <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/package.json#L24">package.json L24</a></li>
+    <li>登录：arctic + jose（不是 README 说的 NextAuth）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/package.json#L46-L51">L46–51</a></li></ul></div>
+</div>
+
+<h2>九步与文件</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>步骤</th><th>在哪里跑</th><th>关键代码</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>查登录和次数，写 tasks 表，立刻回话</td><td>Next.js</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L48-L91">app/api/tasks/route.ts L48–91</a></td></tr>
+<tr><td>2</td><td><code>after()</code>：起分支名、起标题、跑后台流程</td><td>Next.js</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L93-L243">app/api/tasks/route.ts L93–243</a></td></tr>
+<tr><td>3</td><td><code>Sandbox.create()</code>：node22、4 核、时长 = 最长时长</td><td>Sandbox</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L81-L103">lib/sandbox/creation.ts L81–103</a></td></tr>
+<tr><td>4</td><td>令牌进地址，浅克隆，装依赖，建任务分支</td><td>Sandbox</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L111-L134">lib/sandbox/creation.ts L111–134</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L840-L978">lib/sandbox/creation.ts L840–978</a></td></tr>
+<tr><td>5</td><td>装 Agent CLI、写配置、免确认模式运行</td><td>Sandbox</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L78-L148">lib/sandbox/agents/index.ts L78–148</a></td></tr>
+<tr><td>6</td><td>日志追加进 tasks.logs，网页每 5 秒拉取</td><td>数据库</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L16-L55">lib/utils/task-logger.ts L16–55</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/hooks/use-task.ts#L73-L83">lib/hooks/use-task.ts L73–83</a></td></tr>
+<tr><td>7</td><td>有改动就 add / commit / push</td><td>Sandbox → GitHub</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L5-L73">lib/sandbox/git.ts L5–73</a></td></tr>
+<tr><td>8</td><td>用户点按钮，后端 <code>pulls.create</code></td><td>Next.js → GitHub</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/pr/route.ts#L60-L83">app/api/tasks/[taskId]/pr/route.ts L60–83</a></td></tr>
+<tr><td>9</td><td>Keep Alive 关：结束进程；开：留着，追问时 <code>Sandbox.get()</code></td><td>Sandbox</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L75-L100">lib/sandbox/git.ts L75–100</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L169-L189">app/api/tasks/[taskId]/continue/route.ts L169–189</a></td></tr>
+</tbody></table></div>
+
+<h2>六个 Agent CLI 怎么装、怎么跑</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Agent</th><th>安装</th><th>运行方式</th><th>需要的密钥</th></tr></thead>
+<tbody>
+<tr><td>Claude Code</td><td>官方安装脚本 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L80">lib/sandbox/agents/claude.ts L80</a></td><td><code>--dangerously-skip-permissions --output-format stream-json</code>，后台运行、边读边写库 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L278">lib/sandbox/agents/claude.ts L278</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L415-L430">lib/sandbox/agents/claude.ts L415–430</a></td><td>AI Gateway（通过 <code>ANTHROPIC_BASE_URL</code> 指过去）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L257-L259">lib/sandbox/agents/claude.ts L257–259</a></td></tr>
+<tr><td>Codex CLI</td><td><code>npm i -g @openai/codex</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L52">lib/sandbox/agents/codex.ts L52</a></td><td><code>codex exec --dangerously-bypass-approvals-and-sandbox</code>，等跑完一次性收输出 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L282-L311">lib/sandbox/agents/codex.ts L282–311</a></td><td>AI Gateway（<code>vck_</code> 开头）或 OpenAI（<code>sk-</code>）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L88-L183">lib/sandbox/agents/codex.ts L88–183</a></td></tr>
+<tr><td>Cursor CLI</td><td>官方安装脚本 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L85">lib/sandbox/agents/cursor.ts L85</a></td><td><code>cursor-agent -p --force --output-format stream-json</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L288">lib/sandbox/agents/cursor.ts L288</a></td><td>Cursor 密钥 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L169-L175">lib/sandbox/agents/cursor.ts L169–175</a></td></tr>
+<tr><td>Gemini CLI</td><td><code>npm i -g @google/gemini-cli</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L64">lib/sandbox/agents/gemini.ts L64</a></td><td><code>--yolo</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L212">lib/sandbox/agents/gemini.ts L212</a></td><td>Gemini 密钥 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L177-L180">lib/sandbox/agents/gemini.ts L177–180</a></td></tr>
+<tr><td>Copilot CLI</td><td><code>npm i -g @github/copilot</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L62">lib/sandbox/agents/copilot.ts L62</a></td><td><code>-p … --allow-all-tools --no-color</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L280-L292">lib/sandbox/agents/copilot.ts L280–292</a></td><td>用户的 GitHub 令牌 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L49-L54">lib/sandbox/agents/index.ts L49–54</a></td></tr>
+<tr><td>opencode</td><td><code>npm i -g opencode-ai</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L88">lib/sandbox/agents/opencode.ts L88</a></td><td><code>opencode run</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L325">lib/sandbox/agents/opencode.ts L325</a></td><td>OpenAI 或 Anthropic 密钥 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L60">lib/sandbox/agents/opencode.ts L60</a></td></tr>
+</tbody></table></div>
+
+<h2>tasks 表里最重要的字段</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>字段</th><th>意思</th></tr></thead>
+<tbody>
+<tr><td><code>status</code></td><td>pending → processing → completed / error / stopped <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L90-L94">lib/db/schema.ts L90–94</a></td></tr>
+<tr><td><code>progress</code>、<code>logs</code></td><td>进度百分比和日志数组（jsonb）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L95-L96">lib/db/schema.ts L95–96</a></td></tr>
+<tr><td><code>branchName</code>、<code>sandboxId</code>、<code>sandboxUrl</code></td><td>任务分支、Sandbox 编号（追问时靠它重连）、预览地址 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L98-L101">lib/db/schema.ts L98–101</a></td></tr>
+<tr><td><code>agentSessionId</code></td><td>Agent CLI 的会话编号，追问时用来接着上次聊 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L100">lib/db/schema.ts L100</a></td></tr>
+<tr><td><code>prUrl</code>、<code>prNumber</code>、<code>prStatus</code></td><td>PR 地址、编号、状态（open / closed / merged）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L103-L108">lib/db/schema.ts L103–108</a></td></tr>
+<tr><td><code>keepAlive</code>、<code>maxDuration</code></td><td>是否保留 Sandbox、最长时长（默认 300 分钟）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L87-L88">lib/db/schema.ts L87–88</a></td></tr>
+</tbody></table></div>
+<p>其他表：<code>users</code>（登录身份和加密令牌）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L14-L39">lib/db/schema.ts L14–39</a>、<code>accounts</code>（用 Vercel 登录的人另外连接的 GitHub）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L258">lib/db/schema.ts L258</a>、<code>keys</code>（用户自存的加密密钥）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L318">lib/db/schema.ts L318</a>、<code>connectors</code>（MCP 服务器）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L184">lib/db/schema.ts L184</a>、<code>task_messages</code>（对话记录）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L360">lib/db/schema.ts L360</a>、<code>settings</code>（按用户覆盖的配置）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L392">lib/db/schema.ts L392</a>。</p>
+
+<h2>密钥和安全，一屏看完</h2>
+<ul>
+<li>平台级：<code>SANDBOX_VERCEL_TOKEN / TEAM_ID / PROJECT_ID</code> 用来开 Sandbox；<code>JWE_SECRET</code> 加密登录会话；<code>ENCRYPTION_KEY</code> 加密数据库里的令牌和密钥。<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/README.md#L190-L199">README.md L190–199</a></li>
+<li>会话用 jose 的 JWE（A256GCM）加密 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/jwe/encrypt.ts#L1-L15">lib/jwe/encrypt.ts L1–15</a>；数据库字段用 AES-256-CBC 加密 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/crypto.ts#L3-L35">lib/crypto.ts L3–35</a>。</li>
+<li>用户密钥优先，没有就用平台环境变量 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/api-keys/user-keys.ts#L15-L67">lib/api-keys/user-keys.ts L15–67</a>。</li>
+<li>GitHub 令牌被直接写进克隆地址，所以 Sandbox 里的 Agent 也看得到它 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/config.ts#L69-L86">lib/sandbox/config.ts L69–86</a>。</li>
+<li>每日次数上限默认 5（任务 + 追问一起算）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/README.md#L266">README.md L266</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/rate-limit.ts#L20-L43">lib/utils/rate-limit.ts L20–43</a>。</li>
+</ul>
+
+<h2>Sandbox 的一生（第 2 课）</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>时刻</th><th>发生什么</th><th>关键代码</th></tr></thead>
+<tbody>
+<tr><td>创建</td><td><code>Sandbox.create()</code>：node22、4 核、端口、<code>timeout</code> = 最长时长（分钟 → 毫秒）；不传仓库，自己克隆</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L73-L103">lib/sandbox/creation.ts L73–L103</a></td></tr>
+<tr><td>运行</td><td><code>git clone --depth 1</code> 到 <code>/vercel/sandbox/project</code>，装依赖、跑 Agent、推送</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L111-L134">lib/sandbox/creation.ts L111–L134</a></td></tr>
+<tr><td>Keep Alive 关</td><td>只 <code>pkill</code> 进程 → 机器空转到超时；出错也一样</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L75-L100">lib/sandbox/git.ts L75–L100</a></td></tr>
+<tr><td>Keep Alive 开</td><td>留着；追问时读 <code>sandboxId</code>，<code>Sandbox.get()</code> 重连，报错才新开</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L162-L243">app/api/tasks/[taskId]/continue/route.ts L162–L243</a></td></tr>
+<tr><td>手动停止</td><td><code>Sandbox.get()</code> → <code>sandbox.stop()</code> → 清空 <code>sandboxId</code></td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/stop-sandbox/route.ts#L35-L57">app/api/tasks/[taskId]/stop-sandbox/route.ts L35–L57</a></td></tr>
+<tr><td>中途超时</td><td>计时器赛跑赢了 → 任务标 error；后台流程不被取消；没推送的改动丢失</td><td><a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L276-L331">app/api/tasks/route.ts L276–L331</a></td></tr>
+</tbody></table></div>
+<ul>
+<li>对不上的地方：注释说 SDK“没有关机方法”，但锁定的 0.0.21 就有 <code>stop()</code>；README 说 Keep Alive 关了不能追问，追问接口其实会新开一台；<code>vercel.json</code> 给任务接口的函数时长上限是 300 <em>秒</em> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/vercel.json#L1-L8">vercel.json L1–L8</a>。</li>
+<li>今天的 Vercel Sandbox：有名字、默认持久化（停下自动快照、下次自动复活）、快照默认 30 天过期、单个会话最长 24 小时（Pro / Enterprise，2026-06-16 起；Hobby 45 分钟）、<code>extendTimeout()</code> 可加时。<a href="https://vercel.com/kb/guide/vercel-sandbox-duration-and-persistence">官方指南</a></li>
+<li>成本：按 CPU 实际使用时间 + 内存 × 开机时长计费，后者闲着也算 → 空转不是免费的。</li>
+</ul>
+
+<h2>预制环境与隔离（第 3 课）</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>层</th><th>放什么</th><th>什么时候过时</th><th>模板现在</th></tr></thead>
+<tbody>
+<tr><td>① 基础镜像</td><td>系统、系统包、语言版本、Agent CLI（Dockerfile → <code>vercel vcr build</code> → VCR → <code>Sandbox.create({ image })</code>）</td><td>按周 / 月重建，补安全更新</td><td>没有：只传 <code>runtime: 'node22'</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L81-L103">creation.ts L81–L103</a></td></tr>
+<tr><td>② setup 脚本</td><td>克隆、装依赖、生成代码；可联网，密钥只在这里</td><td>脚本、环境变量、secrets 改了</td><td>每个任务都跑：克隆、装依赖、dnf 装 25 个 Chromium 库、装 CLI <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L165-L324">L165–L324</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L513-L565">L513–L565</a></td></tr>
+<tr><td>③ 快照 / 缓存</td><td>setup 的结果（<code>source: { type: 'snapshot' }</code>；Drives 放共享缓存）</td><td>lockfile 变了、代码走远了、30 天没用被删</td><td>没有：SDK 0.0.21 只有 git / tarball 两种 source</td></tr>
+<tr><td>④ 任务阶段</td><td>Agent 改代码、测试、推送</td><td>—</td><td>令牌在克隆地址里，网络默认全开</td></tr>
+</tbody></table></div>
+<ul>
+<li>Vercel 自定义镜像：只支持 <code>linux/amd64</code>；<strong>不运行 ENTRYPOINT / CMD</strong>，用 <code>runCommand()</code> 起进程；<code>WORKDIR</code> 生效。默认镜像 <code>vercel/sandbox/universal</code>（Ubuntu）。<code>runtime</code> 已弃用；旧 runtime 跑 Amazon Linux 2023（dnf）。<a href="https://vercel.com/docs/vercel-sandbox/concepts/images">Images</a></li>
+<li>持久 Sandbox：<code>getOrCreate({ name, onCreate, onResume })</code>，快照过期会重建并重跑 <code>onCreate</code> → setup 要能重复跑。Drives 2026-10-15 起 GA。<a href="https://vercel.com/docs/sandbox/sdk-reference">SDK Reference</a></li>
+<li>两条规则：密钥只在 setup，绝不进镜像或快照；Agent 阶段收紧网络（<code>networkPolicy</code> 默认 allow-all）。</li>
+<li>对照：Codex（setup + maintenance 脚本、缓存最多 12 小时、secrets 只给 setup、Agent 默认断网）· Copilot（<code>copilot-setup-steps.yml</code>，secrets 全程是环境变量，靠防火墙）· Codespaces prebuild（跑到 <code>updateContentCommand</code>，拍容器快照）· Cursor（Dockerfile + 幂等 <code>install</code>，成功的 Build 拍磁盘）· E2B templates（连运行中的进程一起拍，约 80 毫秒载入）。</li>
+<li><strong>不是 Docker</strong>：“each sandbox runs in its own Firecracker microVM with a dedicated kernel” <a href="https://vercel.com/docs/sandbox/concepts#sandboxes-vs-containers">Vercel 文档</a>。容器共用宿主内核（namespaces + cgroups）；microVM 各有内核（KVM）；gVisor 在用户态拦系统调用。OCI 镜像 = 文件系统层 + 配置，Vercel 只用前者当根文件系统。</li>
+</ul>
+
+<h2>Agent CLI 适配层与笼子（第 4 课）</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>CLI</th><th>怎么装（每个任务都装，不锁版本）</th><th>怎么跑</th><th>今天要注意</th></tr></thead>
+<tbody>
+<tr><td>Claude</td><td>curl 官方 install.sh <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L80-L80">L80</a></td><td><code>claude --dangerously-skip-permissions --output-format stream-json</code>，没有 <code>-p</code></td><td>文档里 <code>--output-format</code> 只用于 print 模式；配置文件路径不在文档里</td></tr>
+<tr><td>Codex</td><td>npm <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L52-L52">L52</a></td><td><code>codex exec --dangerously-bypass-approvals-and-sandbox</code></td><td><code>wire_api = "chat"</code> 2026 年 2 月已移除；续聊官方写法是 <code>codex exec resume --last</code></td></tr>
+<tr><td>Copilot</td><td>npm <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L62-L62">L62</a></td><td><code>copilot -p … --allow-all-tools --no-color</code>（参数数组）</td><td>会话编号从不赋值，续聊丢上下文</td></tr>
+<tr><td>Cursor</td><td>curl cursor.com/install <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L85-L85">L85</a></td><td><code>cursor-agent -p --force --output-format stream-json</code></td><td>文档里命令现名 <code>agent</code>；240 秒后不等 Agent 结束就往下走</td></tr>
+<tr><td>Gemini</td><td>npm <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L64-L64">L64</a></td><td><code>gemini --yolo -o json "…"</code></td><td><code>--yolo</code> 已弃用；无续聊</td></tr>
+<tr><td>opencode</td><td>npm <code>opencode-ai</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L88-L88">L88</a></td><td><code>opencode run "…"</code></td><td>默认放行一切；<code>auth add</code> 文档里没有</td></tr>
+</tbody></table></div>
+<ul>
+<li>入口：<code>executeAgentInSandbox</code> 按名字 switch 到 6 个文件，没有共同接口；用户自带的密钥临时换进 <code>process.env</code>，结束再换回 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L56-L75">index.ts L56–L75</a>。</li>
+<li>AI Gateway：只有 Claude 和 Codex 走；其他 4 家直连各自厂商。</li>
+<li>MCP：Claude 用 <code>claude mcp add</code>，Codex 写 <code>config.toml</code>，其余写各自 JSON。本地 MCP 的环境变量在 4 家里被二次 <code>JSON.parse</code>，抛错后只记一条警告，于是被丢掉（这是推断）。</li>
+<li>笼子是什么：<strong>Sandbox 就是边界</strong>。CLI 开无确认模式、网络默认全开、密钥在环境变量和配置文件里，Agent 能读到也能发出去。</li>
+<li>能收紧的：<code>networkPolicy</code> 改成按域名放行；用 <code>transform</code> 让 Sandbox 外面的代理注入密钥（按 SNI 匹配；<code>*</code> 兜底会放过不带 SNI 的流量；CIDR 规则不做注入）<a href="https://vercel.com/docs/vercel-sandbox/concepts/firewall">Firewall 文档</a>。</li>
+<li>脱敏：正则遮掉密钥，保留首尾各 4 位；<code>[sk-]</code> 写错；task_messages 表里存的 Agent 输出不过脱敏。</li>
+</ul>
+
+<h2>进度链路与任务状态（第 5 课）</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>一段</th><th>做法</th><th>毛病</th></tr></thead>
+<tbody>
+<tr><td>Sandbox → 服务器</td><td>服务器拉：SDK 对 <code>/cmd/{id}/logs</code> 开 NDJSON 长连接，写进 <code>Writable</code>。Claude、Cursor 分离运行，Copilot 不分离，三家边跑边解析；Codex、Gemini、opencode 跑完一次性读</td><td>长连接活在函数里，函数没了就没人读；Sandbox 从不回调</td></tr>
+<tr><td>服务器 → 数据库</td><td><code>tasks.logs</code>（JSON 数组列）由 <code>TaskLogger</code> 先 SELECT 再整列 UPDATE <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L37-L48">task-logger.ts</a>；Agent 回复每段整段覆盖 <code>task_messages.content</code>，不 await</td><td>并发丢日志；平方级写放大；回复可能停在旧版本（推断）</td></tr>
+<tr><td>数据库 → 浏览器</td><td><code>setInterval</code>：<code>/api/tasks/{id}</code> 5 秒、<code>/messages</code> 3 秒、<code>/api/tasks</code> 5 秒（侧边栏，全部任务带全部日志）；没有 SWR / SSE / WebSocket</td><td>全量拉取、结束后不停；延迟最多一个周期</td></tr>
+</tbody></table></div>
+<ul>
+<li>状态：<code>pending</code>（插入）→ <code>processing</code>（流程开头 / 追问）→ <code>completed</code>（推送成功）/ <code>error</code>（异常、推送失败、计时器）/ <code>stopped</code>（只有停止接口写）。写状态无条件，终态可被覆盖。</li>
+<li>进度是写死的里程碑：10、15、20、25、30、35、(37)、42、44、50、100；50→100 是 Agent 干活的全部时间。</li>
+<li>停止：<code>PATCH {action:'stop'}</code> → 状态 <code>stopped</code> → <code>killSandbox</code> 查<em>本实例内存</em>；查不到时兜底分支删掉别的任务的记录、不 stop、仍报成功 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/sandbox-registry.ts#L25-L41">sandbox-registry.ts</a>。后台流程在 Agent 开跑后不再检查，跑完会写回 <code>completed</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L690-L696">route.ts</a>（推断）。</li>
+<li>时长：<code>after()</code> 受路由最长时长约束（<a href="https://nextjs.org/docs/app/api-reference/functions/after">Next.js</a>），<code>vercel.json</code> 只给 300 秒；README 却写可选 5 分钟到 5 小时 → 超过约 5 分钟的任务按推断会卡在 processing。</li>
+<li>为什么轮询（推断）：函数活不长、实例不共享内存、浏览器请求早已结束，数据库是唯一公共处。参考方案：只追加的事件表 + <code>?after=seq</code> 增量拉 + 可选 SSE（<code>Last-Event-ID</code>）+ 用 <code>sandboxId</code> 停机 + 带条件的状态迁移。</li>
+<li>对照：Open SWE 用 LangGraph 事件流（SSE）；Cursor Cloud Agents API 每个 run 一条 SSE，可续传；Vercel durable harness 从持久会话日志推流；Codex Cloud 的传输方式未查到公开说明。</li>
+</ul>
+
+<h2>密钥与信任边界（第 6 课）</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>秘密</th><th>怎么存</th><th>怎么进 Sandbox</th><th>留在哪、多久</th></tr></thead>
+<tbody>
+<tr><td>GitHub OAuth 令牌（<code>repo</code> 范围）</td><td>AES-256-CBC 存 <code>users</code> 或 <code>accounts</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/session/create-github.ts#L55-L65">create-github.ts</a></td><td>写进克隆地址 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/config.ts#L69-L86">config.ts L69–L86</a>；Copilot 另放 <code>GH_TOKEN</code></td><td><code>.git/config</code>，机器活多久就留多久；令牌本身到注销或一年不用才失效；“断开 GitHub”不吊销</td></tr>
+<tr><td>用户 API key</td><td>加密存 <code>keys</code> 表，只写不读 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/api-keys/route.ts#L19-L30">api-keys GET</a></td><td>临时写进服务器 <code>process.env</code>，再按第 4 课四种走法送进去 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L56-L75">index.ts L56–L75</a></td><td>命令行、配置文件；进程里可能串到别的任务（推断）</td></tr>
+<tr><td>平台模型 key（<code>AI_GATEWAY_API_KEY</code> 等）</td><td>Vercel 环境变量</td><td>用户没存 key 时兜底 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/api-keys/user-keys.ts#L22-L31">user-keys.ts L22–L31</a></td><td>同上；任何用户可用终端接口读出（推断）</td></tr>
+<tr><td>MCP secret / env</td><td>加密存 <code>connectors</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/actions/connectors.ts#L63-L65">connectors.ts L63–L65</a>；列表接口解密发回浏览器</td><td>任务开始时解密 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L536-L578">route.ts L536–L578</a>，写进各家配置；client secret 直接当 Bearer 发</td><td>配置文件</td></tr>
+<tr><td>总钥匙：<code>ENCRYPTION_KEY</code>、<code>JWE_SECRET</code>、<code>SANDBOX_VERCEL_TOKEN</code>、OAuth client secret</td><td>Vercel 环境变量</td><td>不进</td><td>只在服务器；全站一把，没有版本号</td></tr>
+</tbody></table></div>
+<ul>
+<li>信任边界：浏览器 ↔ 服务器 ↔ 数据库互信；Sandbox 当作不可信，但秘密都送了进去，出站网络全开。</li>
+<li>并发串号（推断）：<code>process.env</code> 进程共用，Fluid compute 下两个任务交错恢复，前一个用户的 key 会留在进程里；原值 <code>undefined</code> 会被写成字符串 <code>"undefined"</code>。</li>
+<li>脱敏只管 <code>tasks.logs</code>；<code>task_messages</code>、终端返回、<code>GET /api/connectors</code> 都不过。用假数据实测：裸 key、JSON 写法、名字不含 KEY/TOKEN/SECRET/PASSWORD 的、值里带点号斜杠的，全部漏过 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/logging.ts#L6-L74">logging.ts L6–L74</a>。</li>
+<li>认证：GitHub / Vercel OAuth；会话是一年有效的 JWE cookie，无服务器端吊销；注销是 GET。</li>
+<li>授权：<code>[taskId]/</code> 下 31 个路由都查归属（4 个没排除软删除）。缝在创建任务的批量赋值：客户端能写 <code>sandboxId</code>，终端按它用平台令牌连机器（推断，需知道别人的编号）。</li>
+<li>限速：每天 5 条（任务 + 用户消息）。新任务算两次、删了退额度、非原子、<code>maxDuration</code> 由客户端定且无上限。</li>
+</ul>
+<div class="table-wrap"><table>
+<thead><tr><th>威胁</th><th>推荐做法</th></tr></thead>
+<tbody>
+<tr><td>提示词注入外泄 key</td><td>凭据代理 + 出站白名单（<a href="https://vercel.com/docs/sandbox/concepts/firewall">Vercel firewall</a>）</td></tr>
+<tr><td>GitHub 令牌权限过大</td><td>GitHub App 安装令牌：限仓库、限权限、一小时过期（<a href="https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app">GitHub 文档</a>）</td></tr>
+<tr><td>准备阶段的秘密留到 Agent 阶段</td><td>按阶段给秘密，Agent 阶段默认断网（<a href="https://developers.openai.com/codex/cloud/environments">Codex cloud</a>）</td></tr>
+<tr><td>Agent 推危险改动</td><td>只推专用分支、强制人工审查、仓库范围令牌（<a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/risks-and-mitigations">Copilot</a>）</td></tr>
+<tr><td>key 串号 / 字段篡改 / 总钥匙泄露</td><td>每任务独立 env 对象；字段白名单；信封加密 + 密钥版本号 + AES-GCM</td></tr>
+</tbody></table></div>
+<p><strong>总流程（六课合一）</strong>：浏览器提交 → <code>POST /api/tasks</code> 限速、校验、写 pending、解密令牌和 key → <code>after()</code> 后台（受函数 300 秒限制）→ <code>Sandbox.create</code>（Firecracker microVM）→ 带令牌 <code>git clone</code> → 现装 Agent CLI、免确认运行 → commit、push 新分支 → 用户点按钮开 PR。每一步写数据库，浏览器每 5 秒轮询。</p>
+
+<h2>和同类产品对照</h2>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>coding-agent-template</th><th>OpenAI Codex Cloud</th><th>LangChain Open SWE</th></tr></thead>
+<tbody>
+<tr><td>Agent 从哪来</td><td>装现成的 CLI</td><td>自家 Codex Agent</td><td>自己用 LangGraph 写</td></tr>
+<tr><td>运行环境</td><td>Vercel Sandbox（每任务一台 Firecracker microVM）</td><td>OpenAI 托管的容器</td><td>每个对话一台 Sandbox，可换多家</td></tr>
+<tr><td>联网</td><td>默认能联网</td><td>装依赖时联网，Agent 阶段默认断网</td><td>看所选 Sandbox</td></tr>
+<tr><td>环境的一生</td><td>每任务一台；到最长时长为止，停了文件就没了</td><td>每个任务独立工作区；已保存的状态默认最多 7 天可恢复（<a href="https://learn.chatgpt.com/docs/environments/cloud-environments">文档</a>）</td><td>每个对话一台持久 Sandbox；连不上不悄悄换新</td></tr>
+<tr><td>GitHub 凭证</td><td>令牌写进克隆地址</td><td>—</td><td>默认走代理，不把真令牌放进 Sandbox</td></tr>
+<tr><td>出处</td><td>本仓库</td><td><a href="https://learn.chatgpt.com/docs/environments/cloud-environment">文档</a></td><td><a href="https://github.com/langchain-ai/open-swe/blob/30d974acb2b8e2fb239f71057790ed940a69c10d/openwiki/concepts/auth-and-security.md">文档</a></td></tr>
+</tbody></table></div>
+
+<p>回到 <a href="../lessons/0001-life-of-a-task.html">第 1 课</a> · <a href="../lessons/0002-sandbox-lifecycle.html">第 2 课</a> · <a href="../lessons/0003-prebuilt-environments-and-isolation.html">第 3 课</a> · <a href="../lessons/0004-caging-the-agent-cli.html">第 4 课</a> · <a href="../lessons/0005-progress-back-to-the-browser.html">第 5 课</a> · <a href="../lessons/0006-secrets-and-trust-boundaries.html">第 6 课</a> · <a href="../notes/2026-10-19--cloud-coding-agent-architecture.html">学习笔记</a> · 查 <a href="glossary.html">术语表</a></p>
+
+<footer class="foot">
+  源代码引用全部固定在 commit <code>e753e1b</code>（main 分支，2026-02-12 提交，北京时间 17:21）。
+  所以哪怕仓库以后改动，这些链接指向的行号也不会变。
+</footer>
+</main>
+</body>
+</html>

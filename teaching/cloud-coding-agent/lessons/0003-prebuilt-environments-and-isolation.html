@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 3 课 · 预制环境与隔离</title>
+<link rel="stylesheet" href="../assets/style.css">
+
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0001-life-of-a-task.html">第 1 课 · 任务的一生</a>
+  <a href="../lessons/0002-sandbox-lifecycle.html">第 2 课 · Sandbox 的生与死</a>
+  <a href="../lessons/0003-prebuilt-environments-and-isolation.html" aria-current="page">第 3 课 · 预制环境与隔离</a>
+  <a href="../lessons/0004-caging-the-agent-cli.html">第 4 课 · CLI 关进笼子</a>
+  <a href="../lessons/0005-progress-back-to-the-browser.html">第 5 课 · 进度怎么回到网页</a>
+  <a href="../lessons/0006-secrets-and-trust-boundaries.html">第 6 课 · 密钥与信任边界</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+  <a href="../notes/2026-10-19--cloud-coding-agent-architecture.html">学习笔记 · 10-19</a>
+</nav>
+
+<h1>预制环境与隔离</h1>
+<p class="subtitle">每个任务都从零装一遍，慢在哪里、今天怎么提前做好；以及 Vercel Sandbox 底下到底是不是 Docker。</p>
+<p class="meta">第 3 课 · 约 10 分钟 · 研究对象：<a href="https://github.com/vercel-labs/coding-agent-template">vercel-labs/coding-agent-template</a> · 前置：<a href="0001-life-of-a-task.html">第 1 课</a>、<a href="0002-sandbox-lifecycle.html">第 2 课</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>说清“基础镜像 → setup 脚本 → 快照”三层预制环境各放什么、各自什么时候过时；说出密钥为什么只能出现在 setup 阶段；并且在面试官问“Vercel 底下是不是 Docker”时，讲清容器和 microVM 的区别，以及为什么跑 AI 写的代码更适合 microVM。</p>
+</div>
+
+<h2>先看现状：模板每个任务都从零装一遍</h2>
+<p>第 2 课讲过，模板给每个任务开一台全新的 Sandbox。这一课把“开好之后、Agent 动手之前”这段展开看，它每次都要做下面五件事：</p>
+<ol class="flow">
+  <li><span class="step-title">开一台“空”机器 <span class="where">creation.ts</span></span>
+    <code>Sandbox.create()</code> 只传了 <code>runtime: 'node22'</code>、4 个 CPU 核、端口和时长，<em>没有镜像，也没有快照</em>。注释写明“不带 source 创建，我们自己克隆”。
+    <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L81-L103">lib/sandbox/creation.ts L81–L103</a></li>
+  <li><span class="step-title">浅克隆仓库 <span class="where">Sandbox 里</span></span>
+    <code>git clone --depth 1</code> 到 <code>/vercel/sandbox/project</code>。
+    <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L111-L127">lib/sandbox/creation.ts L111–L127</a></li>
+  <li><span class="step-title">装项目依赖 <span class="where">Sandbox 里</span></span>
+    有 <code>package.json</code> 就判断用 pnpm、yarn 还是 npm，没有这个包管理器就先全局装一个，再装依赖；有 <code>requirements.txt</code> 就先确保有 pip，再 <code>pip install -r</code>。
+    <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L165-L324">lib/sandbox/creation.ts L165–L324</a></li>
+  <li><span class="step-title">（可选）装浏览器的系统库 <span class="where">Sandbox 里</span></span>
+    用户勾选浏览器功能时（默认关），先 <code>sudo dnf</code> 分组装 25 个 Chromium 需要的系统库（nss、nspr、libX* 一串、mesa、gtk3 等），再 <code>npm install -g agent-browser</code> 并下载 Chromium。
+    <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L513-L565">lib/sandbox/creation.ts L513–L565</a></li>
+  <li><span class="step-title">装 Agent CLI <span class="where">agents/*.ts</span></span>
+    六个 Agent 文件都是同一个套路：先 <code>which</code> 一下，没有就装。Claude 和 Cursor 用官方的 <code>curl … | bash</code>，其余四个用 <code>npm install -g</code>。注释说这是“为恢复的 Sandbox 检查”，但新任务的机器总是全新的，所以每次都装。
+    <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L69-L81">claude.ts L69–L81</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L40-L52">codex.ts L40–L52</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L62-L85">cursor.ts L62–L85</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L55-L64">gemini.ts L55–L64</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L45-L62">copilot.ts L45–L62</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L71-L88">opencode.ts L71–L88</a></li>
+</ol>
+<p class="with-side">为什么不提前做好？因为当时做不到。模板锁定的 <code>@vercel/sandbox</code> 0.0.21（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/package.json#L42">package.json L42</a>），创建参数里只有 <code>runtime</code>（只支持 <code>node22</code> 和 <code>python3.13</code>）、<code>source</code>（只有 git 和 tarball 两种）、端口、时长和 CPU 核数。<strong>没有 image，也没有 snapshot。</strong>我是解开 npm 包、读 <code>dist/sandbox.d.ts</code> 第 8–57 行确认的（<a href="https://unpkg.com/@vercel/sandbox@0.0.21/dist/sandbox.d.ts">unpkg 上的同一文件</a>）。
+<span class="side">“冷启动”的代价全落在这五步上：每个任务、每次追问时新开的机器，都要把它们重来一遍，而且每一步都在消耗第 2 课说的那份最长时长。</span>
+</p>
+
+<div class="box warn">
+  <span class="box-title">两处值得在面试里提的细节</span>
+  <p><strong>一、dnf 是对的，apt-get 那条后路是坏的。</strong>注释写“Fedora 系的 Sandbox”，所以用 <code>dnf</code>。按 Vercel 今天的说明，用已弃用的 <code>runtime</code> 参数创建的 Sandbox 跑的是 Amazon Linux 2023，包管理器确实是 <code>dnf</code>；新的默认镜像才是 Ubuntu、用 <code>apt-get</code>（<a href="https://vercel.com/kb/guide/how-to-install-system-packages-in-vercel-sandbox">Vercel 知识库</a>）。但装 pip 失败时的备用方案调用了 <code>apt-get</code>，而且把 <code>'&amp;&amp;'</code> 当成普通参数传给它（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L274-L282">lib/sandbox/creation.ts L274–L282</a>）。<code>runCommand</code> 不经过 shell（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/commands.ts#L21-L27">lib/sandbox/commands.ts L21–L27</a>），系统上也没有 apt-get，看起来这条后路永远不会成功。这是读代码推断，没有实测。</p>
+  <p><strong>二、反过来，今天的默认镜像会让 dnf 那段失效。</strong>如果把模板升级到新 SDK、又不指定镜像，机器会从 Ubuntu 的 <code>vercel/sandbox/universal</code> 启动，那 25 个 <code>dnf</code> 包就装不上了。升级 SDK 不只是改参数名，系统都换了。</p>
+</div>
+
+<h2>今天的 Vercel Sandbox 能怎么提前做好</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>能力</th><th>是什么意思</th><th>出处</th></tr></thead>
+<tbody>
+<tr><td>自定义镜像</td><td>在 Dockerfile 里写好系统、系统包、语言工具链，用 <code>vercel vcr build docker . my-repo:latest --push</code> 推到 VCR（Vercel 的镜像仓库），再 <code>Sandbox.create({ image: 'my-repo:latest' })</code>。只能用 <code>linux/amd64</code> 的镜像。<strong>不会运行 ENTRYPOINT 和 CMD</strong>，进程要创建后用 <code>runCommand()</code> 自己启动；<code>WORKDIR</code> 会被用作命令的起始目录。</td><td><a href="https://vercel.com/docs/vercel-sandbox/concepts/images">Images 文档</a></td></tr>
+<tr><td>官方镜像</td><td>Vercel 维护一组镜像：不指定时默认用 <code>vercel/sandbox/universal:latest</code>（Ubuntu，带 Node.js 24、Python 3.14、常见的编程 Agent 和工具），另有 node、python、arch、ubuntu 几种；每晚自动发新版。</td><td><a href="https://vercel.com/docs/vercel-sandbox/concepts/images#vercel-managed-images">Images 文档</a></td></tr>
+<tr><td>快照</td><td>把一台跑着的 Sandbox 的文件系统和已装的软件包存下来，下次 <code>source: { type: 'snapshot', snapshotId }</code> 直接开机，跳过安装。默认最后一次使用后 30 天过期；只能在它所在的区域使用。</td><td><a href="https://vercel.com/docs/vercel-sandbox/concepts/snapshots">Snapshots 文档</a></td></tr>
+<tr><td>三种 source</td><td><code>source</code> 现在有 git、tarball、snapshot 三种；<code>runtime</code> 参数已标为弃用，改用 <code>image</code>。</td><td><a href="https://vercel.com/docs/sandbox/sdk-reference">JS SDK Reference</a></td></tr>
+<tr><td>持久 Sandbox 的两个钩子</td><td><code>Sandbox.getOrCreate({ name, onCreate, onResume })</code>：第一次创建时跑一次 <code>onCreate</code>（适合放 setup），以后每次恢复都跑 <code>onResume</code>（适合重启后台服务、补缓存）。快照过期时会删掉旧的、按同名重建，<code>onCreate</code> 会再跑一次。</td><td><a href="https://vercel.com/docs/sandbox/sdk-reference">JS SDK Reference</a></td></tr>
+<tr><td>Drives</td><td>可以挂进 Sandbox 的持久目录，适合放多台机器共用的依赖缓存、构建产物。曾是 private beta，<strong>2026-10-15 起已正式发布（GA）</strong>。</td><td><a href="https://vercel.com/docs/sandbox/concepts/drives">Drives 文档</a> · <a href="https://vercel.com/changelog/vercel-drives-is-now-generally-available">更新日志</a></td></tr>
+</tbody></table></div>
+
+<h2>通用做法：三层预制</h2>
+<p>把所有同类产品抽象一下，做法都是把“准备环境”拆成三层，越往下变得越慢、越适合提前做；任务阶段只剩真正要干的活。</p>
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 440" role="img" aria-label="三层预制环境：基础镜像、setup 脚本、快照，以及最上面的任务阶段；右侧标出每层什么时候过时，左侧标出密钥和联网的边界">
+  <defs>
+    <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/></marker>
+  </defs>
+  <style>
+    .l0{fill:#efede6;stroke:#5a554d;stroke-width:1.4}
+    .l1{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .l2{fill:#e6f1e7;stroke:#2f6b3a;stroke-width:1.4}
+    .l3{fill:#fbf1dc;stroke:#8a5a00;stroke-width:1.4}
+    .t{font:700 15px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:12px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+    .k{font:700 12px "Noto Sans CJK SC",sans-serif;fill:#a3341f}
+    .ln{stroke:#a3341f;stroke-width:1.6;fill:none;marker-end:url(#a3)}
+    .dv{stroke:#a3341f;stroke-width:1.4;stroke-dasharray:5 3;fill:none}
+  </style>
+  <!-- 任务阶段 -->
+  <rect class="l3" x="150" y="20" width="400" height="80" rx="4"/>
+  <text class="t" x="164" y="46">④ 任务阶段（每个任务都跑）</text>
+  <text class="s" x="164" y="66">切到任务分支、Agent 改代码、跑测试、推送</text>
+  <text class="s" x="164" y="84">没有密钥 · 网络收紧（白名单或断网）</text>
+  <!-- 快照 -->
+  <rect class="l2" x="150" y="120" width="400" height="80" rx="4"/>
+  <text class="t" x="164" y="146">③ 快照 / 缓存（setup 的结果拍下来）</text>
+  <text class="s" x="164" y="166">node_modules、编译产物、已装好的 CLI</text>
+  <text class="s" x="164" y="184">开机直接用，跳过安装</text>
+  <!-- setup -->
+  <rect class="l1" x="150" y="220" width="400" height="80" rx="4"/>
+  <text class="t" x="164" y="246">② setup 脚本（按仓库）</text>
+  <text class="s" x="164" y="266">克隆、pnpm install、pip install、代码生成</text>
+  <text class="s" x="164" y="284">可以联网 · 私有仓库的密钥只在这里出现</text>
+  <!-- base image -->
+  <rect class="l0" x="150" y="320" width="400" height="80" rx="4"/>
+  <text class="t" x="164" y="346">① 基础镜像（按团队 / 平台）</text>
+  <text class="s" x="164" y="366">操作系统、系统包（Chromium 的 25 个库）</text>
+  <text class="s" x="164" y="384">语言版本、Agent CLI · 由 Dockerfile 构建</text>
+  <!-- 右侧：过时 -->
+  <text class="k" x="566" y="56">变得最快</text>
+  <text class="s" x="566" y="74">每个任务都不同</text>
+  <text class="k" x="566" y="156">lockfile 变了就过时</text>
+  <text class="s" x="566" y="174">或 30 天没用被删</text>
+  <text class="k" x="566" y="256">脚本或环境变量变了</text>
+  <text class="s" x="566" y="274">就要重跑</text>
+  <text class="k" x="566" y="356">按周 / 月重建</text>
+  <text class="s" x="566" y="374">补安全更新、升版本</text>
+  <!-- 左侧：模板 -->
+  <text class="t" x="10" y="244">模板现在</text>
+  <text class="s" x="10" y="264">②③① 全部塞进</text>
+  <text class="s" x="10" y="280">④ 里，每次重来</text>
+  <path class="ln" d="M60,222 L60,60 L146,60"/>
+  <!-- 密钥边界 -->
+  <path class="dv" d="M150,110 L550,110"/>
+  <rect x="232" y="102" width="296" height="17" fill="#fffff8"/>
+  <text class="k" x="380" y="115" text-anchor="middle">↑ 这条线以上不能有密钥，也不该随便联网 ↑</text>
+  <text class="s" x="350" y="428" text-anchor="middle">越往下：变得越慢、越适合提前做、越多任务共用</text>
+</svg>
+<figcaption>图 1　三层预制环境。每一层都是下一层的起点。虚线是信任边界：Agent 开始干活之前，密钥要拿走，网络要收紧。</figcaption>
+</figure>
+
+<div class="table-wrap"><table>
+<thead><tr><th>取舍</th><th>多做预制的好处</th><th>代价</th></tr></thead>
+<tbody>
+<tr><td>冷启动</td><td>从快照开机，省掉克隆和安装；Vercel 文档说从快照恢复比新开一台还快</td><td>快照不在缓存里时恢复会慢一些，等待算进创建时间（<a href="https://vercel.com/docs/vercel-sandbox/concepts/snapshots">Snapshots</a>）</td></tr>
+<tr><td>新鲜度</td><td>—</td><td>快照停在拍下那一刻：lockfile 变了、默认分支往前走了、安全补丁出了，它都不知道。所以要有“过时就重拍”的规则，或者像 Codex 那样每次恢复后跑一个 maintenance 脚本补差</td></tr>
+<tr><td>可复现</td><td>镜像用 tag 或 digest 固定，同一份 Dockerfile 谁来建都一样</td><td>快照是“跑出来的结果”，里面有当时网络上下载到的版本，很难说清它到底装了什么；所以底层用镜像、上层才用快照</td></tr>
+<tr><td>存储成本</td><td>—</td><td>快照按 GB·月收费，而且比原 Sandbox 活得久，删了 Sandbox 快照还在计费；可以用 <code>keepLastSnapshots</code> 只留最近几份（<a href="https://vercel.com/docs/vercel-sandbox/concepts/snapshots#snapshot-retention">保留策略</a>）</td></tr>
+</tbody></table></div>
+
+<p><strong>两条安全规则</strong>。第一，<em>密钥只在 setup 阶段出现，绝不进快照或镜像。</em>快照和镜像存的是整个文件系统，令牌一旦写进 <code>.npmrc</code> 或 <code>.env</code>，以后每台从它开机的机器都带着它。Codex Cloud 的文档写明：secrets 只给 setup 脚本用，Agent 阶段开始前就移除（<a href="https://developers.openai.com/codex/cloud/environments">Codex 文档</a>）；Cursor 也提醒，拍快照时 <code>.env.local</code> 会被一起存下（<a href="https://cursor.com/docs/cloud-agent/setup">Cursor 文档</a>）。第二，<em>Agent 阶段把网络收紧。</em>setup 要联网装包，Agent 改代码时通常只需要 git 和模型接口。Vercel Sandbox 的 <code>networkPolicy</code> 默认是 allow-all，可以在 setup 之后用 <code>sandbox.update({ networkPolicy })</code> 换成白名单或 deny-all（<a href="https://vercel.com/docs/sandbox/sdk-reference">JS SDK Reference</a>）。</p>
+
+<h2>同类产品怎么做</h2>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>① 基础镜像</th><th>② setup</th><th>③ 快照 / 缓存</th><th>密钥与网络</th></tr></thead>
+<tbody>
+<tr><td><a href="https://developers.openai.com/codex/cloud/environments">Codex Cloud</a>（此链接现指向 Legacy 文档）</td><td>默认 <code>universal</code> 镜像，可固定语言版本</td><td>setup 脚本；恢复缓存时可选跑 maintenance 脚本</td><td>容器状态最多缓存 12 小时；改脚本、环境变量或 secrets 会自动作废缓存</td><td>secrets 只给 setup；Agent 阶段默认断网。新版改为“发布”时拍下准备好的文件系统，并有代理替换的网络密钥（<a href="https://learn.chatgpt.com/docs/environments/cloud-environments">新版文档</a>）</td></tr>
+<tr><td><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment">Copilot cloud agent</a></td><td>GitHub Actions 的 runner（默认 Ubuntu，可换大机器或自托管）</td><td><code>.github/workflows/copilot-setup-steps.yml</code> 里唯一的 <code>copilot-setup-steps</code> job，每次 Copilot 开工前跑；最长 59 分钟</td><td>文档列出可设 <code>snapshot</code>，本页未展开</td><td>Agents secrets 作为环境变量给到 Agent（含 setup）；自带防火墙，可自定义或关闭</td></tr>
+<tr><td><a href="https://docs.github.com/en/codespaces/prebuilding-your-codespaces/about-github-codespaces-prebuilds">Codespaces prebuild</a>（给人用，但模式一样）</td><td>dev container 配置</td><td>跑到 <code>onCreateCommand</code>、<code>updateContentCommand</code> 为止，不跑 <code>postCreateCommand</code></td><td>拍下容器快照存起来；默认每次 push 用 Actions 自动重建；存储收费</td><td>—</td></tr>
+<tr><td><a href="https://cursor.com/docs/cloud-agent/setup">Cursor cloud agents</a></td><td>隔离的 Ubuntu 机器；可在 <code>.cursor/environment.json</code> 里指定 Dockerfile</td><td><code>install</code> 脚本，必须幂等</td><td>成功的 Build 拍下磁盘状态，新 Agent 从当前 Build 开机；失败的 Build 不替换旧的；只存磁盘，不存进程</td><td>Secrets 以环境变量给到 Agent；可配网络白名单</td></tr>
+<tr><td><a href="https://e2b.dev/docs/sandbox-template">E2B templates</a></td><td><code>fromBaseImage()</code> 或 <code>fromTemplate()</code> 一层层叠</td><td>构建时跑命令和 start command</td><td>连<em>正在运行的进程</em>一起拍进快照，约 80 毫秒载入（<a href="https://docs.e2b.dev/template/how-it-works">How it works</a>）</td><td>—</td></tr>
+<tr><td>今天的 Vercel Sandbox</td><td>VCR 镜像 / 官方镜像</td><td><code>getOrCreate</code> 的 <code>onCreate</code></td><td>手动 <code>snapshot()</code>，或持久 Sandbox 停机自动拍；Drives 放共享缓存</td><td><code>networkPolicy</code> 默认 allow-all，可收紧</td></tr>
+</tbody></table></div>
+<p>面试里最值得说的对比：<strong>Codex 和 Copilot 在密钥上走了两条路。</strong>Codex 把 secrets 限定在 setup 阶段；Copilot 的 Agents secrets 是整个任务里都能读到的环境变量（<a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/configure-secrets-and-variables">Copilot 文档</a>），它靠防火墙和令牌只限本仓库来兜底。</p>
+
+<h2>Vercel 底下是不是 Docker？不是，是 microVM</h2>
+<p>这一点有官方原话。Vercel 的 Sandbox 概念页写着：<em>“Unlike Docker containers, each sandbox runs in its own Firecracker microVM with a dedicated kernel.”</em>，后面还有一句“调用 <code>Sandbox.create()</code> 时，Vercel 在它的基础设施上开一台 Firecracker microVM”（<a href="https://vercel.com/docs/sandbox/concepts#sandboxes-vs-containers">Understanding Sandboxes · Sandboxes vs containers</a>）。</p>
+<div class="table-wrap"><table>
+<thead><tr><th></th><th>容器（Docker）</th><th>gVisor</th><th>microVM（Firecracker）</th></tr></thead>
+<tbody>
+<tr><td>内核</td><td>和宿主机共用一个内核</td><td>在用户态再实现一个“应用内核”，挡在应用和宿主内核之间</td><td>每台有自己的内核</td></tr>
+<tr><td>靠什么隔开</td><td>内核的 namespaces 和 cgroups（<a href="https://docs.docker.com/engine/security/">Docker 安全文档</a>）</td><td>拦截系统调用，自己处理（<a href="https://gvisor.dev/docs/">gVisor 文档</a>）</td><td>硬件虚拟化（KVM），外加 jailer 做第二道防线（<a href="https://firecracker-microvm.github.io/">Firecracker 官网</a>）</td></tr>
+<tr><td>被攻破意味着</td><td>一个内核漏洞就可能逃到宿主机</td><td>要先突破 gVisor，再碰宿主内核</td><td>还要再逃出虚拟机边界</td></tr>
+<tr><td>代价</td><td>最省：没有第二个内核</td><td>系统调用变慢，部分程序不兼容</td><td>每台要多一个内核的内存；官网写 VMM 额外开销 &lt;5 MiB、启动 &lt;125 毫秒</td></tr>
+</tbody></table></div>
+<p class="with-side"><strong>那为什么能用 Dockerfile？</strong>因为 Docker 镜像（准确说是 OCI 镜像）本质上只是“一叠文件系统层 + 一份配置”。规范里说，镜像由若干文件系统层组成，解开后拼成最终的文件系统；而 <code>Entrypoint</code>、<code>Cmd</code> 这些属于配置，是给容器运行时看的（<a href="https://github.com/opencontainers/image-spec/blob/main/spec.md">OCI Image Spec</a>）。Vercel 只拿走前者，当作 microVM 的根文件系统来开机（文档原话：“boots the sandbox from that image's filesystem”）。机器里没有容器运行时替你执行启动命令，所以 <strong>ENTRYPOINT / CMD 不会运行</strong>。E2B 也一样：构建模板时先按定义建一个容器，再“提取容器的文件系统”放进 microVM（<a href="https://docs.e2b.dev/template/how-it-works">E2B 文档</a>）。
+<span class="side">E2B 自己的安全页写着“Every E2B sandbox runs in its own Firecracker microVM with its own kernel”（<a href="https://e2b.dev/security">e2b.dev/security</a>）；Firecracker 官网的使用者名单里也有 E2B。</span>
+</p>
+<p><strong>为什么 AI 写的代码更适合 microVM？</strong>多租户平台上，一台物理机同时跑着很多客户的 Agent，而 Agent 是免确认模式、会执行它自己生成的任何命令，还可能被仓库里的文字提示注入。共用内核时，一个内核漏洞就是所有租户的事；Firecracker 本来就是 AWS 为了让不同客户的 Lambda 函数安全地挤在同一台机器上而做的。今天它启动快、开销小，“每个任务一台虚拟机”在成本上也说得过去，所以 Vercel、E2B 都选了它；不想换虚拟机的平台，会用 gVisor 这种折中方案。</p>
+
+<div class="box interview">
+  <span class="box-title">面试时 60 秒这样讲</span>
+  <p>“coding-agent-template 每个任务都开一台空的 Vercel Sandbox，只指定 runtime node22，然后克隆、装依赖、需要浏览器时再用 dnf 装 25 个 Chromium 系统库、最后装 Agent CLI。全部在任务时间里重来一遍，因为它锁定的 SDK 0.0.21 没有镜像也没有快照参数。今天通用的做法是三层：底层是 Dockerfile 建的基础镜像，放系统包和 CLI，按周重建；中间是按仓库的 setup 脚本，可以联网，私有仓库的密钥只在这里出现；上层是把 setup 结果拍成快照，lockfile 变了就重拍。任务阶段只做真正的活，没有密钥，网络收紧。Vercel 现在支持推到 VCR 的自定义镜像、快照、带 onCreate/onResume 的 getOrCreate，Codex、Cursor、Copilot、E2B 也都是这个模式。另外，Vercel Sandbox 不是 Docker：官方文档写明每台 Sandbox 是一台有独立内核的 Firecracker microVM，Dockerfile 只是用来生成根文件系统，所以 ENTRYPOINT 和 CMD 不会运行。跑 AI 生成的、不可信的代码，多租户下用 microVM 比共用内核的容器安全得多。”</p>
+</div>
+
+<div class="box read">
+  <span class="box-title">面试官可能的追问（附参考答法）</span>
+  <p><strong>问：快照什么时候会过时？怎么发现？</strong><br>
+  答：四种情况。一是依赖变了：lockfile 或包管理器版本变了，快照里的 <code>node_modules</code> 就不对了，最常见的做法是用 lockfile 的哈希当快照的标签，哈希变了就重拍。二是代码往前走了：快照里的仓库停在旧提交，任务开始时要 <code>git fetch</code> 再切分支，差太多就重拍，Codex 用 maintenance 脚本补这一段。三是 setup 本身变了：脚本、环境变量、secrets 改了，Codex 会自动作废缓存。四是基础镜像该打补丁了。另外 Vercel 的快照默认 30 天没用就被删，持久 Sandbox 的快照过期后 <code>getOrCreate</code> 会重建并重跑 <code>onCreate</code>，所以 setup 必须能重复跑（Cursor 文档直接要求 install 脚本幂等）。</p>
+  <p><strong>问：为什么不能把密钥烤进镜像或快照，用起来多方便？</strong><br>
+  答：镜像和快照是会被复制、共享、长期保存的文件。Vercel 的快照比 Sandbox 活得久，可以被任意多台新机器拿来开机，镜像还能分享给别的团队甚至设为公开。密钥进去了，就等于发给了所有将来从它开机的 Agent，而 Agent 是免确认模式，可能被提示注入，把文件读出来发出去。轮换也很难：换一次密钥就得重建所有镜像和快照。正确做法是 setup 时从密钥管理处临时注入、用完不落盘；Agent 阶段需要的凭证，用短期令牌或在 Sandbox 外面的代理替换，就像第 1、2 课说的 Open SWE。</p>
+  <p><strong>问：既然 microVM 更安全，为什么大家还用容器？代价在哪？</strong><br>
+  答：容器最省：不需要第二个内核，内存开销小，一台机器能塞得更密，生态也最成熟，跑的是自己信得过的代码时完全够用。microVM 每台要多一份内核和预留内存，还要求宿主机的 CPU 支持硬件虚拟化（Firecracker 官网写明只支持带硬件虚拟化的 64 位 Intel、AMD、Arm），平台得自己准备这样的机器，运维比容器复杂。Firecracker 把这些代价压得很低（官网写启动 &lt;125 毫秒、VMM 开销 &lt;5 MiB），所以对“随时开一台给不可信代码用”的场景，安全换来的价值远大于成本。gVisor 是中间路线：不要虚拟化，但系统调用变慢、部分程序不兼容。</p>
+  <p><strong>问：那 Sandbox 里还能跑 Docker 吗？</strong><br>
+  答：可以。microVM 有自己的内核，你在里面装 Docker、起容器都行，这些容器共用的是这台 microVM 的内核，而不是宿主机的。Vercel 文档还专门提醒，里面的容器不会继承 Sandbox 的代理证书（<a href="https://vercel.com/docs/sandbox/concepts">Understanding Sandboxes</a>）。</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第 2 题和第 5 题来自前两课，隔开再想一次，记得更牢。</p>
+<div class="quiz" data-quiz-id="0003-预制环境与隔离">
+<script type="application/json">{"questions": [{"q": "按这份模板的代码，每开一个新任务，下面哪件事一定会从头再做一遍？", "options": ["重新安装 Agent CLI", "从快照恢复装好的整个依赖目录", "换成自定义镜像，直接从它开机", "直接复用上一个任务的那台机器"], "answer": 0, "explain": "每个 Agent 文件都先用 <code>which</code> 查一下，没有就装（例如 <a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L69-L81\">claude.ts L69–L81</a>）。注释说“为恢复的 Sandbox 检查”，但新任务的机器总是全新的，所以每次都要装。模板锁定的 SDK 0.0.21 只认 <code>runtime</code> 和 git / tarball 两种来源，没有镜像也没有快照参数。"}, {"q": "【复习第 1 课】这个平台里，真正读代码、改代码的 Agent 是从哪里来的？", "options": ["装进 Sandbox 的现成 CLI", "平台自己用框架写的一套规划与执行程序", "Vercel 托管的统一 Agent", "浏览器里直接运行的一段临时生成的脚本"], "answer": 0, "explain": "平台不写 Agent 逻辑，只按用户的选择分发到 <code>lib/sandbox/agents/</code> 下的六个文件之一，装好对应的 CLI 再用免确认模式运行（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L78-L148\">lib/sandbox/agents/index.ts L78–L148</a>）。这也是为什么这一课说“每个任务都要重装 CLI”是个实打实的成本。"}, {"q": "你用 Dockerfile 做了一个 Vercel Sandbox 镜像，CMD 里写了启动开发服务器。用它创建 Sandbox 后会怎样？", "options": ["服务器不会自己启动，要再调用命令", "机器一开好，开发服务器就跑起来了", "创建会失败，镜像里不允许写这一行", "会先构建一遍镜像，然后才自动启动"], "answer": 0, "explain": "官方文档原话：Vercel Sandbox 不运行自定义镜像的 Docker <code>ENTRYPOINT</code> 或 <code>CMD</code>，要在创建后用 <code>sandbox.runCommand()</code> 启动进程（<a href=\"https://vercel.com/docs/vercel-sandbox/concepts/images\">Images 文档</a>）。原因是镜像在这里只被当作 microVM 的根文件系统来用，没有容器运行时去执行它的启动命令。"}, {"q": "setup 阶段要用一个私有 npm 仓库的令牌装依赖。按三层做法，这个令牌应该怎么处理？", "options": ["只在 setup 阶段注入，用完删掉", "写进基础镜像，以后每次开机都能直接用", "装完依赖后，连同整个目录一起拍进快照", "Agent 阶段也保留，方便它再重装"], "answer": 0, "explain": "快照和镜像存的是整个文件系统，令牌一旦落盘（比如写进 <code>.npmrc</code>）就会被一起带走，之后每台从它开机的机器、每个能读快照的人都拿得到。Codex Cloud 的做法是密钥只给 setup 脚本用，Agent 阶段开始前就移除（<a href=\"https://developers.openai.com/codex/cloud/environments\">Codex 文档</a>）；Cursor 也提醒拍快照时 <code>.env.local</code> 会被存进去（<a href=\"https://cursor.com/docs/cloud-agent/setup\">Cursor 文档</a>）。"}, {"q": "【复习第 2 课】模板锁定的 @vercel/sandbox 0.0.21，关于关机和续时长，哪句话是对的？", "options": ["能关机，但不能给运行中的机器续时长", "能续时长，但没有任何主动关机的方法", "两样都有，只是代码里一样都没有用上", "两样都没有，只能等时长自己用完为止"], "answer": 0, "explain": "0.0.21 的 <code>Sandbox</code> 类已经有 <code>stop()</code>（<a href=\"https://unpkg.com/@vercel/sandbox@0.0.21/dist/sandbox.js\">dist/sandbox.js 第 219 行</a>），但没有 <code>extendTimeout()</code>。所以 <code>git.ts</code> 里“SDK 没有关机方法”的注释站不住（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L75-L100\">lib/sandbox/git.ts L75–L100</a>）。"}, {"q": "面试官问：Vercel Sandbox 和普通 Docker 容器，在隔离上最根本的区别是什么？", "options": ["每台有自己的内核，不和宿主机共用", "每台都换了一套更新的操作系统版本", "每台默认断网，所以更不容易被攻击", "每台都用独立账号运行，权限比较低"], "answer": 0, "explain": "Vercel 文档：“Unlike Docker containers, each sandbox runs in its own Firecracker microVM with a dedicated kernel.”（<a href=\"https://vercel.com/docs/sandbox/concepts#sandboxes-vs-containers\">Understanding Sandboxes</a>）。容器共用宿主机内核，靠 namespaces 和 cgroups 隔开；microVM 靠硬件虚拟化，各有各的内核。另外注意：Vercel Sandbox 默认是能联网的（<code>networkPolicy</code> 默认 allow-all）。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://vercel.com/docs/sandbox/concepts">Vercel 官方文档：Understanding Sandboxes</a>。前半页讲“Sandbox 和容器有什么不同”、Firecracker microVM 和启动过程，后半页讲隔离架构和防火墙。读完再看 <a href="https://vercel.com/docs/vercel-sandbox/concepts/images">Images</a> 一页，然后回到 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L81-L103">creation.ts L81–L103</a>，想一想：用今天的 SDK，这段 <code>Sandbox.create()</code> 你会改成什么样、哪几步挪进镜像、哪几步挪进 <code>onCreate</code>。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>三层里哪一层该放什么拿不准、想让我帮你写一份这个模板的 Dockerfile 草稿、容器和虚拟机的区别还想再往下挖，或者想让我扮面试官追问你，都可以直接在对话里问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：<a href="../reference/architecture-cheatsheet.html">架构速查</a> 里新加了“预制环境与隔离”一节，新词收进了 <a href="../reference/glossary.html">术语表</a>，这一课对应的追问整理在 <a href="../notes/2026-10-19--cloud-coding-agent-architecture.html">学习笔记</a> 里。下一课：<a href="0004-caging-the-agent-cli.html">第 4 课 · CLI 关进笼子</a>。</p>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  源代码引用全部固定在 commit <code>e753e1b</code>（main 分支，2026-02-12 提交，北京时间 17:21）。
+  所以哪怕仓库以后改动，这些链接指向的行号也不会变。外部文档于 2026-10-19 晚（北京时间）核对。
+</footer>
+</main>
+</body>
+</html>

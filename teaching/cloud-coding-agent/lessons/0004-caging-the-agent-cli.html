@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 4 课 · CLI 关进笼子</title>
+<link rel="stylesheet" href="../assets/style.css">
+
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0001-life-of-a-task.html">第 1 课 · 任务的一生</a>
+  <a href="../lessons/0002-sandbox-lifecycle.html">第 2 课 · Sandbox 的生与死</a>
+  <a href="../lessons/0003-prebuilt-environments-and-isolation.html">第 3 课 · 预制环境与隔离</a>
+  <a href="../lessons/0004-caging-the-agent-cli.html" aria-current="page">第 4 课 · CLI 关进笼子</a>
+  <a href="../lessons/0005-progress-back-to-the-browser.html">第 5 课 · 进度怎么回到网页</a>
+  <a href="../lessons/0006-secrets-and-trust-boundaries.html">第 6 课 · 密钥与信任边界</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+  <a href="../notes/2026-10-19--cloud-coding-agent-architecture.html">学习笔记 · 10-19</a>
+</nav>
+
+<h1>CLI 关进笼子</h1>
+<p class="subtitle">平台不自己写 Agent，而是把六家现成的 Agent CLI 装进 Sandbox、关掉它们所有的确认，再从它们的输出里把进度和会话编号捞回来。这一课拆开这层“适配”，并说清楚：既然 CLI 什么都能做，真正的笼子到底是什么。</p>
+<p class="meta">第 4 课 · 约 12 分钟 · 研究对象：<a href="https://github.com/vercel-labs/coding-agent-template">vercel-labs/coding-agent-template</a> · 前置：<a href="0001-life-of-a-task.html">第 1 课</a>、<a href="0002-sandbox-lifecycle.html">第 2 课</a>、<a href="0003-prebuilt-environments-and-isolation.html">第 3 课</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>说出六家 CLI 各自怎么装、用什么参数跳过确认、提示词和密钥怎么递进去、MCP 写到哪个配置文件、追问时靠什么接上上一轮；讲清“Agent CLI 适配层”的设计和它的毛病；并且在被问到“你们怎么敢让 Agent 免确认跑”时，说出真正的边界是 Sandbox，以及密钥和外网这两个缺口今天怎么补。</p>
+</div>
+
+<h2>先看全貌：一个入口，六个适配文件</h2>
+<p>后台流程在 Sandbox 建好、仓库克隆好、依赖装好之后，只调用一个函数 <code>executeAgentInSandbox()</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L590-L603">app/api/tasks/route.ts L590–L603</a>）。它做三件事：</p>
+<ol class="flow">
+  <li><span class="step-title">把用户的密钥临时塞进服务器进程的环境变量 <span class="where">index.ts</span></span>
+    用户在个人设置里存了自己的密钥，就先改写 <code>process.env</code>，选 Copilot 时还把用户的 GitHub 令牌放进 <code>GH_TOKEN</code>；函数结束时在 <code>finally</code> 里改回去。各家适配文件之后都从 <code>process.env</code> 里读密钥。
+    <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L49-L75">lib/sandbox/agents/index.ts L49–L75</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L149-L158">lib/sandbox/agents/index.ts L149–L158</a></li>
+  <li><span class="step-title">按类型分发 <span class="where">index.ts</span></span>
+    类型只有六种：<code>'claude' | 'codex' | 'copilot' | 'cursor' | 'gemini' | 'opencode'</code>。一个 <code>switch</code> 调到对应文件的 <code>executeXxxInSandbox()</code>。
+    <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L12">lib/sandbox/agents/index.ts L12</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L77-L148">lib/sandbox/agents/index.ts L77–L148</a></li>
+  <li><span class="step-title">每个文件自己包办一切 <span class="where">agents/*.ts</span></span>
+    先 <code>which</code> 看装没装，没有就装；写配置文件（模型、MCP）；拼出免确认的命令行；运行；读输出、抓会话编号；最后 <code>git status --porcelain</code> 看有没有改动，返回同一种结果对象（成功与否、输出、是否有改动、会话编号）。</li>
+</ol>
+<p class="with-side">这就是“适配层”：上面是统一的调用，下面每家一个文件，把这家 CLI 的脾气消化掉。但要注意，<strong>这里没有一个真正的接口类型</strong>。六个函数的参数个数都不一样（Gemini 只收 5 个，不收“是否续接”和会话编号，<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L127-L128">lib/sandbox/agents/index.ts L127–L128</a>），共同的只有返回值的形状。日志、安装检查这些重复代码也是每个文件各抄一份。
+<span class="side">第 1 课说过：用户第一次提交任务时，Sandbox 里一切都是现装的。所以这一课里的“安装时机”就是：每个任务、在依赖装完之后、Agent 开跑之前。</span>
+</p>
+
+<h2>六家 CLI：怎么装、怎么跑</h2>
+<p>下表全部以代码为准；最后一列是我用官方文档核对“今天还是不是这样”的结果，核对日期 2026-10-19。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>CLI</th><th>怎么装</th><th>免确认参数与完整命令</th><th>模型</th><th>今天还是不是这样</th></tr></thead>
+<tbody>
+<tr><td>Claude Code</td><td>官方脚本 <code>curl -fsSL https://claude.ai/install.sh | bash</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L80">lib/sandbox/agents/claude.ts L80</a></td><td><code>claude --model "…" --dangerously-skip-permissions --output-format stream-json --verbose [--resume "id"] "提示词"</code>，用 <code>sh -c</code> 后台运行 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L278-L295">lib/sandbox/agents/claude.ts L278–L295</a></td><td>默认 <code>claude-sonnet-4-5</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L251">lib/sandbox/agents/claude.ts L251</a></td><td>参数还在，等于 <code>--permission-mode bypassPermissions</code>。但官方文档写 <code>claude "query"</code> 是“带着初始提示进入交互模式”，<code>-p</code> 才是跑完就退出，<code>--output-format</code> 也注明“用于 print 模式”（<a href="https://code.claude.com/docs/en/cli-reference">CLI reference</a>）。模板没传 <code>-p</code>。它在没有终端的 Sandbox 里实际怎么表现，我没法不部署就确认，这是一个要实测的疑点。</td></tr>
+<tr><td>Codex CLI</td><td><code>npm install -g @openai/codex</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L52">lib/sandbox/agents/codex.ts L52</a></td><td><code>codex exec --dangerously-bypass-approvals-and-sandbox "提示词"</code>；追问时换成 <code>codex resume --last "提示词"</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L282-L292">lib/sandbox/agents/codex.ts L282–L292</a></td><td>写进 <code>~/.codex/config.toml</code>，默认 <code>openai/gpt-4o</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L150">lib/sandbox/agents/codex.ts L150</a></td><td>参数还在，别名 <code>--yolo</code>；用户提到的 <code>--full-auto</code> 官方已写明不再支持，模板也没用它。<strong>追问那条有问题</strong>：官方的非交互续接是 <code>codex exec resume --last</code>，<code>codex resume</code> 是交互界面的命令（<a href="https://learn.chatgpt.com/docs/developer-commands">Developer commands</a>、<a href="https://learn.chatgpt.com/docs/non-interactive-mode.md">Non-interactive mode</a>），而且换过去以后免确认参数也丢了。</td></tr>
+<tr><td>Copilot CLI</td><td><code>npm install -g @github/copilot</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L62">lib/sandbox/agents/copilot.ts L62</a></td><td><code>copilot -p 提示词 --allow-all-tools --no-color [--model] [--resume id] [--additional-mcp-config @文件]</code>，用参数数组直接运行，不经过 shell <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L282-L312">lib/sandbox/agents/copilot.ts L282–L312</a></td><td>用户选了才传 <code>--model</code></td><td>官方写明 <code>--allow-all-tools</code> 是“程序化使用时必需”；另有 <code>--allow-all</code>，同时放开工具、文件路径和网址（<a href="https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference">command reference</a>）。</td></tr>
+<tr><td>Cursor CLI</td><td>官方脚本 <code>curl https://cursor.com/install -fsS | bash</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L85">lib/sandbox/agents/cursor.ts L85</a></td><td><code>~/.local/bin/cursor-agent -p --force --output-format stream-json [--model] [--resume id] 提示词</code>，参数数组、后台运行 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L451-L472">lib/sandbox/agents/cursor.ts L451–L472</a></td><td>用户选了才传</td><td><code>-p --force --output-format stream-json</code> 仍是官方写法，<code>--force</code> 别名 <code>--yolo</code>；但官方文档里命令名已经是 <code>agent</code>（<a href="https://cursor.com/docs/cli/headless">Headless CLI</a>、<a href="https://cursor.com/docs/cli/reference/parameters">Parameters</a>）。安装脚本今天是否还放一个 <code>cursor-agent</code>，我没有查到，没法确认。</td></tr>
+<tr><td>Gemini CLI</td><td><code>npm install -g @google/gemini-cli</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L64">lib/sandbox/agents/gemini.ts L64</a></td><td><code>gemini [-m 模型] --yolo -o json "提示词"</code>，<code>sh -c</code>；报“工具找不到”时退到 <code>--approval-mode auto_edit -o text</code>，再退到只带模型 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L203-L264">lib/sandbox/agents/gemini.ts L203–L264</a></td><td>用户选了才传 <code>-m</code></td><td><code>--yolo</code> 还能用，但官方标为弃用，建议 <code>--approval-mode=yolo</code>；而且今天的源码把直接跟在后面的提示词说明为“默认进入交互模式，非交互请用 <code>-p</code>”（<a href="https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/cli-reference.md">cli-reference</a>）。模板没传 <code>-p</code>，行为可能随版本变过。</td></tr>
+<tr><td>opencode</td><td><code>npm install -g opencode-ai</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L88">lib/sandbox/agents/opencode.ts L88</a></td><td><code>opencode run [--model "…"] [--session "id" | --continue] "提示词"</code>，<code>sh -c</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L328-L356">lib/sandbox/agents/opencode.ts L328–L356</a></td><td>用户选了才传</td><td>没有任何免确认参数，因为不需要：官方配置文档写明“By default, opencode allows all operations without requiring explicit approval”（<a href="https://opencode.ai/docs/config/#permissions">Config · Permissions</a>）。</td></tr>
+</tbody></table></div>
+
+<div class="box warn">
+  <span class="box-title">两个横向问题</span>
+  <p><strong>一、不锁版本。</strong>六个安装命令都没写版本号，每个任务装到的都是当天最新版。CLI 的参数一改名、配置格式一变，模板就悄悄坏掉，上面那一列就是活例子。第 3 课说的“把 CLI 烤进镜像”，顺带也能把版本钉住。</p>
+  <p><strong>二、工作目录不统一。</strong>Claude、Copilot、Cursor 明确在项目目录 <code>/vercel/sandbox/project</code> 里运行（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L415-L423">lib/sandbox/agents/claude.ts L415–L423</a>）；Codex 用 <code>runInProject</code> 先 <code>cd</code> 进去（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/commands.ts#L66-L76">lib/sandbox/commands.ts L66–L76</a>）。但 Gemini 和 opencode 用的是不带目录的 <code>runCommandInSandbox</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L237">lib/sandbox/agents/gemini.ts L237</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L356">lib/sandbox/agents/opencode.ts L356</a>）。模板自己专门写了 <code>runInProject</code> 去 <code>cd</code>，说明默认目录不是项目目录，所以这两家看起来是在仓库外面启动的。这是读代码推断，没有实测。</p>
+</div>
+
+<h2>提示词怎么递进去：命令行参数，外加一次粗糙的“消毒”</h2>
+<p>六家都把提示词当<em>命令行参数</em>传，没有一家用标准输入或文件。在交给 Agent 之前，后台流程先做一次处理：反引号换成单引号，删掉所有 <code>$</code> 和反斜杠，以 <code>-</code> 开头的行前面补一个空格，免得被当成参数（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L580-L585">app/api/tasks/route.ts L580–L585</a>，追问接口里同样一段 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L259-L264">app/api/tasks/[taskId]/continue/route.ts L259–L264</a>）。</p>
+<p>然后分两种走法：</p>
+<ul>
+<li><strong>拼进 shell 字符串</strong>（Claude、Codex、Gemini、opencode）：<code>… "${instruction}"</code> 塞进一对双引号，交给 <code>sh -c</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L295">lib/sandbox/agents/claude.ts L295</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L308">lib/sandbox/agents/codex.ts L308</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L234-L236">lib/sandbox/agents/gemini.ts L234–L236</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L346">lib/sandbox/agents/opencode.ts L346</a>）。删 <code>$</code> 和反引号，是为了不让 shell 把提示词里的 <code>$(…)</code> 当命令执行。可<strong>双引号没人管</strong>：提示词里的引号如果成对，会被 shell 悄悄吃掉；只有一个，整条命令语法出错；有人刻意构造，还能在后面接上别的命令。</li>
+<li><strong>参数数组</strong>（Copilot、Cursor）：提示词作为数组里的一个元素直接交给 <code>sandbox.runCommand</code>，不经过 shell，什么字符都安全（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L282-L290">lib/sandbox/agents/copilot.ts L282–L290</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L451-L459">lib/sandbox/agents/cursor.ts L451–L459</a>）。但它们照样吃了前面那次“消毒”，用户写的 <code>$HOME</code>、正则里的 <code>\d</code> 都被删掉了，Agent 收到的是改过的需求。</li>
+</ul>
+<p class="with-side">有意思的是：这里的转义问题主要是<em>正确性</em>问题，而不是安全问题。因为 Agent 本来就被允许在 Sandbox 里执行任何命令，多注入一条命令，也拿不到 Agent 拿不到的东西。真正该担心的是需求被改坏、命令跑不起来。更干净的做法是全部改用参数数组，或者走标准输入：Codex 的 <code>exec</code> 支持用 <code>-</code> 从标准输入读提示词（<a href="https://learn.chatgpt.com/docs/developer-commands">Developer commands</a>），Claude 的 <code>-p</code> 也能接管道输入（<a href="https://code.claude.com/docs/en/cli-reference">CLI reference</a>）。
+<span class="side">追问时情况更复杂：如果没能重连旧 Sandbox，追问接口会把最近几条对话（包括 Agent 自己之前的回复，每条截到 500 字）拼到提示词后面（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L266-L284">app/api/tasks/[taskId]/continue/route.ts L266–L284</a>）。也就是说，Agent 上一轮的输出会变成下一轮命令行的一部分。</span>
+</p>
+
+<h2>密钥和配置怎么交给 CLI</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>CLI</th><th>用哪把密钥</th><th>怎么递进去</th><th>写了哪些文件</th></tr></thead>
+<tbody>
+<tr><td>Claude Code</td><td>AI Gateway 的密钥（不是 Anthropic 的）</td><td>每条命令前面拼 <code>ANTHROPIC_API_KEY="网关密钥" ANTHROPIC_BASE_URL="https://ai-gateway.vercel.sh"</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L257-L259">lib/sandbox/agents/claude.ts L257–L259</a></td><td><code>~/.config/claude/config.json</code>，里面是明文密钥、网关地址和默认模型 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L151-L158">lib/sandbox/agents/claude.ts L151–L158</a></td></tr>
+<tr><td>Codex CLI</td><td>AI Gateway 密钥（<code>vck_</code> 开头）或 OpenAI 密钥（<code>sk-</code> 开头），都从 <code>AI_GATEWAY_API_KEY</code> 读 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L88-L105">lib/sandbox/agents/codex.ts L88–L105</a></td><td>命令前拼 <code>AI_GATEWAY_API_KEY="…" HOME=… CI="true"</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L307-L308">lib/sandbox/agents/codex.ts L307–L308</a></td><td><code>~/.codex/config.toml</code>：自定义 <code>model_provider</code>，网关地址 <code>https://ai-gateway.vercel.sh/v1</code>，<code>env_key</code> 指向上面那个环境变量，<code>wire_api = "chat"</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L152-L183">lib/sandbox/agents/codex.ts L152–L183</a></td></tr>
+<tr><td>Copilot CLI</td><td>用户自己的 GitHub 令牌 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L49-L54">lib/sandbox/agents/index.ts L49–L54</a></td><td><code>runCommand</code> 的 <code>env</code> 参数：<code>GH_TOKEN</code>、<code>GITHUB_TOKEN</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L301-L312">lib/sandbox/agents/copilot.ts L301–L312</a></td><td>只有 MCP 配置</td></tr>
+<tr><td>Cursor CLI</td><td><code>CURSOR_API_KEY</code></td><td><code>runCommand</code> 的 <code>env</code> 参数 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L461-L472">lib/sandbox/agents/cursor.ts L461–L472</a></td><td>只有 MCP 配置</td></tr>
+<tr><td>Gemini CLI</td><td><code>GEMINI_API_KEY</code>，没有就依次试 Vertex AI、Google Cloud 项目 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L173-L200">lib/sandbox/agents/gemini.ts L173–L200</a></td><td>命令前拼 <code>KEY="…"</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L225-L236">lib/sandbox/agents/gemini.ts L225–L236</a></td><td>只有 MCP 配置</td></tr>
+<tr><td>opencode</td><td>OpenAI 或 Anthropic 密钥 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L59-L69">lib/sandbox/agents/opencode.ts L59–L69</a></td><td><code>echo "密钥" | opencode auth add …</code>，再在命令前拼一遍环境变量 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L241-L283">lib/sandbox/agents/opencode.ts L241–L283</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L302-L315">lib/sandbox/agents/opencode.ts L302–L315</a></td><td>MCP 配置；登录信息由 opencode 自己存</td></tr>
+</tbody></table></div>
+<p>所以 <strong>AI Gateway 只接了两家</strong>：Claude（把 Anthropic 的接口地址换成网关）和 Codex（在 <code>config.toml</code> 里定义一个指向网关的模型提供方）。其余四家直连各自的服务。这也是第 1 课提过的 README 与代码不一致：README 让人以为 Claude 要 Anthropic 密钥，代码里走的是网关。</p>
+
+<div class="box warn">
+  <span class="box-title">“现在还是不是这样”：三处已经过时或可疑</span>
+  <p><strong>一、Codex 这条路今天很可能直接启动失败。</strong>模板给网关写的是 <code>wire_api = "chat"</code>。Codex 在 2026 年 2 月删掉了对 chat/completions 的支持，今天源码里遇到这个值会报“<code>wire_api = "chat"</code> is no longer supported”并拒绝加载配置（<a href="https://github.com/openai/codex/blob/main/codex-rs/model-provider-info/src/lib.rs">codex-rs/model-provider-info</a>，<a href="https://github.com/openai/codex/discussions/7782">讨论 #7782</a>）。模板又不锁版本，所以今天跑 Codex 加网关密钥，按推断会在读配置时就失败。我没有实测。</p>
+  <p><strong>二、Claude 的 config.json 写在了官方不认的位置。</strong>Claude Code 文档里的用户配置文件是 <code>~/.claude/settings.json</code>（<a href="https://code.claude.com/docs/en/settings">Settings</a>），没有 <code>~/.config/claude/config.json</code>。按推断这个文件不起作用，真正生效的是命令前面拼的环境变量；它唯一确定的效果是在磁盘上多留了一份明文密钥。另外，Vercel 今天给 Claude Code 的推荐写法也变了：地址用 <code>https://ai-gateway.vercel.sh/claude-code</code>，密钥放 <code>ANTHROPIC_AUTH_TOKEN</code>，并把 <code>ANTHROPIC_API_KEY</code> 设成空字符串（<a href="https://vercel.com/docs/ai-gateway/coding-agents/claude-code">Vercel 文档</a>）。</p>
+  <p><strong>三、opencode 的 <code>auth add</code> 不在官方命令列表里。</strong>官方文档里管理凭证的子命令是 <code>opencode auth login</code>（<a href="https://opencode.ai/docs/cli/#auth">CLI 文档</a>）。代码里失败了也只是“继续”，密钥还会通过环境变量传进去，所以按推断不影响运行。</p>
+</div>
+
+<h2>MCP 怎么塞进各家 CLI</h2>
+<p>用户在网页上登记的 MCP 服务器存在 <code>connectors</code> 表里，分本地（一条启动命令 + 环境变量）和远程（地址 + 可选的 OAuth client id / secret）两种。任务开始时，后台流程查出当前用户所有“已连接”的服务器，解密环境变量和 secret，交给适配文件（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L536-L578">app/api/tasks/route.ts L536–L578</a>）。之后六家各写各的格式：</p>
+<div class="table-wrap"><table>
+<thead><tr><th>CLI</th><th>写到哪里、怎么写</th><th>远程服务器的认证</th></tr></thead>
+<tbody>
+<tr><td>Claude Code</td><td>对每台服务器跑一次 <code>claude mcp add</code>；本地的用 <code>-- 启动命令</code>，环境变量用 <code>--env K="V"</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L99-L149">lib/sandbox/agents/claude.ts L99–L149</a></td><td><code>--header "Authorization: Bearer secret"</code>，另加 <code>X-Client-ID</code></td></tr>
+<tr><td>Codex CLI</td><td>追加到 <code>~/.codex/config.toml</code> 的 <code>[mcp_servers.名字]</code>：<code>command</code>、<code>args</code>、<code>env</code> 或 <code>url</code>；有远程服务器时加 <code>experimental_use_rmcp_client = true</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L186-L235">lib/sandbox/agents/codex.ts L186–L235</a></td><td><code>bearer_token = "secret"</code></td></tr>
+<tr><td>Copilot CLI</td><td>写 <code>~/.copilot/mcp-config.json</code>，再用 <code>--additional-mcp-config @同一个文件</code> 传一次 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L103-L184">lib/sandbox/agents/copilot.ts L103–L184</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L278">lib/sandbox/agents/copilot.ts L278</a></td><td><code>headers.Authorization</code></td></tr>
+<tr><td>Cursor CLI</td><td>写 <code>~/.cursor/mcp.json</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L180-L261">lib/sandbox/agents/cursor.ts L180–L261</a></td><td><code>headers.Authorization</code></td></tr>
+<tr><td>Gemini CLI</td><td>写 <code>~/.gemini/settings.json</code>，远程的字段名是 <code>httpUrl</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L90-L171">lib/sandbox/agents/gemini.ts L90–L171</a></td><td><code>headers.Authorization</code></td></tr>
+<tr><td>opencode</td><td>写 <code>~/.opencode/config.json</code> 的 <code>mcp</code> 段，<code>type: local / remote</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L150-L235">lib/sandbox/agents/opencode.ts L150–L235</a></td><td><code>headers.Authorization</code></td></tr>
+</tbody></table></div>
+<p>同一份数据，六种格式，六份手写的转换代码。这里藏着这一课最实在的几个 bug：</p>
+<ul>
+<li><strong>四家拿不到本地服务器的环境变量。</strong>后台流程已经把解密后的 <code>env</code> 用 <code>JSON.parse</code> 变成了对象（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L550">app/api/tasks/route.ts L550</a>），Copilot、Cursor、Gemini、opencode 却又对它 <code>JSON.parse</code> 一次（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L128-L134">lib/sandbox/agents/copilot.ts L128–L134</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L204-L211">lib/sandbox/agents/cursor.ts L204–L211</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/gemini.ts#L114-L121">lib/sandbox/agents/gemini.ts L114–L121</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L174-L181">lib/sandbox/agents/opencode.ts L174–L181</a>）。对对象做 <code>JSON.parse</code> 会先把它变成字符串 <code>"[object Object]"</code>，然后报错，被 catch 住只打一条“解析失败”的警告。只有 Claude 和 Codex 用 <code>Object.entries</code>，拿得到。数据库字段的类型写的是字符串（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L203">lib/db/schema.ts L203</a>），解密时却换成了对象，类型和实际对不上，才埋下这个坑。这是读代码推断。</li>
+<li><strong>Claude 的 MCP 可能登记错了项目。</strong><code>claude mcp add</code> 不加 <code>--scope</code> 时默认是 local，按官方说法“只在添加它的那个项目里加载”（<a href="https://code.claude.com/docs/en/mcp#local-scope">MCP · Local scope</a>）。而模板跑 <code>mcp add</code> 用的是不带目录的 <code>runCommandInSandbox</code>，真正运行 Claude 时却在项目目录里。按推断，登记上的服务器在运行时不会被加载；用来检查的 <code>claude mcp list</code> 也是在同一个“错的”目录里跑的（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L260">lib/sandbox/agents/claude.ts L260</a>），所以检查会显示正常。没有实测。另外，Claude 只在“这台机器上还没装 CLI”时才配 MCP（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L213-L216">lib/sandbox/agents/claude.ts L213–L216</a>）。</li>
+<li><strong>opencode 的配置文件位置不在官方列表里。</strong>官方的全局配置是 <code>~/.config/opencode/opencode.json</code>，项目里是 <code>opencode.json</code>（<a href="https://opencode.ai/docs/config/#locations">Config · Locations</a>），没有 <code>~/.opencode/config.json</code>。按推断这份 MCP 配置不会被读到。</li>
+<li>小问题：各家“确认文件写成功了”的检查用 <code>test -f ~/.cursor/mcp.json</code> 这样的写法，却不经过 shell，<code>~</code> 不会被展开，所以这条检查永远报“不存在”，只是影响日志（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L254">lib/sandbox/agents/cursor.ts L254</a>）。</li>
+</ul>
+
+<h2>输出怎么读：进度、会话编号、脱敏</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>CLI</th><th>输出格式</th><th>怎么判断跑完</th><th>会话编号从哪来</th></tr></thead>
+<tbody>
+<tr><td>Claude Code</td><td><code>stream-json</code>，每行一个 JSON。<code>assistant</code> 里的文字累加后写进 <code>task_messages</code>；<code>tool_use</code> 翻译成“Editing 文件”“Running: 命令前 50 个字”这样的状态行 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L310-L405">lib/sandbox/agents/claude.ts L310–L405</a></td><td>看到 <code>type: "result"</code> 才算完；外面是一个每秒检查一次、没有任何自己出口的 <code>while</code> 循环 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L428-L430">lib/sandbox/agents/claude.ts L428–L430</a></td><td><code>result</code> 行里的 <code>session_id</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L391-L396">lib/sandbox/agents/claude.ts L391–L396</a></td></tr>
+<tr><td>Cursor CLI</td><td><code>stream-json</code>，按 <code>tool_call</code> 的种类（读、改、搜索、跑命令）写状态行 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L334-L413">lib/sandbox/agents/cursor.ts L334–L413</a></td><td>输出里同时出现 <code>"type":"result"</code> 和成功字样；最多等 240 秒，注释说“Sandbox 超时是 5 分钟，留点余量” <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L415-L424">lib/sandbox/agents/cursor.ts L415–L424</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L478-L493">lib/sandbox/agents/cursor.ts L478–L493</a></td><td><code>result</code> 行里的 <code>session_id</code></td></tr>
+<tr><td>Codex CLI</td><td>普通文字，跑完一次性拿到</td><td>进程退出</td><td>用正则在文字里找“session id: …” <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L335-L343">lib/sandbox/agents/codex.ts L335–L343</a>；追问时其实不用它，而是 <code>--last</code></td></tr>
+<tr><td>Copilot CLI</td><td>普通文字（<code>--no-color</code>），去掉画框字符后包进 <code>&lt;pre&gt;</code> 写库 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L204-L250">lib/sandbox/agents/copilot.ts L204–L250</a></td><td>进程退出</td><td><strong>从来没有</strong>：变量声明了但没赋过值 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L202">lib/sandbox/agents/copilot.ts L202</a></td></tr>
+<tr><td>Gemini CLI</td><td>要了 <code>-o json</code>，却没解析，整段当文字记日志</td><td>进程退出</td><td>不支持续接，入口也不传会话编号</td></tr>
+<tr><td>opencode</td><td>普通文字</td><td>进程退出</td><td>同 Codex 的正则 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L377-L387">lib/sandbox/agents/opencode.ts L377–L387</a>；找不到就用 <code>--continue</code></td></tr>
+</tbody></table></div>
+<p>抓到的编号存进 <code>tasks.agentSessionId</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L607-L610">app/api/tasks/route.ts L607–L610</a>），追问时连同“是否重连上了旧 Sandbox”一起传回去（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L324-L337">app/api/tasks/[taskId]/continue/route.ts L324–L337</a>）。注意追问接口的一个假设：<em>重连成功时不再附带对话历史</em>，注释写“用了 --resume，Agent 自己就有完整历史”（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L266-L269">app/api/tasks/[taskId]/continue/route.ts L266–L269</a>）。这对 Claude、Cursor 成立，对 Copilot（从没抓到编号）和 Gemini（根本不续接）不成立。按推断，Keep Alive 开着时追问这两家，它们既没有续接、也没有历史，等于从零开始。</p>
+
+<div class="box warn">
+  <span class="box-title">读输出时的三个隐患（都是读代码推断）</span>
+  <p><strong>一、按“块”而不是按“行”解析。</strong>Claude 和 Cursor 都是拿到一块输出就按换行切开，逐段 <code>JSON.parse</code>，解析失败就丢掉。可输出块的边界不保证落在换行上，一行 JSON 被切成两半时，两半都会被丢掉。如果被切的恰好是 Claude 的 <code>result</code> 那一行，上面那个没有出口的循环就会一直等下去，直到 Sandbox 时长用完。正确做法是自己留一个缓冲区，攒到换行再解析。</p>
+  <p><strong>二、Cursor 等 240 秒就不等了，但进程还在跑。</strong>到点以后直接去 <code>git status</code>，后台的 Cursor 可能还在改文件，后面的提交就可能只提交了一半。</p>
+  <p><strong>三、“跑完”靠猜，不靠进程。</strong>Claude 和 Cursor 用 <code>detached: true</code> 启动，拿到的命令对象有 <code>wait()</code>，但没有用；失败时 CLI 可能根本不打 <code>result</code> 行（Cursor 文档明说失败时“stream may end early without a terminal event”，<a href="https://cursor.com/docs/cli/reference/output-format">Output format</a>）。</p>
+</div>
+
+<p class="with-side"><strong>日志脱敏。</strong>所有日志都经过同一个函数 <code>redactSensitiveInfo()</code>：<code>TaskLogger</code> 每写一条都先过它（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/logging.ts#L76-L82">lib/utils/logging.ts L76–L82</a>）。它是一串正则：<code>ANTHROPIC_API_KEY=sk-ant-…</code>、<code>GITHUB_TOKEN=ghp_…</code>、克隆地址里的令牌、<code>Bearer …</code>、任何名字里带 KEY / TOKEN / SECRET / PASSWORD 的赋值（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/logging.ts#L6-L74">lib/utils/logging.ts L6–L74</a>）。命中的值保留前 4 位和后 4 位，中间换成星号。Claude 和 opencode 打印命令前还先手动把密钥换成 <code>[REDACTED]</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L302">lib/sandbox/agents/claude.ts L302</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/opencode.ts#L349">lib/sandbox/agents/opencode.ts L349</a>）。值得挑的毛病有三个：正则里 <code>[sk-]</code>、<code>[gh][phosr]_</code> 是“字符集合”写法，本意应该是前缀，属于写错了但碰巧不太影响的那种（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/logging.ts#L14-L16">lib/utils/logging.ts L14–L16</a>）；保留首尾 8 个字符本身就泄露了一部分；最重要的是，<strong>它只管日志</strong>，Claude 和 Cursor 写进 <code>task_messages</code> 的 Agent 回复是不过滤的（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L331-L345">lib/sandbox/agents/claude.ts L331–L345</a>）。Agent 如果在回复里贴出一段环境变量，就会原样进数据库、显示在网页上。
+<span class="side">Codex 在密钥格式不对时，会把密钥的前 15 个字符写进错误信息（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L94">lib/sandbox/agents/codex.ts L94</a>）。这句话里没有“KEY=”这样的结构，按推断那串正则匹配不到它。</span>
+</p>
+
+<h2>“笼子”到底是什么</h2>
+<p>六家 CLI 自己的“笼子”全都被拆掉了：Claude 跳过权限确认，Codex 的参数名直接叫“绕过审批<em>和沙箱</em>”，Cursor 是 <code>--force</code>，Gemini 是 <code>--yolo</code>，Copilot 放开全部工具，opencode 默认就全放开。所以真正剩下的边界只有一层：第 3 课讲的那台 <strong>Firecracker microVM</strong>。</p>
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 430" role="img" aria-label="Agent CLI 适配层与笼子：左边是服务器上的统一入口和六个适配文件，右边是 Sandbox microVM，里面有免确认的 CLI、明文密钥和令牌，出站网络默认全放开">
+  <defs>
+    <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/></marker>
+    <marker id="b4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2c5d8a"/></marker>
+  </defs>
+  <style>
+    .srv{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .vm{fill:#fbf1dc;stroke:#8a5a00;stroke-width:2.2}
+    .in{fill:#fffffb;stroke:#5a554d;stroke-width:1.1}
+    .hot{fill:#f7e3dc;stroke:#a3341f;stroke-width:1.2}
+    .t{font:700 14px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:12px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+    .k{font:700 12px "Noto Sans CJK SC",sans-serif;fill:#a3341f}
+    .ln{stroke:#2c5d8a;stroke-width:1.5;fill:none;marker-end:url(#b4)}
+    .out{stroke:#a3341f;stroke-width:1.6;fill:none;marker-end:url(#a4)}
+  </style>
+  <!-- server -->
+  <rect class="srv" x="10" y="20" width="200" height="390" rx="4"/>
+  <text class="t" x="24" y="44">服务器（Next.js）</text>
+  <rect class="in" x="24" y="60" width="172" height="52" rx="3"/>
+  <text class="t" x="34" y="82">executeAgentInSandbox</text>
+  <text class="s" x="34" y="100">换密钥 · 按类型分发</text>
+  <text class="s" x="24" y="136">六个适配文件，各自：</text>
+  <text class="s" x="34" y="156">① which / 安装</text>
+  <text class="s" x="34" y="176">② 写配置（模型、MCP）</text>
+  <text class="s" x="34" y="196">③ 拼免确认命令行</text>
+  <text class="s" x="34" y="216">④ 读输出、抓会话编号</text>
+  <text class="s" x="34" y="236">⑤ git status 看改动</text>
+  <rect class="in" x="24" y="262" width="172" height="62" rx="3"/>
+  <text class="s" x="34" y="284">claude · codex · copilot</text>
+  <text class="s" x="34" y="304">cursor · gemini · opencode</text>
+  <text class="s" x="24" y="356">进度 → task_messages</text>
+  <text class="s" x="24" y="376">日志 → tasks.logs（脱敏）</text>
+  <text class="s" x="24" y="396">编号 → tasks.agentSessionId</text>
+  <path class="ln" d="M210,150 L268,150"/>
+  <text class="s" x="214" y="140">runCommand</text>
+  <path class="ln" d="M268,250 L210,250"/>
+  <text class="s" x="216" y="270">stdout</text>
+  <!-- VM -->
+  <rect class="vm" x="270" y="20" width="300" height="390" rx="6"/>
+  <text class="t" x="284" y="44">Sandbox = 真正的笼子</text>
+  <text class="s" x="284" y="62">Firecracker microVM，自己的内核</text>
+  <rect class="in" x="286" y="78" width="268" height="70" rx="3"/>
+  <text class="t" x="298" y="100">Agent CLI（免确认）</text>
+  <text class="s" x="298" y="120">想读什么读什么，想跑什么跑什么</text>
+  <text class="s" x="298" y="138">提示词来自用户、仓库、MCP、网页</text>
+  <rect class="hot" x="286" y="162" width="268" height="122" rx="3"/>
+  <text class="k" x="298" y="184">机器里能读到的秘密</text>
+  <text class="s" x="298" y="204">AI Gateway 密钥：命令行、config.json</text>
+  <text class="s" x="298" y="224">GitHub 令牌：克隆地址、Copilot 环境变量</text>
+  <text class="s" x="298" y="244">Cursor / Gemini / OpenAI 等密钥</text>
+  <text class="s" x="298" y="264">MCP 的 Bearer secret：各家配置文件</text>
+  <rect class="in" x="286" y="298" width="268" height="96" rx="3"/>
+  <text class="t" x="298" y="320">/vercel/sandbox/project</text>
+  <text class="s" x="298" y="340">用户的仓库，任务分支</text>
+  <text class="s" x="298" y="360">改动只能经 git push 出去</text>
+  <text class="s" x="298" y="380">开 PR 要用户在网页上点</text>
+  <!-- outside -->
+  <path class="out" d="M570,120 L640,120"/>
+  <text class="t" x="600" y="104">任意外网</text>
+  <text class="s" x="590" y="140">出站默认全放开</text>
+  <path class="out" d="M570,220 L640,220"/>
+  <text class="t" x="590" y="206">AI Gateway</text>
+  <text class="s" x="590" y="240">各家模型服务</text>
+  <path class="out" d="M570,330 L640,330"/>
+  <text class="t" x="600" y="316">GitHub</text>
+  <text class="s" x="590" y="350">令牌能做的都能做</text>
+</svg>
+<figcaption>图 1　适配层在服务器上，笼子在 Sandbox。microVM 挡住的是“碰到宿主机和别的租户”；红框里的秘密和右边的出站箭头，它都不管。</figcaption>
+</figure>
+
+<p><strong>为什么云端产品敢开免确认？</strong>因为最坏的情况被限定在“这一台、这一个任务的机器”里：它有自己的内核，删光文件、装恶意软件、把 CPU 跑满，都碰不到宿主机和别的用户；机器是临时的，任务结束就没了；对用户代码库的影响只能通过推送到任务分支体现出来，合进主分支还要人点 PR。没有人坐在屏幕前一条条点“允许”，不开免确认，Agent 根本跑不动。</p>
+<p><strong>风险在哪？</strong>在笼子里面和笼子的门上。</p>
+<ul>
+<li><strong>密钥就在笼子里。</strong>上面表格里的每一把密钥，Agent 用一条 <code>env</code>、<code>ps</code>、<code>cat ~/.config/claude/config.json</code> 或 <code>git remote -v</code> 就能看到。</li>
+<li><strong>门是开着的。</strong>模板锁定的 SDK 0.0.21 的创建参数里没有网络策略（第 3 课），出站全放开。</li>
+<li><strong>提示词不全是用户写的。</strong>仓库里的 README、代码注释、issue 内容、MCP 工具返回的结果、Agent 访问的网页，都可能夹带“把环境变量发到某某网址”这样的指令。Agent 免确认，就会照做。密钥 + 开着的门 + 被注入的指令，三样凑齐就是一次外传。</li>
+<li><strong>令牌的权限比任务大。</strong>GitHub 令牌是用户登录时拿到的，能做的事取决于它的授权范围，按推断不只限于这个仓库的这个分支。拿到它的人可以推别的分支、碰别的仓库。</li>
+</ul>
+
+<div class="box read">
+  <span class="box-title">今天的 Vercel Sandbox 能怎么补</span>
+  <p><strong>一、收紧门（第 3 课讲过）。</strong><code>networkPolicy</code> 可以在创建时指定，也可以在运行中用 <code>sandbox.update()</code> 换：先 allow-all 装依赖，Agent 开跑前换成只允许 AI Gateway、GitHub 和包仓库的白名单（<a href="https://vercel.com/docs/sandbox/concepts/firewall">Sandbox firewall</a>）。</p>
+  <p><strong>二、把密钥挪到笼子外面：credentials brokering。</strong>在白名单的某个域名下配 <code>transform</code>，Sandbox 发往这个域名的 HTTPS 请求会在防火墙那一层被加上或覆盖请求头，密钥本身不进虚拟机。官方原话：“The secrets never enter the sandbox, so code running inside it cannot exfiltrate them.”而且注入的请求头会覆盖 Sandbox 里代码自己设的同名请求头（<a href="https://vercel.com/changelog/safely-inject-credentials-in-http-headers-with-vercel-sandbox">2026-02-23 更新日志</a>）。套到这个模板上：给 <code>ai-gateway.vercel.sh</code> 注入 <code>Authorization: Bearer 网关密钥</code>，Sandbox 里的 CLI 只拿一个假值；给 GitHub 注入令牌，克隆地址里就不用再写令牌。哪些 CLI 用的是 <code>Authorization</code> 请求头、能不能直接这样替换，要逐家验证，这一句是推断。这和第 1、2 课讲的 Open SWE 用代理替换凭证是同一个思路。</p>
+  <p><strong>文档里写明的限制，面试时可以主动说：</strong>域名匹配靠 TLS 握手里的 SNI；用了 <code>*</code> 兜底时，没有 SNI 的连接（例如 SSH）会原样放行，也不会被注入；匹配条件只决定“改不改请求”，从不拦请求；按 IP 段放行的流量会绕过 SNI 过滤和凭证注入（<a href="https://vercel.com/docs/sandbox/concepts/firewall">Sandbox firewall</a>）。此外，令牌本身也该缩小：只限这个仓库、短期有效。</p>
+</div>
+
+<h2>面试视角：Agent CLI 适配层</h2>
+<div class="box interview">
+  <span class="box-title">面试时 60 秒这样讲</span>
+  <p>“coding-agent-template 不自己写 Agent，而是支持六家现成的 CLI：Claude Code、Codex、Copilot、Cursor、Gemini、opencode。结构是一个统一入口 <code>executeAgentInSandbox</code> 加每家一个适配文件。入口负责把用户密钥临时换进环境变量、按类型分发；适配文件负责在 Sandbox 里现装 CLI（两家用官方 curl 脚本，四家 npm 全局装，都不锁版本）、写配置文件（模型、MCP，六种格式）、拼出免确认的命令行，比如 Claude 的 <code>--dangerously-skip-permissions</code>、Codex 的 <code>--dangerously-bypass-approvals-and-sandbox</code>，然后读输出。Claude 和 Cursor 用 stream-json，边读边把进度写进数据库，并从 <code>result</code> 事件里拿到 <code>session_id</code> 存起来，追问时用 <code>--resume</code> 接上；其余几家读普通文字，有的靠正则猜编号。模型请求方面，Claude 和 Codex 走 AI Gateway，其余直连。既然 CLI 被允许做任何事，真正的边界就是 Sandbox 这台 Firecracker microVM：它挡住宿主机和其他租户，但挡不住机器里明文的密钥被读走、再从默认全开的网络发出去。所以我会补两件事：Agent 开跑前用 <code>networkPolicy</code> 收成白名单，再用防火墙的凭证注入把密钥留在虚拟机外面。”</p>
+</div>
+
+<div class="box read">
+  <span class="box-title">如果自己做，会怎么改（参考答法）</span>
+  <p><strong>一、定一个真正的接口。</strong>每家只实现四件事：<code>install()</code>（返回要装的包和版本）、<code>buildInvocation(prompt, model, resume)</code>（返回参数数组和环境变量，不返回 shell 字符串）、<code>renderMcpConfig(servers)</code>（从同一份结构化数据生成这家的格式）、<code>parseEvent(line)</code>（把一行输出翻译成统一的“文字 / 工具调用 / 会话编号 / 结束”事件）。安装检查、日志、等进程退出、<code>git status</code> 这些公共逻辑放在外面，只写一份。</p>
+  <p><strong>二、全部用结构化输出。</strong>今天几家都有：Codex <code>exec --json</code>（第一条事件就带会话编号），opencode <code>run --format json</code>，Gemini <code>--output-format stream-json</code>，Cursor 和 Claude 的 <code>stream-json</code>（<a href="https://learn.chatgpt.com/docs/developer-commands">Codex</a>、<a href="https://opencode.ai/docs/cli/#run">opencode</a>、<a href="https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/cli-reference.md">Gemini</a>）。解析时按行缓冲；“跑完了”以进程退出为准，事件只用来显示进度。</p>
+  <p><strong>三、提示词不进 shell。</strong>用参数数组或标准输入，不做“删掉 $ 和反斜杠”这种会改坏需求的处理。</p>
+  <p><strong>四、版本钉死，烤进镜像。</strong>CLI 和它的配置格式一起锁版本，升级时跑一组“契约测试”：每家用固定的小仓库跑一遍，检查参数还认不认、输出事件还是不是那几种。上面那一列“今天还是不是这样”，就是没有这组测试的代价。</p>
+  <p><strong>五、密钥不进笼子。</strong>环境变量按命令传（<code>runCommand</code> 的 <code>env</code>），不改服务器进程的 <code>process.env</code>，避免第 1 课说的多个任务互相串；能用防火墙注入的就不放进 Sandbox；GitHub 令牌换成只限本仓库、短期有效的那种。</p>
+</div>
+
+<div class="box read">
+  <span class="box-title">面试官可能的追问（附参考答法）</span>
+  <p><strong>问：为什么不自己写一个 Agent，而要适配六家？</strong><br>
+  答：好处是省事、跟得上各家最新能力、让用户挑自己熟的那家。代价是平台对 Agent 内部几乎没有控制：没法统一做工具权限、没法在工具调用前插一道检查、输出格式各不一样，而且每家一升级就可能坏。Open SWE 走的是另一条路，自己用 LangGraph 写 Agent，控制力强，但要自己追模型和工具的进展。</p>
+  <p><strong>问：免确认模式下，你怎么防提示词注入？</strong><br>
+  答：在 Agent 里面防不住，要在外面防。原则是“即使 Agent 被完全控制，它能造成的损失也有限”：机器是临时的、隔离的；网络只放必要的域名；密钥不在机器里，由防火墙在出站时注入；令牌权限只够推这个任务分支；合进主分支要人审 PR。日志脱敏只是最后一道遮挡，不是防线。</p>
+  <p><strong>问：追问时怎么让 Agent 记得上一轮？</strong><br>
+  答：两种办法。一是续接 CLI 自己的会话：保存它给的会话编号，下次带上 <code>--resume</code>，前提是还是同一台机器、会话文件还在。二是把对话历史拼进新提示词，换了机器也能用，但会丢掉工具调用的细节，还占上下文。这个模板两种都用了，但判断条件是“有没有重连上旧机器”，而不是“这家 CLI 有没有真的续接上”，所以 Copilot 和 Gemini 会落在两头都没有的空档里。</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。最后两题来自第 3 课和第 2 课，隔开再想一次，记得更牢。</p>
+<div class="quiz" data-quiz-id="0004-CLI关进笼子">
+<script type="application/json">{"questions": [{"q": "模板里六家 Agent CLI 的差别，主要被收在了哪里？", "options": ["每家一个适配文件，入口分发", "一个通用框架，各家只换模型", "全部预装进镜像，平台不管它", "用户在网页上自己填启动命令"], "answer": 0, "explain": "<code>executeAgentInSandbox()</code> 是唯一入口，按 <code>agentType</code> 的 <code>switch</code> 分发到 <code>lib/sandbox/agents/</code> 下的六个文件（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L77-L148\">index.ts L77–L148</a>）。每个文件自己负责安装、写配置、拼命令、读输出。但它们没有共同的接口类型，只是约定返回同一种结果对象。"}, {"q": "CLI 在 Sandbox 里被允许做任何事。这个产品真正的安全边界是什么？", "options": ["Sandbox 这台机器", "每家工具自带的逐条确认框", "在提示词里写明的禁止事项", "日志里用来脱敏的几条规则"], "answer": 0, "explain": "六家都被关掉了自己的确认（例如 Claude 的 <code>--dangerously-skip-permissions</code>、Codex 的 <code>--dangerously-bypass-approvals-and-sandbox</code>，<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L278\">claude.ts L278</a> <a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L282\">codex.ts L282</a>）。剩下的边界只有第 3 课讲的 Firecracker microVM：它挡住的是“碰到宿主机和别的租户”，挡不住“读走机器里的密钥、往外网发”。"}, {"q": "用户的提示词里有一个双引号，走 Claude 这条路径时会怎样？", "options": ["被 shell 吃掉或拆坏命令", "会被自动转义，然后原样交给工具", "会被换成单引号，然后再交给工具", "会被拒绝，网页上提示要重新输入"], "answer": 0, "explain": "预处理只换反引号、删掉 <code>$</code> 和反斜杠（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L580-L585\">route.ts L580–L585</a>），没管双引号；提示词又被直接塞进 <code>sh -c</code> 字符串的一对双引号里（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L295\">claude.ts L295</a>）。引号成对时会被悄悄去掉，单个时整条命令语法出错。Copilot 和 Cursor 用参数数组传，不经过 shell，没有这个问题。"}, {"q": "Keep Alive 开着时追问，选 Copilot 为什么看起来接不上上一轮？", "options": ["没抓到会话编号也不带历史", "这家根本不支持追问的功能", "重连后命令行工具被重装了", "代码托管令牌每轮都会失效"], "answer": 0, "explain": "<code>extractedSessionId</code> 在 Copilot 文件里声明了却从没赋值（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L202\">copilot.ts L202</a>），所以 <code>--resume</code> 永远加不上（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L288\">L288</a>）；而追问接口在“重连成功”时又特意不附带对话历史（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L266-L284\">continue/route.ts L266–L284</a>）。两头都落空。这是读代码推断，没有实测。"}, {"q": "用户给本地 MCP 服务器配了环境变量，选 Cursor 跑任务时，这些环境变量会怎样？", "options": ["被丢掉，只打一条警告日志", "原样写进这家工具的配置里", "先被加密，再交给这家工具", "任务失败，提示配置格式错"], "answer": 0, "explain": "任务入口已经把解密后的 <code>env</code> 解析成了对象（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L548-L556\">route.ts L548–L556</a>），Cursor 文件却又对它 <code>JSON.parse</code> 一次（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L203-L211\">cursor.ts L203–L211</a>）。对一个对象做 <code>JSON.parse</code> 会抛错，被 catch 住只打一条警告。Copilot、Gemini、opencode 同样如此；只有 Claude 和 Codex 用 <code>Object.entries</code>，能拿到。这是读代码推断。"}, {"q": "想让 Agent 能调用 AI Gateway、却拿不到真密钥，今天的 Vercel Sandbox 怎么做？", "options": ["由防火墙在出站请求上注入请求头", "把密钥写进一个只读的配置文件里", "把密钥拆成两半放进两个环境变量", "让工具每次启动时都找人手动粘贴"], "answer": 0, "explain": "<code>networkPolicy</code> 里给域名配 <code>transform</code>，Sandbox 发往该域名的 HTTPS 请求会在防火墙那一层被加上或覆盖请求头，密钥本身不进虚拟机（<a href=\"https://vercel.com/docs/sandbox/concepts/firewall\">Sandbox firewall · Credentials brokering</a>，<a href=\"https://vercel.com/changelog/safely-inject-credentials-in-http-headers-with-vercel-sandbox\">2026-02-23 更新日志</a>）。只读文件照样能被 <code>cat</code> 出来。"}, {"q": "【复习第 3 课】为什么模板每个新任务都要重新装一遍 Agent CLI？", "options": ["锁定的 SDK 没镜像快照参数", "每家工具的授权只能用一次就作废", "系统禁止把软件装进全局的目录里", "平台故意每一次都升级到最新版本"], "answer": 0, "explain": "<code>@vercel/sandbox</code> 0.0.21 的创建参数里只有 <code>runtime</code>、git / tarball 两种来源、端口、时长和 CPU（第 3 课），没有 image 和 snapshot，所以只能在任务里现装：<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L80\">claude.ts L80</a> 用安装脚本，<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/codex.ts#L52\">codex.ts L52</a> 用 <code>npm install -g</code>。顺带的副作用是：不锁版本，每次装到的都是当天最新版。"}, {"q": "【复习第 2 课】Keep Alive 关闭时，任务做完以后那台 Sandbox 会怎样？", "options": ["进程被结束，机器开到超时", "调用 stop() 关机", "自动拍下一张快照然后关机", "被放回池子里留给下个任务"], "answer": 0, "explain": "<code>shutdownSandbox</code> 只 <code>pkill</code> 机器里的进程，没有调用 <code>sandbox.stop()</code>（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L75-L100\">lib/sandbox/git.ts L75–L100</a>），注释说 SDK 没有关机方法，但 0.0.21 其实有 <code>stop()</code>。所以机器会空转到最长时长用完。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p>先读 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L250-L430">lib/sandbox/agents/claude.ts L250–L430</a>，这是六个文件里最完整的一个：环境变量、免确认参数、stream-json 解析、会话编号、等待循环都在这 180 行里。再读 Vercel 的 <a href="https://vercel.com/docs/sandbox/concepts/firewall">Sandbox firewall</a> 一页里 “Credentials brokering” 一节。读完想一想：如果把 Claude 的密钥改成由防火墙注入，第 259 行和第 152–158 行要怎么改。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>某一家 CLI 的参数想再查细一点、想让我帮你画一版“自己做的适配层接口”、想讨论提示词注入的具体攻击路径，或者想让我扮面试官追问你，都可以直接在对话里问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：<a href="../reference/architecture-cheatsheet.html">架构速查</a> 里新加了“Agent CLI 适配层与笼子”一节，新词收进了 <a href="../reference/glossary.html">术语表</a>。下一课：<a href="0005-progress-back-to-the-browser.html">第 5 课 · 进度怎么回到网页</a>，接着这一课的 stream-json 往下讲。</p>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  源代码引用全部固定在 commit <code>e753e1b</code>（main 分支，2026-02-12 提交，北京时间 17:21）。
+  所以哪怕仓库以后改动，这些链接指向的行号也不会变。外部文档于 2026-10-19 晚（北京时间）核对。
+</footer>
+</main>
+</body>
+</html>
