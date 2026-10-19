@@ -5,6 +5,12 @@ The format follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-19
+
+### Added
+
+- `edges memory migrate` 认识早期平铺 `.memory`：大写类型索引、`project` / `feedback` / `reference` / `user` 前缀的 `<type>_<slug>.md`，以及被条目相对路径引用的附件目录。无法归类的路径在 `--dry-run` 和正式结果的 `diagnostics` 里列全，并在写入时挪到 `.project-memory-migration/unclassified/`，不挡住其余条目。平铺层的 `AGENTS.md` 改写为 `project-harness` 标记。
+
 ## [2.0.0] - 2026-10-04
 
 ### Changed

@@ -1,7 +1,7 @@
 ---
 name: project-memory-migrate
 description: 将明确指定作用域的旧 Project Memory .memory 一次性迁到 .harness/memory 和 .harness/skills；保留私有内容、技能资产、来源权限与稀疏子作用域。用于旧项目升级或 Git 升级后遗留的本机用户记忆，不迁业务目录。
-version: 2.0.0
+version: 2.1.0
 ---
 
 # Project Memory Migrate
@@ -15,6 +15,8 @@ edges memory migrate --target-dir <作用域> [--root-dir <记忆根>] [--recurs
 ```
 
 不加 `--dry-run` 时，一次调用完成全范围预检、忽略规则、复制、校验和旧真源清理。`--dry-run` 只返回路径映射与诊断。`skills` → `skills/managed`、`agent_skills` → `skills/referenced`；自定义类型默认保留在 `memory/<原目录>`，显式 `module: memory|skills` 按原值保留，模块归属不由 `format` 决定。自定义类型保留身份、格式、未知元数据和显式 writable/gitignore 权限，缺失、占用官方路径或冲突时停止，不猜权限。
+
+早期平铺布局也走这一条命令：`.memory/FEEDBACK.md`、`PROJECT.md`、`REFERENCE.md`、`USER.md` 是类型索引，根上的 `project_` / `feedback_` / `reference_` / `user_<slug>.md` 按前缀归入 `.harness/memory/<plural>/README.md` 和 `<type>_<slug>/INDEX.md`。条目里用相对路径引用的附件目录（例如 `*-evidence/`）跟那一条目一起迁。对不上这些规则的路径写入 `diagnostics`（`unclassified-legacy-path`），`--dry-run` 也会列出；正式迁移把它们挪到 `.project-memory-migration/unclassified/`，不因为其中一个文件停掉已经能归类的条目。符号链接、权限冲突和官方路径冲突仍然整次停止。这种平铺层的 `AGENTS.md` 会把旧 `project-memory` 标记改写成 `project-harness`，并去掉 `project-memory-auto`。还没安装本 skill 时直接跑上面的 CLI；`edges init` 遇到旧层会提示先执行 `edges memory migrate --dry-run`。
 
 - JSON 返回 `ok`、`status`、`complete`、`pathMap` 和 `diagnostics`，不包含正文。冲突中止时核对指出的源/目标，不能强制覆盖来消除问题。
 - 来源缺失/不可读时保留 referenced 索引与采用关系，返回 `migrated-incomplete` 和 `complete: false`；恢复来源后用 doctor 检查/刷新。迁移重跑仍报告未恢复的来源。官方索引因 Git 忽略而缺失时仅按实际本地文件重建索引并明确诊断，不推断丢失正文。

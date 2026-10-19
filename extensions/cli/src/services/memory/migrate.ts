@@ -22,8 +22,14 @@ import {
   parseTypeMeta,
   SEED_TYPE_NAMES,
 } from "./types.js";
-import { AGENTS_FILE_NAME, legacyTypeIndexRelpath as indexFileName } from "./paths.js";
+import {
+  AGENTS_FILE_NAME,
+  TYPE_INDEX_FILE_NAME,
+  legacyTypeIndexRelpath as indexFileName,
+  typeIndexRelpath,
+} from "./paths.js";
 import { ENTRY_NAMES } from "../../domain/config/layout.js";
+import { rewriteLayerSurface } from "../../domain/models/node/document.js";
 import { frontmatterData, logicalFields } from "../../domain/models/memory/documents.js";
 import {
   parseLegacy,
@@ -213,14 +219,15 @@ function validNewScope(scope: string) {
 export function inventory(
   owner: string,
   spec: Pick<LegacyType, "name" | "format"> &
-    Partial<Pick<LegacyType, "directory">>,
+    Partial<Pick<LegacyType, "directory" | "flatEntries">>,
 ): string[] {
+  const flat = [...(spec.flatEntries ?? [])];
   const source =
     spec.name === "agent_skills"
       ? join(owner, ".agents/skills")
       : spec.directory!;
   if (!isDirectory(source)) {
-    if (spec.name !== "agent_skills" && !present(source)) return [];
+    if (spec.name !== "agent_skills" && !present(source)) return flat;
     throw new Error("source unavailable");
   }
   const result: string[] = [],
@@ -251,6 +258,8 @@ export function inventory(
       result.push(path);
     }
   }
+  for (const path of flat)
+    if (!result.includes(path)) result.push(path);
   return result;
 }
 export function referencedDiagnostics(owner: string): MigrationDiagnostic[] {
@@ -329,17 +338,40 @@ export function planMigration(target: string, recursive = false): MigrationJob {
     safeAncestors(join(owner, ".memory"), target);
     if (!isScope(owner))
       throw new Error(`legacy-owner-missing-managed-entry: ${owner}`);
-    const current = parseLegacy(owner);
+    const current = parseLegacy(owner, { strictUnclassified: false });
     if (validNewScope(owner) && current.some((s) => !s.private))
       throw new Error(`new-layout-only-allows-private-remnants: ${owner}`);
+    const memoryRoot = join(owner, ".memory");
+    for (const item of current.unclassified ?? []) {
+      diagnostics.push({
+        code: "unclassified-legacy-path",
+        path: item.path,
+        detail: item.suggestion,
+      });
+      const dest = join(
+        owner,
+        MIGRATION_JOURNAL,
+        "unclassified",
+        relative(memoryRoot, item.path),
+      );
+      if (item.kind === "directory") mappings.push({ old: item.path, next: dest });
+      else exact.set(item.path, dest);
+    }
     for (const spec of current) {
+      const indexLeaf = spec.flatRoot ? TYPE_INDEX_FILE_NAME : AGENTS_FILE_NAME;
       const converted = parseTypeMeta(convertIndex("", spec))!,
-        planned = join(spec.relativeTarget, AGENTS_FILE_NAME),
-        official = SEED_TYPE_NAMES.find((n) => indexFileName(n) === planned);
+        planned = join(spec.relativeTarget, indexLeaf),
+        expected = spec.flatRoot
+          ? typeIndexRelpath(converted.name, spec.module)
+          : indexFileName(converted.name),
+        official = SEED_TYPE_NAMES.find(
+          (n) =>
+            (spec.flatRoot ? typeIndexRelpath(n, spec.module) : indexFileName(n)) ===
+            planned,
+        );
       if (
         (official && official !== converted.name) ||
-        (SEED_TYPE_NAMES.includes(converted.name) &&
-          planned !== indexFileName(converted.name))
+        (SEED_TYPE_NAMES.includes(converted.name) && planned !== expected)
       )
         throw new Error(`Official type path conflict: ${converted.name}`);
       if (converted.module !== spec.module)
@@ -356,7 +388,22 @@ export function planMigration(target: string, recursive = false): MigrationJob {
         next: join(owner, spec.relativeTarget),
       });
       for (const index of spec.indexes)
-        exact.set(index, join(owner, spec.relativeTarget, AGENTS_FILE_NAME));
+        exact.set(index, join(owner, spec.relativeTarget, indexLeaf));
+      for (const entry of spec.flatEntries)
+        exact.set(
+          entry,
+          join(owner, spec.relativeTarget, basename(entry, ".md"), ENTRY_NAMES.leaf),
+        );
+      for (const asset of spec.assetDirs)
+        mappings.push({
+          old: asset.source,
+          next: join(
+            owner,
+            spec.relativeTarget,
+            basename(asset.entry, ".md"),
+            basename(asset.source),
+          ),
+        });
       types.push({ owner, spec });
       if (spec.name === "agent_skills")
         diagnostics.push(...referencedDiagnostics(owner));
@@ -449,6 +496,12 @@ export function planMigration(target: string, recursive = false): MigrationJob {
           (entry.spec.name !== "agent_skills" ||
             !referencedDiagnostics(entry.owner).length);
         if (entry) text = convertIndex(text, entry.spec);
+        if (
+          entry?.spec.flatRoot &&
+          !text.includes("<!-- project-memory-entries:start -->")
+        )
+          text +=
+            "\n<!-- project-memory-entries:start -->\n<!-- project-memory-entries:end -->\n";
         // Obsolete derived links need not be valid URLs. Discard them before
         // rewriting authored links, only when the source inventory is available.
         if (rebuild)
@@ -478,18 +531,30 @@ export function planMigration(target: string, recursive = false): MigrationJob {
         // be interpreted as another link, and targets use their final locations.
         if (rebuild)
           text = rebuildEntries(text, entry.owner, entry.spec, dest, mapped);
+        if (rebuild && entry.spec.flatRoot)
+          text = text.replace(
+            /<!-- project-memory-entries:start -->\r?\n([\s\S]*?)<!-- project-memory-entries:end -->/,
+            (_match, body: string) =>
+              `<!-- project-entries-local:start -->\n## 本层内容\n\n${body.trim()}\n<!-- project-entries-local:end -->`,
+          );
         if (
           basename(source) === AGENTS_FILE_NAME &&
           owners.includes(dirname(source))
-        )
+        ) {
           for (const { owner, spec } of types) {
             if (owner !== dirname(source)) continue;
             const rel = relative(
               dirname(dest),
-              mapped(join(owner, spec.relativeTarget, AGENTS_FILE_NAME)),
+              join(
+                owner,
+                spec.relativeTarget,
+                spec.flatRoot ? TYPE_INDEX_FILE_NAME : AGENTS_FILE_NAME,
+              ),
             );
             if (!text.includes(`](${rel})`)) {
-              const marker = "<!-- project-memory-local:end -->";
+              const marker: string = text.includes("<!-- project-memory-local:end -->")
+                ? "<!-- project-memory-local:end -->"
+                : "<!-- project-harness-local:end -->";
               if (!text.includes(marker))
                 throw new Error(`missing-local-adoption-block: ${source}`);
               text = text.replace(
@@ -498,6 +563,12 @@ export function planMigration(target: string, recursive = false): MigrationJob {
               );
             }
           }
+          if (types.some((item) => item.owner === dirname(source) && item.spec.flatRoot))
+            text = rewriteLayerSurface(text).replace(
+              /[ \t]*<!-- project-memory-auto:start -->[\s\S]*?<!-- project-memory-auto:end -->[ \t]*(?:\r?\n)?/g,
+              "",
+            );
+        }
         after = fileState(text, initial.mode);
       }
     }

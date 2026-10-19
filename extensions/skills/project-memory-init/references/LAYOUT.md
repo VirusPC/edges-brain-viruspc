@@ -1,6 +1,6 @@
 # 项目记忆布局
 
-[`PROTOCOL.md`](PROTOCOL.md) 的当前实现。作用域入口直接引用类型入口，两跳到正文；物理容器不增加发现层级。常规运行只使用 `.harness` 新布局；旧 `.memory` 由独立 `$project-memory-migrate` 转换，init / remember / add-type 拒绝旧层，doctor 只报告 `migration-required`，不移动或改写旧文件。
+[`PROTOCOL.md`](PROTOCOL.md) 的当前实现。作用域入口直接引用类型入口，两跳到正文；物理容器不增加发现层级。常规运行只使用 `.harness` 新布局；旧 `.memory` 由 `edges memory migrate` 转换（先 `--dry-run` 看映射和未归类清单；已安装 `$project-memory-migrate` 时由它调用同一命令），init / remember / add-type 拒绝旧层，doctor 只报告 `migration-required`，不移动或改写旧文件。
 
 ## 作用域与采用范围
 
