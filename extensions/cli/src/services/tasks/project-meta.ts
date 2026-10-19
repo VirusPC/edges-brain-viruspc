@@ -10,8 +10,8 @@ import { scopeDir, boardRel, resolveBoard, type BoardTarget } from "./paths.js";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import type { NodeReference } from "../../domain/core/types.js";
-import { realpathSync } from "node:fs";
 import { existsSync } from "node:fs";
+import { nativeTaskPath, relativePathInsideScope } from "./realpath.js";
 import { listProjectIds, type BoardFs, type BoardWriter } from "./board.js";
 import { boardRoot } from "./paths.js";
 import { parseTaskProject, projectDirName } from "../../domain/models/tasks/project.js";
@@ -152,7 +152,7 @@ async function resolveProjectEntry(
   id: TaskProjectId,
   fs: BoardFs,
 ): Promise<{ rel: string; abs: string; exists: boolean; kind: "agents" | "readme" }> {
-  const scope = realpathSync(scopeDir(repoPath));
+  const scope = nativeTaskPath(scopeDir(repoPath));
   const agents = projectAgentsRelPath(id, repoPath);
   if (await fs.exists(path.join(scope, agents)))
     return { rel: agents, abs: path.join(scope, agents), exists: true, kind: "agents" };
@@ -167,7 +167,7 @@ function boardIsVirtual(repoPath: BoardTarget): boolean {
 }
 /** Absolute tasks material from harness-materials. Virtual boards sit on the scope; maintenance boards sit under `.harness`. */
 function tasksMaterialAbsPath(repoPath: BoardTarget): string {
-  return placeHarnessMaterial(realpathSync(scopeDir(repoPath)), "tasks", {
+  return placeHarnessMaterial(nativeTaskPath(scopeDir(repoPath)), "tasks", {
     super: boardIsVirtual(repoPath),
   }).absPath;
 }
@@ -205,7 +205,7 @@ export async function readProjectRecord(
       path: entry.rel,
     };
   }
-  return projectRecordFromEntry(realpathSync(scopeDir(repoPath)), {
+  return projectRecordFromEntry(nativeTaskPath(scopeDir(repoPath)), {
     path: entry.abs,
     body: await fs.readFile(entry.abs),
   });
@@ -223,12 +223,12 @@ export function projectRecordFromEntry(
     dir,
     title: parsed.title,
     description: parsed.description,
-    path: path.relative(scope, entry.path).split(path.sep).join("/"),
+    path: relativePathInsideScope(scope, entry.path).split(path.sep).join("/"),
   };
 }
 
 function projectNodes(target: BoardTarget): NodeService {
-  const scope = realpathSync(scopeDir(target)), owner = path.join(scope, ENTRY_NAMES.internal);
+  const scope = nativeTaskPath(scopeDir(target)), owner = path.join(scope, ENTRY_NAMES.internal);
   return new NodeService({ managedRoot: scope, assertWrite: async ({ node }) => {
     if (node.path === owner && existsSync(owner)) return;
     await assertBoardPath(resolveBoard(target), node.path);
@@ -237,7 +237,7 @@ function projectNodes(target: BoardTarget): NodeService {
 
 async function prepareProjectWrite(target: BoardTarget, service: NodeService): Promise<void> {
   await assertBoardPath(target, tasksMaterialAbsPath(target));
-  const owner = await service.get(path.join(realpathSync(scopeDir(target)), ENTRY_NAMES.internal), AgentsNode);
+  const owner = await service.get(path.join(nativeTaskPath(scopeDir(target)), ENTRY_NAMES.internal), AgentsNode);
   const legacy = boardSystemEntryAbsPath(target);
   for (const file of [owner?.path, existsSync(legacy) ? legacy : undefined]) {
     if (!file) continue;
@@ -287,7 +287,7 @@ export async function refreshProjectIndex(
   }
   const listChildren = synced(list, readmeUpdates);
   if (listChildren) await service.update(list, listChildren);
-  const owner = await service.get(path.join(realpathSync(scopeDir(repoPath)), ENTRY_NAMES.internal), AgentsNode);
+  const owner = await service.get(path.join(nativeTaskPath(scopeDir(repoPath)), ENTRY_NAMES.internal), AgentsNode);
   const harnessPrefix = owner ? path.join(owner.directoryPath, ".harness") + path.sep : "";
   // A child already sitting in the board directory counts as hung, whatever its filename.
   const alreadyHung = owner?.children.some((ref) => path.dirname(ref.id) === boardDir) === true;

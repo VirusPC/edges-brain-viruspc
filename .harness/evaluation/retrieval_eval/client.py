@@ -1,4 +1,12 @@
-"""Ask a Codex-style agent client for repository-relative paths."""
+"""Ask a Codex-style agent client for repository-relative paths.
+
+`codex exec --json` prints a JSONL event stream on stdout (`thread.*`,
+`turn.*`, `item.started` / `item.completed`, including `command_execution`
+and `reasoning`). The runner stores that stream under
+`.harness/evaluation/.cache/retrieval/sessions/` (gitignored). Scoring reads
+the `-o` last-message file first. If that file is empty, the fallback is the
+last `item.completed` event whose `item.type` is `agent_message`.
+"""
 
 from __future__ import annotations
 
@@ -44,13 +52,18 @@ def codex_command(
     last_message_path: Path,
 ) -> list[str]:
     """Non-interactive client command. The sandbox stays read-only unless configured otherwise."""
+    config_args: list[str] = []
+    for override in client.codex_config_overrides():
+        config_args.extend(["-c", override])
     return [
         client.command,
         "exec",
         "--ephemeral",
+        "--json",
         "--sandbox",
         client.sandbox,
         "--skip-git-repo-check",
+        *config_args,
         "-C",
         str(repo_dir),
         "-o",
@@ -65,7 +78,7 @@ def run_client(
     prompt: str,
     last_message_path: Path,
 ) -> ClientCall:
-    """Run the client and parse `{"predicted": [...]}` from its last message or stdout."""
+    """Run the client and parse `{"predicted": [...]}` from the `-o` file, else JSONL."""
     command = codex_command(client, repo_dir, prompt, last_message_path)
     try:
         result = subprocess.run(
@@ -92,12 +105,10 @@ def run_client(
             parse_error="timeout",
         )
 
-    text = ""
+    last_message = ""
     if last_message_path.is_file():
-        text = last_message_path.read_text(encoding="utf-8")
-    if not text.strip():
-        text = result.stdout
-    predicted, parse_error = parse_predicted(text)
+        last_message = last_message_path.read_text(encoding="utf-8")
+    predicted, parse_error = parse_client_answer(last_message, result.stdout)
     return ClientCall(
         predicted=predicted,
         command=command,
@@ -107,6 +118,52 @@ def run_client(
         timed_out=False,
         parse_error=parse_error,
     )
+
+
+_EVENT_PREFIXES = ("thread.", "turn.", "item.")
+
+
+def parse_client_answer(last_message: str, stdout: str) -> tuple[list[str], str | None]:
+    """Prefer the `-o` last message. Otherwise read the last JSONL agent message."""
+    if last_message.strip():
+        return parse_predicted(last_message)
+    is_event_stream, message = _agent_message_from_jsonl(stdout)
+    if not is_event_stream:
+        return parse_predicted(stdout)
+    if message is None:
+        return [], "no agent message in event stream"
+    return parse_predicted(message)
+
+
+def _agent_message_from_jsonl(stdout: str) -> tuple[bool, str | None]:
+    """Return whether stdout is a Codex `--json` stream and its last agent message."""
+    saw_event = False
+    found: str | None = None
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        event_type = event.get("type")
+        if not isinstance(event_type, str):
+            continue
+        if event_type != "error" and not event_type.startswith(_EVENT_PREFIXES):
+            continue
+        saw_event = True
+        if event_type != "item.completed":
+            continue
+        item = event.get("item")
+        if not isinstance(item, dict) or item.get("type") != "agent_message":
+            continue
+        text = item.get("text")
+        if isinstance(text, str):
+            found = text
+    return saw_event, found
 
 
 def parse_predicted(text: str) -> tuple[list[str], str | None]:

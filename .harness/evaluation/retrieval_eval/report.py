@@ -17,6 +17,16 @@ def write_report(path_stem: Path, payload: dict[str, Any]) -> tuple[Path, Path]:
     return json_path, md_path
 
 
+def _reasoning_line(reasoning: Any) -> str:
+    if not isinstance(reasoning, dict):
+        reasoning = {}
+    summary = reasoning.get("summary") or "unset"
+    effort = reasoning.get("effort") or "unset"
+    show_raw = reasoning.get("show_raw")
+    show = "unset" if show_raw is None else str(show_raw).lower()
+    return f"summary=`{summary}`, effort=`{effort}`, show_raw=`{show}`"
+
+
 def _markdown(payload: dict[str, Any]) -> str:
     repo = payload["repository"]
     macro = payload["aggregate"]["macro"]
@@ -29,6 +39,7 @@ def _markdown(payload: dict[str, Any]) -> str:
         f"- ref: `{repo['ref'] or 'default'}`",
         f"- commit: `{repo['commit']}`",
         f"- client: `{payload['client']}`",
+        f"- reasoning: {_reasoning_line(payload.get('reasoning'))}",
         f"- samples: `{payload['sample_id']}`",
         "",
         "## Macro",
