@@ -48,4 +48,6 @@ format: skills
 - [using-git-worktrees](../../../.agents/skills/using-git-worktrees/SKILL.md) — Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback
 - [using-superpowers](../../../.agents/skills/using-superpowers/SKILL.md) — Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
 - [writing-plans](../../../.agents/skills/writing-plans/SKILL.md) — Use when you have a spec or requirements for a multi-step task, before touching code
+- [edges\-onboarding](<../../../.agents/skills/edges-onboarding/SKILL.md>) — 帮用户第一次接入 Edges 时使用：安装 edges CLI（npm 包 @viruspc/edges）、初始化目录、跑一次验证、学会常用命令、排查安装与鉴权报错。用户说「帮我接入 edges」「安装 edges」「edges 怎么用」「edges 报错了」「给我的仓库配一套 edges」时触发。已经装好、只是要写笔记请改用 edges\-note；整理对话改用 conversation\-to\-notes；项目记忆的增删查改改用 project\-memory\-\* 系列。本 skill 只做入口与引导，具体操作一律交给 edges CLI 执行。
+- [migrate\-directory\-nodes](<../../../.agents/skills/migrate-directory-nodes/SKILL.md>) — 显式把 Edges 工作树中受管的 tracked/public 单文件 Memory、Task、Note 转为目录入口，预览引用调整与冲突后按已授权范围应用。用于统一目录迁移，不处理私有记录、ADR、博客或第三方体系。
 <!-- project-entries-local:end -->

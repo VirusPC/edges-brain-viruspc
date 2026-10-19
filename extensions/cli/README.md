@@ -276,13 +276,13 @@ edges skills delete <name-or-path>
 ```bash
 edges artifacts init --base-url https://edges.viruspc.tech
 edges artifacts publish /tmp/review.html --ttl 24h
-edges artifacts rm <id或URL>
+edges artifacts delete <id或URL>
 edges artifacts server install
 edges artifacts server start
 edges artifacts server status
 ```
 
-init 管理客户端配置，publish/rm 调用预览服务并返回 JSON。server install 负责构建、服务配置和启用，不自动 start；start/stop/restart 只管理进程。服务部署路径与内容作用域独立。发布任务来源时使用 from-type、from-id、task-project，不把渲染审阅页与发布合成一个隐含动作。
+init 管理客户端配置，publish/delete 调用预览服务并返回 JSON。server install 负责构建、服务配置和启用，不自动 start；start/stop/restart 只管理进程。服务部署路径与内容作用域独立。发布任务来源时使用 from-type、from-id、task-project，不把渲染审阅页与发布合成一个隐含动作。
 
 客户端 token、服务端配置、nginx、升级与恢复流程见 [Artifacts 服务说明](../services/artifacts-preview/README.md)和[部署说明](deploy/README.md)。
 
