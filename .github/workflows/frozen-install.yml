@@ -1,0 +1,28 @@
+# Pull requests targeting main run Deploy's frozen install before merge.
+# pnpm comes from the root package.json packageManager field (same as
+# publish-edges-cli.yml). Do not also set pnpm/action-setup version.
+name: Frozen install
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20'
+          cache: pnpm
+
+      - name: Install with frozen lockfile
+        run: pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...

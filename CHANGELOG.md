@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### CLI
 
+- **发往 main 的 PR 先做冻结安装：** `.github/workflows/frozen-install.yml` 在 pull request 的目标分支是 main 时，用根 `package.json` 的 `packageManager` 跑与 Deploy 相同的 `pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...`。锁文件和 `.pnpmfile.cjs` 对不上时，在合入前失败。
 - **npm 发版工作流使用仓库锁定的 pnpm：** `.github/workflows/publish-edges-cli.yml` 不再在 `pnpm/action-setup` 里写 `version: 10`。根 `package.json` 的 `packageManager` 已是 `pnpm@10.34.7`，两边同时指定会让 `@viruspc/edges@*` 的发布在安装前失败。
 
 ### 项目记忆（project-memory）
