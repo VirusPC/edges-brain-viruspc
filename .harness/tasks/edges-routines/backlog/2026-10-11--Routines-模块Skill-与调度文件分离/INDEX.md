@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-routines
-  edges-updated-at: '2026-10-13T14:21:50.394Z'
+  edges-updated-at: '2026-10-18T21:17:52.368Z'
   edges-title: Routines 模块：Skill 与调度文件分离
   edges-tasks-status: backlog
   edges-task-priority: none
@@ -23,3 +23,9 @@ description: 落地 routines 模块约定与最小示例：调度引用 Skill，
 - [ ] 至少一条已接入的 routine（日复盘或周复盘）在 Grok Bot 侧不再保存与仓库 Skill 重复的完整提示词。
 - [ ] 该 routine 每次运行先读取仓库里的 `projects/routines/<slug>/SKILL.md`，再按文件执行。
 - [ ] 改提示词只改仓库里的这一处；下一次运行跟上仓库里的新文本，不必再改 Bot 里的另一份。
+
+**补充想法：routines 升为 `.harness` 模块**
+
+**背景：** 2026-10-19 整理 Edges 1.5.0 的 CHANGELOG 时，用户说「routines 是有潜力上升为 `.harness` 模块的」，并强调「复盘是持续进化的非常非常关键的 routine」。当时只把复盘目录和日复盘、周复盘两条 routine 拆成 1.5.0 的独立一节，「潜力」没写进发布说明，也没另开卡。本卡上面写着「产品模块的落点路径仍待定」，这条想法就是落点的一个候选。
+**目标：** 评估把 routines 做成与 memory、tasks、notes 并列的 `.harness` 模块：`edges init` 能建、harness 材料索引能登记，日复盘、周复盘作为首批成员。
+**完成标准：** 待 grill 时再定。

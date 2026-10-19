@@ -28,4 +28,5 @@ format: ordinary
 - [目录 stem 保留 Unicode，名字校验仍要 ASCII](<feedback_node_stem_unicode_not_ascii_names/INDEX.md>) — 改笔记、项目目录名或任务名 slug 时打开：目录 stem 保留汉字；skill、memory、task project 的名字校验仍要求小写 ASCII，不要一起放宽。
 - [CLI 多子命令一文件一个动词](<feedback_cli_subcommand_files/INDEX.md>) — 新增或修改 extensions/cli 的多子命令时：父文件只注册，每个子命令一个文件，commands 层只解析参数并调 Service。
 - [move 不改写软链接登记](<feedback_move_leaves_symlink_registrations/INDEX.md>) — 改 NodeService.move 或父级登记匹配时：软链接登记是指向别处的链接，不是节点本身；只迁移非软链接的那条登记，不改写、不删除、不重定向；断链是预期，交给诊断，不要在 move 里修。
+- [新增文件不造新概念，名字一眼看懂](<feedback_new_files_no_new_concepts/INDEX.md>) — 在 extensions/cli 新增文件、目录或改名时打开：不引入抽象新词（如 classify.ts），文件名要一眼看出职责、符合语义；能并进已有文件就不另起。简单命名不等于降低分层质量。
 <!-- project-entries-local:end -->

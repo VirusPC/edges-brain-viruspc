@@ -43,4 +43,6 @@ format: ordinary
 - [commands 不直接读 harness 材料表](<feedback_commands_do_not_import_harness_materials/INDEX.md>) — 改 CLI 命令时：不要在 commands 里 import harness\-materials；看板路径与是否存在走该领域 service。
 - [模块 README 不写说明文字](<feedback_no_prose_in_harness_module_readmes/INDEX.md>) — 下放内容或补说明时打开：harness\-materials.json 登记的模块 README（含 \-\-super 视角下根上的 tasks/、notes/、projects/ README）只放标题与受管区块，不加正文；概念进 CONTEXT，命令用法进能力 README。edges/、archive/ 这类内容目录 README 可以写标准。
 - [精简内容前先把要删的迁到合适去处](<feedback_migrate_before_delete/INDEX.md>) — 精简或拆分笔记、清单时：被删的条目先查在别处有没有归宿，没有就先迁过去再删，不直接删除。
+- [grill 每轮与实现 PR 都附 html\-plan 审阅页](<feedback_grill_rounds_as_html_plan/INDEX.md>) — 跑 grill\-with\-docs 或开实现 PR 时打开：每一轮提问做成一页 html\-plan，用户 Copy response 粘回再写回卡片和 ADR；实现 PR 主动附审阅页。markdown 仍是正本。
+- [叠层 PR：底层 squash 前确认上层已合入](<feedback_stacked_pr_merge_order/INDEX.md>) — 合叠层 PR 或核实修复是否已在 main 时打开：底层 squash 进 main 前确认上层都已合进底层分支，合完把剩余上层改指向 main；PR 显示已合并不等于改动在 main。缘起 \#208/\#211 丢失，见 https://github.com/VirusPC/edges/pull/289。
 <!-- project-entries-local:end -->
