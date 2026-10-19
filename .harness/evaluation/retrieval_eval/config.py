@@ -27,11 +27,17 @@ class Repository:
 class Client:
     id: str
     command: str
-    sandbox: str
     timeout_seconds: int
+    sandbox: str | None = None
+    kind: str = "codex"
     reasoning_summary: str | None = None
     reasoning_effort: str | None = None
     show_raw_reasoning: bool | None = None
+    provider: str | None = None
+    model: str | None = None
+    thinking: str | None = None
+    tools: str | None = None
+    env: dict[str, str] | None = None
 
     def codex_config_overrides(self) -> list[str]:
         """`key=value` pairs for `codex exec -c`. Empty when reasoning is unset."""
@@ -47,7 +53,16 @@ class Client:
 
     def reasoning_metadata(self) -> dict[str, str]:
         """Root-span metadata for the trace exporter. Omitted keys were not set."""
-        metadata: dict[str, str] = {}
+        if self.kind == "pi":
+            metadata: dict[str, str] = {}
+            if self.provider:
+                metadata["provider"] = self.provider
+            if self.model:
+                metadata["model"] = self.model
+            if self.thinking:
+                metadata["thinking"] = self.thinking
+            return metadata
+        metadata = {}
         if self.reasoning_summary:
             metadata["reasoning_summary"] = self.reasoning_summary
         if self.reasoning_effort:
@@ -57,6 +72,12 @@ class Client:
         return metadata
 
     def reasoning_record(self) -> dict[str, str | bool | None]:
+        if self.kind == "pi":
+            return {
+                "provider": self.provider,
+                "model": self.model,
+                "thinking": self.thinking,
+            }
         return {
             "summary": self.reasoning_summary,
             "effort": self.reasoning_effort,
@@ -106,6 +127,45 @@ def load_cells(config_path: Path | None = None) -> list[Cell]:
                     seen.add(cell.cell_id)
                     cells.append(cell)
     return cells
+
+
+def override_cells(
+    cells: list[Cell],
+    *,
+    client_ids: list[str] | None = None,
+    sample_ids: list[str] | None = None,
+    config_dir: Path | None = None,
+) -> list[Cell]:
+    """Replace the client and/or sample set on each cell. Other dimensions stay."""
+    if not client_ids and not sample_ids:
+        return list(cells)
+    directory = config_dir or DEFAULT_CONFIG.parent
+    chosen: list[Client] | None = None
+    if client_ids:
+        registry = _load_clients(directory / "clients.json")
+        missing = [client_id for client_id in client_ids if client_id not in registry]
+        if missing:
+            known = ", ".join(sorted(registry))
+            raise ConfigError(f"unknown client {missing[0]}; known clients: {known}")
+        chosen = [registry[client_id] for client_id in client_ids]
+    out: list[Cell] = []
+    seen: set[str] = set()
+    for cell in cells:
+        for client in chosen or [cell.client]:
+            for sample_id in sample_ids or [cell.sample_id]:
+                updated = Cell(
+                    repository=cell.repository,
+                    client=client,
+                    sample_id=sample_id,
+                    sample_path=_sample_path(sample_id),
+                )
+                if updated.cell_id in seen:
+                    raise ConfigError(f"duplicate cell {updated.cell_id}")
+                seen.add(updated.cell_id)
+                out.append(updated)
+    if not out:
+        raise ConfigError("no cells")
+    return out
 
 
 def load_samples(path: Path) -> list[dict[str, Any]]:
@@ -168,14 +228,30 @@ def _load_clients(path: Path) -> dict[str, Client]:
         timeout = body.get("timeout_seconds", 600)
         if not isinstance(timeout, int) or timeout <= 0:
             raise ConfigError(f"{client_id}.timeout_seconds must be a positive integer")
+        kind = body.get("kind", "codex")
+        if kind not in {"codex", "pi"}:
+            raise ConfigError(f"{client_id}.kind must be codex or pi")
+        sandbox = _required_str(body, "sandbox", client_id) if kind == "codex" else None
+        provider = _optional_token(body, "provider", client_id)
+        model = _optional_token(body, "model", client_id)
+        thinking = _optional_token(body, "thinking", client_id)
+        tools = _optional_token(body, "tools", client_id)
+        if kind == "pi" and not all((provider, model, thinking, tools)):
+            raise ConfigError(f"{client_id} requires provider, model, thinking, and tools")
         clients[client_id] = Client(
             id=client_id,
             command=_required_str(body, "command", client_id),
-            sandbox=_required_str(body, "sandbox", client_id),
             timeout_seconds=timeout,
+            sandbox=sandbox,
+            kind=kind,
             reasoning_summary=_optional_token(body, "reasoning_summary", client_id),
             reasoning_effort=_optional_token(body, "reasoning_effort", client_id),
             show_raw_reasoning=_optional_bool(body, "show_raw_reasoning", client_id),
+            provider=provider,
+            model=model,
+            thinking=thinking,
+            tools=tools,
+            env=_optional_env(body, client_id),
         )
     return clients
 
@@ -207,6 +283,27 @@ def _read_json(path: Path) -> Any:
     if not path.is_file():
         raise ConfigError(f"file not found: {path}")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _optional_env(body: dict[str, Any], where: str) -> dict[str, str] | None:
+    """Keep `$NAME` references. Do not read or store the process environment."""
+    if "env" not in body or body["env"] is None:
+        return None
+    raw = body["env"]
+    if not isinstance(raw, dict) or not raw:
+        raise ConfigError(f"{where}.env must be a non-empty object")
+    env: dict[str, str] = {}
+    for key, value in raw.items():
+        if not isinstance(key, str) or not key.isidentifier():
+            raise ConfigError(f"{where}.env keys must be identifiers")
+        if not isinstance(value, str) or not value:
+            raise ConfigError(f"{where}.env.{key} must be a non-empty string")
+        if any(char.isspace() for char in value):
+            raise ConfigError(f"{where}.env.{key} must not contain whitespace")
+        if value.startswith("$") and not value[1:].isidentifier():
+            raise ConfigError(f"{where}.env.{key} reference must be $NAME")
+        env[key] = value
+    return env
 
 
 def _optional_token(body: dict[str, Any], key: str, where: str) -> str | None:

@@ -20,8 +20,10 @@ from langfuse_sink import (
     make_session_id,
     new_span_id,
     new_trace_id,
+    pi_event_value,
     sanitize_label,
     spans_from_codex_jsonl,
+    spans_from_pi_jsonl,
 )
 
 SERVICE_NAME = "edges-retrieval-eval"
@@ -75,12 +77,19 @@ def build_sample_trace(
     score_row: Mapping[str, Any],
     session_id: str | None = None,
     reasoning: Mapping[str, str] | None = None,
+    client_kind: str = "codex",
+    client_version: str | None = None,
 ) -> Trace:
-    """One sample: root span plus Codex child spans. No Langfuse key names."""
+    """One sample: root span plus client child spans. No Langfuse key names.
+
+    `client_kind` selects the JSONL adapter. `codex` reads Codex `exec --json`.
+    `pi` reads pi `--mode json`.
+    """
     trace_id = new_trace_id()
     root_id = new_span_id()
     start = _now_ns()
-    children = spans_from_codex_jsonl(
+    adapter = spans_from_pi_jsonl if client_kind == "pi" else spans_from_codex_jsonl
+    children = adapter(
         events_jsonl,
         trace_id=trace_id,
         parent_id=root_id,
@@ -114,6 +123,8 @@ def build_sample_trace(
             repository_url=repository_url,
             repository_ref=repository_ref,
             repository_commit=repository_commit,
+            client_kind=client_kind,
+            client_version=client_version,
         ),
     )
 
@@ -132,6 +143,8 @@ def _identity_metadata(
     repository_url: str,
     repository_ref: str | None,
     repository_commit: str | None,
+    client_kind: str = "codex",
+    client_version: str | None = None,
 ) -> dict[str, str]:
     metadata = {
         "cell_id": cell_id,
@@ -140,12 +153,21 @@ def _identity_metadata(
         "repository_id": repository_id,
         "repository_url": repository_url,
     }
-    optional = {
-        "repository_ref": _blank(repository_ref),
-        "repository_commit": _blank(repository_commit),
-        "model": codex_event_value(events_jsonl, ("model",)),
-        "codex_version": codex_event_value(events_jsonl, ("cli_version", "codex_version")),
-    }
+    if client_kind == "pi":
+        optional = {
+            "repository_ref": _blank(repository_ref),
+            "repository_commit": _blank(repository_commit),
+            "model": pi_event_value(events_jsonl, ("model",)),
+            "provider": pi_event_value(events_jsonl, ("provider",)),
+            "client_version": _blank(client_version),
+        }
+    else:
+        optional = {
+            "repository_ref": _blank(repository_ref),
+            "repository_commit": _blank(repository_commit),
+            "model": codex_event_value(events_jsonl, ("model",)),
+            "codex_version": codex_event_value(events_jsonl, ("cli_version", "codex_version")),
+        }
     for key, value in optional.items():
         if value is not None:
             metadata[key] = value

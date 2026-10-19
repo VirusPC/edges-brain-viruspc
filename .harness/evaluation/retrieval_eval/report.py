@@ -20,6 +20,10 @@ def write_report(path_stem: Path, payload: dict[str, Any]) -> tuple[Path, Path]:
 def _reasoning_line(reasoning: Any) -> str:
     if not isinstance(reasoning, dict):
         reasoning = {}
+    if any(key in reasoning for key in ("provider", "model", "thinking")):
+        return ", ".join(
+            f"{key}=`{reasoning.get(key) or 'unset'}`" for key in ("provider", "model", "thinking")
+        )
     summary = reasoning.get("summary") or "unset"
     effort = reasoning.get("effort") or "unset"
     show_raw = reasoning.get("show_raw")

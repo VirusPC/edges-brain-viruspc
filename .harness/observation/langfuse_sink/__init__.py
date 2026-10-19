@@ -8,6 +8,7 @@ not raise.
 """
 
 from langfuse_sink.codex import codex_event_value, spans_from_codex_jsonl
+from langfuse_sink.pi import pi_event_value, spans_from_pi_jsonl
 from langfuse_sink.exporter import (
     USER_AGENT,
     ExportResult,
@@ -33,6 +34,8 @@ __all__ = [
     "make_session_id",
     "new_span_id",
     "new_trace_id",
+    "pi_event_value",
     "sanitize_label",
     "spans_from_codex_jsonl",
+    "spans_from_pi_jsonl",
 ]

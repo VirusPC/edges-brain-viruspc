@@ -1,0 +1,13 @@
+{
+  "type": "qa",
+  "domain": "edges",
+  "samples": [
+    {
+      "id": "edges_smoke_0008",
+      "prompt": "LoCoMo 冒烟的分数能不能当成项目记忆有效的证据？",
+      "ground_truth": [
+        "docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"
+      ]
+    }
+  ]
+}

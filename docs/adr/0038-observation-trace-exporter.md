@@ -33,3 +33,4 @@ status: accepted
 - User-Agent 从 `edges-retrieval-eval/1` 改为 `edges-observation/1`。这是传输头，不是 Langfuse 上的 span 属性。
 - 密钥和实例域名仍不入库。轨迹仍不进 `reports/`。
 - 自部署 Langfuse 的宿主、编排、访问面、密钥和备份（ADR 0014–0016、0018–0020、0033）不变。
+- 附注（2026-10-19）：检索评测的第二个 client 是 pi-coding-agent。JSONL 适配器在 `langfuse_sink/pi.py`，`build_sample_trace` 按 `client.kind` 分派。调用需要 Node.js >= 22.19；模型是 `minimax-cn` / `MiniMax-M3`。密钥经 `MINIMAX_API_KEY` 映射，不入库。
