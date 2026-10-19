@@ -12,8 +12,10 @@ assistant `message_end` with `stopReason` `stop`. Exit code 0 with
 `stopReason` `error` or `aborted` is still a failure. stdin is `DEVNULL`.
 Tools stay at pi's defaults (`read`, `bash`, `edit`, `write`): the command
 does not pass `--tools`. Before the prompt, `pi install npm:pi-sandbox` loads
-the sandbox into a fresh `PI_CODING_AGENT_DIR`, and `sandbox.json` there sets
-only `filesystem.allowRead` to `["."]`. `-ne` stays off so that package loads.
+the sandbox into a fresh `PI_CODING_AGENT_DIR`. `sandbox.json` there keeps the
+plugin's default `denyRead` (`/home`, `/Users`), adds the absolute path of the
+edges checkout that contains the clone, and sets `filesystem.allowRead` to
+`["."]`. `-ne` stays off so that package loads.
 The runner stores the event stream under
 `.harness/evaluation/.cache/retrieval/sessions/` (gitignored).
 """
@@ -36,7 +38,7 @@ from retrieval_eval.config import Client
 _JSON_OBJECT = re.compile(r"\{[\s\S]*?\}")
 _PI_FAILURE_REASONS = frozenset({"error", "aborted"})
 PI_SANDBOX_PACKAGE = "npm:pi-sandbox"
-_PI_SANDBOX_CONFIG = {"filesystem": {"allowRead": ["."]}}
+_PI_DEFAULT_DENY_READ = ("/home", "/Users")
 
 
 class ClientEnvError(RuntimeError):
@@ -125,9 +127,28 @@ def pi_install_command(client: Client) -> list[str]:
     return [client.command, "install", PI_SANDBOX_PACKAGE, "--no-approve"]
 
 
+def edges_checkout_root() -> Path:
+    """Checkout that contains `.harness/evaluation/.cache`, as an absolute path."""
+    evaluation_dir = Path(__file__).resolve().parents[1]
+    return evaluation_dir.parent.parent
+
+
+def pi_sandbox_config() -> dict[str, object]:
+    """Plugin default denyRead, plus this checkout, with reads limited to cwd.
+
+    A configured array replaces that key's plugin default, so `/home` and
+    `/Users` are written explicitly. `allowWrite` stays unset.
+    """
+    root = str(edges_checkout_root())
+    deny = list(_PI_DEFAULT_DENY_READ)
+    if root not in deny:
+        deny.append(root)
+    return {"filesystem": {"denyRead": deny, "allowRead": ["."]}}
+
+
 def pi_sandbox_config_json() -> str:
-    """The only sandbox override: read access is the working directory."""
-    return json.dumps(_PI_SANDBOX_CONFIG, ensure_ascii=False)
+    """JSON written to `$PI_CODING_AGENT_DIR/sandbox.json`."""
+    return json.dumps(pi_sandbox_config(), ensure_ascii=False)
 
 
 def missing_pi_sandbox_dependencies() -> list[str]:

@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: evaluation
-  edges-updated-at: '2026-10-19T06:16:23.000Z'
+  edges-updated-at: '2026-10-19T06:35:57.000Z'
   edges-title: retrieval eval 的 pi client 会跑出被测仓库副本
   edges-tasks-status: in_progress
   edges-task-priority: none
@@ -34,3 +34,4 @@ pi 以及以后没有沙箱的 client 只能在被测副本里检索，得分反
 
 - 2026-10-19 grill：R1 被 R2 取代。最终决策是 pi 用默认工具表，加上 pi-sandbox 的通用形态，只把读取范围收成被测副本（`filesystem.allowRead` 为 `["."]`）。不挪副本、不改 prompt、不动 Codex。越界检测这条完成标准改为「由沙箱阻止越界」。
 - 2026-10-19 实现：`clients.json` 去掉 pi 的 `tools`；运行前在临时 `PI_CODING_AGENT_DIR` 执行 `pi install npm:pi-sandbox --no-approve` 并写入上述 `sandbox.json`。不传 `-ne`，包才会加载。缺 `rg` / `bwrap` / `socat`（macOS 为 `sandbox-exec`）或安装失败时，样本记失败，不降级为无沙箱。本机没有 `MINIMAX_API_KEY`，没有打真实 MiniMax。用本地桩走了生产 `run_client`：副本放在 `/home` 下时，副本外文件的 read 被拒绝，bash `cat` 报不存在，文件内容没有出现在会话里；副本内文件可以读到。插件默认 `denyRead` 只盖住 `/home` 和 `/Users`，副本若在这两棵目录之外，bash 仍可能读到外面，这次没有改第二处配置。
+- 2026-10-19 补配置：用户拍板把副本所在 edges 仓库根（`.harness/evaluation/.cache` 的外层，运行时绝对路径）写入 `filesystem.denyRead`，同时保留插件默认 `/home`、`/Users` 和 `allowRead: ["."]`。本地桩把副本放在 `/workspace`（不在 `/home` 下）：`read` 与 `bash cat` 仓库根 `README.md` 均被拒，正文没有进会话；副本内文件可读；`ls` 与 `rg` 退出码为 0。

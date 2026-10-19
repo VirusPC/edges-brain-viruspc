@@ -26,6 +26,7 @@ from retrieval_eval.client import (
     parse_pi_answer,
     parse_predicted,
     pi_command,
+    pi_sandbox_config_json,
     read_command_version,
     run_client,
 )
@@ -681,6 +682,16 @@ class PiClientTests(unittest.TestCase):
         samples = load_samples(selected[0].sample_path)
         self.assertEqual([sample["id"] for sample in samples], ["edges_smoke_0008"])
 
+    def test_sandbox_config_keeps_default_deny_and_adds_checkout_root(self) -> None:
+        config = json.loads(pi_sandbox_config_json())
+        filesystem = config["filesystem"]
+        checkout = Path(__file__).resolve().parents[3]
+        self.assertEqual(set(config), {"filesystem"})
+        self.assertEqual(set(filesystem), {"denyRead", "allowRead"})
+        self.assertEqual(filesystem["allowRead"], ["."])
+        self.assertEqual(filesystem["denyRead"], ["/home", "/Users", str(checkout)])
+        self.assertTrue((checkout / ".harness" / "evaluation").is_dir())
+
     def test_pi_command_is_minimal_kernel(self) -> None:
         prompt = build_prompt("问题")
         command = pi_command(_pi_client(), prompt)
@@ -725,7 +736,7 @@ class PiClientTests(unittest.TestCase):
         self.assertIn("--model minimax-cn/MiniMax-M3", text)
         self.assertIn("--thinking high", text)
         self.assertIn("pi install npm:pi-sandbox --no-approve", text)
-        self.assertIn('{"filesystem": {"allowRead": ["."]}}', text)
+        self.assertIn(pi_sandbox_config_json(), text)
         self.assertIn("--offline", text)
         self.assertNotIn("--tools", text)
         self.assertNotIn(" -ne ", f" {text} ")
@@ -773,7 +784,7 @@ class PiClientTests(unittest.TestCase):
                 seen.setdefault("commands", []).append(command)
                 if command[1] == "install":
                     config = json.loads((Path(agent_dir) / "sandbox.json").read_text(encoding="utf-8"))
-                    self.assertEqual(config, {"filesystem": {"allowRead": ["."]}})
+                    self.assertEqual(config, json.loads(pi_sandbox_config_json()))
                     self.assertNotIn("allowWrite", json.dumps(config))
                     return subprocess.CompletedProcess(command, 0, stdout="Installed\n", stderr="")
                 return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="pi-stderr\n")
