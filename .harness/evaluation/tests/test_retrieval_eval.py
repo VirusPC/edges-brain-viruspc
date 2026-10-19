@@ -894,6 +894,56 @@ class PiClientTests(unittest.TestCase):
         self.assertEqual(generation.status, "error")
         self.assertEqual(generation.attributes["stopReason"], "error")
 
+    def test_pi_root_span_covers_fixture_children(self) -> None:
+        events = (
+            EVAL_DIR.parent / "observation" / "langfuse_sink" / "tests" / "fixtures" / "pi_success.jsonl"
+        ).read_text(encoding="utf-8")
+        upload = 2_000_000_000_000_000_000
+        with patch("retrieval_eval.trace._now_ns", return_value=upload):
+            trace = build_sample_trace(
+                events_jsonl=events,
+                cell_id="edges__pi__retrieval-smoke_edges-one",
+                sample_id="edges_smoke_0008",
+                client_id="pi",
+                client_kind="pi",
+                repository_id="edges",
+                repository_url="https://github.com/VirusPC/edges.git",
+                repository_ref="main",
+                repository_commit="abc",
+                prompt="问题",
+                score_row={"predicted": ["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"], "score": 1.0},
+            )
+        root, *children = trace.spans
+        self.assertGreater(len(children), 1)
+        child_start = min(span.start_time_unix_nano for span in children)
+        child_end = max(span.end_time_unix_nano for span in children)
+        self.assertLess(child_start, upload)
+        self.assertEqual(root.start_time_unix_nano, child_start)
+        self.assertEqual(root.end_time_unix_nano, max(upload + 1_000_000, child_end))
+        for child in children:
+            self.assertGreaterEqual(child.start_time_unix_nano, root.start_time_unix_nano)
+            self.assertLessEqual(child.end_time_unix_nano, root.end_time_unix_nano)
+
+    def test_codex_root_span_stays_on_upload_clock(self) -> None:
+        upload = 5_000_000_000
+        with patch("retrieval_eval.trace._now_ns", return_value=upload):
+            trace = build_sample_trace(
+                events_jsonl=_events(),
+                cell_id="cell",
+                sample_id="s1",
+                client_id="codex",
+                repository_id="edges",
+                repository_url="https://github.com/VirusPC/edges.git",
+                repository_ref="main",
+                repository_commit="abc",
+                prompt="问题",
+                score_row={"predicted": ["a"], "score": 1.0},
+            )
+        root, *children = trace.spans
+        self.assertGreater(len(children), 0)
+        self.assertEqual(root.start_time_unix_nano, upload)
+        self.assertEqual(root.end_time_unix_nano, upload + (len(children) + 1) * 1_000_000)
+
 
 if __name__ == "__main__":
     unittest.main()

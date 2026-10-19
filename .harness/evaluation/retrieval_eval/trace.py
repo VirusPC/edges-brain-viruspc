@@ -97,12 +97,13 @@ def build_sample_trace(
     )
     predicted = score_row.get("predicted")
     output = json.dumps(predicted if isinstance(predicted, list) else [], ensure_ascii=False)
+    root_start, root_end = _root_window(start, children)
     root = Span(
         trace_id=trace_id,
         span_id=root_id,
         name=f"retrieval-eval {sample_id}",
-        start_time_unix_nano=start,
-        end_time_unix_nano=start + (len(children) + 1) * _STEP_NS,
+        start_time_unix_nano=root_start,
+        end_time_unix_nano=root_end,
         kind="span",
         input=prompt,
         output=output,
@@ -131,6 +132,21 @@ def build_sample_trace(
 
 def _now_ns() -> int:
     return time.time_ns()
+
+
+def _root_window(start: int, children: Sequence[Span]) -> tuple[int, int]:
+    """Cover every child. Codex children sit just after `start`, so this matches the old window.
+
+    Pi children use event time, which can be earlier than the upload clock.
+    """
+    root_start = start
+    root_end = start + _STEP_NS
+    for child in children:
+        if child.start_time_unix_nano < root_start:
+            root_start = child.start_time_unix_nano
+        if child.end_time_unix_nano > root_end:
+            root_end = child.end_time_unix_nano
+    return root_start, root_end
 
 
 def _identity_metadata(
