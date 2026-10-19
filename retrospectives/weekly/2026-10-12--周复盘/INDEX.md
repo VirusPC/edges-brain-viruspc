@@ -22,7 +22,7 @@
 
 ### 上期的一处事实写错了：#208、#211 没有进 main
 
-上期写的是「[#208](https://github.com/VirusPC/edges/pull/208)、[#211](https://github.com/VirusPC/edges/pull/211) 随 [#204](https://github.com/VirusPC/edges/pull/204) 合入」。窗口外开出的 [#289](https://github.com/VirusPC/edges/pull/289) 正文写明：两者 10-11 合进了叠层分支 `codex/cli-remaining-tests-20261011`，「PR #204 在这两笔落地前几秒把该栈 squash 进 main（`ee57398b`），所以 main 从未包含它们」。[#288](https://github.com/VirusPC/edges/pull/288) 为此开了一张 backlog 卡，#289 重新实现，自报 CLI 测试 1080 通过、0 失败。窗口外 10-19 上午已补上：#289 09:32 合入，#287 09:33 合入并发出 1.5.0，#288 09:36 合入，修复在发版之前进了 main。[#287](https://github.com/VirusPC/edges/pull/287)（Edges 1.5.0 发布）的正文写着这两处修复「should merge to `main` before this release PR」。
+上期写的是「[#208](https://github.com/VirusPC/edges/pull/208)、[#211](https://github.com/VirusPC/edges/pull/211) 随 [#204](https://github.com/VirusPC/edges/pull/204) 合入」。窗口外开出的 [#289](https://github.com/VirusPC/edges/pull/289) 正文写明：两者 10-11 合进了叠层分支 `codex/cli-remaining-tests-20261011`，「PR #204 在这两笔落地前几秒把该栈 squash 进 main（`ee57398b`），所以 main 从未包含它们」。[#288](https://github.com/VirusPC/edges/pull/288) 为此开了一张 backlog 卡，#289 重新实现，自报 CLI 测试 1080 通过、0 失败。两份 PR 截至本稿都还开着。[#287](https://github.com/VirusPC/edges/pull/287)（Edges 1.5.0 发布）的正文写着这两处修复「should merge to `main` before this release PR」。
 
 ### 复盘本身落地成了例程
 
@@ -33,7 +33,7 @@
 ### CLI：发成 npm 包，加了 Compose
 
 - 发包：[#263](https://github.com/VirusPC/edges/pull/263) 补卡的背景，[#264](https://github.com/VirusPC/edges/pull/264)（10-18 19:06 合入）把包准备成 `@viruspc/edges` 0.1.0。npm 上 0.1.0 的发布时间是 10-18 19:29。[#274](https://github.com/VirusPC/edges/pull/274)、[#275](https://github.com/VirusPC/edges/pull/275) 定了 [ADR 0036](../../../docs/adr/0036-edges-init-installs-bundled-skills.md)，[#276](https://github.com/VirusPC/edges/pull/276) 让 `edges skills init` 通过 vercel skills 装随包 skill。[#278](https://github.com/VirusPC/edges/pull/278)（23:18）把版本切到 0.2.0，但 npm 上没有 0.2.0；下一个版本 0.2.1 是窗口外 10-19 02:06 经 Actions 发的（[ADR 0037](../../../docs/adr/0037-npm-publish-via-github-actions.md)）。
-  - 0.2.0 为什么没发，对话依据（全栈开发专家，10-18 晚）：#278 合入后 0.2.0 已经 `npm stage publish` 成功，助手说明还要用户在 npm 的 Staging 页用两步验证批准才算正式发布。用户约 23:23 回「你先继续搞GitHub actions去」，转去做发包 Actions 的 grill，窗口内再没有批准这一步。也就是说 0.2.0 不是被决定不发，而是停在了等批准，然后被 Actions 发的 0.2.1 跳过。窗口外 10-19 起发包已改为推 tag 由 Actions 发布（[#281](https://github.com/VirusPC/edges/pull/281)，过程记在 [#283](https://github.com/VirusPC/edges/pull/283) 的笔记里），0.2.0 不用再补批。
+  - 0.2.0 为什么没发，对话依据（全栈开发专家，10-18 晚）：#278 合入后 0.2.0 已经 `npm stage publish` 成功，助手说明还要用户在 npm 的 Staging 页用两步验证批准才算正式发布。用户约 23:23 回「你先继续搞GitHub actions去」，转去做发包 Actions 的 grill，窗口内再没有批准这一步。也就是说 0.2.0 不是被决定不发，而是停在了等批准，然后被 Actions 发的 0.2.1 跳过。
   - 0.1.0 的发布方式是用户当场纠正出来的（Grok Bot，10-18 19:24）：「现在应该是 stage only吧，不能直接publish」。这条做法后来进了 ADR 0037 的方向，但窗口内没有写进仓库。
 - Compose：[#265](https://github.com/VirusPC/edges/pull/265)（clone / pull / push）、[#270](https://github.com/VirusPC/edges/pull/270)（方案）、[#272](https://github.com/VirusPC/edges/pull/272)（`ComposeNode` 与 `--with-composed`）。
 - 结构：[#262](https://github.com/VirusPC/edges/pull/262)（[ADR 0035](../../../docs/adr/0035-harness-readme-as-layer-material-index.md)，本层材料索引落在 `.harness/README.md`），[#267](https://github.com/VirusPC/edges/pull/267)、[#268](https://github.com/VirusPC/edges/pull/268)、[#269](https://github.com/VirusPC/edges/pull/269)、[#271](https://github.com/VirusPC/edges/pull/271) 四次重构，[#223](https://github.com/VirusPC/edges/pull/223) 让中文标题的笔记和项目目录保留汉字。
@@ -112,9 +112,9 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ## 下次做什么
 
-1. 改正上期复盘里「#208、#211 随 #204 合入」那句。完成标准：[2026-10-05 周复盘](../2026-10-05--周复盘/INDEX.md) 那句已改，并指向 #289。合 #288、#289 再发 1.5.0 这半条 10-19 上午已经做完。来源：上面「#208、#211 没有进 main」。
+1. 先合 [#288](https://github.com/VirusPC/edges/pull/288)、[#289](https://github.com/VirusPC/edges/pull/289)，再发 1.5.0，并改正上期复盘里「#208、#211 随 #204 合入」那句。完成标准：`main` 上能找到两处修复的提交，早于 `v1.5.0` tag；[2026-10-05 周复盘](../2026-10-05--周复盘/INDEX.md) 那句已改。来源：上面「#208、#211 没有进 main」。
 2. 给 PR 加一道和 Deploy 同样的安装检查。完成标准：`.github/workflows/` 里有一个 `pull_request` 触发的工作流，至少跑 `pnpm install --frozen-lockfile`（最好连 CLI 测试一起）；一个故意改坏 `pnpmfileChecksum` 的 PR 会在合入前变红。来源：上面「部署挂了约 7 小时」。
-3. 把上期没动的 NodeService 硬约束写进 `AGENTS.md`，把 #187 的卡改出 `in_progress`。完成标准：根 `AGENTS.md` 硬约束里有写盘走 NodeService 的一句；那张卡不再在 `in_progress`。来源：上期行动 1，连续两周没做。上期行动 2（doctor 断链开卡）用户 10-19 决定不做了。这次三条行动都直接开成看板卡，不再只留在复盘里。
+3. 把上期没动的 NodeService 硬约束写进 `AGENTS.md`，把 #187 的卡改出 `in_progress`，同时给 doctor 断链开卡。完成标准：根 `AGENTS.md` 硬约束里有写盘走 NodeService 的一句；那张卡不再在 `in_progress`；`.harness/tasks` 里有 doctor 报断链的卡。来源：上期行动 1、2，连续两周没做。这次三条行动都直接开成看板卡，不再只留在复盘里。
 4. 把「先给简单方案、不加额外抽象」写进云端代理开工必读的地方。完成标准：根 `AGENTS.md`（或 `extensions/AGENTS.md`）硬约束里有一句对应用户「Keep it Simple」「薄封装」的原则。来源：上面「返工多」。
 
 ## 建议补充内容清单
@@ -129,7 +129,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### doctor 报不出断掉的软链接（上期延续）
 
-建议去处：无。处理结果：不做。用户 10-19 决定不管 doctor 断链。
+建议去处：`.harness/tasks/edges-extensions/backlog`。处理结果：已列入下次做什么第 3 条。
 
 为什么值得补：#289 一旦合入，移动节点后软链接会如约「保留原文、可能断开」，这正是需要 doctor 兜底的时刻；#289 自己也写明 doctor 没补。
 
@@ -193,7 +193,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### grill 每一轮用 html-plan
 
-建议去处：共享 skill `grill-with-docs`。处理结果：已处理。10-19 [#292](https://github.com/VirusPC/edges/pull/292) 把 `html-plan` skill 收进了 `shared-extensions/skills/`；每轮都用它这条，用户决定记在 memory 里，不写进 `grill-with-docs`。
+建议去处：共享 skill `grill-with-docs`。处理结果：待用户确认。用户 10-18 20:36 对全栈开发专家说「memory里记下就好了」，所以目前只在那个助手的记忆里。
 
 为什么值得补：grill 是好几个助手都在用的流程，只有一个助手记得，其他助手 grill 时不会出 html-plan；10-18 21:32 用户就追问过一次「html 图呢」。
 
@@ -201,4 +201,8 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### 发包只 stage、人工批准
 
-处理结果：已过时，不用补。10-19 发包改为推 tag 由 GitHub Actions 发布（[#281](https://github.com/VirusPC/edges/pull/281)、[ADR 0037](../../../docs/adr/0037-npm-publish-via-github-actions.md)），手动 stage 这条路已经不走了。
+建议去处：`extensions/cli` 的发布说明，或 ADR 0037。处理结果：待用户确认，先看 ADR 0037 是否已经覆盖。
+
+为什么值得补：0.1.0 时用户当场纠正过直接 publish；0.2.0 就是停在批准这一步被跳过的。
+
+不补的代价：下一个手动发包的助手可能直接 publish，或者又留下一个只 stage、没人批准的版本。
