@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from typing import Any
 
 from langfuse_sink.model import Span, Usage, clip, new_span_id
@@ -19,7 +20,16 @@ from langfuse_sink.model import Span, Usage, clip, new_span_id
 _MAX_SPANS = 40
 _NAME_LIMIT = 120
 _STEP_NS = 1_000_000
+_MS_TO_NS = 1_000_000
 _FAILURE_REASONS = frozenset({"error", "aborted"})
+
+
+@dataclass
+class _Clock:
+    """Last known end time, in milliseconds, and tool start times keyed by call id."""
+
+    cursor_ms: int | None = None
+    tool_starts: dict[str, int] = field(default_factory=dict)
 
 
 def pi_event_value(events_jsonl: str, keys: tuple[str, ...]) -> str | None:
@@ -38,9 +48,15 @@ def spans_from_pi_jsonl(
     parent_id: str,
     start_time_unix_nano: int,
 ) -> list[Span]:
-    """Child spans in event order. At most 40. Times are synthetic 1 ms steps."""
+    """Child spans in event order. At most 40.
+
+    Assistant `message.timestamp` (ms) plus `durationMs`, and tool
+    `durationMs` anchored to the preceding end time, are used when both ends
+    are known. Otherwise times stay synthetic 1 ms steps from `start_time_unix_nano`.
+    """
     spans: list[Span] = []
     tool_inputs: dict[str, str] = {}
+    clock = _Clock()
     for event in _events(events_jsonl):
         if len(spans) >= _MAX_SPANS:
             break
@@ -49,8 +65,10 @@ def spans_from_pi_jsonl(
             tool_id = event.get("toolCallId")
             if isinstance(tool_id, str):
                 tool_inputs[tool_id] = _args_text(event.get("args"))
+                _note_tool_start(clock, tool_id, event.get("timestamp"))
             continue
         if event_type == "tool_execution_end":
+            window = _tool_window(clock, event)
             _append(
                 spans,
                 _tool_span(
@@ -60,6 +78,7 @@ def spans_from_pi_jsonl(
                     parent_id=parent_id,
                     start_time_unix_nano=start_time_unix_nano,
                     index=len(spans),
+                    window=window,
                 ),
             )
             continue
@@ -74,6 +93,7 @@ def spans_from_pi_jsonl(
             trace_id=trace_id,
             parent_id=parent_id,
             start_time_unix_nano=start_time_unix_nano,
+            clock=clock,
         )
     return spans
 
@@ -85,7 +105,11 @@ def _append_message_spans(
     trace_id: str,
     parent_id: str,
     start_time_unix_nano: int,
+    clock: _Clock,
 ) -> None:
+    window = _message_window(message)
+    if window is not None:
+        clock.cursor_ms = window[1]
     content = message.get("content")
     if isinstance(content, list):
         for block in content:
@@ -104,6 +128,7 @@ def _append_message_spans(
                         parent_id=parent_id,
                         start_time_unix_nano=start_time_unix_nano,
                         index=len(spans),
+                        window=window,
                     ),
                 )
             elif block_type == "text":
@@ -116,6 +141,7 @@ def _append_message_spans(
                         parent_id=parent_id,
                         start_time_unix_nano=start_time_unix_nano,
                         index=len(spans),
+                        window=window,
                     ),
                 )
     if len(spans) >= _MAX_SPANS:
@@ -128,6 +154,7 @@ def _append_message_spans(
             parent_id=parent_id,
             start_time_unix_nano=start_time_unix_nano,
             index=len(spans),
+            window=window,
         ),
     )
 
@@ -140,6 +167,7 @@ def _text_span(
     parent_id: str,
     start_time_unix_nano: int,
     index: int,
+    window: tuple[int, int] | None,
 ) -> Span:
     return _span(
         name=name,
@@ -149,6 +177,7 @@ def _text_span(
         index=index,
         kind="span",
         output=output,
+        window=window,
     )
 
 
@@ -159,6 +188,7 @@ def _generation_span(
     parent_id: str,
     start_time_unix_nano: int,
     index: int,
+    window: tuple[int, int] | None,
 ) -> Span:
     usage_body = message.get("usage")
     usage = usage_body if isinstance(usage_body, dict) else {}
@@ -169,16 +199,12 @@ def _generation_span(
         reasoning_tokens=_as_int(usage.get("reasoning")),
         cached_input_tokens=_as_int(usage.get("cacheRead")),
         model=model,
+        cost=_cost_total(usage.get("cost")),
     )
     stop_reason = message.get("stopReason")
     attributes: dict[str, str] = {}
     if isinstance(stop_reason, str) and stop_reason:
         attributes["stopReason"] = stop_reason
-    cost = usage.get("cost")
-    if isinstance(cost, dict):
-        total = cost.get("total")
-        if isinstance(total, (int, float)) and not isinstance(total, bool):
-            attributes["cost.total"] = json.dumps(total)
     error_message = message.get("errorMessage")
     if isinstance(error_message, str) and error_message.strip():
         attributes["errorMessage"] = error_message.strip()
@@ -193,6 +219,7 @@ def _generation_span(
         usage=parsed if _has_usage(parsed) or isinstance(usage_body, dict) else None,
         attributes=attributes,
         status=status,
+        window=window,
     )
 
 
@@ -204,6 +231,7 @@ def _tool_span(
     parent_id: str,
     start_time_unix_nano: int,
     index: int,
+    window: tuple[int, int] | None,
 ) -> Span:
     tool_id = event.get("toolCallId")
     tool_input = tool_inputs.get(tool_id, "") if isinstance(tool_id, str) else ""
@@ -219,6 +247,7 @@ def _tool_span(
         input=tool_input,
         output=_tool_output(event.get("result")),
         status="error" if is_error else None,
+        window=window,
     )
 
 
@@ -235,15 +264,21 @@ def _span(
     usage: Usage | None = None,
     attributes: dict[str, str] | None = None,
     status: str | None = None,
+    window: tuple[int, int] | None = None,
 ) -> Span:
-    start = start_time_unix_nano + (index + 1) * _STEP_NS
+    if window is None:
+        start = start_time_unix_nano + (index + 1) * _STEP_NS
+        end = start + _STEP_NS
+    else:
+        start = window[0] * _MS_TO_NS
+        end = window[1] * _MS_TO_NS
     return Span(
         trace_id=trace_id,
         span_id=new_span_id(),
         parent_id=parent_id,
         name=name,
         start_time_unix_nano=start,
-        end_time_unix_nano=start + _STEP_NS,
+        end_time_unix_nano=end,
         kind=kind,
         input=input,
         output=output,
@@ -251,6 +286,53 @@ def _span(
         attributes=dict(attributes or {}),
         status=status,
     )
+
+
+def _message_window(message: Mapping[str, Any]) -> tuple[int, int] | None:
+    """Start and end in milliseconds. `timestamp` is the start."""
+    start = _non_negative_int(message.get("timestamp"))
+    duration = _non_negative_int(message.get("durationMs"))
+    if start is None or duration is None:
+        return None
+    return start, start + duration
+
+
+def _note_tool_start(clock: _Clock, tool_id: str, timestamp: Any) -> None:
+    explicit = _non_negative_int(timestamp)
+    if explicit is not None:
+        clock.tool_starts[tool_id] = explicit
+        return
+    if clock.cursor_ms is not None:
+        clock.tool_starts[tool_id] = clock.cursor_ms
+
+
+def _tool_window(clock: _Clock, event: Mapping[str, Any]) -> tuple[int, int] | None:
+    duration = _non_negative_int(event.get("durationMs"))
+    tool_id = event.get("toolCallId")
+    start = clock.tool_starts.get(tool_id) if isinstance(tool_id, str) else None
+    if start is None:
+        start = clock.cursor_ms
+    if start is None or duration is None:
+        return None
+    end = start + duration
+    clock.cursor_ms = end if clock.cursor_ms is None else max(clock.cursor_ms, end)
+    return start, end
+
+
+def _cost_total(cost: Any) -> int | float | None:
+    if not isinstance(cost, dict):
+        return None
+    total = cost.get("total")
+    if isinstance(total, bool) or not isinstance(total, (int, float)):
+        return None
+    return total
+
+
+def _non_negative_int(value: Any) -> int | None:
+    parsed = _as_int(value)
+    if parsed is None or parsed < 0:
+        return None
+    return parsed
 
 
 def _append(spans: list[Span], span: Span) -> None:
@@ -267,6 +349,7 @@ def _has_usage(usage: Usage) -> bool:
             usage.reasoning_tokens,
             usage.cached_input_tokens,
             usage.model,
+            usage.cost,
         )
     )
 

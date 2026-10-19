@@ -322,7 +322,8 @@ class PiSpanTests(unittest.TestCase):
         self.assertEqual(first_gen.usage.cached_input_tokens, 128)
         self.assertEqual(first_gen.usage.model, "MiniMax-M3")
         self.assertEqual(first_gen.attributes["stopReason"], "toolUse")
-        self.assertEqual(first_gen.attributes["cost.total"], json.dumps(0.00059898))
+        self.assertNotIn("cost.total", first_gen.attributes)
+        self.assertEqual(json.dumps(first_gen.usage.cost), json.dumps(0.00059898))
         self.assertIsNone(first_gen.status)
         third_gen = spans[6]
         assert third_gen.usage is not None
@@ -344,9 +345,121 @@ class PiSpanTests(unittest.TestCase):
             self.assertEqual(span.trace_id, trace_id)
             self.assertEqual(span.parent_id, parent)
             self.assertFalse(any(key.startswith("langfuse.") for key in span.attributes))
-        self.assertEqual(spans[0].start_time_unix_nano, start + 1_000_000)
-        self.assertEqual(spans[0].end_time_unix_nano, start + 2_000_000)
+        ms = 1_000_000
+        self.assertEqual(spans[0].start_time_unix_nano, 1792384899455 * ms)
+        self.assertEqual(spans[0].end_time_unix_nano, (1792384899455 + 2571) * ms)
+        self.assertEqual(spans[1].start_time_unix_nano, spans[0].start_time_unix_nano)
+        self.assertEqual(spans[1].end_time_unix_nano, spans[0].end_time_unix_nano)
+        self.assertEqual(spans[2].start_time_unix_nano, spans[0].end_time_unix_nano)
+        self.assertEqual(spans[2].end_time_unix_nano, spans[2].start_time_unix_nano + 12 * ms)
+        self.assertEqual(spans[7].start_time_unix_nano, spans[8].start_time_unix_nano)
+        self.assertEqual(spans[7].end_time_unix_nano, spans[7].start_time_unix_nano + 7 * ms)
+        self.assertEqual(spans[8].end_time_unix_nano, spans[8].start_time_unix_nano + 8 * ms)
+        self.assertNotEqual(spans[0].start_time_unix_nano, start + ms)
         self.assertEqual(len(spans), 12)
+
+    def test_span_times_use_event_clock_and_fall_back_to_steps(self) -> None:
+        events = "\n".join(
+            [
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "timestamp": 1_000,
+                            "durationMs": 40,
+                            "stopReason": "toolUse",
+                            "content": [
+                                {"type": "thinking", "thinking": "a"},
+                                {"type": "text", "text": "b"},
+                            ],
+                            "usage": {"input": 1, "output": 1},
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_start",
+                        "toolCallId": "t1",
+                        "toolName": "read",
+                        "args": {},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_start",
+                        "toolCallId": "t2",
+                        "toolName": "bash",
+                        "args": {},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_end",
+                        "toolCallId": "t1",
+                        "toolName": "read",
+                        "durationMs": 5,
+                        "result": {"content": [{"type": "text", "text": "x"}]},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_end",
+                        "toolCallId": "t2",
+                        "toolName": "bash",
+                        "durationMs": 9,
+                        "result": {"content": [{"type": "text", "text": "y"}]},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_start",
+                        "toolCallId": "t3",
+                        "toolName": "grep",
+                        "args": {},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "tool_execution_end",
+                        "toolCallId": "t3",
+                        "toolName": "grep",
+                        "durationMs": 3,
+                        "result": {"content": [{"type": "text", "text": "z"}]},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "message_end",
+                        "message": {
+                            "role": "assistant",
+                            "stopReason": "stop",
+                            "content": [{"type": "text", "text": "no time"}],
+                        },
+                    }
+                ),
+            ]
+        )
+        base = 5_000
+        spans = spans_from_pi_jsonl(events, trace_id="c" * 32, parent_id="d" * 16, start_time_unix_nano=base)
+        ms = 1_000_000
+        self.assertEqual(
+            [span.name for span in spans],
+            ["reasoning", "agent_message", "generation", "read", "bash", "grep", "agent_message", "generation"],
+        )
+        for span in spans[:3]:
+            self.assertEqual(span.start_time_unix_nano, 1_000 * ms)
+            self.assertEqual(span.end_time_unix_nano, 1_040 * ms)
+        self.assertEqual(spans[3].start_time_unix_nano, 1_040 * ms)
+        self.assertEqual(spans[3].end_time_unix_nano, 1_045 * ms)
+        self.assertEqual(spans[4].start_time_unix_nano, 1_040 * ms)
+        self.assertEqual(spans[4].end_time_unix_nano, 1_049 * ms)
+        self.assertEqual(spans[5].start_time_unix_nano, 1_049 * ms)
+        self.assertEqual(spans[5].end_time_unix_nano, 1_052 * ms)
+        self.assertEqual(spans[6].start_time_unix_nano, base + 7 * ms)
+        self.assertEqual(spans[6].end_time_unix_nano, base + 8 * ms)
+        self.assertEqual(spans[7].start_time_unix_nano, base + 8 * ms)
+        self.assertEqual(spans[7].end_time_unix_nano, base + 9 * ms)
 
     def test_error_fixture_marks_generation_status(self) -> None:
         events = Path(__file__).parent.joinpath("fixtures", "pi_error.jsonl").read_text(encoding="utf-8")
@@ -468,10 +581,11 @@ class ExporterTests(unittest.TestCase):
         self.assertNotIn("pk-test", joined)
         turn = next(span for span in spans if span["name"] == "turn.completed")
         usage = json.loads(turn["langfuse.observation.usage_details"])
-        self.assertEqual(usage["input"], 11)
+        self.assertEqual(usage["input"], 7)
         self.assertEqual(usage["output"], 3)
         self.assertEqual(usage["input_cached_tokens"], 4)
         self.assertEqual(usage["reasoning_output_tokens"], 1)
+        self.assertEqual(usage["input"] + usage["input_cached_tokens"] + usage["output"], 14)
         self.assertEqual(turn["gen_ai.usage.input_tokens"], "11")
         self.assertEqual(turn["gen_ai.usage.output_tokens"], "3")
         self.assertEqual(turn["langfuse.observation.type"], "generation")
@@ -568,6 +682,76 @@ class ExporterTests(unittest.TestCase):
         self.assertEqual(timed_out.status, "failed")
         self.assertEqual(timed_out.error, "TimeoutError")
         self.assertEqual(stderr.getvalue(), "")
+
+    def test_usage_details_subtract_cache_and_keep_genai_input(self) -> None:
+        trace = Trace(
+            name="usage",
+            spans=[
+                Span(
+                    trace_id="c" * 32,
+                    span_id="d" * 16,
+                    name="generation",
+                    start_time_unix_nano=1,
+                    end_time_unix_nano=2,
+                    kind="generation",
+                    usage=Usage(
+                        input_tokens=13839,
+                        output_tokens=701,
+                        cached_input_tokens=13056,
+                        reasoning_tokens=10,
+                        cost=0.5,
+                    ),
+                )
+            ],
+        )
+        capture = _Capture()
+        exporter_from_env(
+            {
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        ).export(trace)
+        span = _span_attributes(json.loads(capture.requests[0].data.decode("utf-8")))[0]
+        usage = json.loads(span["langfuse.observation.usage_details"])
+        self.assertEqual(usage["input"], 783)
+        self.assertEqual(usage["output"], 701)
+        self.assertEqual(usage["input_cached_tokens"], 13056)
+        self.assertEqual(usage["reasoning_output_tokens"], 10)
+        self.assertEqual(usage["input"] + usage["input_cached_tokens"] + usage["output"], 14540)
+        self.assertEqual(span["gen_ai.usage.input_tokens"], "13839")
+        self.assertEqual(json.loads(span["langfuse.observation.cost_details"]), {"total": 0.5})
+
+        floor = Trace(
+            name="floor",
+            spans=[
+                Span(
+                    trace_id="e" * 32,
+                    span_id="f" * 16,
+                    name="generation",
+                    start_time_unix_nano=1,
+                    end_time_unix_nano=2,
+                    kind="generation",
+                    usage=Usage(input_tokens=3, cached_input_tokens=10),
+                )
+            ],
+        )
+        capture = _Capture()
+        exporter_from_env(
+            {
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        ).export(floor)
+        span = _span_attributes(json.loads(capture.requests[0].data.decode("utf-8")))[0]
+        usage = json.loads(span["langfuse.observation.usage_details"])
+        self.assertEqual(usage["input"], 0)
+        self.assertEqual(usage["input_cached_tokens"], 10)
+        self.assertEqual(span["gen_ai.usage.input_tokens"], "3")
+        self.assertNotIn("langfuse.observation.cost_details", span)
 
     def test_status_and_long_attribute_are_mapped(self) -> None:
         trace = Trace(

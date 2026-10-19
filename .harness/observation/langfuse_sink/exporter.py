@@ -203,20 +203,42 @@ def _attributes(trace: Trace, span: Any) -> list[dict[str, Any]]:
 
 
 def _usage_attributes(usage: Usage) -> list[dict[str, Any] | None]:
+    """Langfuse total adds `input` and `input_cached_tokens`. Keep cache out of `input`.
+
+    `gen_ai.usage.input_tokens` stays the original count, cache included.
+    """
     details: dict[str, int] = {}
-    _copy_int(details, "input", usage.input_tokens)
+    _copy_int(details, "input", _uncached_input(usage))
     _copy_int(details, "output", usage.output_tokens)
     _copy_int(details, "input_cached_tokens", usage.cached_input_tokens)
     _copy_int(details, "reasoning_output_tokens", usage.reasoning_tokens)
     items: list[dict[str, Any] | None] = []
     if details:
         items.append(_string("langfuse.observation.usage_details", json.dumps(details, ensure_ascii=False)))
-        items.append(_int_attr("gen_ai.usage.input_tokens", details.get("input")))
-        items.append(_int_attr("gen_ai.usage.output_tokens", details.get("output")))
+        items.append(_int_attr("gen_ai.usage.input_tokens", _plain_int(usage.input_tokens)))
+        items.append(_int_attr("gen_ai.usage.output_tokens", _plain_int(usage.output_tokens)))
+    if isinstance(usage.cost, (int, float)) and not isinstance(usage.cost, bool):
+        items.append(_string("langfuse.observation.cost_details", json.dumps({"total": usage.cost})))
     model = _blank(usage.model)
     if model:
         items.append(_string("gen_ai.request.model", model))
     return items
+
+
+def _uncached_input(usage: Usage) -> int | None:
+    total = _plain_int(usage.input_tokens)
+    if total is None:
+        return None
+    cached = _plain_int(usage.cached_input_tokens)
+    if cached is None:
+        return total
+    return max(0, total - cached)
+
+
+def _plain_int(value: Any) -> int | None:
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value
 
 
 def _copy_int(details: dict[str, int], key: str, value: Any) -> None:
