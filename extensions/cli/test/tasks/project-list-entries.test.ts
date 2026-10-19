@@ -116,7 +116,11 @@ test("project list skips harness indexes and nested READMEs under a tasks board"
   const paths = projects.map((project) => project.path);
   assert.equal(paths.some((item) => item.includes("/.harness/")), false, paths.join("\n"));
   assert.equal(paths.some((item) => item.endsWith("alpha/nested/README.md")), false, paths.join("\n"));
-  assert.deepEqual(projects.map((project) => project.project).sort(), ["alpha", "both", "tech"]);
+  assert.deepEqual(projects.map((project) => project.project).sort(), ["alpha", "both"]);
+  const both = projects.find((project) => project.project === "both");
+  assert.equal(both?.title, "From Readme");
+  assert.equal(both?.description, "readme copy");
+  assert.equal(both?.path, ".harness/tasks/both/README.md");
 });
 
 async function maintenanceEntries(): Promise<string> {
@@ -140,32 +144,26 @@ async function maintenanceEntries(): Promise<string> {
   return repo;
 }
 
-test("project list includes an AGENTS.md entry and prefers it when README.md also exists", async (t) => {
+test("project list does not treat an AGENTS.md system entry as a Task Project", async (t) => {
   const repo = await maintenanceEntries();
   t.after(() => rm(repo, { recursive: true, force: true }));
   const result = await runList(repo);
   assert.equal(result.exitCode, 0, result.stdout + result.stderr);
   const projects = projectsOf(result.stdout);
-  const tech = projects.filter((project) => project.project === "tech");
-  assert.deepEqual(tech, [{
-    project: "tech",
-    dir: "tech",
-    title: "Tech",
-    description: "tech work",
-    path: ".harness/tasks/tech/AGENTS.md",
-  }]);
+  assert.equal(projects.some((project) => project.project === "tech"), false);
+  assert.equal(projects.some((project) => project.path.endsWith("/AGENTS.md")), false);
 });
 
-test("project list returns the AGENTS.md entry once when README.md is also present", async (t) => {
+test("project list uses README.md once when AGENTS.md is also present", async (t) => {
   const repo = await maintenanceEntries();
   t.after(() => rm(repo, { recursive: true, force: true }));
   const result = await runList(repo);
   assert.equal(result.exitCode, 0, result.stdout + result.stderr);
   const both = projectsOf(result.stdout).filter((project) => project.project === "both");
   assert.equal(both.length, 1);
-  assert.equal(both[0]?.title, "From Agents");
-  assert.equal(both[0]?.description, "agents copy");
-  assert.equal(both[0]?.path, ".harness/tasks/both/AGENTS.md");
+  assert.equal(both[0]?.title, "From Readme");
+  assert.equal(both[0]?.description, "readme copy");
+  assert.equal(both[0]?.path, ".harness/tasks/both/README.md");
 });
 
 test("project list follows --super onto the domain board and --all across boards", async (t) => {
@@ -182,9 +180,8 @@ test("project list follows --super onto the domain board and --all across boards
     projectsOf(all.stdout).map((project) => [project.project, project.path]).sort(),
     [
       ["alpha", ".harness/tasks/alpha/README.md"],
-      ["both", ".harness/tasks/both/AGENTS.md"],
+      ["both", ".harness/tasks/both/README.md"],
       ["kept", "tasks/kept/README.md"],
-      ["tech", ".harness/tasks/tech/AGENTS.md"],
     ],
   );
 });

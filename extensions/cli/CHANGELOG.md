@@ -6,7 +6,7 @@
 
 ### Fixed
 
-- `edges tasks project list` 只把看板直接子目录里的合法项目入口算作项目。同一目录有 `AGENTS.md` 时用它，否则用 `README.md`。`tasks/.harness/README.md` 不再被当成项目，命令也不会因此整条失败；以 `AGENTS.md` 为入口的项目会出现在列表里。某个项目的标题或描述不合法时，失败原因里带上该文件路径。
+- `edges tasks project list` / `get` / `update` 只把看板直接子目录里的 `README.md` 当作 Task Project 元数据。同目录的 `AGENTS.md` 是系统入口，不提供标题或描述。`tasks/.harness/README.md` 不再被当成项目。某个项目的 README 不合法时，失败原因里带上该文件路径。
 
 ## [0.2.1] - 2026-10-19
 

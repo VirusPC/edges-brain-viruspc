@@ -338,8 +338,14 @@ test("README Task Projects are discovered, read and updated; a user-initialised 
     assert.deepEqual(listed.map((item) => [item.project, path.basename(item.path)]).sort(), [
       ["cli", "README.md"],
       ["default", "README.md"],
-      ["legacy", "AGENTS.md"],
     ]);
+    await assert.rejects(
+      () => getProject(domainBoard(repo), "legacy", writer),
+      (error: unknown) => {
+        assert.equal((error as { errorCode: string }).errorCode, "PROJECT_NOT_FOUND");
+        return true;
+      },
+    );
     const got = await getProject(domainBoard(repo), "cli", writer);
     assert.equal(got.title, "CLI");
     assert.equal(got.description, "edges CLI work");
@@ -352,14 +358,17 @@ test("README Task Projects are discovered, read and updated; a user-initialised 
     assert.match(readme, /<!-- project-entries-local:start -->\n## 本层内容\n/);
     await assert.rejects(access(path.join(repo, "tasks/cli/AGENTS.md")));
 
+    const legacyAgentsBefore = await readFile(path.join(repo, "tasks/legacy/AGENTS.md"), "utf8");
     await updateProject(domainBoard(repo), "legacy", { description: "legacy v2" }, writer);
-    await assert.rejects(access(path.join(repo, "tasks/legacy/README.md")));
+    assert.equal(await readFile(path.join(repo, "tasks/legacy/AGENTS.md"), "utf8"), legacyAgentsBefore);
+    const legacyReadme = await readFile(path.join(repo, "tasks/legacy/README.md"), "utf8");
+    assert.match(legacyReadme, /^# legacy\n\nlegacy v2\n/);
+    assert.match(legacyReadme, /<!-- project-entries-local:start -->/);
     const agentsBoard = await readFile(board, "utf8");
-    assert.match(agentsBoard, /\[Legacy\]\(<?legacy\/AGENTS\.md>?\) — legacy v2/);
-    assert.doesNotMatch(agentsBoard, /README\.md/);
+    assert.match(agentsBoard, /\[Legacy\]\(<?legacy\/AGENTS\.md>?\) — legacy work/);
     const list = await readFile(path.join(repo, "tasks/README.md"), "utf8");
     assert.match(list, /cli\/README\.md>?\) — updated CLI/);
-    assert.doesNotMatch(list, /legacy/);
+    assert.match(list, /legacy\/README\.md>?\) — legacy v2/);
 
     await assert.rejects(
       createProject(domainBoard(repo), { project: "cli", title: "X", description: "dup" }, writer),
