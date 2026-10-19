@@ -1,5 +1,11 @@
 """Run retrieval eval cells: clone a git URL, ask the agent client, score paths.
 
+`codex exec --json` prints one JSON event per line (commands, reasoning,
+the final message, and token usage on `turn.completed`). `run` stores that
+stream at `.harness/evaluation/.cache/retrieval/sessions/<stamp>/<cell_id>/<sample_id>.events.jsonl`
+and stderr beside it as `<sample_id>.stderr.txt`. Both are gitignored.
+Scoring reads `<sample_id>.last.txt`, the file passed to `-o`.
+
     python3 .harness/evaluation/retrieval_eval/run.py print-command
     python3 .harness/evaluation/retrieval_eval/run.py run
 """
@@ -18,7 +24,7 @@ _EVAL_DIR = Path(__file__).resolve().parents[1]
 if str(_EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(_EVAL_DIR))
 
-from retrieval_eval.client import build_prompt, codex_command, run_client
+from retrieval_eval.client import ClientCall, build_prompt, codex_command, run_client
 from retrieval_eval.config import DEFAULT_CONFIG, Cell, load_cells, load_samples
 from retrieval_eval.git_repo import cache_dir, sync_clone
 from retrieval_eval.report import write_report
@@ -27,6 +33,12 @@ from retrieval_eval.score import aggregate, score_prediction
 
 CACHE_ROOT = _EVAL_DIR / ".cache" / "retrieval"
 REPORTS_DIR = _EVAL_DIR / "reports"
+
+
+def write_sample_trace(log_dir: Path, sample_id: str, call: ClientCall) -> None:
+    """Persist one sample's `--json` event stream and stderr in the session cache."""
+    (log_dir / f"{sample_id}.events.jsonl").write_text(call.stdout, encoding="utf-8")
+    (log_dir / f"{sample_id}.stderr.txt").write_text(call.stderr, encoding="utf-8")
 
 
 def print_command(cells: Sequence[Cell]) -> str:
@@ -76,7 +88,7 @@ def _run_cell(cell: Cell, reports_dir: Path, stamp: str) -> dict[str, Any]:
     for sample in samples:
         last_message = log_dir / f"{sample['id']}.last.txt"
         call = run_client(cell.client, dest, build_prompt(sample["prompt"]), last_message)
-        (log_dir / f"{sample['id']}.stdout.txt").write_text(call.stdout, encoding="utf-8")
+        write_sample_trace(log_dir, sample["id"], call)
         row = score_prediction(sample["ground_truth"], call.predicted)
         row["id"] = sample["id"]
         row["prompt"] = sample["prompt"]

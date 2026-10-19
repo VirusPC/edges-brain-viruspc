@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 import os
 import subprocess
@@ -14,9 +15,17 @@ EVAL_DIR = Path(__file__).resolve().parents[1]
 if str(EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_DIR))
 
-from retrieval_eval.client import build_prompt, codex_command, parse_predicted
-from retrieval_eval.config import load_cells, load_samples
+from retrieval_eval.client import (
+    ClientCall,
+    build_prompt,
+    codex_command,
+    parse_client_answer,
+    parse_predicted,
+    run_client,
+)
+from retrieval_eval.config import Client, load_cells, load_samples
 from retrieval_eval.git_repo import sync_clone
+from retrieval_eval.run import write_sample_trace
 from retrieval_eval.score import aggregate, parse_clusters, score_prediction
 
 
@@ -51,6 +60,7 @@ class ConfigTests(unittest.TestCase):
         )
         self.assertIn("git clone --no-recurse-submodules https://github.com/VirusPC/edges.git", completed.stdout)
         self.assertIn("codex exec", completed.stdout)
+        self.assertIn("--json", completed.stdout)
         self.assertIn("--sandbox read-only", completed.stdout)
         self.assertNotIn(".git/config", completed.stdout)
 
@@ -108,9 +118,170 @@ class ClientTests(unittest.TestCase):
             Path("/tmp/last.txt"),
         )
         self.assertEqual(command[0], "codex")
+        self.assertIn("exec", command)
+        self.assertIn("--json", command)
         self.assertIn("--sandbox", command)
         self.assertEqual(command[command.index("--sandbox") + 1], "read-only")
         self.assertIn("--ephemeral", command)
+        self.assertLess(command.index("--json"), command.index("--sandbox"))
+        self.assertEqual(command[-2], "/tmp/last.txt")
+
+    def test_jsonl_fallback_uses_last_agent_message(self) -> None:
+        """A missing -o file must not score JSON embedded in command output."""
+        stdout = "\n".join(
+            [
+                json.dumps({"type": "thread.started", "thread_id": "abc"}),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "id": "item_1",
+                            "type": "command_execution",
+                            "command": "rg predicted",
+                            "aggregated_output": '{"predicted":["wrong.md"]}',
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "id": "item_2",
+                            "type": "agent_message",
+                            "text": '先看到的\n{"predicted":["CONTEXT.md"]}\n',
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "id": "item_3",
+                            "type": "reasoning",
+                            "text": '{"predicted":["ignored.md"]}',
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "id": "item_4",
+                            "type": "agent_message",
+                            "text": '最终\n{"predicted":["notes/AGENTS.md"]}\n',
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "turn.completed",
+                        "usage": {"input_tokens": 10, "cached_input_tokens": 4, "output_tokens": 2},
+                    }
+                ),
+            ]
+        )
+        predicted, error = parse_client_answer("", stdout)
+        self.assertIsNone(error)
+        self.assertEqual(predicted, ["notes/AGENTS.md"])
+
+    def test_last_message_wins_over_jsonl_stdout(self) -> None:
+        stdout = json.dumps(
+            {
+                "type": "item.completed",
+                "item": {"id": "item_1", "type": "agent_message", "text": '{"predicted":["from-stdout.md"]}'},
+            }
+        )
+        predicted, error = parse_client_answer('{"predicted":["from-file.md"]}\n', stdout)
+        self.assertIsNone(error)
+        self.assertEqual(predicted, ["from-file.md"])
+
+    def test_jsonl_without_agent_message_does_not_score_command_json(self) -> None:
+        stdout = json.dumps(
+            {
+                "type": "item.completed",
+                "item": {
+                    "id": "item_1",
+                    "type": "command_execution",
+                    "command": "cat answer.txt",
+                    "aggregated_output": '{"predicted":["stolen.md"]}',
+                },
+            }
+        )
+        predicted, error = parse_client_answer("   ", stdout)
+        self.assertEqual(predicted, [])
+        self.assertEqual(error, "no agent message in event stream")
+
+    def test_plain_stdout_still_parses_when_last_message_missing(self) -> None:
+        text = '说明\n{"predicted":["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"]}\n'
+        predicted, error = parse_client_answer("", text)
+        self.assertIsNone(error)
+        self.assertEqual(predicted, ["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"])
+
+    def test_run_client_reads_last_message_and_keeps_jsonl_stdout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            script = root / "codex"
+            last = root / "last.txt"
+            script.write_text(
+                "\n".join(
+                    [
+                        "#!/usr/bin/env python3",
+                        "import json, sys",
+                        "from pathlib import Path",
+                        "args = sys.argv[1:]",
+                        "if '--json' not in args or 'exec' not in args:",
+                        "    sys.stderr.write('missing json exec\\n')",
+                        "    raise SystemExit(2)",
+                        "out = Path(args[args.index('-o') + 1])",
+                        "out.write_text('{\"predicted\":[\"from-file.md\"]}\\n', encoding='utf-8')",
+                        "event = {",
+                        "    'type': 'item.completed',",
+                        "    'item': {'id': 'item_1', 'type': 'agent_message', 'text': '{\"predicted\":[\"from-stdout.md\"]}'},",
+                        "}",
+                        "sys.stdout.write(json.dumps(event) + '\\n')",
+                        "sys.stderr.write('progress\\n')",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            script.chmod(0o755)
+            call = run_client(
+                Client(id="fake", command=str(script), sandbox="read-only", timeout_seconds=5),
+                root,
+                "问题",
+                last,
+            )
+            self.assertIn("--json", call.command)
+            self.assertEqual(call.predicted, ["from-file.md"])
+            self.assertIn("from-stdout.md", call.stdout)
+            self.assertEqual(call.stderr, "progress\n")
+            self.assertEqual(call.returncode, 0)
+            self.assertFalse(call.timed_out)
+            self.assertIsNone(call.parse_error)
+
+    def test_sample_trace_persists_event_stream(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            log_dir = Path(tmp)
+            call = ClientCall(
+                predicted=["notes/AGENTS.md"],
+                command=["codex", "exec", "--json"],
+                stdout='{"type":"thread.started"}\n',
+                stderr="warn\n",
+                returncode=0,
+                timed_out=False,
+                parse_error=None,
+            )
+            write_sample_trace(log_dir, "edges_smoke_system_entry", call)
+            self.assertEqual(
+                (log_dir / "edges_smoke_system_entry.events.jsonl").read_text(encoding="utf-8"),
+                '{"type":"thread.started"}\n',
+            )
+            self.assertEqual(
+                (log_dir / "edges_smoke_system_entry.stderr.txt").read_text(encoding="utf-8"),
+                "warn\n",
+            )
+            self.assertFalse((log_dir / "edges_smoke_system_entry.stdout.txt").exists())
 
 
 class CloneTests(unittest.TestCase):

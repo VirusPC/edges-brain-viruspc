@@ -82,11 +82,17 @@ Retrieval smoke prints the clone and `codex exec` commands without running them:
 python3 .harness/evaluation/retrieval_eval/run.py print-command
 ```
 
-A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harness/evaluation/.cache/` (gitignored), then runs `codex` once per sample. The report lands in [`reports/`](reports/README.md) and is an Evaluation Smoke, not a Benchmark Proof.
+A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harness/evaluation/.cache/` (gitignored), then runs `codex exec --json` once per sample. The report lands in [`reports/`](reports/README.md) and is an Evaluation Smoke, not a Benchmark Proof.
 
 ```bash
 python3 .harness/evaluation/retrieval_eval/run.py run
 ```
+
+过程痕迹留在缓存，不进 `reports/`。一次 `run` 后，样本 `<sample_id>` 的事件流（`command_execution`、`reasoning`、`agent_message`、`turn.completed` 里的 token usage）在：
+
+`.harness/evaluation/.cache/retrieval/sessions/<时间戳>/<cell_id>/<sample_id>.events.jsonl`
+
+同目录的 `<sample_id>.last.txt` 是 `-o` 写下的最终消息，打分优先读它；`<sample_id>.stderr.txt` 是该次进程的 stderr。文件搜索和读取没有单独的事件类型，它们出现在 `command_execution`（`rg`、`cat` 等）里。
 
 Official-path tests (no API key):
 

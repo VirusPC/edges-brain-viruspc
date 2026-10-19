@@ -6,4 +6,4 @@
 
 - [`edges.json`](edges.json)
 
-跑法见 [`../../retrieval_eval/run.py`](../../retrieval_eval/run.py)。`print-command` 只打印命令；`run` 会克隆仓库并调用本机 `codex`。
+跑法见 [`../../retrieval_eval/run.py`](../../retrieval_eval/run.py)。`print-command` 只打印命令；`run` 会克隆仓库并调用本机 `codex exec --json`。每个样本的事件流在 `.harness/evaluation/.cache/retrieval/sessions/<时间戳>/<cell_id>/<样本 id>.events.jsonl`（gitignore），不写进报告。
