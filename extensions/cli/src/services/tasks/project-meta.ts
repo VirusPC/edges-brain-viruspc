@@ -6,13 +6,14 @@ import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
 import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { NodeService } from '../node/node-service.js';
 import { assertBoardPath } from './board.js';
-import { scopeDir, boardRel, resolveBoard, type BoardTarget } from "./paths.js";
+import { scopeDir, boardRel, resolveBoard, subjectTaskBoard, type BoardTarget, type TaskBoardLocation } from "./paths.js";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import type { NodeReference } from "../../domain/core/types.js";
 import { existsSync } from "node:fs";
 import { nativeTaskPath, relativePathInsideScope } from "./realpath.js";
-import { listProjectIds, type BoardFs, type BoardWriter } from "./board.js";
+import { createNodeBoardWriter, listProjectIds, type BoardFs, type BoardWriter } from "./board.js";
+import { listTaskBoardLocations } from "./node-query.js";
 import { boardRoot } from "./paths.js";
 import { parseTaskProject, projectDirName } from "../../domain/models/tasks/project.js";
 import {
@@ -58,6 +59,20 @@ export function parseProjectDescription(raw: string): string {
     throw new TasksError("VALIDATION_ERROR", DESCRIPTION_MESSAGE);
   }
   return description;
+}
+
+function parseProjectEntry(markdown: string, filePath: string): ReturnType<typeof parseProjectAgents> {
+  try {
+    return parseProjectAgents(markdown);
+  } catch (error) {
+    if (error instanceof TasksError) {
+      throw new TasksError(
+        error.errorCode,
+        `${error.message}: ${filePath.split(path.sep).join("/")}`,
+      );
+    }
+    throw error;
+  }
 }
 
 export function parseProjectAgents(markdown: string): {
@@ -217,14 +232,57 @@ export function projectRecordFromEntry(
   entry: { path: string; body: string },
 ): TaskProjectRecord {
   const dir = path.basename(path.dirname(entry.path));
-  const parsed = parseProjectAgents(entry.body);
+  const rel = relativePathInsideScope(scope, entry.path).split(path.sep).join("/");
+  const parsed = parseProjectEntry(entry.body, rel);
   return {
     project: dir === "_default" ? DEFAULT_TASK_PROJECT : dir,
     dir,
     title: parsed.title,
     description: parsed.description,
-    path: relativePathInsideScope(scope, entry.path).split(path.sep).join("/"),
+    path: rel,
   };
+}
+
+function boardHasEntry(board: TaskBoardLocation): boolean {
+  return existsSync(path.join(board.boardDir, ENTRY_NAMES.readme))
+    || existsSync(path.join(board.boardDir, ENTRY_NAMES.internal));
+}
+
+/**
+ * Projects of the subject board. `--super` switches that board to the scope directory's
+ * `tasks/`. `--all` also lists every other task board reached under the scope, using the
+ * same id and entry rules as `listProjects`.
+ */
+export async function listProjectsInScope(
+  scopeDirPath: string,
+  options: { all?: boolean; super?: boolean; withComposed?: boolean } = {},
+): Promise<TaskProjectRecord[]> {
+  const invocation = nativeTaskPath(scopeDirPath);
+  const subject = subjectTaskBoard(invocation, { super: options.super === true });
+  const boards = options.all
+    ? [subject, ...await listTaskBoardLocations(invocation, { withComposed: options.withComposed === true })]
+    : [subject];
+  const seenBoards = new Set<string>();
+  const seenProjects = new Set<string>();
+  const projects: TaskProjectRecord[] = [];
+  for (const board of boards) {
+    const boardKey = path.resolve(board.boardDir);
+    if (seenBoards.has(boardKey)) continue;
+    seenBoards.add(boardKey);
+    // A tasks directory with no board entry is not a board yet. Listing must not
+    // throw, and must not create README.md / AGENTS.md for it.
+    if (!boardHasEntry(board)) continue;
+    for (const record of await listProjects(board, createNodeBoardWriter(board))) {
+      const abs = path.resolve(nativeTaskPath(board.scopeDir), record.path);
+      if (seenProjects.has(abs)) continue;
+      seenProjects.add(abs);
+      projects.push({
+        ...record,
+        path: relativePathInsideScope(invocation, abs).split(path.sep).join("/"),
+      });
+    }
+  }
+  return projects;
 }
 
 function projectNodes(target: BoardTarget): NodeService {
@@ -409,7 +467,7 @@ export async function updateProject(
   const node = entry.kind === "readme"
     ? (await service.get(entry.abs, ReadmeNode))!
     : (await service.get(entry.abs, AgentsNode))!;
-  const parsed = parseProjectAgents(node.body);
+  const parsed = parseProjectEntry(node.body, rel);
   const title = patch.title === undefined ? parsed.title : parseProjectTitle(patch.title);
   const description =
     patch.description === undefined

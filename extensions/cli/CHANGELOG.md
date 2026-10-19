@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- `edges tasks project list` 只把看板直接子目录里的合法项目入口算作项目。同一目录有 `AGENTS.md` 时用它，否则用 `README.md`。`tasks/.harness/README.md` 不再被当成项目，命令也不会因此整条失败；以 `AGENTS.md` 为入口的项目会出现在列表里。某个项目的标题或描述不合法时，失败原因里带上该文件路径。
+
 ## [0.2.1] - 2026-10-19
 
 跳过 `0.2.0`：该版本号曾被一次后来拒绝的 `npm stage publish` 占用，npm 不允许再次发布同一版本。GitHub Actions 发布 `@viruspc/edges@0.2.0` 时返回 `E409 Cannot publish over previously staged version "0.2.0"`。本版没有相对那次记录的功能变更。
