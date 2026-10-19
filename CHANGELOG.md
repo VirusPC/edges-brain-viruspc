@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 组合仓库
+
+- **登记组合仓库必须写说明：** `edges compose register` 现在要求 `--description`。不传，或只传空白，命令以校验错误退出（退出码 2，`errorCode` 为 `VALIDATION_ERROR`），不会把缺说明的条目写进作用域 `AGENTS.md`。说明要写清这个仓存什么、什么时候该往里写。操作见 [`edges-compose`](extensions/skills/edges-compose/SKILL.md)（beta，版本 `0.1.0`）。
+
 ### CLI
 
 - **发往 main 的 PR 先做冻结安装：** `.github/workflows/frozen-install.yml` 在 pull request 的目标分支是 main 时，用根 `package.json` 的 `packageManager` 跑与 Deploy 相同的 `pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...`。锁文件和 `.pnpmfile.cjs` 对不上时，在合入前失败。

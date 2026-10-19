@@ -288,11 +288,11 @@ init 管理客户端配置，publish/delete 调用预览服务并返回 JSON。s
 
 ### 组合仓库：compose
 
-作用域 `AGENTS.md` 的 `project-harness-compose` 区块登记被组合的 harness 仓库。每条是一个本地目录链接：链接文字是名字，破折号后面是说明，`remote: <git-url>` 是 clone 用的地址。`register` 不传 `--path` 时，检出目录是 `~/.edges/composed/<name>`，区块按这个以 `~` 开头的形式保存。显式 `--path` 使用传入值。检出就放在 `checkout` 展开后的目录上。
+作用域 `AGENTS.md` 的 `project-harness-compose` 区块登记被组合的 harness 仓库。每条是一个本地目录链接：链接文字是名字，破折号后面是说明，`remote: <git-url>` 是 clone 用的地址。`register` 的 `--description` 必填，要写清这个仓存什么、什么时候该往里写；不传或传空字符串时校验失败，不写区块。`register` 不传 `--path` 时，检出目录是 `~/.edges/composed/<name>`，区块按这个以 `~` 开头的形式保存。显式 `--path` 使用传入值。检出就放在 `checkout` 展开后的目录上。完整操作见 [`edges-compose`](../skills/edges-compose/SKILL.md)。
 
 ```bash
-edges --scope <directory> compose register --name brain --remote https://github.com/example/brain.git --description "个人大脑"
-edges --scope <directory> compose register --name brain --path ../brain --remote https://github.com/example/brain.git
+edges --scope <directory> compose register --name brain --remote https://github.com/example/brain.git --description "个人大脑：只在记跨项目判断时写入"
+edges --scope <directory> compose register --name brain --path ../brain --remote https://github.com/example/brain.git --description "个人大脑：只在记跨项目判断时写入"
 edges --scope <directory> compose list
 edges --scope <directory> compose unregister --name brain
 edges --scope <directory> compose clone
