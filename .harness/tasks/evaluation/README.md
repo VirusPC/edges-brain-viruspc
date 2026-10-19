@@ -12,5 +12,5 @@
 - [evaluation\_cases\_register\_repeatable](<backlog/2026-09-16--evaluation-cases%E7%99%BB%E8%AE%B0%E5%8F%AF%E9%87%8D%E5%A4%8D%E7%94%A8%E4%BE%8B/INDEX.md>) — 在 evaluation/cases 登记可重复 case 定义；冒烟本次只写 reports，cases 另开
 - [edges\_skills\_agent](<backlog/2026-10-11--edges-skills-%E4%B8%8E-Agent-%E5%9B%9E%E5%BD%92%E8%AF%84%E6%B5%8B/INDEX.md>) — 用固定真实任务做回归集，自动检查 Agent 是否按 skill 执行、是否守住 AGENTS.md 硬约束。
 - [locomo\_observation\_trace\_exporter](<backlog/2026-10-19--LoCoMo%E8%B5%B0Observation-TraceExporter/INDEX.md>) — LoCoMo 评测改走 Observation 的 TraceExporter 上报轨迹，调用方不依赖 Langfuse。
-- [retrieval\_eval\_的\_pi\_client\_会跑出被测仓库副本](<backlog/2026-10-19--retrieval-eval-%E7%9A%84-pi-client-%E4%BC%9A%E8%B7%91%E5%87%BA%E8%A2%AB%E6%B5%8B%E4%BB%93%E5%BA%93%E5%89%AF%E6%9C%AC/INDEX.md>) — pi client 没有沙箱，检索时会跑出被测副本，到外层仓库里去搜，样本因此被污染。要让没有沙箱的 client 也只在被测副本里检索。
+- [retrieval\_eval\_的\_pi\_client\_会跑出被测仓库副本](<in_progress/2026-10-19--retrieval-eval-%E7%9A%84-pi-client-%E4%BC%9A%E8%B7%91%E5%87%BA%E8%A2%AB%E6%B5%8B%E4%BB%93%E5%BA%93%E5%89%AF%E6%9C%AC/INDEX.md>) — pi client 没有沙箱，检索时会跑出被测副本，到外层仓库里去搜，样本因此被污染。要让没有沙箱的 client 也只在被测副本里检索。
 <!-- project-entries-local:end -->

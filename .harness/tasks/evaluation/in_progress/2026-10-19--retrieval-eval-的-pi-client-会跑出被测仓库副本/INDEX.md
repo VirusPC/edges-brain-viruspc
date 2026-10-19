@@ -2,9 +2,9 @@
 metadata:
   edges-type: task
   edges-task-project: evaluation
-  edges-updated-at: '2026-10-19T05:27:35.812Z'
+  edges-updated-at: '2026-10-19T05:49:42.508Z'
   edges-title: retrieval eval 的 pi client 会跑出被测仓库副本
-  edges-tasks-status: backlog
+  edges-tasks-status: in_progress
   edges-task-priority: none
 name: retrieval_eval_的_pi_client_会跑出被测仓库副本
 description: pi client 没有沙箱，检索时会跑出被测副本，到外层仓库里去搜，样本因此被污染。要让没有沙箱的 client 也只在被测副本里检索。
