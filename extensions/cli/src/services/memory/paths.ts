@@ -75,7 +75,7 @@ export function rejectLegacy(target: string): void {
       readText(path.join(target, ENTRY_NAMES.internal)).includes("](.memory/"))
   )
     throw new Error(
-      "migration-required: run project-memory-migrate before using this legacy layer",
+      "migration-required: run edges memory migrate --dry-run, then edges memory migrate",
     );
 }
 export function resolveTarget(raw: string): string {

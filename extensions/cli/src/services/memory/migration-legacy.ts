@@ -1,6 +1,6 @@
 /** Legacy syntax is intentionally confined to the explicit migration. */
 import * as fs from "node:fs";
-import { join, basename, extname } from "node:path";
+import { join, basename, dirname, extname } from "node:path";
 import {
   isFile,
   isDirectory,
@@ -35,16 +35,35 @@ export interface LegacyType {
   format: "ordinary" | "skills";
   fields: Record<string, unknown>;
   synthetic: boolean;
+  /** Uppercase root indexes and `<type>_<slug>.md` files, with no type directory. */
+  flatRoot: boolean;
+  flatEntries: string[];
+  assetDirs: { source: string; entry: string }[];
   newName: string;
   relativeTarget: string;
 }
+export interface UnclassifiedLegacy {
+  path: string;
+  kind: "file" | "directory";
+  suggestion: string;
+}
+export interface LegacyInventory extends Array<LegacyType> {
+  unclassified: UnclassifiedLegacy[];
+}
+const FILE_SUGGESTION =
+  "无法按文件名归入 project、feedback、reference、user。平铺条目应是 <type>_<slug>.md，类型索引应是 FEEDBACK.md、PROJECT.md、REFERENCE.md 或 USER.md。此文件会挪到 .project-memory-migration/unclassified/，不阻断其余迁移；确认后改名再运行 edges memory migrate。";
+const DIRECTORY_SUGGESTION =
+  "没有条目用「目录名/」这样的相对路径引用它，不能判断该跟哪一条记忆走。在对应的 <type>_<slug>.md 里写上这个相对路径后，再运行 edges memory migrate。目录会先挪到 .project-memory-migration/unclassified/，不阻断其余迁移。";
 function make(
-  spec: Omit<LegacyType, "newName" | "relativeTarget">,
+  spec: Omit<LegacyType, "newName" | "relativeTarget" | "flatRoot" | "flatEntries" | "assetDirs">,
 ): LegacyType {
   const newName = RENAMES[spec.name] ?? spec.name;
   return {
     ...spec,
     newName,
+    flatRoot: false,
+    flatEntries: [],
+    assetDirs: [],
     relativeTarget: join(
       ".harness",
       spec.module,
@@ -60,16 +79,65 @@ function metadata(text: string): Record<string, unknown> {
   )?.[1];
   return body ? (parseDocument(`---\n${body}---\n`).metadata ?? {}) : {};
 }
-export function parseLegacy(scope: string): LegacyType[] {
+const PLURAL_DIRS = new Set(Object.values(BUILTINS));
+function looksLikeTypeDirectory(path: string, name: string): boolean {
+  if (isFile(join(path, AGENTS_FILE_NAME))) return true;
+  if (PLURAL_DIRS.has(name) || name in BUILTINS) return true;
+  const types = Object.keys(BUILTINS);
+  return fs.readdirSync(path).some(
+    (child) => isFile(join(path, child)) && flatTypeOf(child, types) !== undefined,
+  );
+}
+function flatTypeOf(file: string, types: readonly string[]): string | undefined {
+  const ordered = [...types].sort((a, b) => b.length - a.length);
+  for (const type of ordered) {
+    const prefix = `${type}_`;
+    if (file.startsWith(prefix) && file.endsWith(".md") && file.length > prefix.length + 3)
+      return type;
+  }
+  return undefined;
+}
+function referencesAsset(text: string, dirName: string): boolean {
+  return text.includes(`${dirName}/`) || text.includes(`(${dirName})`);
+}
+function entryTexts(spec: LegacyType): { path: string; text: string }[] {
+  const found: { path: string; text: string }[] = [];
+  const add = (path: string) => {
+    try {
+      found.push({ path, text: readText(path) });
+    } catch {
+      /* unreadable entries cannot claim an asset directory */
+    }
+  };
+  for (const path of spec.flatEntries) add(path);
+  if (isDirectory(spec.directory))
+    for (const name of fs.readdirSync(spec.directory)) {
+      const path = join(spec.directory, name);
+      if (isFile(path) && name.startsWith(`${spec.name}_`) && name.endsWith(".md"))
+        add(path);
+    }
+  return found;
+}
+export function parseLegacy(
+  scope: string,
+  options: { strictUnclassified?: boolean } = {},
+): LegacyInventory {
   const memory = join(scope, ".memory");
   if (isSymlink(memory)) throw new Error("legacy-memory-is-symlink");
   if (!isDirectory(memory)) throw new Error("legacy-memory-is-not-directory");
   const groups = new Map<string, LegacyType>();
+  const flatCandidates: string[] = [];
+  const looseDirs: string[] = [];
+  const unclassified: UnclassifiedLegacy[] = [];
   for (const file of fs.readdirSync(memory).sort()) {
     const path = join(memory, file);
     if (isSymlink(path)) throw new Error(`legacy-type-is-symlink: ${path}`);
     let candidates: string[], guessed: string;
     if (isDirectory(path)) {
+      if (!looksLikeTypeDirectory(path, file)) {
+        looseDirs.push(path);
+        continue;
+      }
       candidates = isFile(join(path, AGENTS_FILE_NAME))
         ? [join(path, AGENTS_FILE_NAME)]
         : [];
@@ -77,15 +145,21 @@ export function parseLegacy(scope: string): LegacyType[] {
     } else if (/^[A-Z][A-Z0-9_]*\.md$/.test(file)) {
       candidates = [path];
       guessed = basename(path, extname(path)).toLowerCase();
-    } else throw new Error(`unclassified-legacy-path: ${path}`);
+    } else if (/^[a-z].+_.+\.md$/.test(file)) {
+      flatCandidates.push(path);
+      continue;
+    } else {
+      unclassified.push({ path, kind: "file", suggestion: FILE_SUGGESTION });
+      continue;
+    }
     for (const index of candidates) {
       if (isSymlink(index))
         throw new Error(`legacy-index-is-symlink: ${index}`);
       const text = readText(index);
-      if (
-        !text.includes("<!-- project-memory-entries:start -->") ||
-        !text.includes("<!-- project-memory-entries:end -->")
-      )
+      const hasEntries =
+        text.includes("<!-- project-memory-entries:start -->") &&
+        text.includes("<!-- project-memory-entries:end -->");
+      if (!hasEntries && !(guessed in BUILTINS))
         throw new Error(`missing-entry-block: ${index}`);
       const fields = metadata(text),
         name = String(fields.name ?? guessed);
@@ -205,10 +279,75 @@ export function parseLegacy(scope: string): LegacyType[] {
             synthetic: false,
           }),
         );
-      else throw new Error(`missing-type-index: ${path}`);
+      else if (looksLikeTypeDirectory(path, name))
+        throw new Error(`missing-type-index: ${path}`);
     }
   }
-  return [...groups.values()];
+  const knownTypes = [...new Set([...Object.keys(BUILTINS), ...groups.keys()])];
+  for (const path of flatCandidates) {
+    const type = flatTypeOf(basename(path), knownTypes);
+    if (type && type in BUILTINS && !groups.has(type))
+      groups.set(
+        type,
+        make({
+          name: type,
+          directory: join(memory, BUILTINS[type]!),
+          indexes: [],
+          module: type in RENAMES ? "skills" : "memory",
+          private: type === "user",
+          writable: type !== "agent_skills",
+          format: type in RENAMES ? "skills" : "ordinary",
+          fields: {},
+          synthetic: true,
+        }),
+      );
+    const spec = type ? groups.get(type) : undefined;
+    if (!spec) {
+      unclassified.push({ path, kind: "file", suggestion: FILE_SUGGESTION });
+      continue;
+    }
+    if (!spec.flatEntries.includes(path)) spec.flatEntries.push(path);
+  }
+  for (const spec of groups.values()) {
+    const indexesAtRoot =
+      spec.indexes.length === 0 ||
+      spec.indexes.every((index) => dirname(index) === memory);
+    spec.flatRoot = !isDirectory(spec.directory) && indexesAtRoot;
+    if (spec.flatRoot && spec.indexes.length === 0 && spec.flatEntries.length) {
+      spec.indexes.push(join(memory, `${spec.name.toUpperCase()}.md`));
+      spec.synthetic = true;
+    }
+  }
+  for (const path of looseDirs) {
+    const dirName = basename(path);
+    const hits: { spec: LegacyType; entry: string }[] = [];
+    for (const spec of groups.values())
+      for (const entry of entryTexts(spec))
+        if (referencesAsset(entry.text, dirName))
+          hits.push({ spec, entry: entry.path });
+    const entries = [...new Set(hits.map((hit) => hit.entry))];
+    if (entries.length === 1) {
+      hits[0]!.spec.assetDirs.push({ source: path, entry: entries[0]! });
+      continue;
+    }
+    unclassified.push({
+      path,
+      kind: "directory",
+      suggestion:
+        entries.length > 1
+          ? `被这些条目同时引用：${entries.map((entry) => basename(entry)).join("、")}。一次只跟着一个条目迁移。请改成单一引用后再运行 edges memory migrate。目录会先挪到 .project-memory-migration/unclassified/，不阻断其余迁移。`
+          : DIRECTORY_SUGGESTION,
+    });
+  }
+  if ((options.strictUnclassified ?? true) && unclassified.length)
+    throw new Error(
+      `unclassified-legacy-path:\n${unclassified
+        .map((item) => `${item.path}\n  ${item.suggestion}`)
+        .join("\n")}`,
+    );
+  const result = [...groups.values()] as LegacyInventory;
+  result.unclassified = unclassified;
+  return result;
 }
 export function convertIndex(text: string, spec: LegacyType): string {
   const values = {

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- `edges init` 在旧 `.memory` 上的 `migration-required` 改为提示 `edges memory migrate --dry-run`，然后再执行 `edges memory migrate`。
+- `edges memory migrate` 能迁移早期平铺布局：大写类型索引、`project_` / `feedback_` / `reference_` / `user_<slug>.md`，以及被条目相对路径引用的附件目录，目标是 `.harness/memory/<plural>/README.md` 与 `<type>_<slug>/INDEX.md`。无法归类的路径在 `--dry-run` 和正式结果里列全，正式迁移时挪到 `.project-memory-migration/unclassified/`，不因其中一个文件失败。平铺层 `AGENTS.md` 的旧 `project-memory` 标记改写为 `project-harness`。
+
 ## [0.2.1] - 2026-10-19
 
 跳过 `0.2.0`：该版本号曾被一次后来拒绝的 `npm stage publish` 占用，npm 不允许再次发布同一版本。GitHub Actions 发布 `@viruspc/edges@0.2.0` 时返回 `E409 Cannot publish over previously staged version "0.2.0"`。本版没有相对那次记录的功能变更。
