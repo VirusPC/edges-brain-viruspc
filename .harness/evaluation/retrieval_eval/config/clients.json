@@ -2,6 +2,9 @@
   "codex": {
     "command": "codex",
     "sandbox": "read-only",
-    "timeout_seconds": 600
+    "timeout_seconds": 600,
+    "reasoning_summary": "detailed",
+    "reasoning_effort": "high",
+    "show_raw_reasoning": true
   }
 }

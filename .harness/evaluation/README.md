@@ -82,7 +82,7 @@ Retrieval smoke prints the clone and `codex exec` commands without running them:
 python3 .harness/evaluation/retrieval_eval/run.py print-command
 ```
 
-A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harness/evaluation/.cache/` (gitignored), then runs `codex exec --json` once per sample. The report lands in [`reports/`](reports/README.md) and is an Evaluation Smoke, not a Benchmark Proof.
+A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harness/evaluation/.cache/` (gitignored), then runs `codex exec --json` once per sample. The default `codex` client also passes `-c model_reasoning_summary=detailed`, `-c show_raw_agent_reasoning=true`, and `-c model_reasoning_effort=high`, so the event stream includes `reasoning` items. Those three settings are written on the report and on the Langfuse root span (`reasoning_summary`, `reasoning_effort`, `show_raw_reasoning`) so runs with different effort are not compared silently. Change them in [`retrieval_eval/config/clients.json`](retrieval_eval/config/clients.json). The report lands in [`reports/`](reports/README.md) and is an Evaluation Smoke, not a Benchmark Proof.
 
 ```bash
 python3 .harness/evaluation/retrieval_eval/run.py run

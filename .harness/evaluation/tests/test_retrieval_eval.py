@@ -30,6 +30,7 @@ from retrieval_eval.client import (
 from retrieval_eval.config import Client, load_cells, load_samples
 from retrieval_eval.git_repo import sync_clone
 from retrieval_eval.langfuse_otlp import make_session_id, session_id_for_run, session_label, upload_sample_trace
+from retrieval_eval.report import write_report
 from retrieval_eval.run import record_scored_sample, write_sample_trace
 from retrieval_eval.score import aggregate, parse_clusters, score_prediction
 
@@ -52,6 +53,9 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(cell.repository.ref, "main")
         self.assertEqual(cell.client.command, "codex")
         self.assertEqual(cell.client.sandbox, "read-only")
+        self.assertEqual(cell.client.reasoning_summary, "detailed")
+        self.assertEqual(cell.client.reasoning_effort, "high")
+        self.assertIs(cell.client.show_raw_reasoning, True)
         self.assertEqual(cell.sample_id, "retrieval-smoke/edges")
         samples = load_samples(cell.sample_path)
         self.assertEqual(len(samples), 6)
@@ -67,6 +71,9 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("codex exec", completed.stdout)
         self.assertIn("--json", completed.stdout)
         self.assertIn("--sandbox read-only", completed.stdout)
+        self.assertIn("-c model_reasoning_summary=detailed", completed.stdout)
+        self.assertIn("-c show_raw_agent_reasoning=true", completed.stdout)
+        self.assertIn("-c model_reasoning_effort=high", completed.stdout)
         self.assertNotIn(".git/config", completed.stdout)
 
 
@@ -130,6 +137,60 @@ class ClientTests(unittest.TestCase):
         self.assertIn("--ephemeral", command)
         self.assertLess(command.index("--json"), command.index("--sandbox"))
         self.assertEqual(command[-2], "/tmp/last.txt")
+        self.assertEqual(
+            command[command.index("--skip-git-repo-check") + 1 : command.index("-C")],
+            [
+                "-c",
+                "model_reasoning_summary=detailed",
+                "-c",
+                "show_raw_agent_reasoning=true",
+                "-c",
+                "model_reasoning_effort=high",
+            ],
+        )
+
+    def test_command_omits_reasoning_flags_when_unset(self) -> None:
+        command = codex_command(
+            Client(id="bare", command="codex", sandbox="read-only", timeout_seconds=5),
+            Path("/tmp/repo"),
+            "问题",
+            Path("/tmp/last.txt"),
+        )
+        self.assertNotIn("-c", command)
+        self.assertEqual(command[-1], "问题")
+
+    def test_report_records_reasoning_settings(self) -> None:
+        payload = {
+            "cell_id": "edges__codex__retrieval-smoke_edges",
+            "repository": {
+                "url": "https://github.com/VirusPC/edges.git",
+                "ref": "main",
+                "commit": "abc",
+            },
+            "client": "codex",
+            "sample_id": "retrieval-smoke/edges",
+            "reasoning": {"summary": "detailed", "effort": "high", "show_raw": True},
+            "aggregate": {
+                "macro": {
+                    "R@5": 1.0,
+                    "P@5": 0.2,
+                    "nDCG@5": 1.0,
+                    "MAP@5": 1.0,
+                    "MRR": 1.0,
+                    "Hit@5": 1.0,
+                    "score": 1.0,
+                }
+            },
+            "samples": [{"id": "s1", "score": 1.0, "grade": "good", "predicted": ["a"]}],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            json_path, md_path = write_report(Path(tmp) / "report", payload)
+            saved = json.loads(json_path.read_text(encoding="utf-8"))
+            markdown = md_path.read_text(encoding="utf-8")
+        self.assertEqual(saved["reasoning"], payload["reasoning"])
+        self.assertIn("summary=`detailed`", markdown)
+        self.assertIn("effort=`high`", markdown)
+        self.assertIn("show_raw=`true`", markdown)
 
     def test_jsonl_fallback_uses_last_agent_message(self) -> None:
         """A missing -o file must not score JSON embedded in command output."""
@@ -702,6 +763,52 @@ class LangfuseUploadTests(unittest.TestCase):
             self.assertEqual(spans[0]["langfuse.trace.metadata.score"], "1.0" if sample_id == "s1" else "0.0")
             self.assertNotIn("langfuse.trace.metadata.score", child)
         self.assertEqual(len(trace_ids), 2)
+
+    def test_reasoning_item_text_is_span_output(self) -> None:
+        events = json.dumps(
+            {
+                "type": "item.completed",
+                "item": {"id": "item_1", "type": "reasoning", "text": "先比较 ADR 0008"},
+            }
+        )
+        capture = _Capture()
+        result = upload_sample_trace(
+            events_jsonl=events,
+            cell_id="cell-1",
+            sample_id="s1",
+            client_id="codex",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="问题",
+            score_row={"score": 1.0, "predicted": ["a"]},
+            session_id="retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12",
+            reasoning=Client(
+                id="codex",
+                command="codex",
+                sandbox="read-only",
+                timeout_seconds=600,
+                reasoning_summary="detailed",
+                reasoning_effort="high",
+                show_raw_reasoning=True,
+            ).reasoning_metadata(),
+            environ={
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        )
+        self.assertEqual(result.status, "sent")
+        spans = _span_attributes(json.loads(capture.requests[0].data.decode("utf-8")))
+        reasoning = next(span for span in spans if span["name"] == "reasoning")
+        self.assertEqual(reasoning["langfuse.observation.output"], "先比较 ADR 0008")
+        self.assertNotIn("langfuse.trace.metadata.reasoning_effort", reasoning)
+        root = spans[0]
+        self.assertEqual(root["langfuse.trace.metadata.reasoning_summary"], "detailed")
+        self.assertEqual(root["langfuse.trace.metadata.reasoning_effort"], "high")
+        self.assertEqual(root["langfuse.trace.metadata.show_raw_reasoning"], "true")
 
 
 def request_user_agent(request) -> str | None:

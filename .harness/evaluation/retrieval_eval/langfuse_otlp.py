@@ -100,6 +100,7 @@ def upload_sample_trace(
     prompt: str,
     score_row: Mapping[str, Any],
     session_id: str | None = None,
+    reasoning: Mapping[str, str] | None = None,
     environ: Mapping[str, str] | None = None,
     opener: Opener | None = None,
 ) -> UploadResult:
@@ -120,6 +121,7 @@ def upload_sample_trace(
         prompt=prompt,
         score_row=score_row,
         session_id=session_id,
+        reasoning=reasoning,
     )
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     token = base64.b64encode(f"{public_key}:{secret_key}".encode()).decode("ascii")
@@ -188,6 +190,7 @@ def _build_payload(
     prompt: str,
     score_row: Mapping[str, Any],
     session_id: str | None = None,
+    reasoning: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     trace_id = secrets.token_hex(16)
     root_id = secrets.token_hex(8)
@@ -221,6 +224,7 @@ def _build_payload(
         _string("langfuse.trace.metadata.precision_at_5", _number_text(score_row.get("P@5"))),
         _string("langfuse.trace.metadata.ndcg_at_5", _number_text(score_row.get("nDCG@5"))),
         _string("langfuse.trace.metadata.parse_error", _optional_text(score_row.get("parse_error"))),
+        *_reasoning_metadata(reasoning),
     ]
     root = _span(
         name=f"retrieval-eval {sample_id}",
@@ -244,6 +248,17 @@ def _build_payload(
             }
         ]
     }
+
+
+def _reasoning_metadata(reasoning: Mapping[str, str] | None) -> list[dict[str, Any] | None]:
+    """Root-only. Children keep their own output and do not repeat the effort."""
+    if not reasoning:
+        return []
+    return [
+        _string(f"langfuse.trace.metadata.{key}", _blank(value))
+        for key, value in reasoning.items()
+        if isinstance(key, str)
+    ]
 
 
 def _shared_attributes(

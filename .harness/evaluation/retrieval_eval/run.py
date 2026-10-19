@@ -62,6 +62,7 @@ def record_scored_sample(
     repository_ref: str | None,
     repository_commit: str | None,
     session_id: str | None = None,
+    reasoning: Mapping[str, str] | None = None,
     environ: Mapping[str, str] | None = None,
     opener: Any = None,
 ) -> dict[str, Any]:
@@ -86,6 +87,7 @@ def record_scored_sample(
             prompt=sample["prompt"],
             score_row=row,
             session_id=session_id,
+            reasoning=reasoning,
             environ=environ,
             opener=opener,
         )
@@ -158,6 +160,7 @@ def _run_cell(cell: Cell, reports_dir: Path, stamp: str, session_id: str) -> dic
             repository_ref=cell.repository.ref,
             repository_commit=commit,
             session_id=session_id,
+            reasoning=cell.client.reasoning_metadata(),
         )
         scored.append(row)
     payload = {
@@ -170,6 +173,7 @@ def _run_cell(cell: Cell, reports_dir: Path, stamp: str, session_id: str) -> dic
             "commit": commit,
         },
         "client": cell.client.id,
+        "reasoning": cell.client.reasoning_record(),
         "sample_id": cell.sample_id,
         "samples": scored,
         "aggregate": aggregate(scored),

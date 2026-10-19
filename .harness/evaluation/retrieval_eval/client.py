@@ -52,6 +52,9 @@ def codex_command(
     last_message_path: Path,
 ) -> list[str]:
     """Non-interactive client command. The sandbox stays read-only unless configured otherwise."""
+    config_args: list[str] = []
+    for override in client.codex_config_overrides():
+        config_args.extend(["-c", override])
     return [
         client.command,
         "exec",
@@ -60,6 +63,7 @@ def codex_command(
         "--sandbox",
         client.sandbox,
         "--skip-git-repo-check",
+        *config_args,
         "-C",
         str(repo_dir),
         "-o",

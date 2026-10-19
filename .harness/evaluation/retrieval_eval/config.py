@@ -29,6 +29,39 @@ class Client:
     command: str
     sandbox: str
     timeout_seconds: int
+    reasoning_summary: str | None = None
+    reasoning_effort: str | None = None
+    show_raw_reasoning: bool | None = None
+
+    def codex_config_overrides(self) -> list[str]:
+        """`key=value` pairs for `codex exec -c`. Empty when reasoning is unset."""
+        overrides: list[str] = []
+        if self.reasoning_summary:
+            overrides.append(f"model_reasoning_summary={self.reasoning_summary}")
+        if self.show_raw_reasoning is not None:
+            flag = "true" if self.show_raw_reasoning else "false"
+            overrides.append(f"show_raw_agent_reasoning={flag}")
+        if self.reasoning_effort:
+            overrides.append(f"model_reasoning_effort={self.reasoning_effort}")
+        return overrides
+
+    def reasoning_metadata(self) -> dict[str, str]:
+        """Langfuse root-span metadata. Omitted keys were not set."""
+        metadata: dict[str, str] = {}
+        if self.reasoning_summary:
+            metadata["reasoning_summary"] = self.reasoning_summary
+        if self.reasoning_effort:
+            metadata["reasoning_effort"] = self.reasoning_effort
+        if self.show_raw_reasoning is not None:
+            metadata["show_raw_reasoning"] = "true" if self.show_raw_reasoning else "false"
+        return metadata
+
+    def reasoning_record(self) -> dict[str, str | bool | None]:
+        return {
+            "summary": self.reasoning_summary,
+            "effort": self.reasoning_effort,
+            "show_raw": self.show_raw_reasoning,
+        }
 
 
 @dataclass(frozen=True)
@@ -140,6 +173,9 @@ def _load_clients(path: Path) -> dict[str, Client]:
             command=_required_str(body, "command", client_id),
             sandbox=_required_str(body, "sandbox", client_id),
             timeout_seconds=timeout,
+            reasoning_summary=_optional_token(body, "reasoning_summary", client_id),
+            reasoning_effort=_optional_token(body, "reasoning_effort", client_id),
+            show_raw_reasoning=_optional_bool(body, "show_raw_reasoning", client_id),
         )
     return clients
 
@@ -171,6 +207,27 @@ def _read_json(path: Path) -> Any:
     if not path.is_file():
         raise ConfigError(f"file not found: {path}")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _optional_token(body: dict[str, Any], key: str, where: str) -> str | None:
+    if key not in body or body[key] is None:
+        return None
+    value = body[key]
+    if not isinstance(value, str) or not value.strip():
+        raise ConfigError(f"{where}.{key} must be a non-empty string")
+    token = value.strip()
+    if "=" in token or any(char.isspace() for char in token):
+        raise ConfigError(f"{where}.{key} must be a single token")
+    return token
+
+
+def _optional_bool(body: dict[str, Any], key: str, where: str) -> bool | None:
+    if key not in body or body[key] is None:
+        return None
+    value = body[key]
+    if not isinstance(value, bool):
+        raise ConfigError(f"{where}.{key} must be a boolean")
+    return value
 
 
 def _required_str(body: dict[str, Any], key: str, where: str) -> str:
