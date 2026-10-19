@@ -7,9 +7,11 @@ and stderr beside it as `<sample_id>.stderr.txt`. Both are gitignored.
 Scoring reads `<sample_id>.last.txt`, the file passed to `-o`.
 When `LANGFUSE_HOST` (or `LANGFUSE_BASE_URL`), `LANGFUSE_PUBLIC_KEY`, and
 `LANGFUSE_SECRET_KEY` are all set, each scored sample is also POSTed as OTLP
-JSON to `$LANGFUSE_HOST/api/public/otel/v1/traces`. Missing env or a failed
-upload does not change the score. The instance origin and keys stay out of
-the repo and out of `reports/`.
+JSON to `$LANGFUSE_HOST/api/public/otel/v1/traces`. One `run` shares a Langfuse
+session id `retrieval/{sample set}:{repository}:{client}/{stamp}/{4 hex}`
+(multiple cells joined with `+`). Each sample stays its own trace. Missing
+env or a failed upload does not change the score. The instance origin and
+keys stay out of the repo and out of `reports/`.
 
     python3 .harness/evaluation/retrieval_eval/run.py print-command
     python3 .harness/evaluation/retrieval_eval/run.py run
@@ -33,7 +35,7 @@ if str(_EVAL_DIR) not in sys.path:
 from retrieval_eval.client import ClientCall, build_prompt, codex_command, run_client
 from retrieval_eval.config import DEFAULT_CONFIG, Cell, load_cells, load_samples
 from retrieval_eval.git_repo import cache_dir, sync_clone
-from retrieval_eval.langfuse_otlp import UploadResult, upload_sample_trace
+from retrieval_eval.langfuse_otlp import UploadResult, session_id_for_run, upload_sample_trace
 from retrieval_eval.report import write_report
 from retrieval_eval.score import aggregate, score_prediction
 
@@ -59,6 +61,7 @@ def record_scored_sample(
     repository_url: str,
     repository_ref: str | None,
     repository_commit: str | None,
+    session_id: str | None = None,
     environ: Mapping[str, str] | None = None,
     opener: Any = None,
 ) -> dict[str, Any]:
@@ -82,6 +85,7 @@ def record_scored_sample(
             repository_commit=repository_commit,
             prompt=sample["prompt"],
             score_row=row,
+            session_id=session_id,
             environ=environ,
             opener=opener,
         )
@@ -124,12 +128,16 @@ def run_cells(cells: Sequence[Cell], reports_dir: Path = REPORTS_DIR) -> list[di
     """Clone, query the client, score, and write one report per cell."""
     payloads = []
     stamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
+    session_id = session_id_for_run(
+        [(cell.sample_id, cell.repository.id, cell.client.id) for cell in cells],
+        stamp,
+    )
     for cell in cells:
-        payloads.append(_run_cell(cell, reports_dir, stamp))
+        payloads.append(_run_cell(cell, reports_dir, stamp, session_id))
     return payloads
 
 
-def _run_cell(cell: Cell, reports_dir: Path, stamp: str) -> dict[str, Any]:
+def _run_cell(cell: Cell, reports_dir: Path, stamp: str, session_id: str) -> dict[str, Any]:
     dest = cache_dir(CACHE_ROOT, cell.repository.id, cell.repository.ref)
     commit = sync_clone(cell.repository.url, cell.repository.ref, dest)
     samples = load_samples(cell.sample_path)
@@ -149,6 +157,7 @@ def _run_cell(cell: Cell, reports_dir: Path, stamp: str) -> dict[str, Any]:
             repository_url=cell.repository.url,
             repository_ref=cell.repository.ref,
             repository_commit=commit,
+            session_id=session_id,
         )
         scored.append(row)
     payload = {

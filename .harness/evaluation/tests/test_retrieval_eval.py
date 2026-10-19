@@ -29,7 +29,7 @@ from retrieval_eval.client import (
 )
 from retrieval_eval.config import Client, load_cells, load_samples
 from retrieval_eval.git_repo import sync_clone
-from retrieval_eval.langfuse_otlp import upload_sample_trace
+from retrieval_eval.langfuse_otlp import make_session_id, session_id_for_run, session_label, upload_sample_trace
 from retrieval_eval.run import record_scored_sample, write_sample_trace
 from retrieval_eval.score import aggregate, parse_clusters, score_prediction
 
@@ -564,6 +564,7 @@ class LangfuseUploadTests(unittest.TestCase):
                     repository_url="https://github.com/VirusPC/edges.git",
                     repository_ref="main",
                     repository_commit="abc",
+                    session_id="retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12",
                     environ={
                         "LANGFUSE_HOST": "https://langfuse.example",
                         "LANGFUSE_PUBLIC_KEY": "pk",
@@ -580,6 +581,131 @@ class LangfuseUploadTests(unittest.TestCase):
             )
             payload = json.loads(capture.requests[0].data.decode("utf-8"))
             self.assertIn("1.0", json.dumps(payload))
+            child = next(span for span in _span_attributes(payload) if span["name"] == "rg CONTEXT")
+            self.assertEqual(
+                child["langfuse.session.id"],
+                "retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12",
+            )
+
+    def test_session_id_names_suite_stamp_and_suffix(self) -> None:
+        self.assertEqual(
+            session_label("retrieval-smoke/edges", "edges", "codex"),
+            "retrieval-smoke:edges:codex",
+        )
+        self.assertEqual(
+            session_label("retrieval-smoke/other", "edges", "codex"),
+            "retrieval-smoke:other:edges:codex",
+        )
+        self.assertEqual(
+            session_id_for_run(
+                [("retrieval-smoke/edges", "edges", "codex")],
+                "2026-10-19-021500",
+                suffix="ab12",
+            ),
+            "retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12",
+        )
+        self.assertEqual(
+            session_id_for_run(
+                [
+                    ("retrieval-smoke/edges", "edges", "codex"),
+                    ("retrieval-smoke/edges", "edges", "codex"),
+                    ("other-suite/repo", "repo", "codex"),
+                ],
+                "2026-10-19-021500",
+                suffix="ab12",
+            ),
+            "retrieval/retrieval-smoke:edges:codex+other-suite:repo:codex/2026-10-19-021500/ab12",
+        )
+        generated = make_session_id(["retrieval-smoke:edges:codex"], "2026-10-19-021500")
+        self.assertRegex(
+            generated,
+            r"^retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/[0-9a-f]{4}$",
+        )
+
+    def test_session_attributes_are_on_every_span(self) -> None:
+        session_id = "retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12"
+        events = (
+            json.dumps(
+                {
+                    "type": "thread.started",
+                    "thread_id": "thread-1",
+                    "model": "gpt-5.4",
+                    "cli_version": "0.98.0",
+                }
+            )
+            + "\n"
+            + _events()
+        )
+        capture = _Capture()
+        first = upload_sample_trace(
+            events_jsonl=events,
+            cell_id="cell-1",
+            sample_id="s1",
+            client_id="codex",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="问题",
+            score_row={"score": 1.0, "grade": "good", "predicted": ["a"]},
+            session_id=session_id,
+            environ={
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        )
+        second = upload_sample_trace(
+            events_jsonl=events,
+            cell_id="cell-1",
+            sample_id="s2",
+            client_id="codex",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="另一题",
+            score_row={"score": 0.0, "predicted": []},
+            session_id=session_id,
+            environ={
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        )
+        self.assertEqual(first.status, "sent")
+        self.assertEqual(second.status, "sent")
+        payloads = [json.loads(request.data.decode("utf-8")) for request in capture.requests]
+        trace_ids = set()
+        for payload, sample_id in zip(payloads, ("s1", "s2")):
+            spans = _span_attributes(payload)
+            self.assertGreaterEqual(len(spans), 2)
+            self.assertEqual(request_user_agent(capture.requests[0]), "edges-retrieval-eval/1")
+            for span in spans:
+                trace_ids.add(span["traceId"])
+                self.assertEqual(span["langfuse.session.id"], session_id)
+                self.assertEqual(span["session.id"], session_id)
+                self.assertEqual(span["langfuse.trace.name"], f"retrieval-eval {sample_id}")
+                self.assertEqual(span["langfuse.user.id"], "codex")
+                self.assertEqual(span["langfuse.trace.metadata.cell_id"], "cell-1")
+                self.assertEqual(span["langfuse.trace.metadata.sample_id"], sample_id)
+                self.assertEqual(span["langfuse.trace.metadata.client_id"], "codex")
+                self.assertEqual(span["langfuse.trace.metadata.repository_id"], "edges")
+                self.assertEqual(span["langfuse.trace.metadata.repository_url"], "https://github.com/VirusPC/edges.git")
+                self.assertEqual(span["langfuse.trace.metadata.repository_ref"], "main")
+                self.assertEqual(span["langfuse.trace.metadata.repository_commit"], "abc")
+                self.assertEqual(span["langfuse.trace.metadata.model"], "gpt-5.4")
+                self.assertEqual(span["langfuse.trace.metadata.codex_version"], "0.98.0")
+            child = next(span for span in spans if span["name"] == "rg CONTEXT")
+            self.assertEqual(spans[0]["langfuse.trace.metadata.score"], "1.0" if sample_id == "s1" else "0.0")
+            self.assertNotIn("langfuse.trace.metadata.score", child)
+        self.assertEqual(len(trace_ids), 2)
+
+
+def request_user_agent(request) -> str | None:
+    return request.get_header("User-agent")
 
 
 class CloneTests(unittest.TestCase):

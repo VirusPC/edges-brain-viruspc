@@ -96,6 +96,8 @@ python3 .harness/evaluation/retrieval_eval/run.py run
 
 可选：三个环境变量都设置时，每个样本打分后会把这份事件流用 OTLP POST 到 `$LANGFUSE_HOST/api/public/otel/v1/traces`（Basic auth，与 [`observation/smoke/langfuse-otlp-smoke.sh`](../observation/smoke/langfuse-otlp-smoke.sh) 相同）。变量是 `LANGFUSE_HOST`（未设置时用 `LANGFUSE_BASE_URL`）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。缺任何一个就跳过；上传失败也不影响打分。密钥和实例域名不要写进仓库，轨迹也不进 `reports/`。
 
+同一次 `run` 在 Langfuse 里共用一个 session，每个样本仍是一条 trace。session id 是 `retrieval/{样本集}:{仓库}:{client}/{时间戳}/{4位hex}`，不是单独的时间戳。样本集路径里的 `/` 写成 `:`；仓库 id 若已是样本集最后一段就不再重复。多个 cell 用 `+` 连起来。例如 `retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12`。事件流里若已有 `model` 或 `cli_version`，会抄到每条 span；不会再跑 `codex --version`。
+
 Official-path tests (no API key):
 
 ```bash

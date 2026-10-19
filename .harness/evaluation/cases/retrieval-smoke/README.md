@@ -6,4 +6,4 @@
 
 - [`edges.json`](edges.json)
 
-跑法见 [`../../retrieval_eval/run.py`](../../retrieval_eval/run.py)。`print-command` 只打印命令；`run` 会克隆仓库并调用本机 `codex exec --json`。每个样本的事件流在 `.harness/evaluation/.cache/retrieval/sessions/<时间戳>/<cell_id>/<样本 id>.events.jsonl`（gitignore），不写进报告。若同时设置了 `LANGFUSE_HOST`、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`，打分后会按 observation smoke 的 OTLP 路径可选上传；缺变量或上传失败都不影响分数。
+跑法见 [`../../retrieval_eval/run.py`](../../retrieval_eval/run.py)。`print-command` 只打印命令；`run` 会克隆仓库并调用本机 `codex exec --json`。每个样本的事件流在 `.harness/evaluation/.cache/retrieval/sessions/<时间戳>/<cell_id>/<样本 id>.events.jsonl`（gitignore），不写进报告。若同时设置了 `LANGFUSE_HOST`、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`，打分后会按 observation smoke 的 OTLP 路径可选上传；缺变量或上传失败都不影响分数。同一次 `run` 共用 session id `retrieval/{样本集}:{仓库}:{client}/{时间戳}/{4位hex}`，每个样本仍是一条 trace。
