@@ -95,7 +95,13 @@ python3 .harness/evaluation/retrieval_eval/run.py print-command --client pi --sa
 MINIMAX_API_KEY=... python3 .harness/evaluation/retrieval_eval/run.py run --client pi --samples retrieval-smoke/edges-one
 ```
 
-`retrieval-smoke/edges-one` 只有 `edges_smoke_0008`。`pi` 的 provider / model 是 `minimax-cn` / `MiniMax-M3`，thinking 是 `high`，工具是 `read,grep,find,ls,bash`。命令是最小内核：`--mode json --no-session -ne -ns -np -nc --no-themes --no-mcp -na --offline`，工作目录是克隆下来的仓库，stdin 关闭。没有 sandbox，也没有 `-o` 和 max-turns，只靠 `timeout_seconds`（默认 600）。`clients.json` 里 `MINIMAX_CN_API_KEY` 写成 `$MINIMAX_API_KEY`，运行时从进程环境展开；变量缺失则该样本记 `parse_error`，错误里只有变量名。`PI_TELEMETRY` 固定为 `0`。每次运行另建一个空的临时 `PI_CODING_AGENT_DIR`，结束后删除。认证失败时退出码仍可能是 0，最后一条 assistant `message_end` 的 `stopReason` 为 `error` 或 `aborted` 时记为失败。`pi --version` 的第一行写入 trace metadata `client_version`。
+`retrieval-smoke/edges-one` 只有 `edges_smoke_0008`。`pi` 的 provider / model 是 `minimax-cn` / `MiniMax-M3`，thinking 是 `high`。不传 `--tools`，用 pi 的默认工具 `read`、`bash`、`edit`、`write`。命令是 `--mode json --no-session -ns -np -nc --no-themes --no-mcp -na --offline`，工作目录是克隆下来的仓库，stdin 关闭。没有 `-o` 和 max-turns，只靠 `timeout_seconds`（默认 600）。Codex 的命令和沙箱不变。
+
+每次运行另建一个临时 `PI_CODING_AGENT_DIR`。先写入只含 `{"filesystem":{"allowRead":["."]}}` 的 `sandbox.json`，再执行 `pi install npm:pi-sandbox --no-approve`，然后才跑上面的命令。不传 `-ne`，装进这个目录的包才会被加载；`--no-approve` 仍忽略项目里的 `.pi`。结束后删除该目录。沙箱只收窄这一处，其余用 [pi-sandbox](https://github.com/carderne/pi-sandbox) 的默认值。见 [ADR 0039](../../docs/adr/0039-pi-client-sandbox-read-scope.md)。插件默认 `denyRead` 是 `/home` 和 `/Users`。bash 的文件系统是整盘只读挂载，再按 `denyRead` 挡住，`allowRead` 只在被挡住的区域里重新放开。副本落在 `/home` 或 `/Users` 下时，副本外的读取会被挡住。副本若在这两棵目录之外，bash 仍可能读到外面；这次不另改 `denyRead`。`read` / `write` / `edit` 按 `allowRead` 只放行当前目录。
+
+`--mode json` 没有界面。沙箱初始化失败时，插件只做一次不会显示出来的通知，然后继续无沙箱运行。评测不跟着降级：Linux 上缺少 `rg`、`bwrap` 或 `socat`，macOS 上缺少 `sandbox-exec`，或 `pi install` 失败，该样本记 `parse_error`，不启动后面的 pi。依赖齐全时，越界由沙箱阻止，评测不再另做越界检测或标记。
+
+`clients.json` 里 `MINIMAX_CN_API_KEY` 写成 `$MINIMAX_API_KEY`，运行时从进程环境展开；变量缺失则该样本记 `parse_error`，错误里只有变量名。`PI_TELEMETRY` 固定为 `0`。认证失败时退出码仍可能是 0，最后一条 assistant `message_end` 的 `stopReason` 为 `error` 或 `aborted` 时记为失败。`pi --version` 的第一行写入 trace metadata `client_version`。
 
 过程痕迹留在缓存，不进 `reports/`。一次 `run` 后，样本 `<sample_id>` 的事件流（Codex 的 `command_execution`、`reasoning`、`agent_message`、`turn.completed`，或 pi 的 `message_end` / `tool_execution_*`）在：
 

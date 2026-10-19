@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: evaluation
-  edges-updated-at: '2026-10-19T05:49:42.508Z'
+  edges-updated-at: '2026-10-19T06:16:23.000Z'
   edges-title: retrieval eval 的 pi client 会跑出被测仓库副本
   edges-tasks-status: in_progress
   edges-task-priority: none
@@ -25,7 +25,12 @@ pi 以及以后没有沙箱的 client 只能在被测副本里检索，得分反
 5. 后续：给 pi 补一个沙箱插件，让它和 Codex 一样在受限环境里跑。
 
 **完成标准：**
-- [ ] pi 冒烟里不再出现越界路径
-- [ ] 越界会被检测并标记
-- [ ] Codex 的结果不受影响
-- [ ] 有对应测试
+- [x] pi 冒烟里不再出现越界路径
+- [x] 越界由沙箱阻止（用户 2026-10-19 拍板；不再另做检测或标记）
+- [x] Codex 的结果不受影响
+- [x] 有对应测试
+
+**进度日志：**
+
+- 2026-10-19 grill：R1 被 R2 取代。最终决策是 pi 用默认工具表，加上 pi-sandbox 的通用形态，只把读取范围收成被测副本（`filesystem.allowRead` 为 `["."]`）。不挪副本、不改 prompt、不动 Codex。越界检测这条完成标准改为「由沙箱阻止越界」。
+- 2026-10-19 实现：`clients.json` 去掉 pi 的 `tools`；运行前在临时 `PI_CODING_AGENT_DIR` 执行 `pi install npm:pi-sandbox --no-approve` 并写入上述 `sandbox.json`。不传 `-ne`，包才会加载。缺 `rg` / `bwrap` / `socat`（macOS 为 `sandbox-exec`）或安装失败时，样本记失败，不降级为无沙箱。本机没有 `MINIMAX_API_KEY`，没有打真实 MiniMax。用本地桩走了生产 `run_client`：副本放在 `/home` 下时，副本外文件的 read 被拒绝，bash `cat` 报不存在，文件内容没有出现在会话里；副本内文件可以读到。插件默认 `denyRead` 只盖住 `/home` 和 `/Users`，副本若在这两棵目录之外，bash 仍可能读到外面，这次没有改第二处配置。

@@ -644,7 +644,6 @@ def _pi_client(**overrides: object) -> Client:
         "provider": "minimax-cn",
         "model": "MiniMax-M3",
         "thinking": "high",
-        "tools": "read,grep,find,ls,bash",
         "env": {"MINIMAX_CN_API_KEY": "$MINIMAX_API_KEY", "PI_TELEMETRY": "0"},
     }
     body.update(overrides)
@@ -670,7 +669,9 @@ class PiClientTests(unittest.TestCase):
         self.assertEqual(client.provider, "minimax-cn")
         self.assertEqual(client.model, "MiniMax-M3")
         self.assertEqual(client.thinking, "high")
-        self.assertEqual(client.tools, "read,grep,find,ls,bash")
+        self.assertFalse(hasattr(client, "tools"))
+        raw_clients = json.loads((EVAL_DIR / "retrieval_eval" / "config" / "clients.json").read_text())
+        self.assertNotIn("tools", raw_clients["pi"])
         self.assertEqual(client.timeout_seconds, 600)
         self.assertEqual(client.env, {"MINIMAX_CN_API_KEY": "$MINIMAX_API_KEY", "PI_TELEMETRY": "0"})
         self.assertEqual(
@@ -690,7 +691,6 @@ class PiClientTests(unittest.TestCase):
                 "--mode",
                 "json",
                 "--no-session",
-                "-ne",
                 "-ns",
                 "-np",
                 "-nc",
@@ -698,8 +698,6 @@ class PiClientTests(unittest.TestCase):
                 "--no-mcp",
                 "-na",
                 "--offline",
-                "--tools",
-                "read,grep,find,ls,bash",
                 "--model",
                 "minimax-cn/MiniMax-M3",
                 "--thinking",
@@ -708,7 +706,11 @@ class PiClientTests(unittest.TestCase):
                 prompt,
             ],
         )
+        self.assertNotIn("--tools", command)
+        self.assertNotIn("-ne", command)
+        self.assertNotIn("--no-extensions", command)
         self.assertNotIn("--sandbox", command)
+        self.assertNotIn("--no-sandbox", command)
         self.assertNotIn("-o", command)
         self.assertNotIn("MINIMAX", " ".join(command))
 
@@ -722,8 +724,11 @@ class PiClientTests(unittest.TestCase):
         self.assertIn("--mode json", text)
         self.assertIn("--model minimax-cn/MiniMax-M3", text)
         self.assertIn("--thinking high", text)
-        self.assertIn("--tools read,grep,find,ls,bash", text)
+        self.assertIn("pi install npm:pi-sandbox --no-approve", text)
+        self.assertIn('{"filesystem": {"allowRead": ["."]}}', text)
         self.assertIn("--offline", text)
+        self.assertNotIn("--tools", text)
+        self.assertNotIn(" -ne ", f" {text} ")
         self.assertNotIn("codex exec", text)
         self.assertNotIn("--sandbox", text)
         self.assertNotIn("MINIMAX_API_KEY=", text)
@@ -765,11 +770,25 @@ class PiClientTests(unittest.TestCase):
                 self.assertEqual(kwargs["env"]["MINIMAX_CN_API_KEY"], secret)
                 self.assertEqual(command[0], "pi")
                 self.assertNotIn(secret, command)
+                seen.setdefault("commands", []).append(command)
+                if command[1] == "install":
+                    config = json.loads((Path(agent_dir) / "sandbox.json").read_text(encoding="utf-8"))
+                    self.assertEqual(config, {"filesystem": {"allowRead": ["."]}})
+                    self.assertNotIn("allowWrite", json.dumps(config))
+                    return subprocess.CompletedProcess(command, 0, stdout="Installed\n", stderr="")
                 return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="pi-stderr\n")
 
             with patch.dict(os.environ, {"MINIMAX_API_KEY": secret}, clear=False):
-                with patch("retrieval_eval.client.subprocess.run", side_effect=fake_run):
-                    call = run_client(_pi_client(), root, prompt, last)
+                with patch("retrieval_eval.client.shutil.which", return_value="/usr/bin/true"):
+                    with patch("retrieval_eval.client.subprocess.run", side_effect=fake_run):
+                        call = run_client(_pi_client(), root, prompt, last)
+            self.assertEqual(
+                seen["commands"],
+                [
+                    ["pi", "install", "npm:pi-sandbox", "--no-approve"],
+                    pi_command(_pi_client(), prompt),
+                ],
+            )
             self.assertFalse(Path(seen["dir"]).exists())
             self.assertEqual(call.predicted, ["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"])
             self.assertIsNone(call.parse_error)
@@ -778,6 +797,41 @@ class PiClientTests(unittest.TestCase):
             self.assertEqual(last.read_text(encoding="utf-8"), answer)
             self.assertNotIn(secret, call.stdout)
             self.assertNotIn(secret, call.stderr or "")
+
+    def test_failed_sandbox_install_does_not_run_pi(self) -> None:
+        prompt = "问题"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            last = root / "last.txt"
+
+            def fake_run(command, **kwargs):
+                self.assertEqual(command[1], "install")
+                return subprocess.CompletedProcess(command, 1, stdout="", stderr="npm ERR\n")
+
+            with patch.dict(os.environ, {"MINIMAX_API_KEY": "secret"}, clear=False):
+                with patch("retrieval_eval.client.shutil.which", return_value="/usr/bin/true"):
+                    with patch("retrieval_eval.client.subprocess.run", side_effect=fake_run) as run:
+                        call = run_client(_pi_client(), root, prompt, last)
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(call.predicted, [])
+            self.assertEqual(call.parse_error, "pi install npm:pi-sandbox failed")
+            self.assertEqual(call.stderr, "npm ERR\n")
+            self.assertFalse(last.exists())
+
+    def test_missing_sandbox_dependency_does_not_run_pi(self) -> None:
+        prompt = "问题"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            last = root / "last.txt"
+            with patch.dict(os.environ, {"MINIMAX_API_KEY": "secret"}, clear=False):
+                with patch("retrieval_eval.client.shutil.which", return_value=None):
+                    with patch("retrieval_eval.client.subprocess.run") as run:
+                        call = run_client(_pi_client(), root, prompt, last)
+            run.assert_not_called()
+            self.assertEqual(call.predicted, [])
+            self.assertIsNotNone(call.parse_error)
+            self.assertIn("Sandbox dependencies not available", call.parse_error or "")
+            self.assertFalse(last.exists())
 
     def test_exit_zero_with_error_stop_reason_is_parse_error(self) -> None:
         stdout = (EVAL_DIR / "tests" / "fixtures" / "pi_error.jsonl").read_text(encoding="utf-8")

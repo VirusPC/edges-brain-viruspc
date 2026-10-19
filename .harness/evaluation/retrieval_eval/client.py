@@ -10,6 +10,10 @@ pi (`kind=pi`): `pi --mode json` prints one JSON object per line. There is
 no `-o` file. The answer is the concatenated `text` blocks of the last
 assistant `message_end` with `stopReason` `stop`. Exit code 0 with
 `stopReason` `error` or `aborted` is still a failure. stdin is `DEVNULL`.
+Tools stay at pi's defaults (`read`, `bash`, `edit`, `write`): the command
+does not pass `--tools`. Before the prompt, `pi install npm:pi-sandbox` loads
+the sandbox into a fresh `PI_CODING_AGENT_DIR`, and `sandbox.json` there sets
+only `filesystem.allowRead` to `["."]`. `-ne` stays off so that package loads.
 The runner stores the event stream under
 `.harness/evaluation/.cache/retrieval/sessions/` (gitignored).
 """
@@ -21,6 +25,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,6 +35,8 @@ from retrieval_eval.config import Client
 
 _JSON_OBJECT = re.compile(r"\{[\s\S]*?\}")
 _PI_FAILURE_REASONS = frozenset({"error", "aborted"})
+PI_SANDBOX_PACKAGE = "npm:pi-sandbox"
+_PI_SANDBOX_CONFIG = {"filesystem": {"allowRead": ["."]}}
 
 
 class ClientEnvError(RuntimeError):
@@ -87,13 +94,16 @@ def codex_command(
 
 
 def pi_command(client: Client, prompt: str) -> list[str]:
-    """Minimal pi kernel. cwd is the repo; there is no `-o` and no sandbox flag."""
+    """pi with default tools. cwd is the repo; there is no `-o` and no `--tools`.
+
+    Extensions stay enabled so the package installed into `PI_CODING_AGENT_DIR`
+    loads. `--no-approve` still ignores project-local files.
+    """
     return [
         client.command,
         "--mode",
         "json",
         "--no-session",
-        "-ne",
         "-ns",
         "-np",
         "-nc",
@@ -101,8 +111,6 @@ def pi_command(client: Client, prompt: str) -> list[str]:
         "--no-mcp",
         "-na",
         "--offline",
-        "--tools",
-        client.tools or "",
         "--model",
         f"{client.provider}/{client.model}",
         "--thinking",
@@ -110,6 +118,31 @@ def pi_command(client: Client, prompt: str) -> list[str]:
         "--",
         prompt,
     ]
+
+
+def pi_install_command(client: Client) -> list[str]:
+    """Install pi-sandbox into the active agent dir. Does not trust project files."""
+    return [client.command, "install", PI_SANDBOX_PACKAGE, "--no-approve"]
+
+
+def pi_sandbox_config_json() -> str:
+    """The only sandbox override: read access is the working directory."""
+    return json.dumps(_PI_SANDBOX_CONFIG, ensure_ascii=False)
+
+
+def missing_pi_sandbox_dependencies() -> list[str]:
+    """Binaries pi-sandbox's runtime refuses to start without.
+
+    In `--mode json` a failed init is only a no-op UI notify, and pi then runs
+    unsandboxed. Missing binaries fail the sample before that.
+    """
+    if sys.platform.startswith("linux"):
+        required = ("rg", "bwrap", "socat")
+    elif sys.platform == "darwin":
+        required = ("sandbox-exec",)
+    else:
+        return [sys.platform]
+    return [name for name in required if shutil.which(name) is None]
 
 
 def read_command_version(command: str) -> str | None:
@@ -210,13 +243,48 @@ def _run_codex(
     )
 
 
+def _write_pi_sandbox_config(agent_dir: Path) -> None:
+    (agent_dir / "sandbox.json").write_text(pi_sandbox_config_json() + "\n", encoding="utf-8")
+
+
+def _run_pi_process(
+    command: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str],
+    timeout: int,
+) -> subprocess.CompletedProcess[str] | ClientCall:
+    try:
+        return subprocess.run(
+            command,
+            check=False,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+            stdin=subprocess.DEVNULL,
+            cwd=cwd,
+            env=env,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout, stderr = _timeout_streams(exc)
+        return ClientCall(
+            predicted=[],
+            command=command,
+            stdout=stdout,
+            stderr=stderr,
+            returncode=-1,
+            timed_out=True,
+            parse_error="timeout",
+        )
+
+
 def _run_pi(
     client: Client,
     repo_dir: Path,
     prompt: str,
     last_message_path: Path,
 ) -> ClientCall:
-    """Run pi with stdin closed. A fresh empty PI_CODING_AGENT_DIR is removed afterwards."""
+    """Run pi with stdin closed. A fresh PI_CODING_AGENT_DIR is removed afterwards."""
     command = pi_command(client, prompt)
     try:
         expanded = expand_client_env(client)
@@ -231,34 +299,52 @@ def _run_pi(
             parse_error=str(exc),
         )
 
+    missing = missing_pi_sandbox_dependencies()
+    if missing:
+        return ClientCall(
+            predicted=[],
+            command=command,
+            stdout="",
+            stderr="",
+            returncode=-1,
+            timed_out=False,
+            parse_error="Sandbox dependencies not available: " + ", ".join(missing),
+        )
+
     agent_dir = tempfile.mkdtemp(prefix="pi-coding-agent-")
     env = os.environ.copy()
     env.update(expanded)
     env["PI_CODING_AGENT_DIR"] = agent_dir
     env["PI_TELEMETRY"] = "0"
+    install = pi_install_command(client)
     try:
-        try:
-            result = subprocess.run(
-                command,
-                check=False,
-                text=True,
-                capture_output=True,
-                timeout=client.timeout_seconds,
-                stdin=subprocess.DEVNULL,
-                cwd=repo_dir,
-                env=env,
-            )
-        except subprocess.TimeoutExpired as exc:
-            stdout, stderr = _timeout_streams(exc)
+        _write_pi_sandbox_config(Path(agent_dir))
+        installed = _run_pi_process(
+            install,
+            cwd=repo_dir,
+            env=env,
+            timeout=client.timeout_seconds,
+        )
+        if isinstance(installed, ClientCall):
+            return installed
+        if installed.returncode != 0:
             return ClientCall(
                 predicted=[],
-                command=command,
-                stdout=stdout,
-                stderr=stderr,
-                returncode=-1,
-                timed_out=True,
-                parse_error="timeout",
+                command=install,
+                stdout=installed.stdout,
+                stderr=installed.stderr,
+                returncode=installed.returncode,
+                timed_out=False,
+                parse_error=f"pi install {PI_SANDBOX_PACKAGE} failed",
             )
+        result = _run_pi_process(
+            command,
+            cwd=repo_dir,
+            env=env,
+            timeout=client.timeout_seconds,
+        )
+        if isinstance(result, ClientCall):
+            return result
     finally:
         shutil.rmtree(agent_dir, ignore_errors=True)
 

@@ -43,6 +43,8 @@ from retrieval_eval.client import (
     build_prompt,
     codex_command,
     pi_command,
+    pi_install_command,
+    pi_sandbox_config_json,
     read_command_version,
     run_client,
 )
@@ -138,6 +140,12 @@ def print_command(cells: Sequence[Cell]) -> str:
     prompt = build_prompt(samples[0]["prompt"])
     if cell.client.kind == "pi":
         command = pi_command(cell.client, prompt)
+        lines.append(
+            "PI_CODING_AGENT_DIR=<fresh> " + shlex.join(pi_install_command(cell.client))
+        )
+        lines.append(
+            "write $PI_CODING_AGENT_DIR/sandbox.json " + pi_sandbox_config_json()
+        )
         lines.append(f"(cd {shlex.quote(str(dest))} && {shlex.join(command)})")
     else:
         command = codex_command(cell.client, dest, prompt, last_message)
