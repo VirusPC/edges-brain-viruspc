@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 课 · 进度怎么回到网页</title>
+<link rel="stylesheet" href="../assets/style.css">
+
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0001-life-of-a-task.html">第 1 课 · 任务的一生</a>
+  <a href="../lessons/0002-sandbox-lifecycle.html">第 2 课 · Sandbox 的生与死</a>
+  <a href="../lessons/0003-prebuilt-environments-and-isolation.html">第 3 课 · 预制环境与隔离</a>
+  <a href="../lessons/0004-caging-the-agent-cli.html">第 4 课 · CLI 关进笼子</a>
+  <a href="../lessons/0005-progress-back-to-the-browser.html" aria-current="page">第 5 课 · 进度怎么回到网页</a>
+  <a href="../lessons/0006-secrets-and-trust-boundaries.html">第 6 课 · 密钥与信任边界</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+  <a href="../notes/2026-10-19--cloud-coding-agent-architecture.html">学习笔记 · 10-19</a>
+</nav>
+
+<h1>进度怎么回到网页</h1>
+<p class="subtitle">Agent 在 Sandbox 里打出的每一行字，要经过服务器、数据库，再被浏览器定时拉走，才出现在你眼前。这一课把这条链路一段段拆开，顺带看清任务状态是谁在改、“停止”按钮到底停住了什么，以及为什么它不用 WebSocket。</p>
+<p class="meta">第 5 课 · 约 12 分钟 · 研究对象：<a href="https://github.com/vercel-labs/coding-agent-template">vercel-labs/coding-agent-template</a> · 前置：<a href="0001-life-of-a-task.html">第 1 课</a>、<a href="0002-sandbox-lifecycle.html">第 2 课</a>、<a href="0004-caging-the-agent-cli.html">第 4 课</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>从 CLI 的标准输出一路讲到网页上的那一行字：谁去拉、用什么协议、写进哪张表、怎么写、浏览器多久问一次；说出任务的五种状态分别由谁、在什么时候写入；解释“点了停止”之后后台为什么不一定停；讲清“写库 + 轮询”的理由和代价，并给出一个更好的方案。</p>
+</div>
+
+<h2>先看全貌：一条“拉”出来的链路</h2>
+<ol class="flow">
+  <li><span class="step-title">CLI 往标准输出写字 <span class="where">Sandbox</span></span>
+    Claude 和 Cursor 写的是 stream-json，每行一个 JSON；其余几家是普通文字（第 4 课）。</li>
+  <li><span class="step-title">服务器上的 SDK 开一条长连接去拉 <span class="where">@vercel/sandbox 0.0.21</span></span>
+    <code>runCommand</code> 传了 <code>stdout</code> 时，SDK 在后台对 <code>GET /v1/sandboxes/{id}/cmd/{cmdId}/logs</code> 发请求，要求返回 <code>application/x-ndjson</code>，逐行解析后把每段输出写进传入的 <code>Writable</code>（<a href="https://unpkg.com/@vercel/sandbox@0.0.21/dist/sandbox.js">sandbox.js L130–L157</a>，<a href="https://unpkg.com/@vercel/sandbox@0.0.21/dist/api-client/api-client.js">api-client.js L164–L200</a>）。</li>
+  <li><span class="step-title">适配文件逐块解析 <span class="where">agents/*.ts</span></span>
+    在 <code>Writable.write()</code> 里按换行切开、<code>JSON.parse</code>，把文字和工具调用攒成一段，写进 <code>task_messages</code> 的那一行（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L310-L405">lib/sandbox/agents/claude.ts L310–L405</a>）。</li>
+  <li><span class="step-title">两张表、两种写法 <span class="where">数据库</span></span>
+    平台自己的步骤日志进 <code>tasks.logs</code>（一个 JSON 数组列，<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L96">lib/db/schema.ts L96</a>）；Agent 的回复进 <code>task_messages.content</code>（一个文本列，<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L360-L370">lib/db/schema.ts L360–L370</a>）。</li>
+  <li><span class="step-title">浏览器定时来问 <span class="where">React</span></span>
+    任务详情每 5 秒、聊天消息每 3 秒、侧边栏任务列表每 5 秒，各一个 <code>setInterval</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/hooks/use-task.ts#L73-L83">lib/hooks/use-task.ts L73–L83</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/task-chat.tsx#L264-L273">components/task-chat.tsx L264–L273</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/app-layout.tsx#L152-L159">components/app-layout.tsx L152–L159</a>）。</li>
+  <li><span class="step-title">渲染 <span class="where">logs-pane / task-chat</span></span>
+    日志面板直接读 <code>task.logs</code> 过滤显示（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/logs-pane.tsx#L160-L162">components/logs-pane.tsx L160–L162</a>），聊天区把消息交给 Streamdown 渲染成 Markdown（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/task-chat.tsx#L23">components/task-chat.tsx L23</a>）。</li>
+</ol>
+<p class="with-side">整条链路里，<strong>Sandbox 从来不主动联系服务器</strong>。没有回调地址、没有 webhook，数据全是服务器那一侧拉出来的；浏览器也从不直接碰 Sandbox 和数据库，只问 Next.js 的接口。所以真正把三方串起来的只有两样东西：服务器函数里那条拉日志的长连接，和数据库。
+<span class="side">这也解释了第 2 课的一个现象：如果服务器函数中途没了，那条长连接也就断了，Sandbox 里的 CLI 可能还在跑，却再也没有人去读它的输出。</span>
+</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 360" role="img" aria-label="进度链路：Sandbox 里的 CLI 输出，被服务器上的 SDK 通过长连接拉取，解析后写进数据库的两张表，浏览器用三个定时器轮询接口">
+  <defs>
+    <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2c5d8a"/></marker>
+    <marker id="r5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/></marker>
+  </defs>
+  <style>
+    .srv{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .vm{fill:#fbf1dc;stroke:#8a5a00;stroke-width:2}
+    .db{fill:#eef5ea;stroke:#3d6b2f;stroke-width:1.4}
+    .in{fill:#fffffb;stroke:#5a554d;stroke-width:1.1}
+    .t{font:700 14px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:12px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+    .k{font:700 12px "Noto Sans CJK SC",sans-serif;fill:#a3341f}
+    .ln{stroke:#2c5d8a;stroke-width:1.5;fill:none;marker-end:url(#a5)}
+    .po{stroke:#a3341f;stroke-width:1.5;fill:none;stroke-dasharray:5 4;marker-end:url(#r5)}
+  </style>
+  <rect class="vm" x="10" y="20" width="150" height="150" rx="6"/>
+  <text class="t" x="22" y="44">Sandbox</text>
+  <rect class="in" x="22" y="58" width="126" height="44" rx="3"/>
+  <text class="s" x="32" y="78">Agent CLI</text>
+  <text class="s" x="32" y="94">stdout / stderr</text>
+  <text class="s" x="22" y="130">从不回调服务器</text>
+  <text class="s" x="22" y="150">只被动地被读</text>
+  <rect class="srv" x="230" y="20" width="230" height="150" rx="4"/>
+  <text class="t" x="242" y="44">服务器函数（after() 里）</text>
+  <text class="s" x="242" y="66">SDK：GET …/cmd/{id}/logs</text>
+  <text class="s" x="242" y="84">NDJSON 长连接，逐段交给 Writable</text>
+  <text class="s" x="242" y="108">适配文件：按换行切开、JSON.parse</text>
+  <text class="s" x="242" y="126">TaskLogger：先读整行再写回</text>
+  <text class="k" x="242" y="152">最多活 300 秒（vercel.json）</text>
+  <path class="ln" d="M228,80 L162,80" />
+  <text class="s" x="168" y="70">服务器去拉</text>
+  <rect class="db" x="230" y="210" width="230" height="130" rx="4"/>
+  <text class="t" x="242" y="234">数据库（Postgres）</text>
+  <rect class="in" x="242" y="246" width="206" height="38" rx="3"/>
+  <text class="s" x="250" y="263">tasks：status · progress · logs</text>
+  <text class="s" x="250" y="278">logs 是整列 JSON 数组</text>
+  <rect class="in" x="242" y="292" width="206" height="38" rx="3"/>
+  <text class="s" x="250" y="309">task_messages：content</text>
+  <text class="s" x="250" y="324">每来一段就整段覆盖</text>
+  <path class="ln" d="M345,172 L345,208"/>
+  <text class="s" x="352" y="196">每条日志 2 次请求</text>
+  <rect class="srv" x="540" y="20" width="170" height="320" rx="4"/>
+  <text class="t" x="552" y="44">浏览器</text>
+  <text class="s" x="552" y="70">三个 setInterval：</text>
+  <text class="s" x="552" y="94">5 秒 /api/tasks/{id}</text>
+  <text class="s" x="552" y="112">（整行任务，含全部日志）</text>
+  <text class="s" x="552" y="136">3 秒 …/{id}/messages</text>
+  <text class="s" x="552" y="154">（全部消息）</text>
+  <text class="s" x="552" y="178">5 秒 /api/tasks</text>
+  <text class="s" x="552" y="196">（侧边栏，全部任务）</text>
+  <text class="k" x="552" y="230">任务结束后也不停</text>
+  <text class="s" x="552" y="262">停止按钮：PATCH</text>
+  <text class="s" x="552" y="280">action: stop</text>
+  <path class="po" d="M538,275 L462,275"/>
+  <text class="s" x="470" y="265">轮询</text>
+</svg>
+<figcaption>图 1　进度链路。蓝色实线是数据真正流动的方向，红色虚线是浏览器的定时询问。Sandbox 和浏览器之间、Sandbox 和数据库之间都没有直接连线。</figcaption>
+</figure>
+
+<h2>第一段：从 Sandbox 到服务器，三种“读法”</h2>
+<p>同一个 SDK，模板用出了三种读输出的方式，直接决定了网页上能不能“边跑边看”：</p>
+<div class="table-wrap"><table>
+<thead><tr><th>读法</th><th>谁在用</th><th>代码</th><th>网页上看到什么</th></tr></thead>
+<tbody>
+<tr><td>分离运行 + 传 <code>stdout</code></td><td>Claude、Cursor</td><td><code>runCommand({ detached: true, stdout, stderr })</code> 立即返回，SDK 在后台拉日志 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L415-L423">lib/sandbox/agents/claude.ts L415–L423</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L461-L472">lib/sandbox/agents/cursor.ts L461–L472</a></td><td>边跑边更新；“跑完”靠解析到 <code>result</code> 行来判断（第 4 课）</td></tr>
+<tr><td>不分离 + 传 <code>stdout</code></td><td>Copilot</td><td>一样会拉日志、一样逐段回调，只是 <code>await</code> 到命令结束 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L299-L312">lib/sandbox/agents/copilot.ts L299–L312</a></td><td>边跑边更新；“跑完”以进程退出为准</td></tr>
+<tr><td>等跑完再一次性读</td><td>Codex、Gemini、opencode</td><td><code>runCommandInSandbox</code> 先 <code>await sandbox.runCommand()</code>，再 <code>result.stdout()</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/commands.ts#L21-L43">lib/sandbox/commands.ts L21–L43</a>；SDK 的 <code>stdout()</code> 本身就是把日志流从头读到尾拼起来（<a href="https://unpkg.com/@vercel/sandbox@0.0.21/dist/command.js">command.js L109–L117</a>）</td><td>Agent 跑的整个过程中，只有平台自己的几条步骤日志；回复在最后一次性出现</td></tr>
+</tbody></table></div>
+<p class="with-side">有一个名字很迷惑的函数：<code>runStreamingCommandInSandbox</code>。它带着 <code>onJsonLine</code> 回调，看起来是为“流式”准备的，可实现里还是先等命令跑完、再把整段输出按行切开（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/commands.ts#L78-L147">lib/sandbox/commands.ts L78–L147</a>）。我在整个仓库里搜过，<strong>没有任何地方调用它</strong>。
+<span class="side">SDK 版本由 <code>pnpm-lock.yaml</code> 锁在 0.0.21。上面引的 SDK 行号来自 npm 上这个版本的发行包（unpkg 镜像），不是 GitHub 源码。</span>
+</p>
+
+<h2>第二段：服务器写库，两张表两种写法</h2>
+<p><strong>平台步骤日志 → <code>tasks.logs</code>。</strong>所有“正在克隆”“安装依赖”“Sandbox 已关闭”之类的话都走 <code>TaskLogger</code>。它的 <code>append()</code> 做三件事：先脱敏（第 4 课），再 <code>SELECT</code> 出这一整行任务，最后把旧数组加上新的一条、<code>UPDATE</code> 整列写回（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L16-L55">lib/utils/task-logger.ts L16–L55</a>）。<code>updateProgress()</code> 和带消息的 <code>updateStatus()</code> 也是同样的“读出来、拼上、写回去”（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L79-L131">lib/utils/task-logger.ts L79–L131</a>）。写失败一律吞掉，不影响主流程。</p>
+<p><strong>Agent 回复 → <code>task_messages.content</code>。</strong>Claude 开跑前先插一条内容为空的 agent 消息（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L266-L275">lib/sandbox/agents/claude.ts L266–L275</a>），之后每解析出一段文字或一次工具调用，就把<em>累计到目前为止的全部文字</em>写进这一行（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L335-L345">lib/sandbox/agents/claude.ts L335–L345</a>）。Copilot 更密：每一行输出就发一次 <code>UPDATE</code>，注释写着“throttled via catch”，但代码里并没有任何节流，只是把错误吞掉（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L236-L243">lib/sandbox/agents/copilot.ts L236–L243</a>）。这些 <code>UPDATE</code> 都没有 <code>await</code>，发出去就不管了。</p>
+
+<div class="box warn">
+  <span class="box-title">并发与放大：三个问题（都是读代码推断，没有实测）</span>
+  <p><strong>一、日志会被覆盖。</strong>“先读后写”中间没有锁，也没有事务。同一时刻往同一个任务写日志的不止一个人：后台流程本身、提前 1 分钟提醒超时的计时器（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L278-L287">app/api/tasks/route.ts L278–L287</a>）、用户点停止时停止接口自己的 <code>TaskLogger</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/route.ts#L68-L72">app/api/tasks/[taskId]/route.ts L68–L72</a>）。两个写入者同时读到旧数组，各自加一条再写回，后写的那次就把先写的那条抹掉了。正确写法是让数据库自己追加（Postgres 可以用 <code>logs || 新条目</code> 这样的单条 <code>UPDATE</code>），或者干脆一条日志一行。</p>
+  <p><strong>二、Agent 回复可能“倒退”。</strong>每次写的都是“全部累计内容”，而且不等上一次写完就发下一次。数据库不保证按发出的顺序完成，如果较早、较短的那次最后才落地，这一行就停在一个旧版本上。Claude 跑完以后没有再补写一次最终内容，所以这个旧版本可能就是用户最后看到的。</p>
+  <p><strong>三、写放大是平方级的。</strong>第 n 条日志要把前面 n−1 条一起读出来、再一起写回去，一个任务写 N 条日志，总共搬运的大约是 N²/2 条。Agent 的回复也一样，每来一段就把整段重写一遍。任务越长、日志越多，每多一行就越贵。</p>
+</div>
+
+<h2>第三段：浏览器怎么拿：三个定时器，没有 SWR</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>组件</th><th>间隔</th><th>接口</th><th>每次拿回什么</th></tr></thead>
+<tbody>
+<tr><td><code>useTask</code>（任务详情、日志面板）</td><td>5 秒；刚打开时每 2 秒重试，最多 3 次，应付“任务还没写进库”的竞争 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/hooks/use-task.ts#L49-L71">lib/hooks/use-task.ts L49–L71</a></td><td><code>GET /api/tasks/{id}</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/route.ts#L15-L38">app/api/tasks/[taskId]/route.ts L15–L38</a></td><td>整行任务，<strong>包括完整的 <code>logs</code> 数组</strong> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/hooks/use-task.ts#L73-L83">lib/hooks/use-task.ts L73–L83</a></td></tr>
+<tr><td><code>TaskChat</code>（聊天区）</td><td>3 秒 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/task-chat.tsx#L264-L273">components/task-chat.tsx L264–L273</a></td><td><code>GET /api/tasks/{id}/messages</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/messages/route.ts#L28-L38">app/api/tasks/[taskId]/messages/route.ts L28–L38</a></td><td>这个任务的全部消息</td></tr>
+<tr><td><code>AppLayout</code>（侧边栏）</td><td>5 秒 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/app-layout.tsx#L152-L159">components/app-layout.tsx L152–L159</a></td><td><code>GET /api/tasks</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L26-L46">app/api/tasks/route.ts L26–L46</a></td><td>这个用户<strong>所有</strong>任务的整行，同样带着每个任务的全部日志</td></tr>
+</tbody></table></div>
+<p>都是手写的 <code>setInterval</code> + <code>fetch</code>，项目依赖里没有 SWR 或 React Query，也没有 <code>EventSource</code>、<code>WebSocket</code>（我在 <code>components</code>、<code>app</code>、<code>lib</code> 里搜过）。三个定时器都<strong>不看任务状态</strong>：任务早就完成了，只要页面开着，它们就照拉不误。另外还有一些慢一点的：PR 检查状态 30 秒，Sandbox 健康检查 2 秒（只在有预览地址时），登录信息 60 秒。</p>
+<p class="with-side">把这几件事放在一起算一笔账：一个开着页面的用户，每分钟大约发 12 + 20 + 12 = 44 次请求；侧边栏那一路每次都把他名下所有任务的全部日志从数据库读出来、经网络发给浏览器。任务一多、日志一长，读放大比写放大还厉害。这是按代码算的估计，没有实测。
+<span class="side">实时性也因此有上限：一行输出从 CLI 打出来，到出现在网页上，最坏要等一个轮询周期（日志 5 秒、消息 3 秒），再加上数据库写入和 SDK 拉取的延迟。</span>
+</p>
+
+<h2>任务状态机：五个值，谁在什么时候改</h2>
+<p>状态只有五种取值：<code>pending</code>、<code>processing</code>、<code>completed</code>、<code>error</code>、<code>stopped</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L90-L95">lib/db/schema.ts L90–L95</a>）。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>状态</th><th>谁写、什么时候</th></tr></thead>
+<tbody>
+<tr><td><code>pending</code></td><td>创建任务的接口插入新行时，<code>progress: 0</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L74-L90">app/api/tasks/route.ts L74–L90</a></td></tr>
+<tr><td><code>processing</code></td><td>后台流程一开头 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L397-L399">app/api/tasks/route.ts L397–L399</a>；追问接口一进来就把状态改回它、进度清零 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L76-L85">app/api/tasks/[taskId]/continue/route.ts L76–L85</a></td></tr>
+<tr><td><code>completed</code></td><td>Agent 成功、推送成功之后；先写状态，再把进度写成 100 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L690-L696">app/api/tasks/route.ts L690–L696</a></td></tr>
+<tr><td><code>error</code></td><td>推送失败 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L686-L689">app/api/tasks/route.ts L686–L689</a>；任何异常进 <code>catch</code> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L730-L735">app/api/tasks/route.ts L730–L735</a>；赛跑计时器先到（第 2 课）<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L316-L331">app/api/tasks/route.ts L316–L331</a></td></tr>
+<tr><td><code>stopped</code></td><td><strong>只有</strong>停止接口写，而且只在当前是 <code>processing</code> 时才允许 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/route.ts#L61-L84">app/api/tasks/[taskId]/route.ts L61–L84</a></td></tr>
+</tbody></table></div>
+<p><strong>进度百分比不是算出来的，是写死的里程碑。</strong>后台流程在每一步之前写一个固定数：10 初始化，15 创建 Sandbox（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L440">app/api/tasks/route.ts L440</a>），然后由 <code>createSandbox</code> 通过 <code>onProgress</code> 回调写 20、25、30、35（npm 失败重试时 37）、42、44（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L58-L59">lib/sandbox/creation.ts L58–L59</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L137-L138">lib/sandbox/creation.ts L137–L138</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L561-L562">lib/sandbox/creation.ts L561–L562</a>），50 开始跑 Agent（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L527">app/api/tasks/route.ts L527</a>），最后 100。从 50 到 100 之间是 Agent 干活的全部时间，进度条一动不动。<code>onProgress</code> 回调顺手查一次“是不是已经被停了”（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L467-L474">app/api/tasks/route.ts L467–L474</a>）。</p>
+
+<div class="box warn">
+  <span class="box-title">状态机的两个漏洞（读代码推断）</span>
+  <p><strong>一、终态可以被覆盖。</strong>所有写状态的地方都是无条件的 <code>UPDATE … WHERE id = ?</code>，没有“只有从 processing 才能变成 completed”这样的条件。下一节会看到，<code>stopped</code> 之后后台流程还可能写出 <code>completed</code> 或 <code>error</code>。</p>
+  <p><strong>二、可能永远停在 processing。</strong>后台流程跑在 <code>after()</code> 里，Next.js 文档写明 <code>after</code> 只能活到这条路由的最长时长（<a href="https://nextjs.org/docs/app/api-reference/functions/after">after · Duration</a>），而 <code>vercel.json</code> 给创建任务的接口设的是 300 秒（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/vercel.json#L1-L8">vercel.json L1–L8</a>，第 2 课）。可 README 说时长可以选“5 分钟到 5 小时”（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/README.md#L63">README.md L63</a>），默认值 <code>MAX_SANDBOX_DURATION</code> 是 300 <em>分钟</em>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/constants.ts#L5">lib/constants.ts L5</a>）。赛跑计时器按用户选的分钟数计时，远远晚于函数被平台终止的时刻。函数被终止时，没有任何代码有机会把状态改成 <code>error</code>，任务就一直显示“进行中”。追问接口没有在 <code>vercel.json</code> 里配置，按平台默认值也是 300 秒（<a href="https://vercel.com/docs/functions/configuring-functions/duration">Vercel 函数时长</a>）。Cursor 文件里“Sandbox 超时是 5 分钟”的注释（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/cursor.ts#L485-L487">lib/sandbox/agents/cursor.ts L485–L487</a>），按推断说的其实是函数的 5 分钟。</p>
+</div>
+
+<h2>停止任务：按钮停住了什么</h2>
+<ol class="flow">
+  <li><span class="step-title">浏览器发 PATCH <span class="where">task-chat.tsx</span></span>
+    <code>PATCH /api/tasks/{id}</code>，body 是 <code>{ action: 'stop' }</code>；成功就弹“已停止”，注释说“状态会通过轮询更新”（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/task-chat.tsx#L552-L577">components/task-chat.tsx L552–L577</a>）。</li>
+  <li><span class="step-title">接口改状态 <span class="where">[taskId]/route.ts</span></span>
+    校验任务属于当前用户、状态是 <code>processing</code>，写一条日志，把状态改成 <code>stopped</code>、<code>error</code> 字段写“Task was stopped by user”（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/route.ts#L61-L84">app/api/tasks/[taskId]/route.ts L61–L84</a>）。</li>
+  <li><span class="step-title">去“杀” Sandbox <span class="where">sandbox-registry.ts</span></span>
+    调 <code>killSandbox(taskId)</code>。它查的是<strong>这个函数实例内存里的一张表</strong>，找到了才 <code>sandbox.stop()</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/sandbox-registry.ts#L25-L60">lib/sandbox/sandbox-registry.ts L25–L60</a>）。文件开头自己写着：这张表“只用于同一次 serverless 执行里的即时操作”（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/sandbox-registry.ts#L3-L9">lib/sandbox/sandbox-registry.ts L3–L9</a>）。</li>
+</ol>
+<p class="with-side">问题就在第 3 步。停止请求是一次新的请求，会落到哪个函数实例上，代码控制不了。落到别的实例上，表里查不到这个任务；如果那个实例的表里恰好有别的任务的 Sandbox，代码会走一个“兜底”分支：<strong>把第一条记录从表里删掉，不调用 <code>stop()</code>，然后返回成功</strong>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/sandbox-registry.ts#L28-L40">lib/sandbox/sandbox-registry.ts L28–L40</a>）。于是日志里写着“Sandbox killed successfully”，其实谁也没被关掉，还顺手让另一个任务从表里消失了。数据库里明明存着 <code>sandboxId</code>，另一个“停止 Sandbox”接口就是用 <code>Sandbox.get({ sandboxId })</code> 重连再 <code>stop()</code> 的（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/stop-sandbox/route.ts#L35-L44">app/api/tasks/[taskId]/stop-sandbox/route.ts L35–L44</a>），停止任务的接口却没这么做。
+<span class="side">Vercel 的 Fluid compute 会让一个实例同时处理多个请求（<a href="https://vercel.com/docs/functions/configuring-functions/duration">Vercel 文档</a>），所以停止请求有可能恰好落在同一个实例上，这时 <code>stop()</code> 会真的执行。能不能停住，看运气。这是推断。</span>
+</p>
+<p><strong>后台流程那边呢？</strong>它只靠查数据库里的状态来发现自己被停了，而查的位置全在 Agent 开跑之前：开始前、生成分支名后、建 Sandbox 的每个进度回调里、建完以后、跑 Agent 之前（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L419-L431">app/api/tasks/route.ts L419–L431</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L467-L474">app/api/tasks/route.ts L467–L474</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L488-L500">app/api/tasks/route.ts L488–L500</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L520-L524">app/api/tasks/route.ts L520–L524</a>）。<strong>Agent 一旦开跑，就再也没有检查。</strong>于是按推断有三种结局：</p>
+<ul>
+<li><strong>Sandbox 没被关掉</strong>（落到别的实例上）：Agent 照常跑完、照常推送到任务分支，最后 <code>updateStatus('completed')</code> 把 <code>stopped</code> 覆盖掉（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L690-L696">app/api/tasks/route.ts L690–L696</a>）。用户以为停了，分支上却多了提交。</li>
+<li><strong>Sandbox 被关掉，跑的是 Codex、Gemini、opencode、Copilot</strong>：命令失败，适配文件返回失败，流程进 <code>catch</code>，把状态写成 <code>error</code>（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L697-L705">app/api/tasks/route.ts L697–L705</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L730-L735">app/api/tasks/route.ts L730–L735</a>）。</li>
+<li><strong>Sandbox 被关掉，跑的是 Claude</strong>：日志流断了，<code>result</code> 行永远不会来，第 4 课那个没有出口的等待循环就一直转（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L428-L430">lib/sandbox/agents/claude.ts L428–L430</a>），直到函数被平台终止。状态保持 <code>stopped</code>，但这个实例上的 <code>after()</code> 一直空转到 300 秒。</li>
+</ul>
+<p>这和第 2 课讲的赛跑计时器是同一个毛病：<code>Promise.race</code> 只决定“谁先给出结果”，输掉的那一方并不会被取消（<a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L295-L312">app/api/tasks/route.ts L295–L312</a>）。停止、超时都只是在数据库里改了个字，没有一个真正能叫停正在跑的代码的机制。</p>
+
+<h2>为什么是“写库 + 轮询”，而不是 WebSocket 或 SSE</h2>
+<p>代码和 README 都没有写明这个设计理由，下面的动机分析<strong>是推断</strong>，但每一条约束都有出处：</p>
+<ul>
+<li><strong>干活的函数活不长，也不和浏览器连着。</strong>后台流程在 <code>after()</code> 里跑，浏览器的那次请求早就结束了，两者之间没有可以推消息的连接。函数最多活 300 秒（Hobby 上限就是 300 秒，Pro 默认 300 秒、最多 800 秒，<a href="https://vercel.com/docs/functions/configuring-functions/duration">Vercel 函数时长</a>）。</li>
+<li><strong>函数实例之间不共享内存。</strong>浏览器的轮询请求和干活的 <code>after()</code> 多半落在不同实例上，内存里的东西对方看不到。模板自己的 Sandbox 注册表就踩了这个坑。能被所有实例同时看到的，只有数据库。</li>
+<li><strong>轮询最简单，而且天然能“断线重连”。</strong>用户关掉页面、换台电脑、过一小时再回来，进度都还在库里。不需要额外的消息服务。</li>
+</ul>
+<p>代价前面都看到了：最多几秒的延迟；日志“先读后写”带来的覆盖和平方级写放大；侧边栏每 5 秒把所有任务的全部日志拉一遍的读放大；任务结束后轮询也不停；以及“停止”没有通道能通知到正在跑的那段代码。</p>
+<p class="with-side"><strong>现在还是不是这样？</strong>平台条件变了一部分。Vercel Functions 在 2026-06-22 开放了 WebSocket 公测（<a href="https://vercel.com/changelog/websocket-support-is-now-in-public-beta">更新日志</a>），但文档写明：一条连接固定在接受它的那个实例上，函数到最长时长时连接会被关闭，客户端必须自己重连（<a href="https://vercel.com/docs/functions/websockets">WebSockets</a>）。也就是说，长任务的进度<em>仍然</em>需要一个持久的地方存着，WebSocket 只能替代“浏览器每几秒问一次”这一段，替代不了数据库。
+<span class="side">这份代码固定在 2026-02-12 的提交，比 WebSocket 公测早四个多月，所以当时 Vercel 函数上确实没有原生 WebSocket 可用。</span>
+</p>
+
+<h2>别家怎么做，以及“如果自己做”</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>产品</th><th>进度怎么到界面</th><th>出处</th></tr></thead>
+<tbody>
+<tr><td>Open SWE（LangChain）</td><td>推流。2026-06 的一次提交把“自己写的 SSE + React Query 轮询”换成了 LangGraph 的 v2 事件流，经带登录态的代理转给浏览器；Agent 本身跑在 LangGraph 的持久化 run 里，每一步都存检查点</td><td><a href="https://github.com/langchain-ai/open-swe/commit/abf354bb0559915edc7d53e8b7b9de16ca7dc14f">open-swe 提交 abf354b</a></td></tr>
+<tr><td>Cursor Cloud Agents API</td><td>推流。每一次 run 一个 SSE 流（<code>status</code>、<code>assistant</code>、<code>tool_call</code>、<code>heartbeat</code>、<code>result</code> 等事件），断线后带 <code>Last-Event-ID</code> 续上；超过保留期返回 410，改为直接读 run 的最终状态</td><td><a href="https://cursor.com/docs/cloud-agent/api/endpoints">Cloud Agents API</a></td></tr>
+<tr><td>Vercel 自己的 durable harness</td><td>先写持久日志，再从日志推流：“Your app's browser streams the turn from the session's log”，换了 Sandbox 也不中断；函数崩了由另一个函数从日志接着跑</td><td><a href="https://vercel.com/docs/agent-harnesses/security">Security</a>、<a href="https://vercel.com/docs/agent-harnesses">Agent harnesses</a></td></tr>
+<tr><td>Codex Cloud</td><td>网页端界面能实时看任务日志，但用的是推流还是轮询，我没有查到官方公开说明，这里不下结论</td><td>—</td></tr>
+</tbody></table></div>
+
+<div class="box read">
+  <span class="box-title">如果自己做（参考答法）</span>
+  <p><strong>一、日志改成“只追加的事件表”。</strong><code>task_events(task_id, seq, type, payload, created_at)</code>，每条事件一行 <code>INSERT</code>，<code>seq</code> 单调递增。写入不再“先读后写”，没有覆盖，也没有平方级放大。Agent 回复也拆成一段段事件，不再整段重写。</p>
+  <p><strong>二、前端按游标增量拉。</strong><code>GET /api/tasks/{id}/events?after=最后一个 seq</code>，只拿新的那几条。任务进入终态就停止轮询。侧边栏只取 <code>id、title、status、progress</code> 这几列，不带日志。</p>
+  <p><strong>三、想要实时，再在上面加 SSE。</strong>同一个接口支持 <code>text/event-stream</code>，每条事件的 <code>id</code> 就是 <code>seq</code>，浏览器断线后用 <code>Last-Event-ID</code> 自动续上（<a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events">MDN · SSE</a>）。SSE 只是“通知有新事件”，事实仍以事件表为准，所以连接被函数时长切断也没关系。多实例之间要即时唤醒，可以用 Redis Streams 的 <code>XADD</code> / <code>XREAD BLOCK</code>（<a href="https://redis.io/docs/latest/develop/data-types/streams/">Redis Streams</a>）或 Postgres 的 <code>LISTEN</code> / <code>NOTIFY</code>（<a href="https://www.postgresql.org/docs/current/sql-notify.html">NOTIFY</a>）。</p>
+  <p><strong>四、指挥流程不放在请求的尾巴上。</strong>放进队列或 Workflow 这种能跨函数实例接着跑的地方（第 2 课），每一步写事件、做检查点。</p>
+  <p><strong>五、停止要真的能停。</strong>停止接口用库里的 <code>sandboxId</code> 重连并 <code>stop()</code>；后台流程在每个步骤之间、以及等待 Agent 的循环里都检查停止标志；状态迁移带条件，例如 <code>UPDATE … SET status='completed' WHERE id=? AND status='processing'</code>，终态不能被覆盖。</p>
+</div>
+
+<h2>面试视角</h2>
+<div class="box interview">
+  <span class="box-title">面试时 60 秒这样讲</span>
+  <p>“这个模板的进度链路是‘拉’出来的，Sandbox 从不回调服务器。后台流程跑在 Next.js 的 <code>after()</code> 里，用 Sandbox SDK 启动 CLI；传了 <code>stdout</code> 的命令，SDK 会对 Sandbox 的 <code>/cmd/{id}/logs</code> 开一条 NDJSON 长连接，把输出一段段交给适配文件解析。Claude、Cursor、Copilot 能边跑边写库，Codex、Gemini、opencode 要等跑完一次性拿到输出。写库分两张表：平台步骤进 <code>tasks.logs</code> 这个 JSON 数组列，Agent 回复进 <code>task_messages</code>。浏览器用三个 <code>setInterval</code> 轮询：任务详情 5 秒、消息 3 秒、侧边栏 5 秒。状态有五种，进度是写死的里程碑。之所以写库加轮询，是因为干活的函数活不长、实例之间不共享内存，数据库是唯一的公共地方。代价是：日志‘先读后写’会互相覆盖、写放大是平方级的，轮询拿的是全量数据，停止按钮靠实例内存找 Sandbox，常常停不住，后台流程跑完还会把状态改回 completed。我会改成只追加的事件表加游标增量拉，需要实时再叠一层 SSE，用 <code>Last-Event-ID</code> 续传，停止走 <code>sandboxId</code> 加带条件的状态迁移。”</p>
+</div>
+
+<div class="box read">
+  <span class="box-title">面试官可能的追问（附参考答法）</span>
+  <p><strong>问：轮询和 SSE 怎么选？</strong><br>
+  答：先看数据有没有一个持久的地方。有了事件表，轮询和 SSE 就只是“浏览器怎么知道有新东西”的两种方式：轮询最简单，CDN、代理、断线都不用操心，代价是延迟和空请求；SSE 是单向推送，用普通 HTTP，浏览器原生支持断线自动重连和 <code>Last-Event-ID</code>，很适合“Agent 往外吐进度”这种单向场景。WebSocket 是双向的，但在 serverless 上连接绑定实例、有时长上限，收益不大。我的默认选择是：事件表 + 增量轮询起步，体验要求高了再加 SSE。</p>
+  <p><strong>问：<code>tasks.logs</code> 用 JSON 数组列有什么问题？</strong><br>
+  答：三点。一是并发追加没有原子性，“先读后写”会丢日志；二是每次追加都要把整个数组读出来、写回去，成本随日志长度平方增长；三是读的时候也只能整列拿，没法“只要第 100 条以后的”。改成一条日志一行、带自增序号，三个问题一起解决。</p>
+  <p><strong>问：用户点了停止，你怎么保证真的停了？</strong><br>
+  答：三层。第一，停止接口不依赖内存，用库里的 <code>sandboxId</code> 直接调 Sandbox API 关机，这是唯一能立刻掐断 Agent 的办法。第二，指挥流程在每个步骤之间、等待循环里查停止标志，查到就退出，不再推送。第三，状态迁移带条件，终态写一次就不能再改，这样即使有漏网的代码跑完，也不会把 <code>stopped</code> 改回 <code>completed</code>。</p>
+  <p><strong>问：任务要跑一个小时，而函数最多跑 5 到 15 分钟，怎么办？</strong><br>
+  答：指挥者不能是一个请求。要么用队列加检查点，一个函数快到时限就把状态存下、下一个接着跑；要么用 Vercel Workflow 这类能暂停和恢复的执行环境；要么指挥逻辑本身挪进 Sandbox 里（它能活几个小时），服务器只负责启动和读事件。Vercel 的 durable harness 就是第一种思路：会话日志是事实，函数崩了由另一个函数从日志接着跑。</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。最后两题来自第 4 课和第 1 课，隔开再想一次，记得更牢。</p>
+<div class="quiz" data-quiz-id="0005-进度怎么回到网页">
+<script type="application/json">{"questions": [{"q": "Claude 在 Sandbox 里打印的每一行输出，是怎么到达服务器的？", "options": ["服务器用 SDK 开长连接去拉", "Sandbox 主动回调服务器", "CLI 自己直接写进了数据库里", "浏览器去 Sandbox 里读"], "answer": 0, "explain": "<code>sandbox.runCommand({ detached: true, stdout })</code> 之后，SDK 在服务器进程里对 <code>GET /v1/sandboxes/…/cmd/…/logs</code> 开一条长连接，按 NDJSON 一行行读出来，再写进传入的 <code>stdout</code>（<a href=\"https://unpkg.com/@vercel/sandbox@0.0.21/dist/sandbox.js\">SDK 0.0.21 sandbox.js</a>，<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L415-L423\">claude.ts L415–L423</a>）。Sandbox 从不主动联系服务器。"}, {"q": "任务详情页上的日志，前端是怎么拿到更新的？", "options": ["每 5 秒定时拉一次整条任务", "开一条 SSE 长连接等推送", "WebSocket 订阅推送", "窗口获得焦点时才会去刷新一次"], "answer": 0, "explain": "<code>useTask</code> 找到任务后用 <code>setInterval</code> 每 5 秒请求一次 <code>/api/tasks/{id}</code>，拿回的是整行任务，包括完整的 <code>logs</code> 数组（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/hooks/use-task.ts#L73-L83\">use-task.ts L73–L83</a>）。项目里没有 SWR、SSE 或 WebSocket。"}, {"q": "TaskLogger 每追加一条日志，对数据库做了什么？", "options": ["读出整行，再把整个数组写回", "只往数组末尾追加一条新记录", "往一张单独的日志表里插一行", "先缓存在内存里，结束时再写"], "answer": 0, "explain": "<code>append()</code> 先 <code>select</code> 出整行，取出 <code>logs</code>，在内存里拼上新的一条，再用 <code>update</code> 把整个数组写回去（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L37-L48\">task-logger.ts L37–L48</a>）。两次请求之间没有锁也没有事务，两个写入者同时追加时，后写的会盖掉先写的那条。这是读代码推断，没有实测。"}, {"q": "选 Codex 跑任务时，网页上 Agent 的回复是什么时候出现的？", "options": ["进程跑完以后一次性出现", "每次调用工具后都会出现", "每隔五秒钟就会出现一段", "PR 提交以后才会出现"], "answer": 0, "explain": "Codex 走 <code>runInProject</code> → <code>runCommandInSandbox</code>，不分离、不传 <code>stdout</code>，要等命令结束才用 <code>result.stdout()</code> 拿到全部输出（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/commands.ts#L21-L43\">commands.ts L21–L43</a>）。边跑边写库的只有 Claude、Cursor（分离 + 输出流）和 Copilot（输出流）。"}, {"q": "用户点了停止，接口回了成功。后台那条流程呢？", "options": ["不一定停，之后还会改回完成", "立刻停下，任务状态保持停止", "自动回滚已经改过的全部文件", "等当前这一步做完再体面退出"], "answer": 0, "explain": "停止接口只把状态改成 <code>stopped</code>，再从<em>本实例内存里的表</em>找 Sandbox 去关（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/route.ts#L74-L97\">[taskId]/route.ts L74–L97</a>，<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/sandbox-registry.ts#L25-L41\">sandbox-registry.ts L25–L41</a>）。后台流程只在 Agent 开跑之前检查是否被停；Agent 跑完后直接写 <code>completed</code>（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L686-L696\">route.ts L686–L696</a>）。这是读代码推断。"}, {"q": "README 说时长可选 5 分钟到 5 小时。一个要跑 20 分钟的任务，按代码最可能怎样？", "options": ["约五分钟被掐断，状态卡在进行中", "顺利跑完二十分钟，然后推送改动", "要到五小时才会被标成超时的出错", "平台会自动把函数时长延长到够用"], "answer": 0, "explain": "后台流程跑在 <code>after()</code> 里，而 Next.js 文档写明 <code>after</code> 受这条路由的最长时长约束（<a href=\"https://nextjs.org/docs/app/api-reference/functions/after\">after 文档</a>）；<code>vercel.json</code> 给它的是 300 秒（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/vercel.json#L1-L8\">vercel.json</a>）。被平台掐断时没有任何代码有机会把状态改成 error。赛跑计时器按分钟算，远远来不及。这是推断，没有实测。"}, {"q": "【复习第 4 课】服务器怎么判断 Claude 这一轮跑完了？", "options": ["看到 result 那一行", "等待 Sandbox 退出", "发现仓库里的文件不再变化了", "固定等待二百四十秒以后再看"], "answer": 0, "explain": "解析到 <code>type</code> 为 <code>result</code> 的那一行 才把 <code>isCompleted</code> 设成 true，外面是一个每秒查一次、没有其他出口的循环（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L391-L396\">claude.ts L391–L396</a> <a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L428-L430\">L428–L430</a>）。240 秒上限是 Cursor 那一家的。"}, {"q": "【复习第 1 课】为什么后台流程要包在 after() 里？", "options": ["先回话给浏览器，函数接着跑", "让任务跑在浏览器的标签页里", "交给 Sandbox 指挥", "让数据库自己按顺序执行任务"], "answer": 0, "explain": "创建任务的接口先把新任务写库、马上返回，再在 <code>after()</code> 里跑 <code>processTaskWithTimeout</code>；注释写明不包这一层，Vercel 会在回完话后停掉函数（<a class=\"src\" href=\"https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L220-L240\">route.ts L220–L240</a>）。代价就是本课说的：它仍然只能活到这条路由的最长时长。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p>先读 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L1-L139">lib/utils/task-logger.ts</a>，只有 139 行，“先读后写”的模式一眼就能看出来。再读 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/sandbox-registry.ts#L1-L64">lib/sandbox/sandbox-registry.ts</a> 和停止接口 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/route.ts#L61-L110">app/api/tasks/[taskId]/route.ts L61–L110</a>，对照着想：一个请求落在另一个实例上时会发生什么。最后读 Cursor 的 <a href="https://cursor.com/docs/cloud-agent/api/endpoints">Cloud Agents API 里 “Stream A Run” 一节</a>，看一个成熟的进度接口长什么样：事件类型、事件编号、断线续传、保留期。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>想让我画一版“事件表 + SSE”的具体接口和表结构、想把 SSE 和 WebSocket 在 serverless 上的取舍再讲细一点，或者想让我扮面试官追问你这条链路，都可以直接在对话里问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：<a href="../reference/architecture-cheatsheet.html">架构速查</a> 里新加了“进度链路与任务状态”一节，新词收进了 <a href="../reference/glossary.html">术语表</a>。下一课：<a href="0006-secrets-and-trust-boundaries.html">第 6 课 · 密钥与信任边界</a>，这是最后一课，会把全课程收成一张图。</p>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  源代码引用全部固定在 commit <code>e753e1b</code>（main 分支，2026-02-12 提交，北京时间 17:21）。
+  所以哪怕仓库以后改动，这些链接指向的行号也不会变。SDK 行号来自 npm 上的 <code>@vercel/sandbox@0.0.21</code> 发行包。外部文档于 2026-10-19 晚（北京时间）核对。
+</footer>
+</main>
+</body>
+</html>

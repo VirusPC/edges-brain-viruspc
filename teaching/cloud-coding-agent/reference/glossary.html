@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>术语表 · 云端编程 Agent</title>
+<link rel="stylesheet" href="../assets/style.css">
+
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0001-life-of-a-task.html">第 1 课 · 任务的一生</a>
+  <a href="../lessons/0002-sandbox-lifecycle.html">第 2 课 · Sandbox 的生与死</a>
+  <a href="../lessons/0003-prebuilt-environments-and-isolation.html">第 3 课 · 预制环境与隔离</a>
+  <a href="../lessons/0004-caging-the-agent-cli.html">第 4 课 · CLI 关进笼子</a>
+  <a href="../lessons/0005-progress-back-to-the-browser.html">第 5 课 · 进度怎么回到网页</a>
+  <a href="../lessons/0006-secrets-and-trust-boundaries.html">第 6 课 · 密钥与信任边界</a>
+  <a href="../reference/glossary.html" aria-current="page">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+  <a href="../notes/2026-10-19--cloud-coding-agent-architecture.html">学习笔记 · 10-19</a>
+</nav>
+
+<h1>术语表</h1>
+<p class="subtitle">这门课的“统一说法”。之后每一课都只用这里的词；同一个东西不换着叫。</p>
+<p>规则：产品名和这几个词保持英文——Agent、CLI、MCP、Sandbox、AI Gateway、PR、Keep Alive。其他尽量用平常的中文。定义只说“它是什么”，一两句话。随着你理解加深，定义会被修改，而不是另起一条。</p>
+
+<h2>整体</h2>
+<dl class="glossary">
+<dt>云端编程 Agent 平台</dt><dd>一种产品：用户在网页上提一个改代码的需求，平台在云上的隔离机器里让 Agent 改代码，最后交回一个分支或 PR。本课研究的 coding-agent-template 就是一个例子。 <span class="avoid">后台代理、远程 Copilot</span></dd>
+<dt>任务<span class="en">Task</span></dt><dd>用户提交的一次需求，以及它从开始到结束的全部记录；在数据库里就是 <code>tasks</code> 表的一行。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L76-L114">schema.ts L76–114</a><span class="avoid">作业、job、工单</span></dd>
+<dt>Agent</dt><dd>真正读代码、改代码的 AI 程序。在本项目里，Agent 就是各家现成的 CLI，平台自己不写 Agent 逻辑。 <span class="avoid">机器人、bot、智能体</span></dd>
+<dt>Agent CLI</dt><dd>以命令行方式运行的 Agent，例如 Claude Code、Codex CLI、Cursor CLI、Gemini CLI、GitHub Copilot CLI、opencode。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L12">lib/sandbox/agents/index.ts L12</a><span class="avoid">插件、脚本</span></dd>
+<dt>免确认模式</dt><dd>让 Agent CLI 不再逐条询问“可以执行吗”，直接动手的运行方式，如 <code>--dangerously-skip-permissions</code>。只有在 Sandbox 里才敢这样用。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/claude.ts#L278">lib/sandbox/agents/claude.ts L278</a><span class="avoid">自动模式、yolo（除非引用原参数名）</span></dd>
+</dl>
+
+<h2>运行环境</h2>
+<dl class="glossary">
+<dt>Sandbox<span class="en">Vercel Sandbox</span></dt><dd>为一个任务临时开的隔离 Linux 虚拟机，有自己独立的系统内核和文件系统，到时间会自己停。底下是一台 Firecracker microVM，不是 Docker 容器（第 3 课）。 <a class="src" href="https://vercel.com/docs/sandbox/concepts">Vercel 文档</a><span class="avoid">容器、沙盒、沙箱环境、VM（泛指时可以说“虚拟机”）</span></dd>
+<dt>最长时长<span class="en">maxDuration</span></dt><dd>用户给 Sandbox 设定的存活时间上限，单位是分钟；本项目的选项是 5 分钟到 5 小时，建 Sandbox 时换算成毫秒传给 <code>timeout</code>，时间一到 Sandbox 自动停。注意它和下面的“函数时长上限”是两回事。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/components/task-form.tsx#L724-L733">components/task-form.tsx L724–L733</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L73-L75">lib/sandbox/creation.ts L73–L75</a><span class="avoid">超时、TTL</span></dd>
+<dt>Keep Alive</dt><dd>一个开关：任务结束后是否留着 Sandbox，好让用户继续追问。打开时留到最长时长用完；关闭时只结束机器里的进程，机器本身照样开到超时（README 说“立刻关掉”，代码并非如此）。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L668-L683">app/api/tasks/route.ts L668–L683</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L75-L100">lib/sandbox/git.ts L75–L100</a><span class="avoid">保活、常驻</span></dd>
+<dt>项目目录<span class="en">PROJECT_DIR</span></dt><dd>仓库在 Sandbox 里的存放位置，固定是 <code>/vercel/sandbox/project</code>。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/commands.ts#L4">lib/sandbox/commands.ts L4</a><span class="avoid">工作区、workspace</span></dd>
+</dl>
+
+<h2>Sandbox 的一生</h2>
+<dl class="glossary">
+<dt>空转</dt><dd>本课自己起的说法：Keep Alive 关闭时，任务结束后进程被结束、但机器还开着，一直等到最长时长用完的那段状态。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L75-L100">lib/sandbox/git.ts L75–L100</a><span class="avoid">待机、休眠（这两个词容易让人以为不花钱）</span></dd>
+<dt>重连<span class="en">Sandbox.get()</span></dt><dd>拿着之前存下的编号（本项目是数据库里的 <code>sandboxId</code>，新版 SDK 改用名字）重新连上一台已有的 Sandbox。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/continue/route.ts#L169-L190">app/api/tasks/[taskId]/continue/route.ts L169–L190</a><span class="avoid">恢复连接、re-attach</span></dd>
+<dt>停止<span class="en">stop()</span></dt><dd>主动让 Sandbox 关机的方法。本项目只有“停止 Sandbox”接口和内存登记表会调用它。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/stop-sandbox/route.ts#L35-L57">app/api/tasks/[taskId]/stop-sandbox/route.ts L35–L57</a><span class="avoid">销毁、删除（新版 SDK 里删除是另一个方法 delete()）</span></dd>
+<dt>冷启动</dt><dd>从零开一台新 Sandbox、拉代码、装依赖的那段等待时间。重连或从快照开机可以省掉其中一部分。 <span class="avoid">启动延迟、预热</span></dd>
+<dt>会话<span class="en">session</span></dt><dd>新版 Vercel Sandbox 里，一台 Sandbox 的一次开机运行。一台 Sandbox 可以有很多个会话，最长时长管的是单个会话。 <a class="src" href="https://vercel.com/docs/sandbox/concepts/persistent-sandboxes">Vercel 文档</a><span class="avoid">实例、一次 run</span></dd>
+<dt>快照 / 模板<span class="en">snapshot · template</span></dt><dd>把一台机器“装好之后”的文件系统（有的平台连运行中的进程也一起）存下来，以后直接从它开机，跳过安装。Vercel 叫快照，默认最后一次使用后 30 天过期；E2B 叫模板，构建时就拍好。它是“跑出来的结果”，会随依赖和代码变化而过时。 <a class="src" href="https://vercel.com/docs/vercel-sandbox/concepts/snapshots">Vercel 文档</a> <a class="src" href="https://e2b.dev/docs/sandbox-template">E2B 文档</a><span class="avoid">备份；也不要和“镜像”混用（镜像是按 Dockerfile 建出来的，快照是从跑着的机器拍下来的）</span></dd>
+<dt>持久化<span class="en">persistent</span></dt><dd>新版 Vercel Sandbox 的默认行为：停下时自动拍快照，下次有命令进来时自动从快照开机。本项目用的旧 SDK 没有这个能力。 <a class="src" href="https://vercel.com/docs/sandbox/concepts/persistent-sandboxes">Vercel 文档</a><span class="avoid">常驻、保活（那是 Keep Alive）</span></dd>
+<dt>函数时长上限<span class="en">Vercel Function maxDuration</span></dt><dd>Vercel 给一次服务器函数调用设的最长运行时间，单位是秒；<code>after()</code> 里的后台流程也受它约束。本项目在 <code>vercel.json</code> 里给任务接口设了 300 秒。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/vercel.json#L1-L8">vercel.json L1–L8</a> <a class="src" href="https://vercel.com/docs/functions/configuring-functions/duration">Vercel 文档</a><span class="avoid">超时时间（会和最长时长混淆）</span></dd>
+</dl>
+
+<h2>预制环境与隔离（第 3 课）</h2>
+<dl class="glossary">
+<dt>镜像<span class="en">image</span></dt><dd>一台机器开机时的“初始文件系统”：操作系统、系统包、语言工具，通常用 Dockerfile 描述、构建出来。Vercel Sandbox 用 <code>Sandbox.create({ image })</code> 指定，不指定时用官方的 <code>vercel/sandbox/universal</code>。 <a class="src" href="https://vercel.com/docs/vercel-sandbox/concepts/images">Vercel 文档</a><span class="avoid">快照（那是从跑着的机器拍下来的）、模板</span></dd>
+<dt>OCI 镜像<span class="en">OCI image</span></dt><dd>Docker 镜像所遵循的开放标准格式：一叠文件系统层，加一份配置（里面有 Entrypoint、Cmd 等）。Vercel 只拿文件系统层当 microVM 的根文件系统，不执行配置里的启动命令。 <a class="src" href="https://github.com/opencontainers/image-spec/blob/main/spec.md">OCI Image Spec</a><span class="avoid">“Docker 格式”（可以理解，但统一说 OCI 镜像）</span></dd>
+<dt>VCR<span class="en">Vercel Container Registry</span></dt><dd>Vercel 自己的镜像仓库，按项目划分。用 <code>vercel vcr build</code> 构建并推送，Sandbox 只能用其中准备好的 <code>linux/amd64</code> 镜像。 <a class="src" href="https://vercel.com/docs/vercel-sandbox/concepts/images#custom-images">Vercel 文档</a><span class="avoid">Docker Hub（那是另一家的仓库）</span></dd>
+<dt>setup 脚本<span class="en">setup / install script</span></dt><dd>在 Agent 开工之前、按仓库跑的准备命令：克隆、装依赖、生成代码。可以联网，私有仓库的密钥只应在这一步出现。Codex 叫 setup script，Cursor 叫 install，Copilot 是 <code>copilot-setup-steps.yml</code>。 <a class="src" href="https://developers.openai.com/codex/cloud/environments">Codex 文档</a><span class="avoid">初始化、启动脚本（启动脚本是开机后起服务用的，另一回事）</span></dd>
+<dt>maintenance 脚本<span class="en">maintenance script</span></dt><dd>Codex Cloud 的概念：从缓存好的环境恢复时，可选地再跑一次的补差命令，用来处理“setup 是在旧提交上跑的、依赖需要更新”的情况。 <a class="src" href="https://developers.openai.com/codex/cloud/environments">Codex 文档</a><span class="avoid">维护任务、定时任务</span></dd>
+<dt>prebuild</dt><dd>GitHub Codespaces 的概念：提前跑完 dev container 的创建命令、拍下容器快照存起来，新开 codespace 时直接用；默认每次 push 自动重建。泛指“提前做好环境”时，本课说“预制环境”。 <a class="src" href="https://docs.github.com/en/codespaces/prebuilding-your-codespaces/about-github-codespaces-prebuilds">GitHub 文档</a><span class="avoid">预编译、预构建（容易和编译代码混淆）</span></dd>
+<dt>内核<span class="en">kernel</span></dt><dd>操作系统最底层的那部分程序，管内存、进程、文件和网络，所有程序都要通过它才能碰硬件。隔离强不强，关键看几台机器是不是共用一个内核。 <span class="avoid">系统、底层（太泛）</span></dd>
+<dt>容器<span class="en">container</span></dt><dd>和宿主机共用同一个内核、靠内核的 namespaces 和 cgroups 隔开的一组进程。启动快、开销小，适合跑自己信得过的代码。 <a class="src" href="https://docs.docker.com/engine/security/">Docker 文档</a><span class="avoid">把 Sandbox 叫成容器；“轻量虚拟机”</span></dd>
+<dt>microVM</dt><dd>只保留最少设备、启动很快的小型虚拟机。每台有自己的内核，靠硬件虚拟化和宿主机隔开，比容器多一份内核的开销，换来更强的隔离。 <a class="src" href="https://vercel.com/docs/sandbox/concepts#sandboxes-vs-containers">Vercel 文档</a><span class="avoid">微型容器、轻量容器</span></dd>
+<dt>Firecracker</dt><dd>AWS 开源的 microVM 软件，最初为 AWS Lambda 而做；基于 Linux 的 KVM，只模拟 5 种设备，官网写启动不到 125 毫秒。Vercel Sandbox 和 E2B 都用它。 <a class="src" href="https://firecracker-microvm.github.io/">Firecracker 官网</a><span class="avoid">Docker 的一种、容器运行时</span></dd>
+</dl>
+
+<h2>Agent CLI 适配层（第 4 课）</h2>
+<dl class="glossary">
+<dt>适配层<span class="en">adapter layer</span></dt><dd>平台和各家 Agent CLI 之间那层“翻译”代码：把统一的任务（提示词、模型、密钥、MCP 配置）翻成某一家 CLI 认得的命令行参数和配置文件，再把它的输出翻回平台的日志和会话编号。模板里入口是 <code>executeAgentInSandbox</code>，按 agent 名分发到 6 个文件，没有共同的接口类型。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L18-L40">index.ts</a><span class="avoid">驱动、插件（模板里不是插件机制，是一个 switch）</span></dd>
+<dt>无确认模式<span class="en">auto-approve / yolo mode</span></dt><dd>让 CLI 执行命令、改文件时不再停下来问人的开关，例如 Claude 的 <code>--dangerously-skip-permissions</code>、Gemini 的 <code>--yolo</code>（新版写成 <code>--approval-mode=yolo</code>）。云端无人值守必须开，于是安全只能靠外面的 Sandbox。 <a class="src" href="https://code.claude.com/docs/en/cli-reference">Claude Code 文档</a><span class="avoid">“安全模式”（正好相反）</span></dd>
+<dt>stream-json</dt><dd>CLI 把运行过程按“每行一个 JSON 对象”实时吐出来的输出格式。平台逐行解析，就能把工具调用、最终结果和会话编号转成网页上的进度。注意数据按块到达，一行可能被切成两块。 <a class="src" href="https://code.claude.com/docs/en/headless">Claude Code 文档</a><span class="avoid">JSON 输出（那通常是结束时一次性给出的一个对象）</span></dd>
+<dt>会话编号<span class="en">session id / resume</span></dt><dd>CLI 为一次对话分配的标识。下次带上它（如 <code>--resume</code>），CLI 能接着上次的上下文继续。模板把它存进 tasks 表的 <code>agentSessionId</code>；Copilot 声明了却从没赋值，Gemini 没有续聊。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/copilot.ts#L202-L202">copilot.ts L202</a><span class="avoid">任务编号（那是平台自己的 id）</span></dd>
+<dt>提示词转义<span class="en">prompt escaping</span></dt><dd>把用户写的提示词安全地塞进一条 shell 命令里。模板去掉 <code>$</code> 和 <code>\</code>、把反引号换成单引号，再放进双引号里交给 <code>sh -c</code>，但没处理双引号本身；Copilot 和 Cursor 用参数数组传，绕开了这个问题。<span class="avoid">提示词注入（那是指让模型听从恶意内容，另一回事）</span></dd>
+<dt>提示词注入<span class="en">prompt injection</span></dt><dd>仓库文件、网页、issue 里藏着的文字被模型当成命令执行，例如“把环境变量发到某个网址”。CLI 开着无确认模式、Sandbox 能联网、密钥又在里面时，这是最现实的风险。 <a class="src" href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">OWASP LLM Top 10</a><span class="avoid">越狱（jailbreak 是针对模型自身规则的）</span></dd>
+<dt>网络策略<span class="en">network policy</span></dt><dd>Vercel Sandbox 控制出网的设置：默认 <code>allow-all</code>，可改成 <code>deny-all</code> 或按域名放行，运行中也能改。按 TLS 的 SNI 匹配域名。 <a class="src" href="https://vercel.com/docs/vercel-sandbox/concepts/firewall">Vercel 文档</a><span class="avoid">防火墙规则（可以这么理解，但它只管出网）</span></dd>
+<dt>凭证注入<span class="en">credentials brokering</span></dt><dd>密钥不放进 Sandbox，而是由 Sandbox 外面的出网代理在请求发往某个域名时，替它加上带密钥的请求头。Agent 读不到真密钥，也就偷不走。Vercel 2026-02-23 上线，用网络策略里的 <code>transform</code> 配置。 <a class="src" href="https://vercel.com/changelog/safely-inject-credentials-in-http-headers-with-vercel-sandbox">Vercel changelog</a><span class="avoid">密钥托管、环境变量（那正是要避免的）</span></dd>
+<dt>脱敏<span class="en">redaction</span></dt><dd>写日志前把密钥、令牌等敏感字符串遮掉。模板用一组正则做，保留前 4 位和后 4 位；OpenAI 那条正则把 <code>sk-</code> 误写成字符类 <code>[sk-]</code>。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/logging.ts#L11-L16">logging.ts L11–L16</a><span class="avoid">加密（脱敏后原文就丢了，不能还原）</span></dd>
+</dl>
+
+<h2>进度链路与任务状态（第 5 课）</h2>
+<dl class="glossary">
+<dt>轮询<span class="en">polling</span></dt><dd>浏览器每隔固定时间主动问一次服务器“有没有新东西”。模板用三个 <code>setInterval</code>：任务详情 5 秒、消息 3 秒、侧边栏 5 秒，任务结束后也不停。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/hooks/use-task.ts#L73-L83">use-task.ts</a><span class="avoid">长轮询（long polling 是服务器把请求挂住、有新数据才回）</span></dd>
+<dt>NDJSON<span class="en">newline-delimited JSON</span></dt><dd>每行一个 JSON 对象的文本格式，适合边产生边传输。Sandbox SDK 读命令输出的接口 <code>/cmd/{id}/logs</code> 返回的就是 <code>application/x-ndjson</code>。<a class="src" href="https://unpkg.com/@vercel/sandbox@0.0.21/dist/api-client/api-client.js">SDK 0.0.21</a><span class="avoid">stream-json（那是 CLI 自己的输出格式，碰巧也是一行一个 JSON）</span></dd>
+<dt>SSE<span class="en">Server-Sent Events</span></dt><dd>浏览器用普通 HTTP 打开一条长连接，服务器单向往下推 <code>event</code> / <code>data</code> 文本。每条事件可带 <code>id</code>，断线后浏览器自动带 <code>Last-Event-ID</code> 重连。Cursor Cloud Agents API 的进度流就是 SSE。 <a class="src" href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events">MDN</a><span class="avoid">WebSocket（那是双向的、另一套协议）</span></dd>
+<dt>WebSocket</dt><dd>浏览器和服务器之间的双向长连接。Vercel Functions 2026-06-22 起公测支持，但连接固定在一个函数实例上，函数到最长时长就会断，客户端要自己重连。 <a class="src" href="https://vercel.com/docs/functions/websockets">Vercel 文档</a><span class="avoid">把它当成“存进度的地方”（它只负责传，不负责存）</span></dd>
+<dt>读改写<span class="en">read-modify-write</span></dt><dd>先读出旧值、在程序里改、再整体写回。两个写入者同时这样做，后写的会盖掉先写的，叫“丢失更新”。模板的 <code>TaskLogger</code> 每追加一条日志都这么做。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L37-L48">task-logger.ts</a><span class="avoid">追加（真正的追加是让数据库自己在末尾加，不经过程序）</span></dd>
+<dt>写放大<span class="en">write amplification</span></dt><dd>为了写一点点新数据，实际写了多得多的数据。把日志存成一整列数组、每次追加都整列重写，写 N 条日志总共要搬运约 N²/2 条。<span class="avoid">写入量大（写放大说的是“比例”，不是总量）</span></dd>
+<dt>游标<span class="en">cursor</span></dt><dd>增量拉取时客户端记住的“我已经看到哪儿了”，通常是事件的自增序号。下次请求带上它，服务器只返回之后的新事件。<span class="avoid">数据库游标（同名，但那是逐行读取结果集的机制）</span></dd>
+<dt>状态机<span class="en">state machine</span></dt><dd>一个对象只能处在有限几种状态之一，并且只能按规定的路线在状态之间变化。模板的任务有五种状态（pending / processing / completed / error / stopped），但写状态时不检查“从哪来”，终态可以被覆盖。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L90-L95">schema.ts</a><span class="avoid">状态字段（有字段不等于有状态机）</span></dd>
+</dl>
+
+<h2>密钥与信任边界（第 6 课）</h2>
+<dl class="glossary">
+<dt>信任边界<span class="en">trust boundary</span></dt><dd>系统里“这边的东西互相信任、那边的要当作可能被攻破”的分界线。模板里最关键的一条在服务器和 Sandbox 之间：Agent 在 Sandbox 里免确认运行、可能被提示词注入，可 GitHub 令牌、模型 key、MCP secret 都被送了进去。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L121-L127">creation.ts L121–L127</a><span class="avoid">防火墙（防火墙是守边界的一种手段，不是边界本身）</span></dd>
+<dt>静态加密<span class="en">encryption at rest</span></dt><dd>秘密存进数据库前先加密。模板用 AES-256-CBC、随机 IV、全站一把 <code>ENCRYPTION_KEY</code>，没有完整性校验和密钥版本号；README 写的“per-user encryption”与代码不符。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/crypto.ts#L3-L35">crypto.ts L3–L35</a><span class="avoid">哈希（哈希不能解回原文，令牌必须能解回来用）</span></dd>
+<dt>JWE 会话<span class="en">JWE session cookie</span></dt><dd>把会话内容（登录方式、用户信息）用共享密钥 <code>JWE_SECRET</code> 加密后整个放进 cookie，服务器不存会话表。cookie 一年有效；拿到 <code>JWE_SECRET</code> 就能伪造任意用户，服务器也没法单独踢某个人下线。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/jwe/encrypt.ts#L12-L15">jwe/encrypt.ts L12–L15</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/session/create.ts#L49-L66">session/create.ts L49–L66</a><span class="avoid">JWT（JWT 通常只签名不加密，内容可读）</span></dd>
+<dt>OAuth 授权范围<span class="en">OAuth scope</span></dt><dd>用户登录时同意给应用的权限。模板申请 <code>repo,read:user,user:email</code>，其中 <code>repo</code> 是对所有公开和私有仓库的完全访问。OAuth app 的令牌默认不过期，一年不用才会被 GitHub 吊销。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/auth/signin/github/route.ts#L59-L64">signin/github L59–L64</a> <a class="src" href="https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps">GitHub 文档</a><span class="avoid">角色、权限组（scope 只是令牌上的一串标签）</span></dd>
+<dt>GitHub App 安装令牌<span class="en">installation access token</span></dt><dd>GitHub App 为某次安装签发的短期令牌：可以只限定几个仓库和几项权限，一小时后过期。云端 Agent 想给 Sandbox 一把“够用但不多”的令牌时，这是现在的标准答案。 <a class="src" href="https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app">GitHub 文档</a><span class="avoid">个人访问令牌（PAT 绑定的是人，不是应用）</span></dd>
+<dt>平台密钥<span class="en">platform key / fallback key</span></dt><dd>部署者填在服务器环境变量里的密钥。分两类：<code>ENCRYPTION_KEY</code>、<code>JWE_SECRET</code>、<code>SANDBOX_VERCEL_TOKEN</code> 只在服务器用；<code>AI_GATEWAY_API_KEY</code> 等模型密钥在用户没存自己的 key 时会兜底进 Sandbox，于是任何用户都能通过终端接口读到（推断）。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/README.md#L240-L246">README.md L240–L246</a><span class="avoid">系统密钥（太笼统，分不清进不进 Sandbox）</span></dd>
+<dt>凭据代理<span class="en">credentials brokering</span></dt><dd>秘密不进 Sandbox，而是由 Sandbox 外面的防火墙在出站请求上注入请求头。Vercel Sandbox 的 <code>networkPolicy</code> 用 <code>transform</code> 实现；按 SNI 匹配域名，按 IP 段放行的流量不做注入。 <a class="src" href="https://vercel.com/docs/sandbox/concepts/firewall">Vercel 文档</a><span class="avoid">密钥管理服务（那是存密钥的地方，不管出站请求）</span></dd>
+<dt>环境变量串用<span class="en">process.env cross-talk</span></dt><dd>模板把每个用户的 key 临时写进进程共用的 <code>process.env</code>、跑完再恢复。Vercel Fluid compute 下多个调用共享一个实例，两个任务交错恢复，可能让前一个用户的 key 留在进程里给别人用（推断）。原值为 <code>undefined</code> 时恢复还会写成字符串 <code>"undefined"</code>。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L56-L75">index.ts L56–L75</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/agents/index.ts#L149-L158">L149–L158</a><span class="avoid">内存泄漏（这里漏的是数据，不是内存）</span></dd>
+<dt>批量赋值<span class="en">mass assignment</span></dt><dd>接口把客户端请求体整个交给数据模型，让客户端能写本该由服务器决定的字段。模板创建任务时客户端可以填 <code>sandboxId</code>、<code>maxDuration</code>、<code>prUrl</code> 等。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L71-L82">tasks/route.ts L71–L82</a> <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/db/schema.ts#L117-L147">schema.ts L117–L147</a><span class="avoid">SQL 注入（字段值是正常写进去的，没有拼 SQL）</span></dd>
+<dt>归属检查<span class="en">ownership check</span></dt><dd>每个按编号访问资源的接口，都要确认“这个资源属于当前登录的人”，否则就是越权访问（IDOR）。<code>app/api/tasks/[taskId]/</code> 下 31 个路由全部做了，其中 4 个没排除已删除任务。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/terminal/route.ts#L26-L31">terminal/route.ts L26–L31</a><span class="avoid">认证（认证回答“你是谁”，归属检查回答“这是不是你的”）</span></dd>
+<dt>速率限制<span class="en">rate limit</span></dt><dd>限制一个用户在一段时间内能发多少请求。模板按“今天的任务数 + 用户消息数 ≤ 5”计算：新任务算两次、删掉的不算、先查后插不是原子操作，终端等接口不限。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/rate-limit.ts#L21-L43">rate-limit.ts L21–L43</a><span class="avoid">配额计费（这里不计钱，只计次数）</span></dd>
+</dl>
+
+<h2>平台内部</h2>
+<dl class="glossary">
+<dt>后台流程<span class="en">processTask</span></dt><dd>在 <code>after()</code> 里运行、把一个任务从建 Sandbox 一路做到收尾的那段主流程。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L366-L736">route.ts L366–736</a><span class="avoid">worker、调度器、编排器</span></dd>
+<dt>after()<span class="en">Next.js</span></dt><dd>Next.js 提供的功能：服务器先把结果回给浏览器，再接着把后面的活干完。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L220-L243">route.ts L220–243</a><span class="avoid">异步、后台线程</span></dd>
+<dt>日志<span class="en">logs</span></dt><dd>任务运行时的一条条记录，按顺序存进 <code>tasks.logs</code> 字段；网页显示的进度就来自这里。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/task-logger.ts#L16-L55">task-logger.ts L16–55</a><span class="avoid">事件流、输出流</span></dd>
+<dt>定时拉取</dt><dd>网页每隔 5 秒主动向服务器要一次最新的任务数据。本项目回传进度只靠这个办法。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/hooks/use-task.ts#L73-L83">use-task.ts L73–83</a><span class="avoid">轮询（可以理解，但本课不用这个词）、推送、实时流</span></dd>
+<dt>密钥<span class="en">API key</span></dt><dd>调用某个模型服务时证明“我是谁、该算谁的钱”的一串字符。用户可以存自己的，没有就用平台的。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/api-keys/user-keys.ts#L15-L67">user-keys.ts L15–67</a><span class="avoid">token（token 专指下面的“令牌”）</span></dd>
+<dt>令牌<span class="en">GitHub token</span></dt><dd>用户登录 GitHub 后得到的访问凭证，平台用它克隆、推送代码和开 PR。在数据库里加密保存。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/github/user-token.ts#L21-L57">user-token.ts L21–57</a><span class="avoid">密码、key</span></dd>
+<dt>MCP</dt><dd>一种让 Agent 接入外部工具的通用接口标准。本项目里用户可以登记自己的 MCP 服务器，任务开始时交给 Agent CLI 使用。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/route.ts#L536-L578">route.ts L536–578</a><span class="avoid">插件协议、扩展</span></dd>
+</dl>
+
+<h2>模型</h2>
+<dl class="glossary">
+<dt>AI Gateway<span class="en">Vercel AI Gateway</span></dt><dd>Vercel 的统一模型入口：用一个密钥调用多家的模型，并负责转发、记账和记录请求。 <a class="src" href="https://vercel.com/docs/ai-gateway">Vercel 文档</a><span class="avoid">代理、中转站、API 网关（泛指时）</span></dd>
+<dt>小模型调用</dt><dd>平台自己为起分支名、起标题、写提交说明而调用的便宜模型（本项目用 <code>openai/gpt-5-nano</code>），和 Agent 改代码用的模型是两回事。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/branch-name-generator.ts#L41-L45">branch-name-generator.ts L41–45</a><span class="avoid">辅助 AI</span></dd>
+</dl>
+
+<h2>代码协作</h2>
+<dl class="glossary">
+<dt>浅克隆<span class="en">shallow clone</span></dt><dd>只拉仓库最新一版、不带历史的克隆方式，命令是 <code>git clone --depth 1</code>。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/creation.ts#L120-L127">creation.ts L120–127</a><span class="avoid">下载代码</span></dd>
+<dt>任务分支<span class="en">branchName</span></dt><dd>每个任务专属的 git 分支，名字由小模型生成并加 6 位随机字符，失败时用时间戳兜底。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/utils/branch-name-generator.ts#L50-L54">branch-name-generator.ts L50–54</a><span class="avoid">工作分支、临时分支</span></dd>
+<dt>推送<span class="en">push</span></dt><dd>把 Sandbox 里已经提交的改动传到 GitHub 上的任务分支。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/lib/sandbox/git.ts#L47-L48">git.ts L47–48</a><span class="avoid">上传、同步</span></dd>
+<dt>PR<span class="en">Pull Request</span></dt><dd>在 GitHub 上请求把任务分支合并进主分支的申请。本项目里由用户点按钮后，后端调用 GitHub 接口创建。 <a class="src" href="https://github.com/vercel-labs/coding-agent-template/blob/e753e1b6d28b2d64446dd5f9ef33a93909cc7a09/app/api/tasks/%5BtaskId%5D/pr/route.ts#L60-L83">pr/route.ts L60–83</a><span class="avoid">合并请求（可以理解，但统一说 PR）、MR</span></dd>
+</dl>
+
+<footer class="foot">
+  源代码引用全部固定在 commit <code>e753e1b</code>（main 分支，2026-02-12 提交，北京时间 17:21）。
+  所以哪怕仓库以后改动，这些链接指向的行号也不会变。
+</footer>
+</main>
+</body>
+</html>
