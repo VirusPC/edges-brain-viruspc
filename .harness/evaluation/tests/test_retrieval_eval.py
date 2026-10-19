@@ -12,6 +12,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 EVAL_DIR = Path(__file__).resolve().parents[1]
 if str(EVAL_DIR) not in sys.path:
@@ -324,6 +325,24 @@ class ClientTests(unittest.TestCase):
             self.assertEqual(call.returncode, 0)
             self.assertFalse(call.timed_out)
             self.assertIsNone(call.parse_error)
+
+    def test_run_client_closes_stdin(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with patch("retrieval_eval.client.subprocess.run") as run:
+                run.return_value = subprocess.CompletedProcess(
+                    args=["codex"],
+                    returncode=0,
+                    stdout="",
+                    stderr="",
+                )
+                run_client(
+                    Client(id="fake", command="codex", sandbox="read-only", timeout_seconds=5),
+                    root,
+                    "问题",
+                    root / "last.txt",
+                )
+            self.assertEqual(run.call_args.kwargs["stdin"], subprocess.DEVNULL)
 
     def test_sample_trace_persists_event_stream(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

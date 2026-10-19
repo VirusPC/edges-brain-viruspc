@@ -87,6 +87,8 @@ def run_client(
             text=True,
             capture_output=True,
             timeout=client.timeout_seconds,
+            # Codex reads stdin when it is open and then waits until timeout.
+            stdin=subprocess.DEVNULL,
         )
     except subprocess.TimeoutExpired as exc:
         stdout = exc.stdout or ""
