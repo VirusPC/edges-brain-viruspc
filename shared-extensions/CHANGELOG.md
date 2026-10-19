@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-10-19
+
+### Added
+
+- `skills/html-plan`：把实现计划写成一页可交互 HTML（论断树 + 决策点 + 一键回填答复）。原样拷自 [anthropics/claude-plugins-community](https://github.com/anthropics/claude-plugins-community) 的 `html-plan/skills/html-plan/`（commit `06ec7b6`，Apache-2.0），来源与同步方法见该目录 `UPSTREAM.md`。
+
 ## [4.0.0] - 2026-10-18
 
 ### Added
@@ -26,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 整层一份 `VERSION`、本 changelog、tag `shared-extensions@<version>`。
 - 本层项目记忆（`AGENTS.md` + `.memory/`）。
 
-[Unreleased]: https://github.com/VirusPC/edges/compare/shared-extensions@4.0.0...HEAD
+[Unreleased]: https://github.com/VirusPC/edges/compare/shared-extensions@4.1.0...HEAD
+[4.1.0]: https://github.com/VirusPC/edges/compare/shared-extensions@4.0.0...shared-extensions@4.1.0
 [4.0.0]: https://github.com/VirusPC/edges/compare/shared-extensions@1.0.0...shared-extensions@4.0.0
 [1.0.0]: https://github.com/VirusPC/edges/releases/tag/shared-extensions@1.0.0
