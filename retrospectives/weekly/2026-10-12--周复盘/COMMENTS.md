@@ -8,3 +8,4 @@
 - html-plan：[#292](https://github.com/VirusPC/edges/pull/292) 已经把 `html-plan` skill 收进 `shared-extensions/skills/`。每一轮 grill 都用它这条，我写进了 memory，不改 `grill-with-docs`。
 - doctor 报不出断掉的软链接：不用管了，不开卡，以后复盘也不再追。
 - #174（CLI 和根 `.harness` 补齐 notes、edges、projects、archive）：不用马上做，可以放在 backlog。
+- PR 上加 frozen install 检查：要做。在 PR 上跑和 Deploy 同样的 `pnpm install --frozen-lockfile`，lockfile 和依赖配置对不上时合入前就变红。
