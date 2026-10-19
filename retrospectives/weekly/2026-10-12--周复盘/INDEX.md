@@ -193,7 +193,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### grill 每一轮用 html-plan
 
-建议去处：共享 skill `grill-with-docs`。处理结果：做了一半，待用户确认。10-19 [#292](https://github.com/VirusPC/edges/pull/292) 已把 `html-plan` skill 收进 `shared-extensions/skills/`，但 `grill-with-docs` 里还没有每轮调用它的要求。用户 10-18 20:36 对全栈开发专家说「memory里记下就好了」，所以目前只在那个助手的记忆里。
+建议去处：共享 skill `grill-with-docs`。处理结果：已处理。10-19 [#292](https://github.com/VirusPC/edges/pull/292) 把 `html-plan` skill 收进了 `shared-extensions/skills/`；每轮都用它这条，用户决定记在 memory 里，不写进 `grill-with-docs`。
 
 为什么值得补：grill 是好几个助手都在用的流程，只有一个助手记得，其他助手 grill 时不会出 html-plan；10-18 21:32 用户就追问过一次「html 图呢」。
 
