@@ -201,6 +201,25 @@ test("ensureProjectMetadata seeds _default and root index without moving Task fi
   }
 });
 
+test("ensureProjectMetadata does not seed a README for an AGENTS-only directory", async () => {
+  const repo = await mkdtemp(path.join(tmpdir(), "edges-proj-agents-only-"));
+  try {
+    await mkdir(path.join(repo, "tasks/legacy"), { recursive: true });
+    const agents = "# Legacy\n\nlegacy work\n";
+    await writeFile(path.join(repo, "tasks/legacy/AGENTS.md"), agents, "utf8");
+    await writeFile(
+      path.join(repo, "tasks/AGENTS.md"),
+      "# tasks\n\n<!-- project-harness-local:start -->\n## 本层系统维护信息\n\n- [Legacy](legacy/AGENTS.md) — legacy work\n<!-- project-harness-local:end -->\n",
+      "utf8",
+    );
+    await ensureProjectMetadata(domainBoard(repo), nodeBoardWriter(), undefined, ["legacy"]);
+    assert.equal(await readFile(path.join(repo, "tasks/legacy/AGENTS.md"), "utf8"), agents);
+    await assert.rejects(readFile(path.join(repo, "tasks/legacy/README.md"), "utf8"));
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("ensureProjectMetadata skipId leaves that README.md missing", async () => {
   const repo = await mkdtemp(path.join(tmpdir(), "edges-proj-"));
   try {

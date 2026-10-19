@@ -15,8 +15,8 @@ COMMANDS
   review-page --from <path|-> [--out <path>]
 
 <project> is default or a lowercase kebab slug (not _default).
-create writes tasks/<dir>/README.md (title, description, project-entries list) and lists it in the board README.md; an existing <dir>/AGENTS.md system entry is read and updated in place.
-update changes title/description only. Task files move with: edges tasks update --project
+create writes tasks/<dir>/README.md (title, description, project-entries list) and lists it in the board README.md. A sibling AGENTS.md is the system entry and is not project metadata.
+update changes title/description of an existing README.md and does not create one. A project directory without README.md is an error. Task files move with: edges tasks update --project
 review-page renders groups+items JSON to an HTML file (no board writes). Open the printed path in a system browser.
 There is no edges tasks classify verb.
 

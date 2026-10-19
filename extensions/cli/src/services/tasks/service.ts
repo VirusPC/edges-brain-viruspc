@@ -38,7 +38,7 @@ export async function findRun(
 }
 
 export { createTask, updateTask } from "./write.js";
-export { createProject, getProject, updateProject, projectRecordFromEntry } from "./project-meta.js";
+export { createProject, getProject, listProjectsInScope, updateProject, projectRecordFromEntry } from "./project-meta.js";
 export { renderReviewPageFromText } from "./review-page.js";
 export { asTasksError, openTasksRuntime } from "./result.js";
 export { formatRunsTable, formatRunMessagesTable } from "./format.js";

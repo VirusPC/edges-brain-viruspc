@@ -140,25 +140,46 @@ test("Task Project index lives once in local ownership while preserving authored
   const tail =
     "\n<!-- project-memory:start -->\n<!-- project-memory-local:start -->\n## 本层记忆\n\n- [guide](../guide.md) — shared guide\n<!-- project-memory-local:end -->\n<!-- project-memory:end -->\n\n## Authored\nkeep exactly\n";
   put(root, "tasks/demo/AGENTS.md", "# Demo\n\nBusiness purpose\n" + tail);
-  const parsed = parseProjectAgents(read(root, "tasks/demo/AGENTS.md"));
+  put(
+    root,
+    "tasks/demo/README.md",
+    "# Demo\n\nBusiness purpose\n\n<!-- project-entries-local:start -->\n## 本层内容\n<!-- project-entries-local:end -->\n",
+  );
+  const agentsBefore = read(root, "tasks/demo/AGENTS.md");
+  const parsed = parseProjectAgents(agentsBefore);
   assert.equal(parsed.description, "Business purpose");
   const board = domainBoard(root);
   await updateProject(board, "demo", { title: "New title" }, nodeBoardWriter());
-  assert.ok(read(root, "tasks/demo/AGENTS.md").endsWith(tail));
-  const index = read(root, "tasks/AGENTS.md");
-  assert.match(index, /## Authored\nkeep this/);
-  assert.doesNotMatch(index, /## Task Projects/);
-  assert.equal(index.split("demo/AGENTS.md").length - 1, 1);
-  const node = (
-    await new NodeService({ managedRoot: root }).list(join(root, "tasks"))
-  )[0]!;
+  assert.equal(read(root, "tasks/demo/AGENTS.md"), agentsBefore);
+  const projectReadme = read(root, "tasks/demo/README.md");
+  assert.match(projectReadme, /^# New title\n/);
+  assert.match(projectReadme, /project-entries-local:start/);
+  const boardAgents = read(root, "tasks/AGENTS.md");
+  assert.equal(boardAgents, source);
+  assert.doesNotMatch(boardAgents, /## Task Projects/);
+  assert.doesNotMatch(boardAgents, /demo\/AGENTS\.md/);
+  const index = read(root, "tasks/README.md");
+  assert.equal(index.split("demo/README.md").length - 1, 1);
+  const { ReadmeNode } = await import("../../src/domain/models/readme/readme-node.js");
+  const node = await new NodeService({ managedRoot: root }).get(
+    join(root, "tasks/README.md"),
+    ReadmeNode,
+  );
+  assert.ok(node);
   assert.ok(
     node.localChildren.some(
-      (child) => child.id === join(root, "tasks/demo/AGENTS.md"),
+      (child) => child.id === join(root, "tasks/demo/README.md"),
     ),
   );
+  assert.equal(
+    node.descendantChildren.some(
+      (child) => child.id === join(root, "tasks/demo/README.md"),
+    ),
+    false,
+  );
   await refreshProjectIndex(board, nodeBoardWriter());
-  assert.equal(read(root, "tasks/AGENTS.md"), index);
+  assert.equal(read(root, "tasks/AGENTS.md"), source);
+  assert.equal(read(root, "tasks/README.md"), index);
 });
 test("sparse Task Project markers are local content and a heading-only local section is reused", async (t) => {
   const root = fixture(t);

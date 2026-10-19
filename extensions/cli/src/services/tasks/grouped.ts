@@ -284,9 +284,11 @@ export async function listRepositoryGroupedByProject(
     .filter((entry): entry is NonNullable<typeof entry> => !!entry)
     .filter(entry => !opts.projects?.length || opts.projects.includes(entry.project)).value();
   for (const { location, project, source } of projects) {
-    const record = await readProjectRecord(location, project, createNodeBoardFs(location));
+    // Identity can still come from a legacy AGENTS.md link. Title and description
+    // come only from README.md; a missing org list falls back to the seed text.
+    const record = await resolveGroup(location, project, createNodeBoardFs(location));
     const id = sourceIdentity(source, project);
-    groups.set(id, { id, project, source, title: record.title, description: record.description });
+    groups.set(id, { ...record, id, project, source });
   }
   for (const [id, rows] of Object.entries(groupedTasks)) {
     if (groups.has(id)) continue;

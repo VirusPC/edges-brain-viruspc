@@ -62,4 +62,5 @@
 - [Project Memory](<project-memory/README.md>) — Project Memory 类型/索引/reshape/与 docs 边界等。
 - [Site and Content](<site-and-content/README.md>) — 站点/posts/badge/内容整理检索。
 - [Edges Routines](<edges-routines/README.md>) — routines 模块迭代（调度文件、Skill 约定与最小示例）。
+- [技术阅读](<tech-reading/README.md>) — 记录所有技术阅读相关进展（论文、长文、官方文档、源码精读等）。看板管阅读工作项与进度；可读笔记仍可落 notes。
 <!-- project-entries-local:end -->
