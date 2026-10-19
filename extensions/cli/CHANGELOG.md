@@ -4,9 +4,15 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-10-19
+
+### Added
+
+- 随包 skills 新增 `edges-compose`（`0.1.0`，beta）。它说明如何用 `edges compose register`、`clone`、`list`，以及可选的 `pull`、`push`、`unregister`，把外部 harness 仓库挂到当前 scope。`register` 必须带 `--description`。
+
 ### Changed
 
-- `edges compose register` 的 `--description` 改为必填。缺少或只有空白时退出码 2，`errorCode` 为 `VALIDATION_ERROR`，不修改 `AGENTS.md`。
+- `edges compose register` 的 `--description` 改为必填。缺少或只有空白时以校验错误退出（退出码 2，`errorCode` 为 `VALIDATION_ERROR`），不写 `AGENTS.md`。
 
 ## [0.2.2] - 2026-10-19
 
