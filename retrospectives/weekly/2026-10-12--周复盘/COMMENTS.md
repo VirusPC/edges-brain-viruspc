@@ -10,3 +10,4 @@
 - #174（CLI 和根 `.harness` 补齐 notes、edges、projects、archive）：不用马上做，可以放在 backlog。
 - PR 上加 frozen install 检查：要做。在 PR 上跑和 Deploy 同样的 `pnpm install --frozen-lockfile`，lockfile 和依赖配置对不上时合入前就变红。
 - `docs/architecture.md` 里的 RAG、PageIndex：保留，不改。那是云端知识库能力，是同一份知识的另一条接入路径，和 ADR 0034 不冲突。
+- 「笔记和文档不强制走云端代理」写进 feedbacks 和 `edges-publish`：不要了，不补。
