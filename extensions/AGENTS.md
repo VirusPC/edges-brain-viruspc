@@ -9,6 +9,7 @@
 - 本层硬约束直接写在这个区块里，不要通过记忆正文链接代替本区块的硬约束。
 - 不绑定 Edges 的通用 skill / MCP 配置 / plugin / hook 不放本目录，去 `shared-extensions/`。
 - 顶层 `edges` 命令能对上 harness 或领域目录时，命令名跟目录（`notes/` → `notes`，`.harness/skills` → `skills`）。硬切断，不留旧名别名。`tasks`、`memory` 已对齐则不动。不为 `evaluation` / `observation` 发明命令。
+- 内容节点的 create/get/update/destroy 必须走 NodeService，不得旁路写文件（[ADR 0030](../docs/adr/0030-content-leaf-crud-via-nodeservice.md)）。
 <!-- project-harness-constraints:end -->
 
 

@@ -2,9 +2,9 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-07T15:54:17.816Z'
+  edges-updated-at: '2026-10-19T13:54:49.863Z'
   edges-title: notes/skills 的 create·get·update·delete 收口到 NodeService
-  edges-tasks-status: in_progress
+  edges-tasks-status: done
   edges-task-priority: none
 name: notes-skills-crud-via-nodeservice
 description: >-
@@ -26,7 +26,7 @@ notes 与 skills 的 create、get、update、delete（skills 无 update）与 li
 - 补/改测试证明旁路已消失；回归 notes/skills CLI
 
 **完成标准：**
-- [ ] notes create/get/update/delete 经 NodeService；不再 `readFileSync`/`writeFileSync`/`rmSync` 直改 INDEX（测试可证）
-- [ ] skills create/get/delete 经 NodeService；不再扫盘/`rmSync` 旁路（skills 无 update）
-- [ ] 既有 CLI 行为与错误语义尽量兼容；相关测试通过
-- [ ] 变更经 PR 合入 main
+- [x] notes create/get/update/delete 经 NodeService；不再 `readFileSync`/`writeFileSync`/`rmSync` 直改 INDEX（测试可证）
+- [x] skills create/get/delete 经 NodeService；不再扫盘/`rmSync` 旁路（skills 无 update）
+- [x] 既有 CLI 行为与错误语义尽量兼容；相关测试通过
+- [x] 变更经 PR 合入 main
