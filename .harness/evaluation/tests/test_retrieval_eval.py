@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import base64
+import contextlib
+import io
 import json
 import math
 import os
@@ -9,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
 
 EVAL_DIR = Path(__file__).resolve().parents[1]
@@ -25,7 +29,8 @@ from retrieval_eval.client import (
 )
 from retrieval_eval.config import Client, load_cells, load_samples
 from retrieval_eval.git_repo import sync_clone
-from retrieval_eval.run import write_sample_trace
+from retrieval_eval.langfuse_otlp import upload_sample_trace
+from retrieval_eval.run import record_scored_sample, write_sample_trace
 from retrieval_eval.score import aggregate, parse_clusters, score_prediction
 
 
@@ -282,6 +287,298 @@ class ClientTests(unittest.TestCase):
                 "warn\n",
             )
             self.assertFalse((log_dir / "edges_smoke_system_entry.stdout.txt").exists())
+
+
+def _events() -> str:
+    return "\n".join(
+        [
+            json.dumps({"type": "thread.started", "thread_id": "thread-1"}),
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {
+                        "id": "item_1",
+                        "type": "command_execution",
+                        "command": "rg CONTEXT",
+                        "aggregated_output": "CONTEXT.md\n",
+                    },
+                }
+            ),
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {"id": "item_2", "type": "reasoning", "text": "先看 CONTEXT"},
+                }
+            ),
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {
+                        "id": "item_3",
+                        "type": "agent_message",
+                        "text": '{"predicted":["a"]}',
+                    },
+                }
+            ),
+            json.dumps(
+                {
+                    "type": "turn.completed",
+                    "usage": {
+                        "input_tokens": 11,
+                        "cached_input_tokens": 4,
+                        "output_tokens": 3,
+                        "reasoning_output_tokens": 1,
+                    },
+                }
+            ),
+        ]
+    ) + "\n"
+
+
+def _span_attributes(payload: dict) -> list[dict[str, str]]:
+    spans = payload["resourceSpans"][0]["scopeSpans"][0]["spans"]
+    flattened = []
+    for span in spans:
+        attrs = {}
+        for item in span.get("attributes", []):
+            value = item["value"]
+            if "stringValue" in value:
+                attrs[item["key"]] = value["stringValue"]
+            elif "intValue" in value:
+                attrs[item["key"]] = str(value["intValue"])
+            elif "doubleValue" in value:
+                attrs[item["key"]] = str(value["doubleValue"])
+        flattened.append({"name": span["name"], "traceId": span["traceId"], **attrs})
+    return flattened
+
+
+class _Capture:
+    def __init__(self, status: int = 200, error: BaseException | None = None) -> None:
+        self.status = status
+        self.error = error
+        self.requests: list[object] = []
+
+    def __call__(self, request, timeout=None):
+        if self.error is not None:
+            raise self.error
+        self.requests.append(request)
+        body = io.BytesIO(b"")
+        response = urllib.error.HTTPError(request.full_url, self.status, "status", hdrs=None, fp=body)
+        if 200 <= self.status < 300:
+            return _Ok(self.status)
+        raise response
+
+
+class _Ok:
+    def __init__(self, status: int) -> None:
+        self.status = status
+
+    def read(self) -> bytes:
+        return b""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args) -> bool:
+        return False
+
+
+class LangfuseUploadTests(unittest.TestCase):
+    def test_missing_env_does_not_post(self) -> None:
+        capture = _Capture()
+        for env in (
+            {},
+            {"LANGFUSE_HOST": "https://langfuse.example"},
+            {"LANGFUSE_PUBLIC_KEY": "pk", "LANGFUSE_SECRET_KEY": "sk"},
+            {"LANGFUSE_BASE_URL": "https://langfuse.example", "LANGFUSE_PUBLIC_KEY": "pk"},
+        ):
+            with self.subTest(env=sorted(env)):
+                result = upload_sample_trace(
+                    events_jsonl=_events(),
+                    cell_id="cell-1",
+                    sample_id="s1",
+                    client_id="codex",
+                    repository_id="edges",
+                    repository_url="https://github.com/VirusPC/edges.git",
+                    repository_ref="main",
+                    repository_commit="abc",
+                    prompt="问题",
+                    score_row={"score": 1.0, "predicted": ["a"]},
+                    environ=env,
+                    opener=capture,
+                )
+                self.assertEqual(result.status, "skipped")
+        self.assertEqual(capture.requests, [])
+
+    def test_posts_otlp_json_with_basic_auth(self) -> None:
+        capture = _Capture()
+        result = upload_sample_trace(
+            events_jsonl=_events(),
+            cell_id="cell-1",
+            sample_id="s1",
+            client_id="codex",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="问题",
+            score_row={"score": 1.0, "R@5": 1.0, "grade": "good", "predicted": ["a"]},
+            environ={
+                "LANGFUSE_HOST": "https://langfuse.example/",
+                "LANGFUSE_BASE_URL": "https://other.example",
+                "LANGFUSE_PUBLIC_KEY": "pk-test",
+                "LANGFUSE_SECRET_KEY": "sk-test",
+            },
+            opener=capture,
+        )
+        self.assertEqual(result.status, "sent")
+        self.assertEqual(len(capture.requests), 1)
+        request = capture.requests[0]
+        self.assertEqual(request.full_url, "https://langfuse.example/api/public/otel/v1/traces")
+        self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(request.get_header("Content-type"), "application/json")
+        expected_auth = "Basic " + base64.b64encode(b"pk-test:sk-test").decode("ascii")
+        self.assertEqual(request.get_header("Authorization"), expected_auth)
+        payload = json.loads(request.data.decode("utf-8"))
+        spans = _span_attributes(payload)
+        self.assertGreaterEqual(len(spans), 4)
+        self.assertTrue(all(len(span["traceId"]) == 32 for span in spans))
+        self.assertEqual(len({span["traceId"] for span in spans}), 1)
+        joined = json.dumps(payload, ensure_ascii=False)
+        self.assertIn("rg CONTEXT", joined)
+        self.assertIn("先看 CONTEXT", joined)
+        self.assertIn("agent_message", joined)
+        self.assertIn("cell-1", joined)
+        self.assertIn("s1", joined)
+        self.assertIn("codex", joined)
+        self.assertIn("https://github.com/VirusPC/edges.git", joined)
+        self.assertIn("1.0", joined)
+        turn = next(span for span in spans if span["name"] == "turn.completed")
+        usage = json.loads(turn["langfuse.observation.usage_details"])
+        self.assertEqual(usage["input"], 11)
+        self.assertEqual(usage["output"], 3)
+        self.assertEqual(usage["input_cached_tokens"], 4)
+        self.assertEqual(turn["gen_ai.usage.input_tokens"], "11")
+        self.assertEqual(turn["gen_ai.usage.output_tokens"], "3")
+        self.assertNotIn("sk-test", joined)
+        self.assertNotIn("pk-test", joined)
+
+    def test_base_url_alias_when_host_missing(self) -> None:
+        capture = _Capture()
+        result = upload_sample_trace(
+            events_jsonl="",
+            cell_id="cell-1",
+            sample_id="s1",
+            client_id="codex",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref=None,
+            repository_commit=None,
+            prompt="问题",
+            score_row={"score": 0.0},
+            environ={
+                "LANGFUSE_HOST": "  ",
+                "LANGFUSE_BASE_URL": "https://alias.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=capture,
+        )
+        self.assertEqual(result.status, "sent")
+        self.assertEqual(
+            capture.requests[0].full_url,
+            "https://alias.example/api/public/otel/v1/traces",
+        )
+
+    def test_bad_response_does_not_raise(self) -> None:
+        failed = upload_sample_trace(
+            events_jsonl=_events(),
+            cell_id="cell-1",
+            sample_id="s1",
+            client_id="codex",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="问题",
+            score_row={"score": 1.0},
+            environ={
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=_Capture(status=503),
+        )
+        self.assertEqual(failed.status, "failed")
+        self.assertEqual(failed.error, "HTTP 503")
+        timed_out = upload_sample_trace(
+            events_jsonl=_events(),
+            cell_id="cell-1",
+            sample_id="s1",
+            client_id="codex",
+            repository_id="edges",
+            repository_url="https://github.com/VirusPC/edges.git",
+            repository_ref="main",
+            repository_commit="abc",
+            prompt="问题",
+            score_row={"score": 1.0},
+            environ={
+                "LANGFUSE_HOST": "https://langfuse.example",
+                "LANGFUSE_PUBLIC_KEY": "pk",
+                "LANGFUSE_SECRET_KEY": "sk",
+            },
+            opener=_Capture(error=TimeoutError("slow")),
+        )
+        self.assertEqual(timed_out.status, "failed")
+        self.assertEqual(timed_out.error, "TimeoutError")
+
+    def test_record_scored_sample_uploads_after_score_and_keeps_score_on_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            log_dir = Path(tmp)
+            call = ClientCall(
+                predicted=["a"],
+                command=["codex", "exec", "--json"],
+                stdout=_events(),
+                stderr="",
+                returncode=0,
+                timed_out=False,
+                parse_error=None,
+            )
+            sample = {"id": "s1", "prompt": "问题", "ground_truth": ["a"]}
+            capture = _Capture(status=500)
+            seen_file = []
+
+            def opener(request, timeout=None):
+                seen_file.append((log_dir / "s1.events.jsonl").is_file())
+                return capture(request, timeout)
+
+            with contextlib.redirect_stderr(io.StringIO()):
+                row = record_scored_sample(
+                    log_dir,
+                    sample,
+                    call,
+                    cell_id="cell-1",
+                    client_id="codex",
+                    repository_id="edges",
+                    repository_url="https://github.com/VirusPC/edges.git",
+                    repository_ref="main",
+                    repository_commit="abc",
+                    environ={
+                        "LANGFUSE_HOST": "https://langfuse.example",
+                        "LANGFUSE_PUBLIC_KEY": "pk",
+                        "LANGFUSE_SECRET_KEY": "sk",
+                    },
+                    opener=opener,
+                )
+            self.assertEqual(row["id"], "s1")
+            self.assertEqual(row["R@5"], 1.0)
+            self.assertEqual(seen_file, [True])
+            self.assertEqual(
+                (log_dir / "s1.events.jsonl").read_text(encoding="utf-8"),
+                _events(),
+            )
+            payload = json.loads(capture.requests[0].data.decode("utf-8"))
+            self.assertIn("1.0", json.dumps(payload))
 
 
 class CloneTests(unittest.TestCase):

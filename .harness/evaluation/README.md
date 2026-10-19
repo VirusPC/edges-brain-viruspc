@@ -94,6 +94,8 @@ python3 .harness/evaluation/retrieval_eval/run.py run
 
 同目录的 `<sample_id>.last.txt` 是 `-o` 写下的最终消息，打分优先读它；`<sample_id>.stderr.txt` 是该次进程的 stderr。文件搜索和读取没有单独的事件类型，它们出现在 `command_execution`（`rg`、`cat` 等）里。
 
+可选：三个环境变量都设置时，每个样本打分后会把这份事件流用 OTLP POST 到 `$LANGFUSE_HOST/api/public/otel/v1/traces`（Basic auth，与 [`observation/smoke/langfuse-otlp-smoke.sh`](../observation/smoke/langfuse-otlp-smoke.sh) 相同）。变量是 `LANGFUSE_HOST`（未设置时用 `LANGFUSE_BASE_URL`）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。缺任何一个就跳过；上传失败也不影响打分。密钥和实例域名不要写进仓库，轨迹也不进 `reports/`。
+
 Official-path tests (no API key):
 
 ```bash

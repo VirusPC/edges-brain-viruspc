@@ -5,6 +5,11 @@ the final message, and token usage on `turn.completed`). `run` stores that
 stream at `.harness/evaluation/.cache/retrieval/sessions/<stamp>/<cell_id>/<sample_id>.events.jsonl`
 and stderr beside it as `<sample_id>.stderr.txt`. Both are gitignored.
 Scoring reads `<sample_id>.last.txt`, the file passed to `-o`.
+When `LANGFUSE_HOST` (or `LANGFUSE_BASE_URL`), `LANGFUSE_PUBLIC_KEY`, and
+`LANGFUSE_SECRET_KEY` are all set, each scored sample is also POSTed as OTLP
+JSON to `$LANGFUSE_HOST/api/public/otel/v1/traces`. Missing env or a failed
+upload does not change the score. The instance origin and keys stay out of
+the repo and out of `reports/`.
 
     python3 .harness/evaluation/retrieval_eval/run.py print-command
     python3 .harness/evaluation/retrieval_eval/run.py run
@@ -16,6 +21,7 @@ import argparse
 import json
 import shlex
 import sys
+from collections.abc import Mapping
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Sequence
@@ -27,6 +33,7 @@ if str(_EVAL_DIR) not in sys.path:
 from retrieval_eval.client import ClientCall, build_prompt, codex_command, run_client
 from retrieval_eval.config import DEFAULT_CONFIG, Cell, load_cells, load_samples
 from retrieval_eval.git_repo import cache_dir, sync_clone
+from retrieval_eval.langfuse_otlp import UploadResult, upload_sample_trace
 from retrieval_eval.report import write_report
 from retrieval_eval.score import aggregate, score_prediction
 
@@ -39,6 +46,50 @@ def write_sample_trace(log_dir: Path, sample_id: str, call: ClientCall) -> None:
     """Persist one sample's `--json` event stream and stderr in the session cache."""
     (log_dir / f"{sample_id}.events.jsonl").write_text(call.stdout, encoding="utf-8")
     (log_dir / f"{sample_id}.stderr.txt").write_text(call.stderr, encoding="utf-8")
+
+
+def record_scored_sample(
+    log_dir: Path,
+    sample: Mapping[str, Any],
+    call: ClientCall,
+    *,
+    cell_id: str,
+    client_id: str,
+    repository_id: str,
+    repository_url: str,
+    repository_ref: str | None,
+    repository_commit: str | None,
+    environ: Mapping[str, str] | None = None,
+    opener: Any = None,
+) -> dict[str, Any]:
+    """Write the local trace, score the prediction, then optionally upload OTLP."""
+    write_sample_trace(log_dir, sample["id"], call)
+    row = score_prediction(sample["ground_truth"], call.predicted)
+    row["id"] = sample["id"]
+    row["prompt"] = sample["prompt"]
+    row["parse_error"] = call.parse_error
+    row["timed_out"] = call.timed_out
+    row["returncode"] = call.returncode
+    try:
+        result = upload_sample_trace(
+            events_jsonl=call.stdout,
+            cell_id=cell_id,
+            sample_id=sample["id"],
+            client_id=client_id,
+            repository_id=repository_id,
+            repository_url=repository_url,
+            repository_ref=repository_ref,
+            repository_commit=repository_commit,
+            prompt=sample["prompt"],
+            score_row=row,
+            environ=environ,
+            opener=opener,
+        )
+    except Exception as exc:
+        result = UploadResult("failed", error=type(exc).__name__)
+    if result.status == "failed":
+        print(f"retrieval_eval: langfuse upload failed: {result.error}", file=sys.stderr)
+    return row
 
 
 def print_command(cells: Sequence[Cell]) -> str:
@@ -88,13 +139,17 @@ def _run_cell(cell: Cell, reports_dir: Path, stamp: str) -> dict[str, Any]:
     for sample in samples:
         last_message = log_dir / f"{sample['id']}.last.txt"
         call = run_client(cell.client, dest, build_prompt(sample["prompt"]), last_message)
-        write_sample_trace(log_dir, sample["id"], call)
-        row = score_prediction(sample["ground_truth"], call.predicted)
-        row["id"] = sample["id"]
-        row["prompt"] = sample["prompt"]
-        row["parse_error"] = call.parse_error
-        row["timed_out"] = call.timed_out
-        row["returncode"] = call.returncode
+        row = record_scored_sample(
+            log_dir,
+            sample,
+            call,
+            cell_id=cell.cell_id,
+            client_id=cell.client.id,
+            repository_id=cell.repository.id,
+            repository_url=cell.repository.url,
+            repository_ref=cell.repository.ref,
+            repository_commit=commit,
+        )
         scored.append(row)
     payload = {
         "kind": "evaluation-smoke",
