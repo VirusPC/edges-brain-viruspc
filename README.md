@@ -31,22 +31,40 @@ harness 就是一组 Markdown 文件加 Git。仓库里的那套，给 Cursor、
 (3) 反馈：结果 / 问题 / 反驳 / 新证据 ──> 回到 (1)
 ```
 
-## 快速开始
+## 使用方式
 
-需要 Node.js 22.20 及以上。
+### 推荐：让 AI 接入
+
+把下面这句话复制给你的 AI：
+
+```text
+读 https://raw.githubusercontent.com/VirusPC/edges/main/extensions/skills/edges-onboarding/SKILL.md ，帮我接入 edges
+```
+
+AI 会检查 Node 和 git，安装 edges CLI，在你选定的目录里初始化，并在临时目录里验证笔记和任务能写、能读。
+
+### 手动
+
+需要 Node.js 22.20 及以上，以及 git。
 
 ```bash
 npm install -g @viruspc/edges
-cd ~/your-repo && edges init -- -g -y
+cd <你的目录>
+edges --scope . init -- -g -y
 ```
 
-`edges init -- -g -y` 会写系统入口，并把包里的 Edges skills 装给本机 agent。`-g -y` 写在 `--` 后面，交给 `skills@1.7.2`：没有 TTY 时也不再询问；探测到当前 agent 时只装给那一个，否则按本机已安装的 agent 装（一个都没有则装给全部）。要指定 agent 时写成 `edges init -- -y --agent claude-code`。说明见 [`extensions/skills`](extensions/skills/README.md)。
+`--` 后面的 `-g -y` 交给 skill 安装器：`-g` 装到用户目录，`-y` 在没有 TTY 时跳过确认。然后可以写笔记、建任务：
 
-对你的 AI 说：读这个链接，帮我接入 edges：https://raw.githubusercontent.com/VirusPC/edges/main/extensions/skills/edges-onboarding/SKILL.md
+```bash
+edges --scope . notes create --title "标题" --body "正文 Markdown"
+edges --scope . notes list
+edges --scope . tasks create --title "修复构建" --project default
+edges --scope . tasks list
+```
 
-想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges init -- -g -y`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
+完整命令见 [`extensions/cli/README.md`](extensions/cli/README.md)，或运行 `edges --help`。
 
-CLI、MCP 和 skill 各自的用法见 [`extensions/cli`](extensions/cli/README.md)、[`extensions/mcp-servers`](extensions/mcp-servers/README.md) 和 [`extensions/skills`](extensions/skills/README.md)。
+想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges --scope . init -- -g -y`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
 
 ## 本仓：作者的大脑仓库
 

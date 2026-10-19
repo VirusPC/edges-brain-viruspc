@@ -2,10 +2,6 @@
 
 本目录是 Edges **对外分发、接入本系统**的 skill 真源，供外部 AI Agent（Claude Code、Codex、Cursor、Gemini CLI、Factory、opencode）加载。不绑定 Edges 的通用 skill 在 [`shared-extensions/skills/`](../../shared-extensions/skills/README.md)，不要放进来。classifyTasks（`project-tasks-classify`）人闸走 `edges tasks project review-page`；尚未入库的 proposeTypes Skill 应复用同一命令与同一 HTML 壳，不要另开 `--mode`。
 
-## Skill 列表
-
-- [`edges-onboarding`](edges-onboarding/SKILL.md) — 帮用户第一次接入 Edges：安装 CLI、初始化目录、验证、常用命令和排错。已经装好要写笔记改用 `edges-note`；整理对话改用 `conversation-to-notes`；项目记忆改用 `project-memory-*`。
-
 ## 目录规范
 
 每个 skill 一个子目录，目录下必须有 `SKILL.md`，且其 YAML frontmatter 的 `name` **与目录名完全一致**：
