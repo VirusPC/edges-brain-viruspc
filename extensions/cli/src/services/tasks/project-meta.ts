@@ -247,7 +247,10 @@ export async function listProjectsInScope(
   const invocation = nativeTaskPath(scopeDirPath);
   const subject = subjectTaskBoard(invocation, { super: options.super === true });
   const boards = options.all
-    ? [subject, ...await listTaskBoardLocations(invocation, { withComposed: options.withComposed === true })]
+    ? [subject, ...await listTaskBoardLocations(invocation, {
+        super: options.super === true,
+        withComposed: options.withComposed === true,
+      })]
     : [subject];
   const seenBoards = new Set<string>();
   const seenProjects = new Set<string>();
@@ -445,15 +448,20 @@ export async function updateProject(
     );
   }
   const id = parseTaskProject(raw);
-  // A named write may seed its existing project directory without discovering siblings.
-  const projectExists = await writer.exists(path.join(boardRoot(repoPath), projectDirName(id)));
-  const service = projectNodes(repoPath);
-  await ensureProjectMetadata(repoPath, writer, undefined, projectExists ? [id] : [], service);
-  const entry = await resolveProjectEntry(repoPath, id, writer);
-  const rel = entry.rel;
-  if (!entry.exists) {
+  const projectDir = path.join(boardRoot(repoPath), projectDirName(id));
+  if (!(await writer.exists(projectDir))) {
     throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
   }
+  const service = projectNodes(repoPath);
+  await prepareProjectWrite(repoPath, service);
+  const entry = await resolveProjectEntry(repoPath, id, writer);
+  if (!entry.exists) {
+    await service.create(new ReadmeNode(entry.abs), { body: renderProjectReadme({
+      title: seedTitleFor(id),
+      description: seedDescriptionFor(id),
+    }) }, { indexGroup: "local" });
+  }
+  const rel = entry.rel;
   const node = await service.get(entry.abs, ReadmeNode);
   if (!node) throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
   const parsed = parseProjectEntry(node.body, rel);
@@ -469,7 +477,7 @@ export async function updateProject(
     tail: parsed.tail ?? "\n",
   });
   await service.update(node, { body });
-  await refreshProjectIndex(repoPath, writer, [], service);
+  await refreshProjectIndex(repoPath, writer, [id], service);
   return {
     project: id,
     dir: projectDirName(id),

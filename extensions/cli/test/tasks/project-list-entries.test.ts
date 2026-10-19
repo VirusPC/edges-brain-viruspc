@@ -186,6 +186,54 @@ test("project list follows --super onto the domain board and --all across boards
   );
 });
 
+test("project list --all --super does not require a scope AGENTS.md", async (t) => {
+  const repo = fs.realpathSync(await mkdtemp(path.join(tmpdir(), "edges-project-list-super-")));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  write(
+    repo,
+    "tasks/README.md",
+    "# Tasks\n\nDomain.\n\n<!-- project-entries-local:start -->\n## 本层内容\n\n- [Kept](kept/README.md) — domain work\n<!-- project-entries-local:end -->\n",
+  );
+  write(repo, "tasks/kept/README.md", projectReadme("Kept", "domain work"));
+  const result = await runList(repo, ["--all", "--super"]);
+  assert.equal(result.exitCode, 0, result.stdout + result.stderr);
+  assert.deepEqual(projectsOf(result.stdout).map((project) => [project.project, project.path]), [
+    ["kept", "tasks/kept/README.md"],
+  ]);
+  assert.equal(fs.existsSync(path.join(repo, "AGENTS.md")), false);
+});
+
+test("project list --all keeps withComposed when super is also forwarded", async (t) => {
+  const repo = fs.realpathSync(await mkdtemp(path.join(tmpdir(), "edges-project-list-composed-")));
+  t.after(() => rm(repo, { recursive: true, force: true }));
+  const hidden = path.join(repo, "hidden", "tasks");
+  write(
+    repo,
+    "AGENTS.md",
+    scopeAgents() +
+      `\n<!-- project-harness-compose:start -->\n## 组合\n\n- [hidden](<${hidden}>) — hidden board remote: https://example.com/hidden.git\n<!-- project-harness-compose:end -->\n`,
+  );
+  write(repo, "hidden/tasks/AGENTS.md", "# Hidden\n\nNot a harness system entry.\n");
+  write(
+    repo,
+    "hidden/tasks/README.md",
+    "# Tasks\n\nHidden.\n\n<!-- project-entries-local:start -->\n## 本层内容\n\n- [Foreign](foreign/README.md) — foreign work\n<!-- project-entries-local:end -->\n",
+  );
+  write(repo, "hidden/tasks/foreign/README.md", projectReadme("Foreign", "foreign work"));
+  const plain = await runList(repo, ["--all"]);
+  assert.equal(plain.exitCode, 0, plain.stdout + plain.stderr);
+  assert.equal(projectsOf(plain.stdout).some((project) => project.project === "foreign"), false);
+  const composed = await runList(repo, ["--all", "--with-composed"]);
+  assert.equal(composed.exitCode, 0, composed.stdout + composed.stderr);
+  assert.deepEqual(
+    projectsOf(composed.stdout).filter((project) => project.project === "foreign").map((project) => project.path),
+    ["hidden/tasks/foreign/README.md"],
+  );
+  const both = await runList(repo, ["--all", "--super", "--with-composed"]);
+  assert.equal(both.exitCode, 0, both.stdout + both.stderr);
+  assert.equal(projectsOf(both.stdout).some((project) => project.project === "foreign"), true);
+});
+
 test("project list fails fast and names the file when one project entry is invalid", async (t) => {
   const repo = fs.realpathSync(await mkdtemp(path.join(tmpdir(), "edges-project-list-bad-")));
   t.after(() => rm(repo, { recursive: true, force: true }));

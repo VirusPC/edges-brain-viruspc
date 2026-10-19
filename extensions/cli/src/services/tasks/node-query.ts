@@ -135,7 +135,7 @@ export async function listTaskNodes(
 /** Task boards reached from system entries and linked tasks material. Not a directory scan. */
 export async function listTaskBoardLocations(
   root: string,
-  options: { withComposed?: boolean } = {},
+  options: { super?: boolean; withComposed?: boolean } = {},
 ): Promise<TaskBoardLocation[]> {
   const canonicalRoot = nativeTaskPath(root);
   const dirs = await collectTaskBoardDirs(canonicalRoot, options);
@@ -146,7 +146,7 @@ export async function listTaskBoardLocations(
 
 async function collectTaskBoardDirs(
   canonicalRoot: string,
-  options: { withComposed?: boolean } = {},
+  options: { super?: boolean; withComposed?: boolean } = {},
 ): Promise<Set<string>> {
   const service = new NodeService({ managedRoot: canonicalRoot });
   const materialName = path.basename(harnessMaterialById("tasks").path);
@@ -157,14 +157,27 @@ async function collectTaskBoardDirs(
     const name = path.basename(file);
     if (name === ENTRY_NAMES.internal || name === materialName) boardDirs.add(dir);
   };
-  const linked = await service
-    .query(canonicalRoot, {
-      types: ["agents"],
-      includeHarness: true,
-      ...(options.withComposed ? { withComposed: true } : {}),
-    })
-    .filter((node): node is AgentsNode => node instanceof AgentsNode)
-    .value();
+  const queryOptions = {
+    types: ["agents"] as const,
+    includeHarness: true,
+    ...(options.withComposed ? { withComposed: true as const } : {}),
+  };
+  const linked: AgentsNode[] = [];
+  const scopeEntry = path.join(canonicalRoot, ENTRY_NAMES.internal);
+  // A missing scope AGENTS.md makes the real-root query throw. `--super` uses the
+  // virtual root instead, and still keeps `--with-composed` on a real entry.
+  if (fs.existsSync(scopeEntry) || options.super !== true) {
+    linked.push(...await service
+      .query(canonicalRoot, queryOptions)
+      .filter((node): node is AgentsNode => node instanceof AgentsNode)
+      .value());
+  }
+  if (options.super === true) {
+    linked.push(...await service
+      .query(canonicalRoot, { ...queryOptions, super: true })
+      .filter((node): node is AgentsNode => node instanceof AgentsNode)
+      .value());
+  }
   for (const node of linked) {
     note(node.path);
     for (const child of node.children) note(child.id);

@@ -320,6 +320,62 @@ for (const all of [false, true]) {
   });
 }
 
+test("update seeds only the requested existing project and writes nothing when it is missing", async () => {
+  const repo = await virginRepo();
+  try {
+    const writer = nodeBoardWriter();
+    const board = path.join(repo, "tasks/AGENTS.md");
+    await writeFile(
+      board,
+      "# Tasks\n\n<!-- project-harness-local:start -->\n## 本层系统维护信息\n\n- [Alpha](alpha/AGENTS.md) — alpha work\n- [Beta](beta/AGENTS.md) — beta work\n<!-- project-harness-local:end -->\n",
+    );
+    await writeFile(
+      path.join(repo, "tasks/alpha/AGENTS.md"),
+      renderProjectAgents({ title: "Alpha", description: "alpha work" }),
+    );
+    await writeFile(
+      path.join(repo, "tasks/beta/AGENTS.md"),
+      renderProjectAgents({ title: "Beta", description: "beta work" }),
+    );
+    const before = await readFile(board, "utf8");
+    const alphaAgents = await readFile(path.join(repo, "tasks/alpha/AGENTS.md"), "utf8");
+    const betaAgents = await readFile(path.join(repo, "tasks/beta/AGENTS.md"), "utf8");
+
+    await assert.rejects(
+      () => updateProject(domainBoard(repo), "unknown", { description: "nope" }, writer),
+      (error: unknown) => {
+        assert.equal((error as { errorCode: string }).errorCode, "PROJECT_NOT_FOUND");
+        return true;
+      },
+    );
+    assert.equal(await readFile(board, "utf8"), before);
+    for (const rel of [
+      "tasks/README.md",
+      "tasks/alpha/README.md",
+      "tasks/beta/README.md",
+      "tasks/_default",
+      "tasks/unknown",
+    ]) {
+      await assert.rejects(access(path.join(repo, rel)));
+    }
+
+    await updateProject(domainBoard(repo), "alpha", { description: "alpha v2" }, writer);
+    const alphaReadme = await readFile(path.join(repo, "tasks/alpha/README.md"), "utf8");
+    assert.match(alphaReadme, /^# alpha\n\nalpha v2\n/);
+    assert.match(alphaReadme, /project-entries-local:start/);
+    assert.equal(await readFile(path.join(repo, "tasks/alpha/AGENTS.md"), "utf8"), alphaAgents);
+    assert.equal(await readFile(path.join(repo, "tasks/beta/AGENTS.md"), "utf8"), betaAgents);
+    await assert.rejects(access(path.join(repo, "tasks/beta/README.md")));
+    await assert.rejects(access(path.join(repo, "tasks/_default/README.md")));
+    const list = await readFile(path.join(repo, "tasks/README.md"), "utf8");
+    assert.match(list, /alpha\/README\.md/);
+    assert.doesNotMatch(list, /beta\/README\.md/);
+    assert.equal(await readFile(board, "utf8"), before);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
 test("README Task Projects are discovered, read and updated; a user-initialised AGENTS project stays a system entry", async () => {
   const repo = await virginRepo();
   try {
