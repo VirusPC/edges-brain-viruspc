@@ -13,4 +13,5 @@
 - [edges\_skills\_agent](<backlog/2026-10-11--edges-skills-%E4%B8%8E-Agent-%E5%9B%9E%E5%BD%92%E8%AF%84%E6%B5%8B/INDEX.md>) — 用固定真实任务做回归集，自动检查 Agent 是否按 skill 执行、是否守住 AGENTS.md 硬约束。
 - [locomo\_observation\_trace\_exporter](<backlog/2026-10-19--LoCoMo%E8%B5%B0Observation-TraceExporter/INDEX.md>) — LoCoMo 评测改走 Observation 的 TraceExporter 上报轨迹，调用方不依赖 Langfuse。
 - [retrieval\_eval\_的\_pi\_client\_会跑出被测仓库副本](<in_progress/2026-10-19--retrieval-eval-%E7%9A%84-pi-client-%E4%BC%9A%E8%B7%91%E5%87%BA%E8%A2%AB%E6%B5%8B%E4%BB%93%E5%BA%93%E5%89%AF%E6%9C%AC/INDEX.md>) — pi client 没有沙箱，检索时会跑出被测副本，到外层仓库里去搜，样本因此被污染。要让没有沙箱的 client 也只在被测副本里检索。
+- [agent\_eval\_接入云沙箱干净快照重跑](<backlog/2026-10-20--Agent-Eval-%E6%8E%A5%E5%85%A5%E4%BA%91%E6%B2%99%E7%AE%B1%E5%B9%B2%E5%87%80%E5%BF%AB%E7%85%A7%E9%87%8D%E8%B7%91/INDEX.md>) — 给 Agent Eval 接上云沙箱，从干净快照重跑，才能公平对比有无 Edges，并把轨迹接到 Langfuse。
 <!-- project-entries-local:end -->
