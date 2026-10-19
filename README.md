@@ -64,8 +64,6 @@ edges --scope . tasks list
 
 完整命令见 [`extensions/cli/README.md`](extensions/cli/README.md)，或运行 `edges --help`。
 
-想给你的大脑也配一套：新建一个私有仓库，同样执行 `edges --scope . init -- -g -y`，再让你的 personal agent 在它自己的电脑上 clone 这个仓库。
-
 ## 本仓：作者的大脑仓库
 
 本仓既是 Edges 的源码仓库，也是作者大脑的 harness 仓库。这个实例的目标是：持续提升自己，也持续提升自我改进的能力。
