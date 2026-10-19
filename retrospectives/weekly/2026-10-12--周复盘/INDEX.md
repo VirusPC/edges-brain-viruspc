@@ -114,7 +114,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 1. 改正上期复盘里「#208、#211 随 #204 合入」那句。完成标准：[2026-10-05 周复盘](../2026-10-05--周复盘/INDEX.md) 那句已改，并指向 #289。合 #288、#289 再发 1.5.0 这半条 10-19 上午已经做完。来源：上面「#208、#211 没有进 main」。
 2. 给 PR 加一道和 Deploy 同样的安装检查。完成标准：`.github/workflows/` 里有一个 `pull_request` 触发的工作流，至少跑 `pnpm install --frozen-lockfile`（最好连 CLI 测试一起）；一个故意改坏 `pnpmfileChecksum` 的 PR 会在合入前变红。来源：上面「部署挂了约 7 小时」。
-3. 把上期没动的 NodeService 硬约束写进 `AGENTS.md`，把 #187 的卡改出 `in_progress`，同时给 doctor 断链开卡。完成标准：根 `AGENTS.md` 硬约束里有写盘走 NodeService 的一句；那张卡不再在 `in_progress`；`.harness/tasks` 里有 doctor 报断链的卡。来源：上期行动 1、2，连续两周没做。这次三条行动都直接开成看板卡，不再只留在复盘里。
+3. 把上期没动的 NodeService 硬约束写进 `AGENTS.md`，把 #187 的卡改出 `in_progress`。完成标准：根 `AGENTS.md` 硬约束里有写盘走 NodeService 的一句；那张卡不再在 `in_progress`。来源：上期行动 1，连续两周没做。上期行动 2（doctor 断链开卡）用户 10-19 决定不做了。这次三条行动都直接开成看板卡，不再只留在复盘里。
 4. 把「先给简单方案、不加额外抽象」写进云端代理开工必读的地方。完成标准：根 `AGENTS.md`（或 `extensions/AGENTS.md`）硬约束里有一句对应用户「Keep it Simple」「薄封装」的原则。来源：上面「返工多」。
 
 ## 建议补充内容清单
@@ -129,7 +129,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### doctor 报不出断掉的软链接（上期延续）
 
-建议去处：`.harness/tasks/edges-extensions/backlog`。处理结果：已列入下次做什么第 3 条。
+建议去处：无。处理结果：不做。用户 10-19 决定不管 doctor 断链。
 
 为什么值得补：#289 一旦合入，移动节点后软链接会如约「保留原文、可能断开」，这正是需要 doctor 兜底的时刻；#289 自己也写明 doctor 没补。
 
