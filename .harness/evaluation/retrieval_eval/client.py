@@ -12,10 +12,11 @@ assistant `message_end` with `stopReason` `stop`. Exit code 0 with
 `stopReason` `error` or `aborted` is still a failure. stdin is `DEVNULL`.
 Tools stay at pi's defaults (`read`, `bash`, `edit`, `write`): the command
 does not pass `--tools`. Before the prompt, `pi install npm:pi-sandbox` loads
-the sandbox into a fresh `PI_CODING_AGENT_DIR`. `sandbox.json` there keeps the
-plugin's default `denyRead` (`/home`, `/Users`), adds the absolute path of the
-edges checkout that contains the clone, and sets `filesystem.allowRead` to
-`["."]`. `-ne` stays off so that package loads.
+the sandbox into a fresh `PI_CODING_AGENT_DIR`. `sandbox.json` sets
+`denyRead` to `["/"]`, `allowRead` to the clone (`.`) plus the system
+directories that still exist and are required to exec bash and rg, and
+`allowWrite` to `[]`. `denyWrite` covers the runtime paths that stay
+writable even when `allowWrite` is empty. `-ne` stays off so that package loads.
 The runner stores the event stream under
 `.harness/evaluation/.cache/retrieval/sessions/` (gitignored).
 """
@@ -38,7 +39,17 @@ from retrieval_eval.config import Client
 _JSON_OBJECT = re.compile(r"\{[\s\S]*?\}")
 _PI_FAILURE_REASONS = frozenset({"error", "aborted"})
 PI_SANDBOX_PACKAGE = "npm:pi-sandbox"
-_PI_DEFAULT_DENY_READ = ("/home", "/Users")
+# Present entries are added. On usr-merge Linux, /bin /lib /lib64 are symlinks
+# into /usr and bash works with /usr alone; they stay listed so a split /usr
+# layout can still exec. /System is the macOS dyld and system-library root.
+_SYSTEM_ALLOW_READ = ("/usr", "/bin", "/lib", "/lib64", "/System")
+# @carderne/sandbox-runtime always bind-mounts these, ignoring allowWrite: [].
+_RUNTIME_DENY_WRITE = (
+    "/tmp/agents",
+    "/private/tmp/agents",
+    "~/.npm/_logs",
+    "~/.claude/debug",
+)
 
 
 class ClientEnvError(RuntimeError):
@@ -127,23 +138,24 @@ def pi_install_command(client: Client) -> list[str]:
     return [client.command, "install", PI_SANDBOX_PACKAGE, "--no-approve"]
 
 
-def edges_checkout_root() -> Path:
-    """Checkout that contains `.harness/evaluation/.cache`, as an absolute path."""
-    evaluation_dir = Path(__file__).resolve().parents[1]
-    return evaluation_dir.parent.parent
-
-
 def pi_sandbox_config() -> dict[str, object]:
-    """Plugin default denyRead, plus this checkout, with reads limited to cwd.
+    """Root deny, clone plus existing system dirs, and no configured writes.
 
-    A configured array replaces that key's plugin default, so `/home` and
-    `/Users` are written explicitly. `allowWrite` stays unset.
+    A configured array replaces that key's plugin default. `denyRead: ["/"]`
+    is expanded by pi-sandbox into a tmpfs on each top-level directory, then
+    `allowRead` is bind-mounted back read-only. `allowWrite: []` drops the
+    plugin default of `.` and `/tmp`. The runtime still mounts its own write
+    paths, so those are listed in `denyWrite`.
     """
-    root = str(edges_checkout_root())
-    deny = list(_PI_DEFAULT_DENY_READ)
-    if root not in deny:
-        deny.append(root)
-    return {"filesystem": {"denyRead": deny, "allowRead": ["."]}}
+    allow_read = [".", *(path for path in _SYSTEM_ALLOW_READ if Path(path).exists())]
+    return {
+        "filesystem": {
+            "denyRead": ["/"],
+            "allowRead": allow_read,
+            "allowWrite": [],
+            "denyWrite": list(_RUNTIME_DENY_WRITE),
+        }
+    }
 
 
 def pi_sandbox_config_json() -> str:

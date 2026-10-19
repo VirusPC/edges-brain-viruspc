@@ -97,7 +97,11 @@ MINIMAX_API_KEY=... python3 .harness/evaluation/retrieval_eval/run.py run --clie
 
 `retrieval-smoke/edges-one` 只有 `edges_smoke_0008`。`pi` 的 provider / model 是 `minimax-cn` / `MiniMax-M3`，thinking 是 `high`。不传 `--tools`，用 pi 的默认工具 `read`、`bash`、`edit`、`write`。命令是 `--mode json --no-session -ns -np -nc --no-themes --no-mcp -na --offline`，工作目录是克隆下来的仓库，stdin 关闭。没有 `-o` 和 max-turns，只靠 `timeout_seconds`（默认 600）。Codex 的命令和沙箱不变。
 
-每次运行另建一个临时 `PI_CODING_AGENT_DIR`。先写入 `sandbox.json`：`filesystem.denyRead` 保留插件默认的 `/home`、`/Users`，并加上运行时算出的副本所在 edges 仓库根绝对路径（`.harness/evaluation/.cache` 的外层仓库根）；`filesystem.allowRead` 为 `["."]`。再执行 `pi install npm:pi-sandbox --no-approve`，然后才跑上面的命令。不传 `-ne`，装进这个目录的包才会被加载；`--no-approve` 仍忽略项目里的 `.pi`。结束后删除该目录。`allowWrite` 等其余项仍用 [pi-sandbox](https://github.com/carderne/pi-sandbox) 的默认值。见 [ADR 0039](../../docs/adr/0039-pi-client-sandbox-read-scope.md)。插件一旦写了某个数组，就不会再并上该键的默认值，所以 `/home` 和 `/Users` 要显式留下。bash 是整盘只读挂载，再按 `denyRead` 挡住；`allowRead` 的 `"."` 把当前目录在被挡住的区域里重新放开。因此副本内可读，仓库根下副本外的文件不可读，`/usr` 这类系统目录仍可用。`read` / `write` / `edit` 同样只放行当前目录。
+每次运行另建一个临时 `PI_CODING_AGENT_DIR`。先写入 `sandbox.json`，再执行 `pi install npm:pi-sandbox --no-approve`，然后才跑上面的命令。不传 `-ne`，装进这个目录的包才会被加载；`--no-approve` 仍忽略项目里的 `.pi`。结束后删除该目录。见 [ADR 0039](../../docs/adr/0039-pi-client-sandbox-read-scope.md)。
+
+`filesystem.denyRead` 是 `["/"]`，`allowRead` 是 `["."]` 再加上本机仍存在的系统目录（Linux 上为 `/usr`、`/bin`、`/lib`、`/lib64`；macOS 上路径存在时还包括 `/System`）。`allowWrite` 是 `[]`。插件写了某个数组就不再并上该键的默认值，所以空的 `allowWrite` 会去掉默认的 `.` 和 `/tmp`。`denyRead: ["/"]` 在 Linux 上不是给 `/` 挂一块 tmpfs，而是给根下每个一级目录挂 tmpfs（插件跳过 `/proc`、`/dev`、`/sys`），再把 `allowRead` 只读绑回去。因此副本内可读，副本外的仓库文件、`/home`、`/etc`、宿主机 `/tmp` 不可读；`/usr` 仍可供 `bash` 和 `rg` 使用。`read` / `write` / `edit` 走同一份允许列表。
+
+`@carderne/sandbox-runtime` 仍会把 `/tmp/agents`、`~/.npm/_logs`、`~/.claude/debug` 做成可写挂载，空的 `allowWrite` 去不掉。`denyWrite` 写上这几项（以及 macOS 的 `/private/tmp/agents`），写入变成只读文件系统错误。这几项目录里的已有文件，bash 仍能读到。bash 往其它 `/tmp` 路径写，会写进那块空 tmpfs，退出码可能是 0，但落不到宿主机，也改不到真正的 `sandbox.json`。
 
 `--mode json` 没有界面。沙箱初始化失败时，插件只做一次不会显示出来的通知，然后继续无沙箱运行。评测不跟着降级：Linux 上缺少 `rg`、`bwrap` 或 `socat`，macOS 上缺少 `sandbox-exec`，或 `pi install` 失败，该样本记 `parse_error`，不启动后面的 pi。依赖齐全时，越界由沙箱阻止，评测不再另做越界检测或标记。
 

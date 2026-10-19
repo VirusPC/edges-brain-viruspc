@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: evaluation
-  edges-updated-at: '2026-10-19T06:35:57.000Z'
+  edges-updated-at: '2026-10-19T06:56:25.000Z'
   edges-title: retrieval eval 的 pi client 会跑出被测仓库副本
   edges-tasks-status: in_progress
   edges-task-priority: none
@@ -35,3 +35,5 @@ pi 以及以后没有沙箱的 client 只能在被测副本里检索，得分反
 - 2026-10-19 grill：R1 被 R2 取代。最终决策是 pi 用默认工具表，加上 pi-sandbox 的通用形态，只把读取范围收成被测副本（`filesystem.allowRead` 为 `["."]`）。不挪副本、不改 prompt、不动 Codex。越界检测这条完成标准改为「由沙箱阻止越界」。
 - 2026-10-19 实现：`clients.json` 去掉 pi 的 `tools`；运行前在临时 `PI_CODING_AGENT_DIR` 执行 `pi install npm:pi-sandbox --no-approve` 并写入上述 `sandbox.json`。不传 `-ne`，包才会加载。缺 `rg` / `bwrap` / `socat`（macOS 为 `sandbox-exec`）或安装失败时，样本记失败，不降级为无沙箱。本机没有 `MINIMAX_API_KEY`，没有打真实 MiniMax。用本地桩走了生产 `run_client`：副本放在 `/home` 下时，副本外文件的 read 被拒绝，bash `cat` 报不存在，文件内容没有出现在会话里；副本内文件可以读到。插件默认 `denyRead` 只盖住 `/home` 和 `/Users`，副本若在这两棵目录之外，bash 仍可能读到外面，这次没有改第二处配置。
 - 2026-10-19 补配置：用户拍板把副本所在 edges 仓库根（`.harness/evaluation/.cache` 的外层，运行时绝对路径）写入 `filesystem.denyRead`，同时保留插件默认 `/home`、`/Users` 和 `allowRead: ["."]`。本地桩把副本放在 `/workspace`（不在 `/home` 下）：`read` 与 `bash cat` 仓库根 `README.md` 均被拒，正文没有进会话；副本内文件可读；`ls` 与 `rg` 退出码为 0。
+- 2026-10-19 独立验证（Linux，pi 1.3.0，pi-sandbox 0.7.1）：`allowWrite` 仍是插件默认 `[".", "/tmp"]`，pi 能改副本且改动留在宿主机；bash 能改写临时目录里的 `sandbox.json` 为 `allowRead: ["/"]`，之后 read 能读到仓库根和 `/home`；bash 还能读黑名单外的 `/etc`、`/tmp` 和仓库里副本外的文件。
+- 2026-10-19 修复：`denyRead` 改为 `["/"]`，`allowRead` 为 `"."` 加上本机存在的 `/usr`、`/bin`、`/lib`、`/lib64`（macOS 还有存在的 `/System`），`allowWrite` 为 `[]`。运行时仍会挂回 `/tmp/agents`、`~/.npm/_logs`、`~/.claude/debug`，这三项写入 `denyWrite`。bubblewrap 0.9.0 上 `denyRead "/"` 加子路径 `allowRead` 生效。本地桩经生产 `run_client`：仓库根、同级目录、`/home` 探针、`/etc/hostname`、宿主机 `/tmp`、副本外文件的 read 与 bash cat 都被拒；副本内 read、`ls`、`rg` 正常；write、edit、bash 写副本被拒且文件未变；写 `/tmp/agents` 为只读错误且宿主机无新文件；改 `sandbox.json` 后宿主机原文件未变，再次 read 仓库根仍被拒。缺 `bwrap` 时不启动 pi。bash 仍能列出 `~/.npm/_logs`（denyWrite 只把它变成只读）。往其它 `/tmp` 路径写会落在空 tmpfs 上，退出码可能是 0，宿主机没有该文件。任务仍留在 in_progress。

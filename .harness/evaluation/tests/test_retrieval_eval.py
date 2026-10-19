@@ -682,15 +682,23 @@ class PiClientTests(unittest.TestCase):
         samples = load_samples(selected[0].sample_path)
         self.assertEqual([sample["id"] for sample in samples], ["edges_smoke_0008"])
 
-    def test_sandbox_config_keeps_default_deny_and_adds_checkout_root(self) -> None:
+    def test_sandbox_config_denies_root_and_disables_default_writes(self) -> None:
         config = json.loads(pi_sandbox_config_json())
         filesystem = config["filesystem"]
-        checkout = Path(__file__).resolve().parents[3]
         self.assertEqual(set(config), {"filesystem"})
-        self.assertEqual(set(filesystem), {"denyRead", "allowRead"})
-        self.assertEqual(filesystem["allowRead"], ["."])
-        self.assertEqual(filesystem["denyRead"], ["/home", "/Users", str(checkout)])
-        self.assertTrue((checkout / ".harness" / "evaluation").is_dir())
+        self.assertEqual(set(filesystem), {"denyRead", "allowRead", "allowWrite", "denyWrite"})
+        self.assertEqual(filesystem["denyRead"], ["/"])
+        self.assertEqual(filesystem["allowWrite"], [])
+        self.assertEqual(filesystem["allowRead"][0], ".")
+        self.assertEqual(
+            filesystem["denyWrite"],
+            ["/tmp/agents", "/private/tmp/agents", "~/.npm/_logs", "~/.claude/debug"],
+        )
+        allowed = filesystem["allowRead"][1:]
+        for path in ("/usr", "/bin", "/lib", "/lib64", "/System"):
+            self.assertEqual(path in allowed, Path(path).exists(), path)
+        for blocked in ("/etc", "/home", "/tmp", "/workspace", "/proc", "/dev", "/sys", "/Users"):
+            self.assertNotIn(blocked, allowed)
 
     def test_pi_command_is_minimal_kernel(self) -> None:
         prompt = build_prompt("问题")
@@ -785,7 +793,8 @@ class PiClientTests(unittest.TestCase):
                 if command[1] == "install":
                     config = json.loads((Path(agent_dir) / "sandbox.json").read_text(encoding="utf-8"))
                     self.assertEqual(config, json.loads(pi_sandbox_config_json()))
-                    self.assertNotIn("allowWrite", json.dumps(config))
+                    self.assertEqual(config["filesystem"]["allowWrite"], [])
+                    self.assertEqual(config["filesystem"]["denyRead"], ["/"])
                     return subprocess.CompletedProcess(command, 0, stdout="Installed\n", stderr="")
                 return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="pi-stderr\n")
 
@@ -842,6 +851,24 @@ class PiClientTests(unittest.TestCase):
             self.assertEqual(call.predicted, [])
             self.assertIsNotNone(call.parse_error)
             self.assertIn("Sandbox dependencies not available", call.parse_error or "")
+            self.assertFalse(last.exists())
+
+    def test_missing_bwrap_does_not_run_pi(self) -> None:
+        prompt = "问题"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            last = root / "last.txt"
+
+            def which(name: str) -> str | None:
+                return None if name == "bwrap" else f"/usr/bin/{name}"
+
+            with patch.dict(os.environ, {"MINIMAX_API_KEY": "secret"}, clear=False):
+                with patch("retrieval_eval.client.shutil.which", side_effect=which):
+                    with patch("retrieval_eval.client.subprocess.run") as run:
+                        call = run_client(_pi_client(), root, prompt, last)
+            run.assert_not_called()
+            self.assertEqual(call.predicted, [])
+            self.assertEqual(call.parse_error, "Sandbox dependencies not available: bwrap")
             self.assertFalse(last.exists())
 
     def test_exit_zero_with_error_stop_reason_is_parse_error(self) -> None:
