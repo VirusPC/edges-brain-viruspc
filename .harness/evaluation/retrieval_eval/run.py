@@ -6,12 +6,14 @@ stream at `.harness/evaluation/.cache/retrieval/sessions/<stamp>/<cell_id>/<samp
 and stderr beside it as `<sample_id>.stderr.txt`. Both are gitignored.
 Scoring reads `<sample_id>.last.txt`, the file passed to `-o`.
 When `LANGFUSE_HOST` (or `LANGFUSE_BASE_URL`), `LANGFUSE_PUBLIC_KEY`, and
-`LANGFUSE_SECRET_KEY` are all set, each scored sample is also POSTed as OTLP
-JSON to `$LANGFUSE_HOST/api/public/otel/v1/traces`. One `run` shares a Langfuse
-session id `retrieval/{sample set}:{repository}:{client}/{stamp}/{4 hex}`
+`LANGFUSE_SECRET_KEY` are all set, each scored sample is exported through
+`langfuse_sink.exporter_from_env()`. This module does not name Langfuse
+attributes. One `run` shares a session id
+`retrieval/{sample set}:{repository}:{client}/{stamp}/{4 hex}`
 (multiple cells joined with `+`). Each sample stays its own trace. Missing
-env or a failed upload does not change the score. The instance origin and
-keys stay out of the repo and out of `reports/`.
+env skips export. A failed export prints one stderr line and does not change
+the score. The instance origin and keys stay out of the repo and out of
+`reports/`.
 
     python3 .harness/evaluation/retrieval_eval/run.py print-command
     python3 .harness/evaluation/retrieval_eval/run.py run
@@ -35,9 +37,12 @@ if str(_EVAL_DIR) not in sys.path:
 from retrieval_eval.client import ClientCall, build_prompt, codex_command, run_client
 from retrieval_eval.config import DEFAULT_CONFIG, Cell, load_cells, load_samples
 from retrieval_eval.git_repo import cache_dir, sync_clone
-from retrieval_eval.langfuse_otlp import UploadResult, session_id_for_run, upload_sample_trace
 from retrieval_eval.report import write_report
 from retrieval_eval.score import aggregate, score_prediction
+from retrieval_eval.trace import build_sample_trace, session_id_for_run
+
+# retrieval_eval/__init__.py puts `.harness/observation` on sys.path before this import.
+from langfuse_sink import ExportResult, exporter_from_env
 
 
 CACHE_ROOT = _EVAL_DIR / ".cache" / "retrieval"
@@ -63,10 +68,9 @@ def record_scored_sample(
     repository_commit: str | None,
     session_id: str | None = None,
     reasoning: Mapping[str, str] | None = None,
-    environ: Mapping[str, str] | None = None,
-    opener: Any = None,
+    exporter: Any = None,
 ) -> dict[str, Any]:
-    """Write the local trace, score the prediction, then optionally upload OTLP."""
+    """Write the local trace, score the prediction, then export the trace."""
     write_sample_trace(log_dir, sample["id"], call)
     row = score_prediction(sample["ground_truth"], call.predicted)
     row["id"] = sample["id"]
@@ -74,27 +78,27 @@ def record_scored_sample(
     row["parse_error"] = call.parse_error
     row["timed_out"] = call.timed_out
     row["returncode"] = call.returncode
+    trace = build_sample_trace(
+        events_jsonl=call.stdout,
+        cell_id=cell_id,
+        sample_id=sample["id"],
+        client_id=client_id,
+        repository_id=repository_id,
+        repository_url=repository_url,
+        repository_ref=repository_ref,
+        repository_commit=repository_commit,
+        prompt=sample["prompt"],
+        score_row=row,
+        session_id=session_id,
+        reasoning=reasoning,
+    )
+    sink = exporter if exporter is not None else exporter_from_env()
     try:
-        result = upload_sample_trace(
-            events_jsonl=call.stdout,
-            cell_id=cell_id,
-            sample_id=sample["id"],
-            client_id=client_id,
-            repository_id=repository_id,
-            repository_url=repository_url,
-            repository_ref=repository_ref,
-            repository_commit=repository_commit,
-            prompt=sample["prompt"],
-            score_row=row,
-            session_id=session_id,
-            reasoning=reasoning,
-            environ=environ,
-            opener=opener,
-        )
+        result = sink.export(trace)
     except Exception as exc:
-        result = UploadResult("failed", error=type(exc).__name__)
+        result = ExportResult("failed", error=type(exc).__name__)
     if result.status == "failed":
-        print(f"retrieval_eval: langfuse upload failed: {result.error}", file=sys.stderr)
+        print(f"retrieval_eval: trace export failed: {result.error}", file=sys.stderr)
     return row
 
 

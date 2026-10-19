@@ -26,3 +26,5 @@
 - 在自托管 Langfuse 上接线知识库或评测
 - 改两张 Task 的状态或正文
 - 部署实现、密钥、compose 文件
+
+仓内 harness 自用的可复用上报代码见 [ADR 0038](0038-observation-trace-exporter.md)。

@@ -11,4 +11,5 @@
 - [swe\_contextbench\_main\_eval](<backlog/2026-09-16--SWE-ContextBench%E4%B8%BB%E8%AF%84%E6%B5%8B/INDEX.md>) — SWE\-ContextBench 主评测（公开基准证明）；与 LoCoMo 冒烟分开，构念匹配的主证据任务
 - [evaluation\_cases\_register\_repeatable](<backlog/2026-09-16--evaluation-cases%E7%99%BB%E8%AE%B0%E5%8F%AF%E9%87%8D%E5%A4%8D%E7%94%A8%E4%BE%8B/INDEX.md>) — 在 evaluation/cases 登记可重复 case 定义；冒烟本次只写 reports，cases 另开
 - [edges\_skills\_agent](<backlog/2026-10-11--edges-skills-%E4%B8%8E-Agent-%E5%9B%9E%E5%BD%92%E8%AF%84%E6%B5%8B/INDEX.md>) — 用固定真实任务做回归集，自动检查 Agent 是否按 skill 执行、是否守住 AGENTS.md 硬约束。
+- [locomo\_observation\_trace\_exporter](<backlog/2026-10-19--LoCoMo%E8%B5%B0Observation-TraceExporter/INDEX.md>) — LoCoMo 评测改走 Observation 的 TraceExporter 上报轨迹，调用方不依赖 Langfuse。
 <!-- project-entries-local:end -->

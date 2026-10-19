@@ -46,7 +46,7 @@ class Client:
         return overrides
 
     def reasoning_metadata(self) -> dict[str, str]:
-        """Langfuse root-span metadata. Omitted keys were not set."""
+        """Root-span metadata for the trace exporter. Omitted keys were not set."""
         metadata: dict[str, str] = {}
         if self.reasoning_summary:
             metadata["reasoning_summary"] = self.reasoning_summary

@@ -4,7 +4,7 @@
 
 ## Langfuse OTLP 冒烟
 
-[`langfuse-otlp-smoke.sh`](langfuse-otlp-smoke.sh) 向自建 Langfuse 发一条根 span（name 为 `edges-langfuse-smoke`），再用 v2 observations 按 traceId 回查。2026-10-11 17:18（北京时间）从 Grok Bot 云电脑用同一做法跑通，grok-bot 项目不再停在 Waiting for first trace。
+[`langfuse-otlp-smoke.sh`](langfuse-otlp-smoke.sh) 向自建 Langfuse 发一条根 span（name 为 `edges-langfuse-smoke`），再用 v2 observations 按 traceId 回查。POST 走同目录上一级的 [`langfuse_sink`](../langfuse_sink/)：壳脚本设置 `PYTHONPATH` 后执行 `python3 -m langfuse_sink`，stdout 只打 trace id；回查仍用 `curl`。User-Agent 是 `edges-observation/1`（Cloudflare 1010 会拦 Python urllib 的默认标识）。2026-10-11 17:18（北京时间）从 Grok Bot 云电脑用同一条 OTLP 路径跑通，grok-bot 项目不再停在 Waiting for first trace。
 
 在仓库根执行前，先在当前环境里准备三个变量。取值来自 Langfuse 项目的 API key 和公网 HTTPS 域名（经 Cloudflare Tunnel），不要写进仓库、笔记或命令历史：
 
@@ -16,7 +16,7 @@
 bash .harness/observation/smoke/langfuse-otlp-smoke.sh
 ```
 
-脚本依赖 `curl` 和 `python3`。成功时打印 `OK: trace landed`。它每次生成新的 traceId，不复用某一次的历史 id。
+脚本依赖 `curl` 和 `python3`（标准库，无第三方包）。成功时打印 `OK: trace landed`。它每次生成新的 traceId，不复用某一次的历史 id。
 
 ## v4 events_only
 

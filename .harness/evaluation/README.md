@@ -82,7 +82,7 @@ Retrieval smoke prints the clone and `codex exec` commands without running them:
 python3 .harness/evaluation/retrieval_eval/run.py print-command
 ```
 
-A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harness/evaluation/.cache/` (gitignored), then runs `codex exec --json` once per sample. The default `codex` client also passes `-c model_reasoning_summary=detailed`, `-c show_raw_agent_reasoning=true`, and `-c model_reasoning_effort=high`, so the event stream includes `reasoning` items. Those three settings are written on the report and on the Langfuse root span (`reasoning_summary`, `reasoning_effort`, `show_raw_reasoning`) so runs with different effort are not compared silently. Change them in [`retrieval_eval/config/clients.json`](retrieval_eval/config/clients.json). The report lands in [`reports/`](reports/README.md) and is an Evaluation Smoke, not a Benchmark Proof.
+A live run clones `https://github.com/VirusPC/edges.git` at `main` into `.harness/evaluation/.cache/` (gitignored), then runs `codex exec --json` once per sample. The default `codex` client also passes `-c model_reasoning_summary=detailed`, `-c show_raw_agent_reasoning=true`, and `-c model_reasoning_effort=high`, so the event stream includes `reasoning` items. Those three settings are written on the report and on the exported root span (`reasoning_summary`, `reasoning_effort`, `show_raw_reasoning`) so runs with different effort are not compared silently. Change them in [`retrieval_eval/config/clients.json`](retrieval_eval/config/clients.json). The report lands in [`reports/`](reports/README.md) and is an Evaluation Smoke, not a Benchmark Proof.
 
 ```bash
 python3 .harness/evaluation/retrieval_eval/run.py run
@@ -94,9 +94,9 @@ python3 .harness/evaluation/retrieval_eval/run.py run
 
 同目录的 `<sample_id>.last.txt` 是 `-o` 写下的最终消息，打分优先读它；`<sample_id>.stderr.txt` 是该次进程的 stderr。文件搜索和读取没有单独的事件类型，它们出现在 `command_execution`（`rg`、`cat` 等）里。
 
-可选：三个环境变量都设置时，每个样本打分后会把这份事件流用 OTLP POST 到 `$LANGFUSE_HOST/api/public/otel/v1/traces`（Basic auth，与 [`observation/smoke/langfuse-otlp-smoke.sh`](../observation/smoke/langfuse-otlp-smoke.sh) 相同）。变量是 `LANGFUSE_HOST`（未设置时用 `LANGFUSE_BASE_URL`）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。缺任何一个就跳过；上传失败也不影响打分。密钥和实例域名不要写进仓库，轨迹也不进 `reports/`。
+可选上报走 Observation 的 [`TraceExporter`](../observation/langfuse_sink/)（[ADR 0038](../../docs/adr/0038-observation-trace-exporter.md)）。`import retrieval_eval` 时把 `.harness/observation` 放进 `sys.path`，然后 `import langfuse_sink`。这个包不安装，也不带第三方依赖。三个环境变量都设置时，`exporter_from_env()` 返回会 POST 的 exporter，每个样本打分后调用 `export(trace)`；缺任何一个则是 no-op。变量是 `LANGFUSE_HOST`（未设置时用 `LANGFUSE_BASE_URL`）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。上传失败只往 stderr 打一行，不影响分数。密钥和实例域名不要写进仓库，轨迹也不进 `reports/`。`service.name` 仍由评测写成 `edges-retrieval-eval`。
 
-同一次 `run` 在 Langfuse 里共用一个 session，每个样本仍是一条 trace。session id 是 `retrieval/{样本集}:{仓库}:{client}/{时间戳}/{4位hex}`，不是单独的时间戳。样本集路径里的 `/` 写成 `:`；仓库 id 若已是样本集最后一段就不再重复。多个 cell 用 `+` 连起来。例如 `retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12`。事件流里若已有 `model` 或 `cli_version`，会抄到每条 span；不会再跑 `codex --version`。
+同一次 `run` 共用一个 session，每个样本仍是一条 trace。session id 由 `make_session_id(namespace="retrieval", ...)` 生成，格式仍是 `retrieval/{样本集}:{仓库}:{client}/{时间戳}/{4位hex}`，不是单独的时间戳。样本集路径里的 `/` 写成 `:`；仓库 id 若已是样本集最后一段就不再重复。多个 cell 用 `+` 连起来。例如 `retrieval/retrieval-smoke:edges:codex/2026-10-19-021500/ab12`。事件流里若已有 `model` 或 `cli_version`，会抄进 trace metadata；不会再跑 `codex --version`。
 
 Official-path tests (no API key):
 
