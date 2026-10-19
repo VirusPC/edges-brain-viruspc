@@ -6,13 +6,14 @@ import { placeHarnessMaterial } from "../../domain/config/harness-materials.js";
 import { ENTRY_NAMES } from "../../domain/config/layout.js";
 import { NodeService } from '../node/node-service.js';
 import { assertBoardPath } from './board.js';
-import { scopeDir, boardRel, resolveBoard, type BoardTarget } from "./paths.js";
+import { scopeDir, boardRel, resolveBoard, subjectTaskBoard, type BoardTarget, type TaskBoardLocation } from "./paths.js";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import type { NodeReference } from "../../domain/core/types.js";
 import { existsSync } from "node:fs";
 import { nativeTaskPath, relativePathInsideScope } from "./realpath.js";
-import { listProjectIds, type BoardFs, type BoardWriter } from "./board.js";
+import { createNodeBoardWriter, listProjectIds, type BoardFs, type BoardWriter } from "./board.js";
+import { listTaskBoardLocations } from "./node-query.js";
 import { boardRoot } from "./paths.js";
 import { parseTaskProject, projectDirName } from "../../domain/models/tasks/project.js";
 import {
@@ -58,6 +59,20 @@ export function parseProjectDescription(raw: string): string {
     throw new TasksError("VALIDATION_ERROR", DESCRIPTION_MESSAGE);
   }
   return description;
+}
+
+function parseProjectEntry(markdown: string, filePath: string): ReturnType<typeof parseProjectAgents> {
+  try {
+    return parseProjectAgents(markdown);
+  } catch (error) {
+    if (error instanceof TasksError) {
+      throw new TasksError(
+        error.errorCode,
+        `${error.message}: ${filePath.split(path.sep).join("/")}`,
+      );
+    }
+    throw error;
+  }
 }
 
 export function parseProjectAgents(markdown: string): {
@@ -145,21 +160,17 @@ function projectReadmeRelPath(id: TaskProjectId, target: BoardTarget = ""): stri
   return `${boardRel(target)}/${projectDirName(id)}/README.md`;
 }
 
-/** A Task Project's entry: its README.md org list, or an AGENTS.md when the user initialised the
- * project as a system entry. AGENTS wins when both exist; new projects get a README. */
+/** Task Project title, description, and task entries live on README.md.
+ * A sibling AGENTS.md is the system entry (harness and child systems), not this metadata. */
 async function resolveProjectEntry(
   repoPath: BoardTarget,
   id: TaskProjectId,
   fs: BoardFs,
-): Promise<{ rel: string; abs: string; exists: boolean; kind: "agents" | "readme" }> {
+): Promise<{ rel: string; abs: string; exists: boolean; kind: "readme" }> {
   const scope = nativeTaskPath(scopeDir(repoPath));
-  const agents = projectAgentsRelPath(id, repoPath);
-  if (await fs.exists(path.join(scope, agents)))
-    return { rel: agents, abs: path.join(scope, agents), exists: true, kind: "agents" };
   const readme = projectReadmeRelPath(id, repoPath);
-  if (await fs.exists(path.join(scope, readme)))
-    return { rel: readme, abs: path.join(scope, readme), exists: true, kind: "readme" };
-  return { rel: readme, abs: path.join(scope, readme), exists: false, kind: "readme" };
+  const abs = path.join(scope, readme);
+  return { rel: readme, abs, exists: await fs.exists(abs), kind: "readme" };
 }
 
 function boardIsVirtual(repoPath: BoardTarget): boolean {
@@ -194,16 +205,7 @@ export async function readProjectRecord(
 ): Promise<TaskProjectRecord> {
   const entry = await resolveProjectEntry(repoPath, id, fs);
   if (!entry.exists) {
-    if (!(await listProjectIds(repoPath, fs)).includes(id)) {
-      throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
-    }
-    return {
-      project: id,
-      dir: projectDirName(id),
-      title: seedTitleFor(id),
-      description: seedDescriptionFor(id),
-      path: entry.rel,
-    };
+    throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
   }
   return projectRecordFromEntry(nativeTaskPath(scopeDir(repoPath)), {
     path: entry.abs,
@@ -217,14 +219,60 @@ export function projectRecordFromEntry(
   entry: { path: string; body: string },
 ): TaskProjectRecord {
   const dir = path.basename(path.dirname(entry.path));
-  const parsed = parseProjectAgents(entry.body);
+  const rel = relativePathInsideScope(scope, entry.path).split(path.sep).join("/");
+  const parsed = parseProjectEntry(entry.body, rel);
   return {
     project: dir === "_default" ? DEFAULT_TASK_PROJECT : dir,
     dir,
     title: parsed.title,
     description: parsed.description,
-    path: relativePathInsideScope(scope, entry.path).split(path.sep).join("/"),
+    path: rel,
   };
+}
+
+function boardHasEntry(board: TaskBoardLocation): boolean {
+  return existsSync(path.join(board.boardDir, ENTRY_NAMES.readme))
+    || existsSync(path.join(board.boardDir, ENTRY_NAMES.internal));
+}
+
+/**
+ * Projects of the subject board. `--super` switches that board to the scope directory's
+ * `tasks/`. `--all` also lists every other task board reached under the scope, using the
+ * same id and entry rules as `listProjects`.
+ */
+export async function listProjectsInScope(
+  scopeDirPath: string,
+  options: { all?: boolean; super?: boolean; withComposed?: boolean } = {},
+): Promise<TaskProjectRecord[]> {
+  const invocation = nativeTaskPath(scopeDirPath);
+  const subject = subjectTaskBoard(invocation, { super: options.super === true });
+  const boards = options.all
+    ? [subject, ...await listTaskBoardLocations(invocation, {
+        super: options.super === true,
+        withComposed: options.withComposed === true,
+      })]
+    : [subject];
+  const seenBoards = new Set<string>();
+  const seenProjects = new Set<string>();
+  const projects: TaskProjectRecord[] = [];
+  for (const board of boards) {
+    const boardKey = path.resolve(board.boardDir);
+    if (seenBoards.has(boardKey)) continue;
+    seenBoards.add(boardKey);
+    // A tasks directory with no board entry is not a board yet. Listing must not
+    // throw, and must not create README.md / AGENTS.md for it.
+    if (!boardHasEntry(board)) continue;
+    for (const record of await listProjects(board, createNodeBoardWriter(board))) {
+      const abs = path.resolve(nativeTaskPath(board.scopeDir), record.path);
+      if (seenProjects.has(abs)) continue;
+      seenProjects.add(abs);
+      projects.push({
+        ...record,
+        path: relativePathInsideScope(invocation, abs).split(path.sep).join("/"),
+      });
+    }
+  }
+  return projects;
 }
 
 function projectNodes(target: BoardTarget): NodeService {
@@ -326,6 +374,9 @@ export async function ensureProjectMetadata(
     }
     const entry = await resolveProjectEntry(repoPath, id, writer);
     if (!entry.exists) {
+      const agents = path.join(boardRoot(repoPath), projectDirName(id), ENTRY_NAMES.internal);
+      // An existing AGENTS.md without README.md is a data error, not a project to repair.
+      if (await writer.exists(agents)) continue;
       await service.create(new ReadmeNode(entry.abs), { body: renderProjectReadme({
           title: seedTitleFor(id),
           description: seedDescriptionFor(id),
@@ -344,9 +395,15 @@ export async function listProjects(
 ): Promise<TaskProjectRecord[]> {
   const records: TaskProjectRecord[] = [];
   for (const id of await listProjectIds(repoPath, writer)) {
+    // The list envelope has no warning field. A directory without README.md is skipped.
+    if (!(await resolveProjectEntry(repoPath, id, writer)).exists) continue;
     records.push(await readProjectRecord(repoPath, id, writer));
   }
   return records;
+}
+
+function missingReadmeError(id: TaskProjectId, rel: string): TasksError {
+  return new TasksError("VALIDATION_ERROR", `project ${id} is missing README.md: ${rel}`);
 }
 
 export async function getProject(
@@ -355,7 +412,18 @@ export async function getProject(
   writer: BoardWriter,
 ): Promise<TaskProjectRecord> {
   const id = parseTaskProject(raw);
-  return readProjectRecord(repoPath, id, writer);
+  // A missing board is a board error. A directory without README.md is not a project.
+  await listProjectIds(repoPath, writer);
+  const entry = await resolveProjectEntry(repoPath, id, writer);
+  if (!entry.exists) {
+    const dir = path.join(boardRoot(repoPath), projectDirName(id));
+    if (await writer.exists(dir)) throw missingReadmeError(id, entry.rel);
+    throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
+  }
+  return projectRecordFromEntry(nativeTaskPath(scopeDir(repoPath)), {
+    path: entry.abs,
+    body: await writer.readFile(entry.abs),
+  });
 }
 
 export async function createProject(
@@ -397,19 +465,18 @@ export async function updateProject(
     );
   }
   const id = parseTaskProject(raw);
-  // A named write may seed its existing project directory without discovering siblings.
-  const projectExists = await writer.exists(path.join(boardRoot(repoPath), projectDirName(id)));
-  const service = projectNodes(repoPath);
-  await ensureProjectMetadata(repoPath, writer, undefined, projectExists ? [id] : [], service);
-  const entry = await resolveProjectEntry(repoPath, id, writer);
-  const rel = entry.rel;
-  if (!entry.exists) {
+  const projectDir = path.join(boardRoot(repoPath), projectDirName(id));
+  if (!(await writer.exists(projectDir))) {
     throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
   }
-  const node = entry.kind === "readme"
-    ? (await service.get(entry.abs, ReadmeNode))!
-    : (await service.get(entry.abs, AgentsNode))!;
-  const parsed = parseProjectAgents(node.body);
+  const entry = await resolveProjectEntry(repoPath, id, writer);
+  if (!entry.exists) throw missingReadmeError(id, entry.rel);
+  const service = projectNodes(repoPath);
+  await prepareProjectWrite(repoPath, service);
+  const rel = entry.rel;
+  const node = await service.get(entry.abs, ReadmeNode);
+  if (!node) throw new TasksError("PROJECT_NOT_FOUND", `project not found: ${id}`);
+  const parsed = parseProjectEntry(node.body, rel);
   const title = patch.title === undefined ? parsed.title : parseProjectTitle(patch.title);
   const description =
     patch.description === undefined
@@ -419,11 +486,10 @@ export async function updateProject(
     title,
     description,
     pointers: parsed.pointers,
-    tail: parsed.tail ?? (entry.kind === "readme" ? "\n" : undefined),
+    tail: parsed.tail ?? "\n",
   });
-  if (entry.kind === "readme") await service.update(node as ReadmeNode, { body });
-  else await service.update(node as AgentsNode, { body });
-  await refreshProjectIndex(repoPath, writer, [], service);
+  await service.update(node, { body });
+  await refreshProjectIndex(repoPath, writer, [id], service);
   return {
     project: id,
     dir: projectDirName(id),

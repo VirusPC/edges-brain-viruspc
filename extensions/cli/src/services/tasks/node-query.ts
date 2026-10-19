@@ -132,6 +132,65 @@ export async function listTaskNodes(
     .filter((node): node is TaskNode => node instanceof TaskNode)
     .value();
 }
+/** Task boards reached from system entries and linked tasks material. Not a directory scan. */
+export async function listTaskBoardLocations(
+  root: string,
+  options: { super?: boolean; withComposed?: boolean } = {},
+): Promise<TaskBoardLocation[]> {
+  const canonicalRoot = nativeTaskPath(root);
+  const dirs = await collectTaskBoardDirs(canonicalRoot, options);
+  return [...dirs]
+    .sort((a, b) => a.localeCompare(b))
+    .map((dir) => boardLocationOf(dir, canonicalRoot));
+}
+
+async function collectTaskBoardDirs(
+  canonicalRoot: string,
+  options: { super?: boolean; withComposed?: boolean } = {},
+): Promise<Set<string>> {
+  const service = new NodeService({ managedRoot: canonicalRoot });
+  const materialName = path.basename(harnessMaterialById("tasks").path);
+  const boardDirs = new Set<string>();
+  const note = (file: string) => {
+    const dir = path.dirname(file);
+    if (path.basename(dir) !== tasksBoardDirName()) return;
+    const name = path.basename(file);
+    if (name === ENTRY_NAMES.internal || name === materialName) boardDirs.add(dir);
+  };
+  const queryOptions = {
+    types: ["agents"] as const,
+    includeHarness: true,
+    ...(options.withComposed ? { withComposed: true as const } : {}),
+  };
+  const linked: AgentsNode[] = [];
+  const scopeEntry = path.join(canonicalRoot, ENTRY_NAMES.internal);
+  // A missing scope AGENTS.md makes the real-root query throw. `--super` uses the
+  // virtual root instead, and still keeps `--with-composed` on a real entry.
+  if (fs.existsSync(scopeEntry) || options.super !== true) {
+    linked.push(...await service
+      .query(canonicalRoot, queryOptions)
+      .filter((node): node is AgentsNode => node instanceof AgentsNode)
+      .value());
+  }
+  if (options.super === true) {
+    linked.push(...await service
+      .query(canonicalRoot, { ...queryOptions, super: true })
+      .filter((node): node is AgentsNode => node instanceof AgentsNode)
+      .value());
+  }
+  for (const node of linked) {
+    note(node.path);
+    for (const child of node.children) note(child.id);
+  }
+  for (const agentsPath of collectSystemRoots(canonicalRoot)) {
+    const node = await service.get(agentsPath, AgentsNode);
+    if (!node) continue;
+    note(node.path);
+    for (const child of node.children) note(child.id);
+  }
+  return boardDirs;
+}
+
 export async function listRepositoryTaskNodes(
   root: string,
   options: { super?: boolean } = {},
@@ -146,28 +205,7 @@ export async function listRepositoryTaskNodes(
   }
   // System entries whose directory is the tasks board, plus the configured material
   // hung from any system root. The material path comes from harness-materials.
-  const materialName = path.basename(harnessMaterialById("tasks").path);
-  const boardDirs = new Set<string>();
-  const note = (file: string) => {
-    const dir = path.dirname(file);
-    if (path.basename(dir) !== tasksBoardDirName()) return;
-    const name = path.basename(file);
-    if (name === ENTRY_NAMES.internal || name === materialName) boardDirs.add(dir);
-  };
-  const linked = await service
-    .query(canonicalRoot, { types: ["agents"], includeHarness: true })
-    .filter((node): node is AgentsNode => node instanceof AgentsNode)
-    .value();
-  for (const node of linked) {
-    note(node.path);
-    for (const child of node.children) note(child.id);
-  }
-  for (const agentsPath of collectSystemRoots(canonicalRoot)) {
-    const node = await service.get(agentsPath, AgentsNode);
-    if (!node) continue;
-    note(node.path);
-    for (const child of node.children) note(child.id);
-  }
+  const boardDirs = await collectTaskBoardDirs(canonicalRoot);
   const seen = new Set<string>();
   const out: TaskNode[] = [];
   for (const boardDir of boardDirs) {
