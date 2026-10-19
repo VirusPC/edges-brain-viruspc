@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `edges compose register` 的 `--description` 改为必填。缺少或只有空白时退出码 2，`errorCode` 为 `VALIDATION_ERROR`，不修改 `AGENTS.md`。
+
 ## [0.2.2] - 2026-10-19
 
 ### Fixed

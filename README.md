@@ -62,7 +62,7 @@ edges --scope . tasks create --title "修复构建" --project default
 edges --scope . tasks list
 ```
 
-完整命令见 [`extensions/cli/README.md`](extensions/cli/README.md)，或运行 `edges --help`。
+把外部 harness 仓库挂进当前目录用 `edges compose`，步骤见 [`edges-compose`](extensions/skills/edges-compose/SKILL.md)。完整命令见 [`extensions/cli/README.md`](extensions/cli/README.md)，或运行 `edges --help`。
 
 ## 本仓：作者的大脑仓库
 

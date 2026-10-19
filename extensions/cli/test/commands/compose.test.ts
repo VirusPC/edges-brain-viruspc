@@ -41,6 +41,90 @@ function commit(cwd: string, message: string, file: string, contents: string): v
   );
 }
 
+function failed(stdout: string): { status: string; errorCode: string; reason: string } {
+  return JSON.parse(stdout) as { status: string; errorCode: string; reason: string };
+}
+
+test("compose register --help marks --description as required", async () => {
+  const result = await run(["compose", "register", "--help"]);
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stdout, /--description\s+<text>/);
+  assert.match(result.stdout, /required/i);
+});
+
+test("compose register without --description is a validation error and leaves AGENTS.md unchanged", async (t) => {
+  const root = mkdtempSync(path.join(tmpdir(), "compose-register-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const scope = path.join(root, "scope");
+  mkdirSync(scope, { recursive: true });
+  const file = path.join(scope, "AGENTS.md");
+  const before = agents();
+  writeFileSync(file, before);
+  const env = { ...process.env, EDGES_SCOPE: scope };
+
+  const missing = await run(
+    ["compose", "register", "--name", "brain", "--remote", "https://github.com/example/brain.git"],
+    { env },
+  );
+  assert.equal(missing.exitCode, 2);
+  const missingBody = failed(missing.stdout);
+  assert.equal(missingBody.status, "failed");
+  assert.equal(missingBody.errorCode, "VALIDATION_ERROR");
+  assert.match(missingBody.reason, /--description/);
+  assert.match(missingBody.reason, /required/i);
+  assert.equal(readFileSync(file, "utf8"), before);
+
+  const empty = await run(
+    ["compose", "register", "--name", "brain", "--remote", "https://github.com/example/brain.git", "--description", ""],
+    { env },
+  );
+  assert.equal(empty.exitCode, 2);
+  const emptyBody = failed(empty.stdout);
+  assert.equal(emptyBody.errorCode, "VALIDATION_ERROR");
+  assert.match(emptyBody.reason, /--description/);
+  assert.match(emptyBody.reason, /required/i);
+  assert.equal(readFileSync(file, "utf8"), before);
+
+  const blank = await run(
+    ["compose", "register", "--name", "brain", "--description", "   "],
+    { env },
+  );
+  assert.equal(blank.exitCode, 2);
+  assert.equal(failed(blank.stdout).errorCode, "VALIDATION_ERROR");
+  assert.equal(readFileSync(file, "utf8"), before);
+});
+
+test("compose register writes the description into the Compose block", async (t) => {
+  const root = mkdtempSync(path.join(tmpdir(), "compose-desc-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const scope = path.join(root, "scope");
+  mkdirSync(scope, { recursive: true });
+  const file = path.join(scope, "AGENTS.md");
+  writeFileSync(file, agents());
+  const env = { ...process.env, EDGES_SCOPE: scope };
+  const registered = await run(
+    [
+      "compose",
+      "register",
+      "--name",
+      "brain",
+      "--remote",
+      "https://github.com/example/brain.git",
+      "--description",
+      "个人大脑：只在记跨项目判断时写入",
+    ],
+    { env },
+  );
+  assert.equal(registered.exitCode, 0, registered.stdout + registered.stderr);
+  const source = readFileSync(file, "utf8");
+  assert.match(
+    source,
+    /\[brain\]\(<~\/\.edges\/composed\/brain>\) — 个人大脑：只在记跨项目判断时写入 remote: https:\/\/github\.com\/example\/brain\.git/,
+  );
+  const body = JSON.parse(registered.stdout) as { description?: string };
+  assert.equal(body.description, "个人大脑：只在记跨项目判断时写入");
+});
+
 test("edges compose --help lists clone, pull, and push", async () => {
   const result = await run(["compose", "--help"]);
   assert.equal(result.exitCode, 0);

@@ -92,6 +92,22 @@ test("addChild writes the block and removeChild drops the last link", () => {
   );
 });
 
+test("a description survives serialize and parse next to the remote", () => {
+  const file = "/repo/AGENTS.md";
+  const node = new AgentsNode(file).parse(agents(""));
+  node.composeNode().addChild({
+    name: "brain",
+    description: "个人大脑",
+    remote: "https://github.com/example/brain.git",
+  });
+  const source = node.serialize();
+  assert.match(source, /\[brain\]\(<~\/\.edges\/composed\/brain>\) — 个人大脑 remote: https:\/\/github\.com\/example\/brain\.git/);
+  const loaded = new AgentsNode(file).parse(source);
+  assert.equal(loaded.composeNode().entries()[0]?.description, "个人大脑");
+  assert.equal(loaded.composeNode().entries()[0]?.remote, "https://github.com/example/brain.git");
+  assert.equal(loaded.serialize(), source);
+});
+
 test("omitted directory uses ~/.edges/composed/<name> and checkout expands ~", () => {
   const file = "/repo/AGENTS.md";
   const node = new AgentsNode(file).parse(agents(""));
