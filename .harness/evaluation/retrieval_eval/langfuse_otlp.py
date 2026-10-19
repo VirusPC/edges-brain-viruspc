@@ -22,6 +22,8 @@ from typing import Any
 
 _TRACE_PATH = "/api/public/otel/v1/traces"
 _SERVICE = "edges-retrieval-eval"
+# Cloudflare 1010 rejects urllib's default Python-urllib signature.
+_USER_AGENT = "edges-retrieval-eval/1"
 _MAX_ATTR = 8000
 _MAX_SPANS = 40
 _TIMEOUT_SECONDS = 10.0
@@ -104,6 +106,7 @@ def _post_otlp(url: str, body: bytes, authorization: str, opener: Opener | None 
         headers={
             "Authorization": authorization,
             "Content-Type": "application/json",
+            "User-Agent": _USER_AGENT,
         },
     )
     open_fn = opener or urllib.request.urlopen

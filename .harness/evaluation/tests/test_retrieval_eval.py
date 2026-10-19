@@ -437,6 +437,7 @@ class LangfuseUploadTests(unittest.TestCase):
         self.assertEqual(request.full_url, "https://langfuse.example/api/public/otel/v1/traces")
         self.assertEqual(request.get_method(), "POST")
         self.assertEqual(request.get_header("Content-type"), "application/json")
+        self.assertEqual(request.get_header("User-agent"), "edges-retrieval-eval/1")
         expected_auth = "Basic " + base64.b64encode(b"pk-test:sk-test").decode("ascii")
         self.assertEqual(request.get_header("Authorization"), expected_auth)
         payload = json.loads(request.data.decode("utf-8"))
