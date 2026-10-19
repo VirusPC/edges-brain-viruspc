@@ -16,7 +16,7 @@
 
 **协议与能力**
 
-- **`cli/`**: 面向 agent 的 CLI 项目（`edges`：`note`、`tasks`、`artifacts`、…）。有 shell 的本地 agent 优先走这里。公共节点与文档工具在 [`cli/src/utils/node-tree/`](cli/src/utils/node-tree/README.md)，使用 TypeScript，与命令适配分层。
+- **`cli/`**: 面向 agent 的 CLI 项目（`edges`：`notes`、`tasks`、`artifacts`、…）。有 shell 的本地 agent 优先走这里。公共节点与文档工具在 [`cli/src/utils/node-tree/`](cli/src/utils/node-tree/README.md)，使用 TypeScript，与命令适配分层。
 - **`services/`**: 接入 Edges 的常驻 HTTP 进程（不是 MCP，也不是 Commander 命令节点）。目前是 Artifacts 预览服务 [`services/artifacts-preview/`](services/artifacts-preview/)；命令面仍是 `edges artifacts`。
 - **`apps/`**: 全局共享的对外应用实现，可被不同作用域复用。目前包括 [`tasks-review-app/`](apps/tasks-review-app/)，构建结果供 CLI 的任务审阅页使用。
 - **`mcp-servers/`**: [Model Context Protocol](https://modelcontextprotocol.io/) 服务器实现。给没有 shell 的 AI 客户端。
