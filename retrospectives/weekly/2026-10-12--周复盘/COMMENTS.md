@@ -9,3 +9,4 @@
 - doctor 报不出断掉的软链接：不用管了，不开卡，以后复盘也不再追。
 - #174（CLI 和根 `.harness` 补齐 notes、edges、projects、archive）：不用马上做，可以放在 backlog。
 - PR 上加 frozen install 检查：要做。在 PR 上跑和 Deploy 同样的 `pnpm install --frozen-lockfile`，lockfile 和依赖配置对不上时合入前就变红。
+- `docs/architecture.md` 里的 RAG、PageIndex：保留，不改。那是云端知识库能力，是同一份知识的另一条接入路径，和 ADR 0034 不冲突。
