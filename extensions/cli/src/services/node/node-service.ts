@@ -309,9 +309,8 @@ export class NodeService {
       if (!isWithinPath(ref.id, this.managedRoot) || deferred(ref.id)) return undefined;
       // A symlink registration points elsewhere; it is not this node's index entry.
       if (firstSymlink(ref.id)) return undefined;
-      // Maintenance discovery tolerates a missing optional entry; composition does not.
-      if (maintenanceOnly(parent, ref) &&
-          !this.#cache.loaded.has(ref.id) && !fs.existsSync(ref.id)) return undefined;
+      // A missing target is an absent edge. Skip it; do not fail the command.
+      if (!this.#cache.loaded.has(ref.id) && !fs.existsSync(ref.id)) return undefined;
       // Optional harness reads retain their existing #read policy.
       readonly = maintenanceOnly(parent, ref) ? false : this.#referenceReadOnly(parent, ref);
       return ref.id;
@@ -357,6 +356,12 @@ export class NodeService {
           throw new Error(`Reference to removed node: ${ref.id}`);
         // Leave symlink registrations in place; do not follow them as the node.
         if (firstSymlink(ref.id)) return undefined;
+        // Pre-existing links to absent files (gitignored users/README, deleted entries)
+        // are skipped. A reference this operation would newly persist still fails.
+        if (!fs.existsSync(ref.id) && !plan.has(ref.id)) {
+          if (this.#persistedReference(plan, _parent, ref.id)) return undefined;
+          throw new Error(`Missing referenced node: ${ref.id}`);
+        }
         readonly = this.#referenceReadOnly(_parent, ref);
         return ref.id;
       },
@@ -365,6 +370,18 @@ export class NodeService {
         return proposed ? Promise.resolve(proposed.node) : this.#reference(parent, ref, readonly);
       },
     )) { /* Exhaust the graph before any write IO. */ }
+  }
+  /** True when `refId` is already on disk for `parent`, so a missing target is not this write's fault. */
+  #persistedReference(
+    plan: ReadonlyMap<string, Planned>,
+    parent: BaseNode,
+    refId: string,
+  ): boolean {
+    const planned = plan.get(parent.path);
+    if (!planned) return true;
+    if (!planned.before) return false;
+    const disk = parseComposite(planned.before.path, planned.before.source);
+    return disk.children.some((child) => child.id === refId);
   }
   #proposedParent(
     file: string,

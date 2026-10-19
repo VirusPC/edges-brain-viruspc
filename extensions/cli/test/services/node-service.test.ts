@@ -491,6 +491,20 @@ test('global query omits out-of-root references and linked installations while m
   assert.deepEqual(skipped.map(node => node.path), [path.join(root, 'AGENTS.md')]);
 });
 
+test('writes skip a pre-existing missing reference instead of rejecting the command', async t => {
+  const { write, file, service } = fixture(t);
+  write('AGENTS.md', index('- [harness](.harness/README.md)\n- [leaf](leaf/index.md)'));
+  write('.harness/README.md', `# Harness\n\n<!-- project-entries-local:start -->\n## 本层内容\n\n- [users](memory/users/README.md) — private\n<!-- project-entries-local:end -->\n`);
+  write('leaf/index.md', 'Leaf\n');
+  assert.equal(fs.existsSync(file('.harness/memory/users/README.md')), false);
+  const created = await service.create(new LeafNode(file('extra/index.md')), { body: 'Extra\n' }, { indexGroup: 'local' });
+  assert.match(fs.readFileSync(created.path, 'utf8'), /Extra/);
+  const leaf = (await service.get(file('leaf/index.md'), LeafNode))!;
+  await service.destroy(leaf);
+  assert.equal(fs.existsSync(file('leaf/index.md')), false);
+  assert.equal(fs.existsSync(created.path), true);
+});
+
 test('typed navigation through a readonly leaf retains readonly origin for its harness children', async t => {
   const { root, write, service } = fixture(t);
   write('AGENTS.md',index('- [memory](memory/AGENTS.md)'));
