@@ -44,6 +44,7 @@ export { asTasksError, openTasksRuntime } from "./result.js";
 export { formatRunsTable, formatRunMessagesTable } from "./format.js";
 export { parseRunLog };
 export { isTaskStatus, subjectTaskBoard } from "./paths.js";
+export { nativeTaskPath, relativePathInsideScope } from "./realpath.js";
 export { moveTaskStatus } from "./move.js";
 export function initTasks(options: Omit<InitScopeOptions, "modules">) {
   return initScope({ ...options, modules: ["tasks"] });

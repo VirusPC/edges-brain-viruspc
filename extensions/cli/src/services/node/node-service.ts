@@ -307,6 +307,8 @@ export class NodeService {
     const resolve = (parent: BaseNode, ref: NodeReference) => {
       if (ref.id === parent.compose?.id) return undefined;
       if (!isWithinPath(ref.id, this.managedRoot) || deferred(ref.id)) return undefined;
+      // A symlink registration points elsewhere; it is not this node's index entry.
+      if (firstSymlink(ref.id)) return undefined;
       // Maintenance discovery tolerates a missing optional entry; composition does not.
       if (maintenanceOnly(parent, ref) &&
           !this.#cache.loaded.has(ref.id) && !fs.existsSync(ref.id)) return undefined;
@@ -353,6 +355,8 @@ export class NodeService {
         if (ref.id === _parent.compose?.id) return undefined;
         if (removed(ref.id))
           throw new Error(`Reference to removed node: ${ref.id}`);
+        // Leave symlink registrations in place; do not follow them as the node.
+        if (firstSymlink(ref.id)) return undefined;
         readonly = this.#referenceReadOnly(_parent, ref);
         return ref.id;
       },
@@ -572,7 +576,9 @@ export class NodeService {
       ? (registered.get(oldParent) as CompositeNode | undefined)
       : undefined;
     if (old) {
-      const match = old.children.find((ref) => canonicalPath(ref.id) === node.path);
+      const match = old.children.find(
+        (ref) => !firstSymlink(ref.id) && canonicalPath(ref.id) === node.path,
+      );
       if (match) {
         reference = match;
         group = old.localChildren.some((ref) => ref.id === match.id)

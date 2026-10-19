@@ -122,6 +122,43 @@ test("moving nested Internal preserves child instances and old group under new p
   assert.equal(a.children.length, 0);
   assert.equal(b.descendantChildren[0]?.id, node.id);
 });
+test("cross-parent move migrates only the node's own registration and leaves a symlink registration unchanged", async (t) => {
+  const { file, put, service } = fixture(t);
+  const aliasLine = "- [Alias](alias/index.md?alias=1#link)";
+  const nodeLine = "- [Node](item/index.md?keep=1#node)";
+  put("AGENTS.md", index("- [From](from/AGENTS.md)\n- [To](to/AGENTS.md)"));
+  put("from/AGENTS.md", index(`${aliasLine}\n${nodeLine}`));
+  put("to/AGENTS.md", index());
+  put("from/item/index.md", "body");
+  fs.symlinkSync("item", file("from/alias"));
+  const node = (await service.get(file("from/item/index.md")))!;
+  await service.move(node, file("to/item/index.md"));
+  const fromText = fs.readFileSync(file("from/AGENTS.md"), "utf8");
+  const toText = fs.readFileSync(file("to/AGENTS.md"), "utf8");
+  assert.match(fromText, /\[Alias\]\(alias\/index\.md\?alias=1#link\)/);
+  assert.equal(fromText.includes(nodeLine), false);
+  assert.equal(fromText.includes("[Node]"), false);
+  assert.match(toText, /\[Node\]\(<?item\/index\.md\?keep=1#node>?\)/);
+  assert.equal(toText.includes("Alias"), false);
+  assert.equal(toText.includes("alias/index.md"), false);
+  assert.equal(fs.readlinkSync(file("from/alias")), "item");
+  const fromParent = (await service.get(file("from/AGENTS.md"), AgentsNode))!;
+  const toParent = (await service.get(file("to/AGENTS.md"), AgentsNode))!;
+  assert.equal(
+    fromParent.children.find((ref) => ref.name === "Alias")?.id,
+    file("from/alias/index.md"),
+  );
+  assert.equal(
+    fromParent.children.some((ref) => ref.id === file("from/item/index.md")),
+    false,
+  );
+  assert.equal(
+    toParent.children.find((ref) => ref.name === "Node")?.id,
+    file("to/item/index.md"),
+  );
+  assert.equal(node.path, file("to/item/index.md"));
+  assert.equal(fs.readFileSync(node.path, "utf8"), "body");
+});
 test("destroy co-located harness preserves content; destroy Internal deletes unit not external crossreferences", async (t) => {
   const { file, put, service } = fixture(t);
   put("AGENTS.md", index("- [A](a/SKILL.md)\n- [B](b/AGENTS.md)"));

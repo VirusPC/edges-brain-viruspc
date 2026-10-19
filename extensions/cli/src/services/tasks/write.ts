@@ -1,8 +1,7 @@
-import { realpathSync } from "node:fs";
 import { NodeService } from "../node/node-service.js";
 import { TaskNode } from "../../domain/models/tasks/task-node.js";
 import { setDomainField } from "../../domain/core/fields.js";
-import { assertBoardPath } from "./board.js";
+import { assertBoardPath, nativeTaskPath } from "./board.js";
 import { scopeDir, boardRoot, type BoardTarget } from "./paths.js";
 import path from "node:path";
 import { getTask, listProjectIds, type BoardWriter } from "./board.js";
@@ -266,20 +265,20 @@ export async function updateTask(
 /** Scope and board authorization remain with Tasks, including every NodeService write. */
 export function taskNodes(target: BoardTarget): NodeService {
   return new NodeService({
-    managedRoot: realpathSync(boardRoot(target)),
+    managedRoot: nativeTaskPath(boardRoot(target)),
     assertWrite: ({ node }) =>
       assertBoardPath(
         target,
         path.join(
           scopeDir(target),
-          path.relative(realpathSync(scopeDir(target)), node.path),
+          path.relative(nativeTaskPath(scopeDir(target)), node.path),
         ),
       ),
   });
 }
 
 export function taskFile(target: BoardTarget, relative: string): string {
-  return path.join(realpathSync(scopeDir(target)), relative);
+  return path.join(nativeTaskPath(scopeDir(target)), relative);
 }
 
 export async function ensureTaskDestination(

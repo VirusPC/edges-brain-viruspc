@@ -9,8 +9,10 @@ import {
   buildSystemForest,
   gitRoot,
   isTasksBoardReadmeNode,
+  nativeTaskPath,
   NodeService,
   projectRecordFromEntry,
+  relativePathInsideScope,
   tasksBoardDirName,
 } from "../../../services/tasks/service.js";
 
@@ -22,6 +24,7 @@ export function addProjectListCommand(project: Command, ctx: CliContext): void {
     .action(async () => {
       await runTasksCommand(ctx, async (runtime) => {
         const scopeDir = runtime.location.scopeDir;
+        const scope = nativeTaskPath(scopeDir);
         const managed = gitRoot(scopeDir) ?? scopeDir;
         const nodes = ctx.all
           ? (await buildSystemForest(scopeDir, { includeSuper: ctx.super === true, withComposed: ctx.withComposed === true, form: "independent" })).flat()
@@ -30,13 +33,13 @@ export function addProjectListCommand(project: Command, ctx: CliContext): void {
             .value();
         const projects = nodes.flatMap((node) => {
           if (!(node instanceof ReadmeNode)) return [];
-          const rel = path.relative(scopeDir, node.path).split(path.sep).join("/");
+          const rel = relativePathInsideScope(scope, node.path).split(path.sep).join("/");
           const parts = rel.split("/");
           const board = tasksBoardDirName();
           const at = parts.lastIndexOf(board);
           if (at < 0 || parts[at + 1] === undefined || path.basename(node.path) !== ENTRY_NAMES.readme) return [];
           if (isTasksBoardReadmeNode(node.path)) return [];
-          return [projectRecordFromEntry(scopeDir, node)];
+          return [projectRecordFromEntry(scope, node)];
         });
         return succeed({ status: "success", command: "project.list", projects });
       });
