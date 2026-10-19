@@ -25,7 +25,11 @@ from retrieval_eval.client import (
     parse_client_answer,
     parse_pi_answer,
     parse_predicted,
+    pi_allow_read_paths,
     pi_command,
+    pi_deny_read_paths,
+    pi_install_command,
+    pi_sandbox_check_command,
     pi_sandbox_config_json,
     read_command_version,
     run_client,
@@ -682,23 +686,64 @@ class PiClientTests(unittest.TestCase):
         samples = load_samples(selected[0].sample_path)
         self.assertEqual([sample["id"] for sample in samples], ["edges_smoke_0008"])
 
-    def test_sandbox_config_denies_root_and_disables_default_writes(self) -> None:
+    def test_deny_read_expands_root_and_skips_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "usr" / "bin").mkdir(parents=True)
+            (root / "home").mkdir()
+            (root / "proc").mkdir()
+            (root / "dev").mkdir()
+            (root / "sys").mkdir()
+            (root / "bin").symlink_to("usr/bin")
+            (root / "lib").symlink_to("usr/lib")
+            (root / "README").write_text("x", encoding="utf-8")
+            self.assertEqual(
+                pi_deny_read_paths(root),
+                [str(root / "home"), str(root / "usr")],
+            )
+            allow = pi_allow_read_paths(
+                (
+                    str(root / "usr"),
+                    str(root / "bin"),
+                    str(root / "lib64"),
+                    str(root / "System"),
+                )
+            )
+            self.assertEqual(allow, [".", str(root / "usr")])
+
+    def test_sandbox_config_denies_real_root_dirs_and_disables_writes(self) -> None:
         config = json.loads(pi_sandbox_config_json())
         filesystem = config["filesystem"]
         self.assertEqual(set(config), {"filesystem"})
         self.assertEqual(set(filesystem), {"denyRead", "allowRead", "allowWrite", "denyWrite"})
-        self.assertEqual(filesystem["denyRead"], ["/"])
+        self.assertNotIn("/", filesystem["denyRead"])
         self.assertEqual(filesystem["allowWrite"], [])
         self.assertEqual(filesystem["allowRead"][0], ".")
         self.assertEqual(
             filesystem["denyWrite"],
             ["/tmp/agents", "/private/tmp/agents", "~/.npm/_logs", "~/.claude/debug"],
         )
-        allowed = filesystem["allowRead"][1:]
-        for path in ("/usr", "/bin", "/lib", "/lib64", "/System"):
-            self.assertEqual(path in allowed, Path(path).exists(), path)
-        for blocked in ("/etc", "/home", "/tmp", "/workspace", "/proc", "/dev", "/sys", "/Users"):
-            self.assertNotIn(blocked, allowed)
+        for path in filesystem["denyRead"]:
+            entry = Path(path)
+            self.assertFalse(entry.is_symlink(), path)
+            self.assertTrue(entry.is_dir(), path)
+            self.assertNotIn(entry.name, {"proc", "dev", "sys"})
+        for path in filesystem["allowRead"][1:]:
+            entry = Path(path)
+            self.assertFalse(entry.is_symlink(), path)
+            self.assertTrue(entry.is_dir(), path)
+        if Path("/bin").is_symlink():
+            self.assertNotIn("/bin", filesystem["denyRead"])
+            self.assertNotIn("/bin", filesystem["allowRead"])
+            self.assertIn("/usr", filesystem["denyRead"])
+            self.assertIn("/usr", filesystem["allowRead"])
+        self.assertEqual(pi_install_command(_pi_client())[2], "npm:pi-sandbox@0.7.1")
+        check = pi_sandbox_check_command(Path("/tmp"), "bwrap")
+        self.assertEqual(check[0], "bwrap")
+        self.assertEqual(check[-1], "true")
+        tmpfs = [check[index + 1] for index, arg in enumerate(check) if arg == "--tmpfs"]
+        self.assertNotIn("/bin", tmpfs)
+        self.assertIn("--ro-bind", check)
 
     def test_pi_command_is_minimal_kernel(self) -> None:
         prompt = build_prompt("问题")
@@ -743,8 +788,9 @@ class PiClientTests(unittest.TestCase):
         self.assertIn("--mode json", text)
         self.assertIn("--model minimax-cn/MiniMax-M3", text)
         self.assertIn("--thinking high", text)
-        self.assertIn("pi install npm:pi-sandbox --no-approve", text)
+        self.assertIn("pi install npm:pi-sandbox@0.7.1 --no-approve", text)
         self.assertIn(pi_sandbox_config_json(), text)
+        self.assertIn(" -- true", text)
         self.assertIn("--offline", text)
         self.assertNotIn("--tools", text)
         self.assertNotIn(" -ne ", f" {text} ")
@@ -787,14 +833,21 @@ class PiClientTests(unittest.TestCase):
                 self.assertIs(kwargs["stdin"], subprocess.DEVNULL)
                 self.assertEqual(kwargs["env"]["PI_TELEMETRY"], "0")
                 self.assertEqual(kwargs["env"]["MINIMAX_CN_API_KEY"], secret)
-                self.assertEqual(command[0], "pi")
                 self.assertNotIn(secret, command)
                 seen.setdefault("commands", []).append(command)
+                if command[0] != "pi":
+                    tmpfs = [command[index + 1] for index, arg in enumerate(command) if arg == "--tmpfs"]
+                    self.assertTrue(tmpfs)
+                    for path in tmpfs:
+                        self.assertFalse(Path(path).is_symlink(), path)
+                    self.assertEqual(command[-1], "true")
+                    return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+                self.assertEqual(command[0], "pi")
                 if command[1] == "install":
                     config = json.loads((Path(agent_dir) / "sandbox.json").read_text(encoding="utf-8"))
                     self.assertEqual(config, json.loads(pi_sandbox_config_json()))
                     self.assertEqual(config["filesystem"]["allowWrite"], [])
-                    self.assertEqual(config["filesystem"]["denyRead"], ["/"])
+                    self.assertNotIn("/", config["filesystem"]["denyRead"])
                     return subprocess.CompletedProcess(command, 0, stdout="Installed\n", stderr="")
                 return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="pi-stderr\n")
 
@@ -803,12 +856,11 @@ class PiClientTests(unittest.TestCase):
                     with patch("retrieval_eval.client.subprocess.run", side_effect=fake_run):
                         call = run_client(_pi_client(), root, prompt, last)
             self.assertEqual(
-                seen["commands"],
-                [
-                    ["pi", "install", "npm:pi-sandbox", "--no-approve"],
-                    pi_command(_pi_client(), prompt),
-                ],
+                seen["commands"][0],
+                ["pi", "install", "npm:pi-sandbox@0.7.1", "--no-approve"],
             )
+            self.assertEqual(seen["commands"][2], pi_command(_pi_client(), prompt))
+            self.assertEqual(seen["commands"][1][-1], "true")
             self.assertFalse(Path(seen["dir"]).exists())
             self.assertEqual(call.predicted, ["docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md"])
             self.assertIsNone(call.parse_error)
@@ -834,7 +886,7 @@ class PiClientTests(unittest.TestCase):
                         call = run_client(_pi_client(), root, prompt, last)
             self.assertEqual(run.call_count, 1)
             self.assertEqual(call.predicted, [])
-            self.assertEqual(call.parse_error, "pi install npm:pi-sandbox failed")
+            self.assertEqual(call.parse_error, "pi install npm:pi-sandbox@0.7.1 failed")
             self.assertEqual(call.stderr, "npm ERR\n")
             self.assertFalse(last.exists())
 
@@ -869,6 +921,37 @@ class PiClientTests(unittest.TestCase):
             run.assert_not_called()
             self.assertEqual(call.predicted, [])
             self.assertEqual(call.parse_error, "Sandbox dependencies not available: bwrap")
+            self.assertFalse(last.exists())
+
+    def test_sandbox_bash_check_failure_does_not_run_pi(self) -> None:
+        prompt = "问题"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            last = root / "last.txt"
+            seen: list[list[str]] = []
+
+            def fake_run(command, **kwargs):
+                seen.append(command)
+                if len(command) > 1 and command[1] == "install":
+                    return subprocess.CompletedProcess(command, 0, stdout="Installed\n", stderr="")
+                return subprocess.CompletedProcess(
+                    command,
+                    1,
+                    stdout="",
+                    stderr="bwrap: Can't mount on symlink destination /bin\n",
+                )
+
+            with patch.dict(os.environ, {"MINIMAX_API_KEY": "secret"}, clear=False):
+                with patch("retrieval_eval.client.shutil.which", return_value="/usr/bin/bwrap"):
+                    with patch("retrieval_eval.client.subprocess.run", side_effect=fake_run):
+                        call = run_client(_pi_client(), root, prompt, last)
+            self.assertEqual(
+                [command[1] if command[0] == "pi" else command[-1] for command in seen],
+                ["install", "true"],
+            )
+            self.assertEqual(call.predicted, [])
+            self.assertIn("pi sandbox bash check failed", call.parse_error or "")
+            self.assertIn("Can't mount on symlink destination /bin", call.parse_error or "")
             self.assertFalse(last.exists())
 
     def test_exit_zero_with_error_stop_reason_is_parse_error(self) -> None:

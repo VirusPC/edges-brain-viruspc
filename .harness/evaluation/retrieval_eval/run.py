@@ -44,6 +44,7 @@ from retrieval_eval.client import (
     codex_command,
     pi_command,
     pi_install_command,
+    pi_sandbox_check_command,
     pi_sandbox_config_json,
     read_command_version,
     run_client,
@@ -146,6 +147,7 @@ def print_command(cells: Sequence[Cell]) -> str:
         lines.append(
             "write $PI_CODING_AGENT_DIR/sandbox.json " + pi_sandbox_config_json()
         )
+        lines.append(shlex.join(pi_sandbox_check_command(dest, "bwrap")))
         lines.append(f"(cd {shlex.quote(str(dest))} && {shlex.join(command)})")
     else:
         command = codex_command(cell.client, dest, prompt, last_message)

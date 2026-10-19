@@ -11,12 +11,13 @@ no `-o` file. The answer is the concatenated `text` blocks of the last
 assistant `message_end` with `stopReason` `stop`. Exit code 0 with
 `stopReason` `error` or `aborted` is still a failure. stdin is `DEVNULL`.
 Tools stay at pi's defaults (`read`, `bash`, `edit`, `write`): the command
-does not pass `--tools`. Before the prompt, `pi install npm:pi-sandbox` loads
-the sandbox into a fresh `PI_CODING_AGENT_DIR`. `sandbox.json` sets
-`denyRead` to `["/"]`, `allowRead` to the clone (`.`) plus the system
-directories that still exist and are required to exec bash and rg, and
-`allowWrite` to `[]`. `denyWrite` covers the runtime paths that stay
-writable even when `allowWrite` is empty. `-ne` stays off so that package loads.
+does not pass `--tools`. Before the prompt, `pi install npm:pi-sandbox@0.7.1`
+loads the sandbox into a fresh `PI_CODING_AGENT_DIR`. `sandbox.json` lists real
+top-level directories in `denyRead` (symlinks and proc/dev/sys are omitted),
+`allowRead` as the clone (`.`) plus system directories that are not symlinks,
+and `allowWrite` as `[]`. `denyWrite` covers runtime paths that stay writable
+when `allowWrite` is empty. Before the prompt, one sandboxed `true` must
+succeed. `-ne` stays off so that package loads.
 The runner stores the event stream under
 `.harness/evaluation/.cache/retrieval/sessions/` (gitignored).
 """
@@ -38,11 +39,11 @@ from retrieval_eval.config import Client
 
 _JSON_OBJECT = re.compile(r"\{[\s\S]*?\}")
 _PI_FAILURE_REASONS = frozenset({"error", "aborted"})
-PI_SANDBOX_PACKAGE = "npm:pi-sandbox"
-# Present entries are added. On usr-merge Linux, /bin /lib /lib64 are symlinks
-# into /usr and bash works with /usr alone; they stay listed so a split /usr
-# layout can still exec. /System is the macOS dyld and system-library root.
+PI_SANDBOX_PACKAGE = "npm:pi-sandbox@0.7.1"
+# Real directories only. On usr-merge, /bin /lib /lib64 are symlinks into /usr
+# and must stay out of both lists: bwrap refuses --tmpfs on a symlink.
 _SYSTEM_ALLOW_READ = ("/usr", "/bin", "/lib", "/lib64", "/System")
+_ROOT_DENY_SKIP = frozenset({"proc", "dev", "sys"})
 # @carderne/sandbox-runtime always bind-mounts these, ignoring allowWrite: [].
 _RUNTIME_DENY_WRITE = (
     "/tmp/agents",
@@ -138,20 +139,45 @@ def pi_install_command(client: Client) -> list[str]:
     return [client.command, "install", PI_SANDBOX_PACKAGE, "--no-approve"]
 
 
-def pi_sandbox_config() -> dict[str, object]:
-    """Root deny, clone plus existing system dirs, and no configured writes.
+def pi_deny_read_paths(root: Path | None = None) -> list[str]:
+    """Real top-level directories, skipping symlinks and proc/dev/sys.
 
-    A configured array replaces that key's plugin default. `denyRead: ["/"]`
-    is expanded by pi-sandbox into a tmpfs on each top-level directory, then
-    `allowRead` is bind-mounted back read-only. `allowWrite: []` drops the
-    plugin default of `.` and `/tmp`. The runtime still mounts its own write
-    paths, so those are listed in `denyWrite`.
+    pi-sandbox turns `denyRead: ["/"]` into `--tmpfs` on each child and
+    follows symlinks. bubblewrap 0.11+ then exits with
+    `Can't mount on symlink destination`.
     """
-    allow_read = [".", *(path for path in _SYSTEM_ALLOW_READ if Path(path).exists())]
+    base = root or Path("/")
+    found: list[str] = []
+    for child in base.iterdir():
+        if child.name in _ROOT_DENY_SKIP or child.is_symlink():
+            continue
+        if child.is_dir():
+            found.append(str(child))
+    return sorted(found)
+
+
+def pi_allow_read_paths(candidates: tuple[str, ...] | None = None) -> list[str]:
+    """`.` plus system directories that are real directories, not symlinks."""
+    allow = ["."]
+    for raw in _SYSTEM_ALLOW_READ if candidates is None else candidates:
+        path = Path(raw)
+        if path.is_symlink() or not path.is_dir():
+            continue
+        allow.append(raw)
+    return allow
+
+
+def pi_sandbox_config() -> dict[str, object]:
+    """Expanded root deny, clone plus real system dirs, and no configured writes.
+
+    A configured array replaces that key's plugin default. `allowWrite: []`
+    drops the plugin default of `.` and `/tmp`. The runtime still mounts its
+    own write paths, so those are listed in `denyWrite`.
+    """
     return {
         "filesystem": {
-            "denyRead": ["/"],
-            "allowRead": allow_read,
+            "denyRead": pi_deny_read_paths(),
+            "allowRead": pi_allow_read_paths(),
             "allowWrite": [],
             "denyWrite": list(_RUNTIME_DENY_WRITE),
         }
@@ -161,6 +187,39 @@ def pi_sandbox_config() -> dict[str, object]:
 def pi_sandbox_config_json() -> str:
     """JSON written to `$PI_CODING_AGENT_DIR/sandbox.json`."""
     return json.dumps(pi_sandbox_config(), ensure_ascii=False)
+
+
+def pi_sandbox_check_command(cwd: Path, bwrap: str = "bwrap") -> list[str]:
+    """One sandboxed `true` using the same deny/allow mounts as sandbox.json.
+
+    Linux runs bubblewrap directly. macOS asks `sandbox-exec` to apply the
+    same allow/deny paths. A non-zero status fails the sample before the prompt.
+    """
+    filesystem = pi_sandbox_config()["filesystem"]
+    assert isinstance(filesystem, dict)
+    deny = filesystem["denyRead"]
+    allow = filesystem["allowRead"]
+    assert isinstance(deny, list) and isinstance(allow, list)
+    resolved = str(cwd.resolve()) if cwd.exists() else os.path.abspath(cwd)
+    if sys.platform == "darwin":
+        lines = ["(version 1)", "(allow default)"]
+        for path in deny:
+            lines.append(f'(deny file-read* (subpath "{path}"))')
+        for path in allow:
+            target = resolved if path == "." else path
+            lines.append(f'(allow file-read* (subpath "{target}"))')
+        lines.append('(allow file-read* (literal "/"))')
+        return ["sandbox-exec", "-p", "\n".join(lines), "true"]
+    command = [bwrap, "--die-with-parent", "--ro-bind", "/", "/"]
+    for path in deny:
+        command.extend(["--tmpfs", str(path)])
+    for path in allow:
+        target = resolved if path == "." else str(path)
+        if path != "." and not Path(target).exists():
+            continue
+        command.extend(["--ro-bind", target, target])
+    command.extend(["--chdir", resolved, "--", "true"])
+    return command
 
 
 def missing_pi_sandbox_dependencies() -> list[str]:
@@ -369,6 +428,42 @@ def _run_pi(
                 returncode=installed.returncode,
                 timed_out=False,
                 parse_error=f"pi install {PI_SANDBOX_PACKAGE} failed",
+            )
+        bwrap = shutil.which("bwrap") or "bwrap"
+        check = pi_sandbox_check_command(repo_dir, bwrap if sys.platform.startswith("linux") else "bwrap")
+        checked = _run_pi_process(
+            check,
+            cwd=repo_dir,
+            env=env,
+            timeout=min(30, client.timeout_seconds),
+        )
+        if isinstance(checked, ClientCall):
+            if checked.parse_error == "timeout":
+                return ClientCall(
+                    predicted=[],
+                    command=check,
+                    stdout=checked.stdout,
+                    stderr=checked.stderr,
+                    returncode=checked.returncode,
+                    timed_out=True,
+                    parse_error="pi sandbox bash check failed: timeout",
+                )
+            return checked
+        if checked.returncode != 0:
+            detail = (checked.stderr or checked.stdout or "").strip()
+            if len(detail) > 500:
+                detail = detail[-500:]
+            message = "pi sandbox bash check failed"
+            if detail:
+                message = f"{message}: {detail}"
+            return ClientCall(
+                predicted=[],
+                command=check,
+                stdout=checked.stdout,
+                stderr=checked.stderr,
+                returncode=checked.returncode,
+                timed_out=False,
+                parse_error=message,
             )
         result = _run_pi_process(
             command,
