@@ -101,6 +101,7 @@ export async function taskBoardQuery(
                 "VALIDATION_ERROR",
                 "path is outside selected task board",
               );
+            if (!fs.existsSync(reference.id)) return undefined;
             return reference.id;
           },
           async (_parent, _reference, target) => {
