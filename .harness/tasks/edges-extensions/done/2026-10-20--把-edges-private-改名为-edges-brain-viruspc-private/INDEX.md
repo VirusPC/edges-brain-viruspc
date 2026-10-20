@@ -2,15 +2,16 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T12:40:00.000Z'
+  edges-updated-at: '2026-10-20T12:27:29.130Z'
   edges-title: 把 edges-private 改名为 edges-brain-viruspc-private
-  edges-tasks-status: todo
+  edges-tasks-status: done
   edges-task-priority: none
 name: 把 edges-private 改名为 edges-brain-viruspc-private
 description: >-
   公开拆仓后命名已对齐；私仓仍叫 edges-private，改为 edges-brain-viruspc-private，并改完 Compose
   与文档引用。
 ---
+
 **背景：**
 公开拆仓后命名已对齐为 `VirusPC/edges`（框架）与 `VirusPC/edges-brain-viruspc`（个人公开大脑）；私仓仍叫 `VirusPC/edges-private`，与现命名不一致。命名模式应是：edges（系统）+ edges-brain-viruspc（公开大脑）+ edges-brain-viruspc-private（私密大脑）。
 
@@ -28,6 +29,14 @@ description: >-
 - 框架仓 `conversation-to-notes` 里的私仓名？选项：不点名个人仓、改通用写法 / 直接换新名 / 不动。结论：改成「私密内容写入你自己的私密仓」，顺手修掉过时的「仓：`VirusPC/edges`」和 CLI 路径；不移动 skill tag。理由：框架仓开源，不应依赖个人 / 私密仓。
 - 本机 clone？选项：只改 remote / 连文件夹一起改 / 都不改。结论：只 `git remote set-url`，文件夹名不变；Mac 那步给用户一条命令。理由：Obsidian 按路径记 vault，改文件夹会断。
 - 私仓自身？选项：改 README / AGENTS 自称并补 description / 只改自称 / 都不动；直推 main 还是开 PR。结论：改自称、补 description，直推 main。理由：description 原为空；私仓 main 无保护。
+
+**进展（2026-10-20）：** 已全部完成，本卡关闭。
+- GitHub 上仓库已改名为 `VirusPC/edges-brain-viruspc-private`，旧 URL 可重定向。
+- 私仓自身：README / AGENTS 里的自称已改为新名，补了 repo description。
+- VirusPC/edges-brain-viruspc#336 已合：更新日复盘 skill 与相关 README，加「改名对照」，grill R1 拍板写进本卡。Deploy 成功。
+- VirusPC/edges#12 已合：`conversation-to-notes` 改写，不再点名任何个人仓。Deploy 成功。
+- Compose：明确无需更新（私仓有意不登记进任何 Compose 区块）。
+- 本地 remote：box 上的克隆已检查；peng cheng 的 Mac 由他自己执行 `git remote set-url`（命令已发给他）。
 
 **完成标准：**
 - [x] GitHub 上仓库名为 `VirusPC/edges-brain-viruspc-private`，且旧 URL 可重定向（2026-10-20 已改名；`gh api repos/VirusPC/edges-private` 解析到新名，旧 URL `git ls-remote` 可用）
