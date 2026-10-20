@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T04:15:00.000Z'
+  edges-updated-at: '2026-10-20T04:45:19.036Z'
   edges-title: 把个人大脑从 VirusPC/edges 系统仓拆出去
   edges-tasks-status: in_progress
   edges-task-priority: none
@@ -67,8 +67,17 @@ peng cheng 觉得 VirusPC/edges 不该把 Edges 系统和个人大脑混在一�
 **目标：**
 新 `VirusPC/edges` 只承载 Edges 系统；现有仓改名 `VirusPC/edges-brain-viruspc` 作个人主干长期保留；两边双向 Compose。
 
+**进展（2026-10-20）：**
+- 已完成：原仓已改名为 `VirusPC/edges-brain-viruspc`（个人主干），历史全部保留。
+- 已完成：新建框架仓 `VirusPC/edges`，main 保护规则照搬原仓；VirusPC/edges#1 已合：Compose 登记个人仓，eval 锁到拆仓前提交 `025904fa`。
+- 已完成：VirusPC/edges-brain-viruspc#329 已合：个人仓 README 补上反向 Compose 登记。
+- 已完成：ECS 已改指个人仓，teaching 与 tasks 两个站点都返回 200。
+- 进行中：两个补 `.github/workflows` 的 PR。
+- 待办：删掉个人仓里的系统副本，再切换 ECS 上的 tasks；最后由 peng cheng 配置 npm Trusted Publishing。
+- 说明：本卡在两个仓都有（个人仓是原卡，框架仓是快照），以个人仓这份为准。
+
 **完成标准：**
 - [x] 有一份拍板的边界：系统仓留什么、个人仓放什么
-- [ ] 个人大脑有独立仓库，并从 edges 通过 Compose 登记挂上
+- [x] 个人大脑有独立仓库，并从 edges 通过 Compose 登记挂上
 - [ ] 现有仓已改名 `edges-brain-viruspc`；新 `VirusPC/edges` 历史里不含个人大脑内容
 - [ ] AGENTS.md / README 写清两边各自职责，以及怎么用 Compose 挂个人仓
