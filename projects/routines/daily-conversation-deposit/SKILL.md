@@ -5,7 +5,7 @@ description: 每日沉淀扫描（日复盘）。回顾过去 24 小时各 Grok 
 
 # 每日沉淀扫描（日复盘）
 
-回顾 peng cheng 过去 24 小时（Asia/Shanghai）在所有 Grok Bot 助手里的对话，按 VirusPC/edges 根 AGENTS.md 判断哪些该沉淀、落到哪里（笔记、任务、记忆、feedback，以及它定义的其它类型）。个人内容去 edges-private。
+回顾 peng cheng 过去 24 小时（Asia/Shanghai）在所有 Grok Bot 助手里的对话，按 VirusPC/edges-brain-viruspc 根 AGENTS.md 判断哪些该沉淀、落到哪里（笔记、任务、记忆、feedback，以及它定义的其它类型）。个人内容去 VirusPC/edges-brain-viruspc-private。
 
 何时跑见同目录 [schedule.md](schedule.md)。本文件不写日程。
 
@@ -37,24 +37,24 @@ description: 每日沉淀扫描（日复盘）。回顾过去 24 小时各 Grok 
 
 按仓库归属分 PR：
 
-- VirusPC/edges 的公开内容，与当日 `INDEX.md` 同一个 PR，开到 main。
-- edges-private 的个人内容，在 edges-private 另开一个到 main 的 PR，不并进公开仓。公开仓的清单只写「有 N 条私人内容已在 edges-private 开 PR」，并附该 PR 链接，不写私人正文。拿不到 edges-private 时，公开清单写明未落成及原因，私人正文仍不写入公开仓。
+- VirusPC/edges-brain-viruspc 的公开内容，与当日 `INDEX.md` 同一个 PR，开到 main。
+- edges-brain-viruspc-private 的个人内容，在 edges-brain-viruspc-private 另开一个到 main 的 PR，不并进公开仓。公开仓的清单只写「有 N 条私人内容已在 edges-brain-viruspc-private 开 PR」，并附该 PR 链接，不写私人正文。拿不到 edges-brain-viruspc-private 时，公开清单写明未落成及原因，私人正文仍不写入公开仓。
 
-同一日补记：已落过的候选不重复写。新的公开候选并进尚未合并的当日 PR；该 PR 已经合并则另开一个到 main 的 PR。edges-private 同样处理。两个仓都不自动合并。
+同一日补记：已落过的候选不重复写。新的公开候选并进尚未合并的当日 PR；该 PR 已经合并则另开一个到 main 的 PR。edges-brain-viruspc-private 同样处理。两个仓都不自动合并。
 
 开 PR：用 Cursor 云端 Agent 开到 main 的 PR。Commit 带一行 `Co-authored-by: 日复盘 <grok-bot@users.noreply.github.com>`。
 
-公开仓按根 README 的「隐私与脱敏」再写：不写个人身份细节、未公开 IP、鉴权链接、凭据、私人生活细节。凭据、鉴权链接、未公开 IP 在 edges-private 同样不写。原始 transcript 不进任何仓库，只留在 `/workspace/daily-scan/`。
+公开仓按根 README 的「隐私与脱敏」再写：不写个人身份细节、未公开 IP、鉴权链接、凭据、私人生活细节。凭据、鉴权链接、未公开 IP 在 edges-brain-viruspc-private 同样不写。原始 transcript 不进任何仓库，只留在 `/workspace/daily-scan/`。
 
 ### 4. 只回链接
 
-对话里只告诉用户 PR 链接。公开仓一条；有 edges-private 的 PR 再加一条。不把候选清单贴出来征求确认。
+对话里只告诉用户 PR 链接。公开仓一条；有 edges-brain-viruspc-private 的 PR 再加一条。不把候选清单贴出来征求确认。
 
 ## 成功标准
 
 - 窗口内每个读到的助手都有一份按时间正序的 jsonl，落在 `/workspace/daily-scan/YYYY-MM-DD/`。往期目录仍在。同一天重跑没有覆盖已有文件。
 - 候选只来自这些落盘文件。共享记忆和已合入记录只用于核对和去重。
 - 能落盘的候选已按根 AGENTS.md 写成文件，并放进对应仓库开到 main 的 PR。看板任务在该 PR 里，没有直接 push `main`。对话里没有先征求确认。
-- 当日 `INDEX.md` 的「建议补充内容清单」列出本次 PR 里落了哪些候选及其路径。没有就写明没有。私人内容在公开清单里只留条数和 edges-private 的 PR 链接。
+- 当日 `INDEX.md` 的「建议补充内容清单」列出本次 PR 里落了哪些候选及其路径。没有就写明没有。私人内容在公开清单里只留条数和 edges-brain-viruspc-private 的 PR 链接。
 - PR 开到 main，没有自动合并。commit 带 `Co-authored-by: 日复盘 <grok-bot@users.noreply.github.com>`。仓库里没有原始对话，也没有需要脱敏的内容。
 - 给用户的回复只有 PR 链接。

@@ -19,5 +19,5 @@ metadata:
 conversation-to-notes 适合对话归档；日常速记/待办/碎片应有独立 skill，结构和触发都应更轻。
 
 **How to apply:**
-- 设计并实现「普通记笔记」skill：接收用户直接丢来的内容，整理为可落盘笔记，并按 edges-publish 写入 knowledge/notes/（或 edges-private）。
+- 设计并实现「普通记笔记」skill：接收用户直接丢来的内容，整理为可落盘笔记，并按 edges-publish 写入 knowledge/notes/（或 edges-brain-viruspc-private）。
 - 与 conversation-to-notes 分工：对话整理 vs 普通记事。
