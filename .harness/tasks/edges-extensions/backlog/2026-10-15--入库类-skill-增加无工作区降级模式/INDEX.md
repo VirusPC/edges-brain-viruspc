@@ -11,7 +11,7 @@ description: 聊天窗口没有工作区时，skill 只输出完整 Markdown 和
 ---
 ## 背景
 
-2026-10-14 下午，用户发现 `extensions/skills/` 下的入库类 skill（如 `conversation-to-notes`）在 ChatGPT 网页聊天、YouMind 这类窗口里跑不通：这些窗口没有持久工作区，也没有 git、shell 和 `edges` CLI，入库和开 PR 的步骤做不了。讨论中提出过「skill 降级模式」作为兜底：没有仓库环境时只输出完整 Markdown 和目标路径，由有工作区的 Agent 入库。长期方案 edges connector 已开卡（`tasks/agent-clients-ux/backlog/2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges/`），但那张卡明确把降级模式列为非目标、另行处理；笔记 `notes/2026-10-14--skill跨聊天窗口使用与edges-connector/` 的结果里也记着「降级模式尚未加入 skill」。
+2026-10-14 下午，用户发现 `extensions/skills/` 下的入库类 skill（如 `conversation-to-notes`）在 ChatGPT 网页聊天、YouMind 这类窗口里跑不通：这些窗口没有持久工作区，也没有 git、shell 和 `edges` CLI，入库和开 PR 的步骤做不了。讨论中提出过「skill 降级模式」作为兜底：没有仓库环境时只输出完整 Markdown 和目标路径，由有工作区的 Agent 入库。长期方案 edges connector 已开卡（`.harness/tasks/agent-clients-ux/backlog/2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges/`），但那张卡明确把降级模式列为非目标、另行处理；笔记 `notes/2026-10-14--skill跨聊天窗口使用与edges-connector/` 的结果里也记着「降级模式尚未加入 skill」。
 
 ## 目标
 
