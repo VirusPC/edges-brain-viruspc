@@ -16,7 +16,7 @@ description: >-
 - 相关现状：已有 backlog「posts 用 Astro 搭博客与 CI」「整理 posts 文件夹并建站」管 posts 展示与建站；本卡不替代它们。
 - 预期收益：同一套知识材料可按场景产出短视频、社交片段、记忆卡片、演示稿等，而不只是文章站点。
 - 非目标：本卡不实现具体生成管线；不规定必须自研还是接入第三方；不改 posts 硬约束（AI 不得自动改 posts）的现行约定。
-- 关联：对话（任务记录员 2026-10-07）；兄弟卡 `.harness/tasks/site-and-content/backlog/2026-09-10--posts用Astro搭博客与CI/`、`tasks/site-and-content/backlog/2026-09-14--整理posts文件夹并建站/`；对标产品 Google NotebookLM
+- 关联：对话（任务记录员 2026-10-07）；兄弟卡 `.harness/tasks/site-and-content/backlog/2026-09-10--posts用Astro搭博客与CI/`、`.harness/tasks/site-and-content/backlog/2026-09-14--整理posts文件夹并建站/`；对标产品 Google NotebookLM
 
 **目标：**
 Edges 内容出口从「主要 posts」扩展到可枚举的多形态输出（至少覆盖视频、朋友圈、闪卡、演示稿等方向），并有清晰的产品边界与后续拆卡依据。
