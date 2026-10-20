@@ -2,6 +2,9 @@
 
 [![npm](https://img.shields.io/npm/v/@viruspc/edges?label=npm&color=CB3837)](https://www.npmjs.com/package/@viruspc/edges) [![站点部署](https://github.com/VirusPC/edges/actions/workflows/deploy.yml/badge.svg)](https://github.com/VirusPC/edges/actions/workflows/deploy.yml) ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/VirusPC/edges?utm_source=oss&utm_medium=github&utm_campaign=VirusPC%2Fedges&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
+
+> **这是 peng cheng 的个人大脑主干仓 `VirusPC/edges-brain-viruspc`。** 2026-10-20 由原 `VirusPC/edges` 改名而来，拆仓前的全部历史、PR 与 Actions 都在这里。Edges 框架本身已拆到 [`VirusPC/edges`](https://github.com/VirusPC/edges)（npm 包 `@viruspc/edges` 不变），本仓根 `AGENTS.md` 用 `edges compose` 把它登记为参考项目：`edges --scope . compose clone --name edges` 会检出到 `~/.edges/composed/edges`。本仓里的系统路径（`extensions/`、`scripts/`、`docs/` 等）是拆仓前副本，只为 teaching / tasks 站点部署暂时保留；改系统请去框架仓。
+
 **harness 任何目录。你的大脑，也是一个目录。**
 
 *Harness any directory. Your brain is one too.*
@@ -104,7 +107,7 @@ pnpm build && pnpm test
 
 ## 隐私与脱敏
 
-本仓库公开在 `github.com/VirusPC/edges`，写入即等同公开发表：
+本仓库公开在 `github.com/VirusPC/edges-brain-viruspc`，写入即等同公开发表：
 
 - token、API key、密码、私钥、cookie 等凭据，个人信息、未公开 IP，以及 `.docx`、`.xlsx`、`.pptx` 等办公二进制文件绝不入库。
 - 内部域名、系统名、服务名、代码路径、同事身份和排期等标识符必须删除或改写为通用表述后才能入库。
