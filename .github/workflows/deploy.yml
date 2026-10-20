@@ -73,6 +73,10 @@ jobs:
             "${TEACH_DEPLOY_USER}@${TEACH_DEPLOY_HOST}" \
             'set -euo pipefail
              cd /home/cheng-dev/projects/edges
+             # Repo renamed to edges-brain-viruspc (2026-10-20); VirusPC/edges is now
+             # the framework repo. Pin origin (via ghproxy) so this checkout never
+             # follows the old name. Idempotent.
+             git remote set-url origin https://ghproxy.net/https://github.com/VirusPC/edges-brain-viruspc.git
              git fetch origin main
              git checkout main
              git reset --hard origin/main
