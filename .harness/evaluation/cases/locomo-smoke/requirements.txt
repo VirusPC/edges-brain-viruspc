@@ -1,4 +1,0 @@
-# Dummy dry-run is stdlib-only.
-# Optional, only if you want real-run F1 to use the same Porter stemmer
-# as snap-research/locomo task_eval/evaluation.py:
-# nltk==3.8.1

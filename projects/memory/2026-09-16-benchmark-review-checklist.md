@@ -100,7 +100,7 @@ LoCoMo 适合当这张错位图的插图，而不是反面教材。它的数据�
 
 ## 和 Edges 评测词汇的对照
 
-仓内已经把两件事拆开：[ADR 0008](../../docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md) 写的是 **Evaluation Smoke ≠ Benchmark Proof**。冒烟证明「写入→检索→作答→打分」这条链路能复现；公开基准证明需要构念匹配、对照齐全、协议可复现。本清单管的是后一类该怎么设计和审；前一类的分数不要回填成后一类的结论。
+仓内已经把两件事拆开：[ADR 0008](https://github.com/VirusPC/edges/blob/main/docs/adr/0008-evaluation-smoke-is-not-benchmark-proof.md) 写的是 **Evaluation Smoke ≠ Benchmark Proof**。冒烟证明「写入→检索→作答→打分」这条链路能复现；公开基准证明需要构念匹配、对照齐全、协议可复现。本清单管的是后一类该怎么设计和审；前一类的分数不要回填成后一类的结论。
 
 ## 收束
 

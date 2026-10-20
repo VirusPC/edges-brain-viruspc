@@ -378,7 +378,7 @@ flowchart LR
 
 **修正**：重读 README 后发现，第 10 节的「统一方案」把 edges 当成一个要挂进其他工作空间的外部记忆库，偏离了 README 的两条前提：「harness 任何目录」和「把 harness 放在离被 harness 对象最近的地方」。修正为：项目自己的知识在项目里就地 init；大脑、团队库这类跨项目的 harness 仓库，通过「组合」叠加进来。
 
-grill（2026-10-17）结论已写成 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md)，要点如下（均未实现）。第 2–6、9、10 条等已被下文第二至十一轮 grill 修订改写，以 ADR 0034 与最新一轮修订为准（dream 以「第八轮修订」为准，`edges context` 与开场注入以「第九轮修订」为准，Compose 的 Domain/Service/CLI 与 clone/pull/push/traverse 以「第十一轮修订」为准，其余以「第六轮修订」为准）：
+grill（2026-10-17）结论已写成 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md)，要点如下（均未实现）。第 2–6、9、10 条等已被下文第二至十一轮 grill 修订改写，以 ADR 0034 与最新一轮修订为准（dream 以「第八轮修订」为准，`edges context` 与开场注入以「第九轮修订」为准，Compose 的 Domain/Service/CLI 与 clone/pull/push/traverse 以「第十一轮修订」为准，其余以「第六轮修订」为准）：
 
 1. **范围与术语**：大脑、团队库、规范库、组件库用同一套机制，统一叫「组合（compose）」，对应 Devin 文章的 composable。不再说「外部记忆」「挂载」。工作空间 = 自身就地 harness + 若干被组合的 harness 仓库。
 2. **组合清单可放任意目录（JSON）**（已被第三轮取代）：用户级 `~/.harness/compose.json`（如大脑，跟人走，不强加给同事）；任意目录都可以有 `.harness/compose.json`（随代码提交，协作者一致），和「harness 任何目录」一致。生效时从工作目录向上逐层收集，再加用户级；同名仓库离工作目录越近越优先，用户级最低。每项写名字、git 地址、可选分支。（grill 初稿是项目根 + 用户级两层 YAML，同日改成现在这样。）取代第 5 节设想的 `memory-sources.yaml`。
@@ -434,7 +434,7 @@ grill（2026-10-17）结论已写成 [ADR 0034](../../docs/adr/0034-compose-harn
 - **大脑必须走服务端吗？**（第六轮起一律本地 clone） 不必。默认可本地（clone 后登记本地路径），也可选远程（登记 MCP 入口）。
 - **还保留什么？**（第六轮起 PageIndex 索引、收件箱、远程写入规则都去掉）PageIndex 思路维护远程大库的树状索引；远程写入以 dream 为主 + 收件箱；dream 每 24 小时检查、主分支或收件箱有变化才跑；dream 在哪运行另议；分支记忆优势。
 
-术语：保留「组合（Compose）」的概念含义；「组合清单」废弃，改为「外部记忆仓库登记」（在组成登记里指向本地路径或远程 MCP 入口；第六轮起只登记本地入口）。见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md)。
+术语：保留「组合（Compose）」的概念含义；「组合清单」废弃，改为「外部记忆仓库登记」（在组成登记里指向本地路径或远程 MCP 入口；第六轮起只登记本地入口）。见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md)。
 
 **第四轮 grill 修订（2026-10-17）**
 
@@ -444,13 +444,13 @@ grill（2026-10-17）结论已写成 [ADR 0034](../../docs/adr/0034-compose-harn
 2. **本地可直接写**：用户说「简单点，可以直接写，是不是逻辑一致些。或者说后面加个读写权限控制」。本地登记的记忆仓库（clone 在本机、入口是本地路径）**允许直接写**，与就地 `.harness/` 一致——本地入口读本地文件，写也直接落盘。远程记忆仓库仍 dream + PR，不变（第六轮起不再有远程记忆仓库）。此前 ADR 里「本地写另议 / 默认仍建议走 PR」已取代；「本地也强制走 dream/PR」否决。
 3. **权限以后再加，且要和 Git 关联**：读写权限控制可以以后再加，且要和底层 Git 仓库权限关联（谁能读/写该仓），不另造独立 ACL；本轮不定方案。现行规则仍是本地直接写、远程 dream-only（第六轮起只剩本地直接写；dream 整理/提升仍走 PR，见第七轮）。
 
-见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #2、#8 与 Consequences。
+见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #2、#8 与 Consequences。
 
 **第五轮 grill 修订（2026-10-17）**
 
 用户确认：「compose block算本层」。
 
-Compose block 与 edges 里「本层硬约束」「本层系统维护信息」同一层语义，属于当前作用域本层材料，不是层模型外的旁路。对当前作用域做 traverse、`edges context`、本层硬约束收集时，Compose block 归入该层。见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #2、#6。
+Compose block 与 edges 里「本层硬约束」「本层系统维护信息」同一层语义，属于当前作用域本层材料，不是层模型外的旁路。对当前作用域做 traverse、`edges context`、本层硬约束收集时，Compose block 归入该层。见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #2、#6。
 
 **第六轮 grill 修订（2026-10-17）**
 
@@ -466,7 +466,7 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 6. **检索**：就是顺树走。每层几十个子节点以内、name / description 写好，这条维护要求仍有用；edges 不承诺几千篇文档规模的检索。
 7. **保留**：术语「组合」；`edges context`（只在本地顺树走，含 Compose block 里的入口）；开场不做 hook、只写一句配置；分支记忆的优势。
 
-见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md)。
+见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md)。
 
 **第七轮 grill 修订（2026-10-17）**
 
@@ -478,7 +478,7 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 2. **触发与产出保留**：每 24 小时检查一次，项目 harness 主分支自上次运行以来有新提交才跑；整理结果开 PR。与新定义不冲突，故不简化触发。
 3. **在哪运行仍另议**。
 
-见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #8。
+见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #8。
 
 **第八轮 grill 修订（2026-10-17）**
 
@@ -490,7 +490,7 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 2. **大脑 / 团队库是树上的上层节点，不是入口**：提升仍可经 PR 落到这些上层仓库，但不把 dream 直接指到大脑。
 3. **其余不变**：整理内容（合并/删除、目录清理、刷新 name / description、经 PR 提升）、24h 检查 + 主分支有变化才跑、在哪运行另议。
 
-见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #8。
+见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #8。
 
 **第九轮 grill 修订（2026-10-17）**
 
@@ -502,10 +502,10 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 
 1. **`AGENTS.md` 本身就是入口**：不提供 `edges context` 命令，也不要求在客户端配置里写「开场先运行 `edges context`」。Agent 开场读 `AGENTS.md`，看到 Compose block 后顺着路径往下走。
 2. **暂缓，不是否决**：出现以下情况再回头看：组合树很深，硬约束要手动展开才看得到；或者 Agent 实际不顺着 Compose block 的路径走。
-3. **未核实**：Agent 是否会可靠地顺着 Compose block 的路径走，还没验证。跟进见任务卡 [评估是否需要 `edges context`](<../../.harness/tasks/project-memory/backlog/2026-10-17--评估是否需要-edges-context/INDEX.md>)。
+3. **未核实**：Agent 是否会可靠地顺着 Compose block 的路径走，还没验证。跟进见任务卡 [评估是否需要 `edges context`](<https://github.com/VirusPC/edges/blob/main/.harness/tasks/project-memory/backlog/2026-10-17--%E8%AF%84%E4%BC%B0%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81-edges-context/INDEX.md>)。
 4. **ADR 编号变化**：ADR 0034 的 Decision 重新编号——原 #6（`edges context`）和 #7（开场注入）合并为新 #6（`AGENTS.md` 本身就是入口）；dream 由 #8 改为 #7，分支记忆 #9 改为 #8，`remember` 与收件箱 #10 改为 #9。上文各轮里的「Decision #N」是当轮编号。
 
-见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #6 与 Considered Options。
+见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #6 与 Considered Options。
 
 **第十轮 grill 修订（2026-10-17）**
 
@@ -519,7 +519,7 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 4. **仍另议**：入口条目的字段形态；clone 放在哪。
 5. **跟进**：写入 ADR 0034 Decision #10（不另开任务卡）。
 
-见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #10 与 Consequences。
+见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #10 与 Consequences。
 
 **第十一轮 grill 修订（2026-10-17）**
 
@@ -534,7 +534,7 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 5. **仍另议**：入口条目的字段形态；clone 放在哪。
 6. **跟进**：写入 ADR 0034 Decision #10 / Consequences（不另开任务卡；用户：不要开 task，直接写 ADR）。已删 backlog 任务卡。
 
-见 [ADR 0034](../../docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #3、#10 与 Consequences。
+见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #3、#10 与 Consequences。
 
 **任务卡撤回（2026-10-17）**
 

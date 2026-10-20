@@ -1,6 +1,6 @@
 # Artifacts 预览服务：挂到现有 teach ECS
 
-Teach 站点部署经验的 sibling（对照 [`2026-09-08--Teach站点部署与大陆备案经验.md`](../2026-09-08--Teach%E7%AB%99%E7%82%B9%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%A4%A7%E9%99%86%E5%A4%87%E6%A1%88%E7%BB%8F%E9%AA%8C/INDEX.md)）。产品决策仍看 [ADR 0013](../../docs/adr/0013-artifacts-preview-service.md)；这里只记运维落点。
+Teach 站点部署经验的 sibling（对照 [`2026-09-08--Teach站点部署与大陆备案经验.md`](../2026-09-08--Teach%E7%AB%99%E7%82%B9%E9%83%A8%E7%BD%B2%E4%B8%8E%E5%A4%A7%E9%99%86%E5%A4%87%E6%A1%88%E7%BB%8F%E9%AA%8C/INDEX.md)）。产品决策仍看 [ADR 0013](https://github.com/VirusPC/edges/blob/main/docs/adr/0013-artifacts-preview-service.md)；这里只记运维落点。
 
 ## 结论
 

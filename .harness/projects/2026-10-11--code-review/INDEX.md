@@ -14,7 +14,7 @@ description: 在 Cursor Bugbot 之外，为 edges 选型并试点自动 PR 代�
 
 已经讨论过 Cursor Bugbot。为了少审非 CLI 的 PR，曾经尝试「只让 CLI 的 PR 自动触发 Bugbot」，没有达到预期。这条触发机制的实测结论记在 todo 卡里，本项目不重复做那份调研：
 
-- [搁置：只让 CLI 的 PR 自动触发 Bugbot](../../tasks/edges-extensions/todo/2026-10-11--搁置只让-CLI-的-PR-自动触发-Bugbot/INDEX.md)
+- [搁置：只让 CLI 的 PR 自动触发 Bugbot](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/todo/2026-10-11--%E6%90%81%E7%BD%AE%E5%8F%AA%E8%AE%A9-CLI-%E7%9A%84-PR-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91-Bugbot/INDEX.md)
 
 用户接着问除 Cursor 以外的自动 review，并点名想了解 Codex、Kimi、MiniMax、GLM、Droid、Devin、Amp、Gemini 等是否支持自动审查。下面「候选范围」是 2026-10 按官方文档和官方仓库补的调研，不是已经选定的方案。
 
@@ -157,7 +157,7 @@ description: 在 Cursor Bugbot 之外，为 edges 选型并试点自动 PR 代�
 - **规则文件**：`.cursor/BUGBOT.md`（根目录始终加载，子目录按改动文件加载）、Team Rules、learned / manual rules（可带 Scoped paths）。`.cursor/rules/*.mdc` **不生效**。
 - **路径过滤**：yaml **没有** ignore / paths 字段。Scoped paths 只决定「哪条规则在哪些路径生效」，不决定「这些路径审不审」。所以只能在 BUGBOT.md 里写软约束。
 - **计费**：2026-05 起按用量：先消耗套餐内额度，再走 on-demand。
-- **本仓现状**：`extensions/cli/.cursor/BUGBOT.md` 仍在，内容是 CLI 审查要点，只作用于该目录的改动，属于软约束。仓库里没有 `.cursor/config/bugbot.yaml`。搁置卡的实测是：github-actions 发的 `bugbot run` 不被认；云端 Agent 以 Cursor App 身份发的评论也不认；不要引入 token/PAT。本页不重做这条触发调研，见 [搁置卡](../../tasks/edges-extensions/todo/2026-10-11--搁置只让-CLI-的-PR-自动触发-Bugbot/INDEX.md)。
+- **本仓现状**：`extensions/cli/.cursor/BUGBOT.md` 仍在，内容是 CLI 审查要点，只作用于该目录的改动，属于软约束。仓库里没有 `.cursor/config/bugbot.yaml`。搁置卡的实测是：github-actions 发的 `bugbot run` 不被认；云端 Agent 以 Cursor App 身份发的评论也不认；不要引入 token/PAT。本页不重做这条触发调研，见 [搁置卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/todo/2026-10-11--%E6%90%81%E7%BD%AE%E5%8F%AA%E8%AE%A9-CLI-%E7%9A%84-PR-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91-Bugbot/INDEX.md)。
 - **链接**：<https://cursor.com/docs/bugbot>
 
 ### 试点建议

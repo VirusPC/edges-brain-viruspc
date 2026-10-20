@@ -1,10 +1,12 @@
 # Agent Developer Guide
 
-你是维护 Edges 系统的 AI 工程师：维护仓库基础设施、开发 extensions 与 shared-extensions、辅助知识库结构。
+你是维护 peng cheng 个人大脑仓 `VirusPC/edges-brain-viruspc` 的 AI 工程师。个人内容在这里长：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`。本仓也是 `edges-publish` 写入这些个人内容的目标。
 
-**本仓是 peng cheng 的个人主干 `VirusPC/edges-brain-viruspc`（2026-10-20 由原 `VirusPC/edges` 改名而来，长期保留，不归档）。** 个人知识（`edges/`、`notes/`、`teaching/`、`retrospectives/`、`tasks/`、`projects/`、`memory/`、`archive/`、`shared-extensions/` 等）在这里长；个人新项目也直接在本仓里长。Edges 框架本身已拆到新仓 [`VirusPC/edges`](https://github.com/VirusPC/edges)，经下面的 Compose 区块登记为参考项目：改 CLI、extensions、skills、ADR、架构文档等系统内容，去框架仓开 PR，不要在本仓改。本仓里仍留着的 `extensions/`、`scripts/`、`docs/`、`posts/`、`.harness/` 系统部分等是拆仓前的副本，暂时保留是为了让 teaching 与 tasks 站点部署（`.github/workflows/deploy.yml`）继续从本仓跑；等框架仓接手 tasks 站点后再删。拆仓前最后一个提交是 `025904fa29bcc6970f45c654d95e30c5390d43d7`。
+**本仓是个人主干（2026-10-20 由原 `VirusPC/edges` 改名而来，长期保留，不归档）。** Edges 框架在 [`VirusPC/edges`](https://github.com/VirusPC/edges)：CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点构建、artifacts 预览服务，以及相关 workflow。改框架去那边开 PR。要用 CLI，执行 `npm install -g @viruspc/edges`，或在框架仓里开发。
 
-Edges 是什么、怎么用看 [README.md](README.md)；内容标准看所属目录的 README（如 [edges/](edges/README.md)、[archive/](archive/README.md)），术语看 [CONTEXT.md](CONTEXT.md)；AGENTS.md 组织入口发现，各规范正文按职责保持单一真源。
+ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges`。`/tasks/` 和 artifacts 预览由框架仓部署，检出是 `/home/cheng-dev/projects/edges-framework`。
+
+内容标准看所属目录的 README（如 [edges/](edges/README.md)、[archive/](archive/README.md)）。术语与架构决策在框架仓 [`CONTEXT.md`](https://github.com/VirusPC/edges/blob/main/CONTEXT.md) 与 [`docs/adr/`](https://github.com/VirusPC/edges/tree/main/docs/adr)。AGENTS.md 组织入口发现，各规范正文按职责保持单一真源。
 
 <!-- project-harness:start -->
 
@@ -26,15 +28,14 @@ Edges 是什么、怎么用看 [README.md](README.md)；内容标准看所属目
 
 - [本层 harness 材料索引](<.harness/README.md>) — 本层 harness 材料的组织清单。各材料只在这里登记。
 - [目录与内容说明](<README.md>) — 目录与内容说明入口。
-- [领域术语](<CONTEXT.md>) — 领域术语入口。
-- [架构决策](<docs/adr/>) — 架构决策入口。
+- [框架仓术语](https://github.com/VirusPC/edges/blob/main/CONTEXT.md) — Edges 领域术语在框架仓。
+- [框架仓架构决策](https://github.com/VirusPC/edges/tree/main/docs/adr) — ADR 在框架仓。
 <!-- project-harness-local:end -->
 
 <!-- project-harness-descendants:start -->
 ## 下层系统维护信息
 - [teaching/AGENTS.md](teaching/AGENTS.md) — 教学与学习状态。
 - [领域任务](<tasks/AGENTS.md>) — 领域任务入口。
-- [对外能力实现约束](<extensions/AGENTS.md>) — 对外能力实现约束入口。
 - [共享扩展约束](<shared-extensions/AGENTS.md>) — 共享扩展约束入口。
 - [笔记规范](<notes/AGENTS.md>) — 笔记规范入口。
 

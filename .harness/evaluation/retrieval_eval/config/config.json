@@ -1,7 +1,0 @@
-[
-  {
-    "repositories": ["edges"],
-    "clients": ["codex"],
-    "samples": ["retrieval-smoke/edges"]
-  }
-]

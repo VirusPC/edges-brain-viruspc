@@ -1,4 +1,0 @@
-# 最后一条匹配的规则优先。新增规则请追加，保留已有条目。
-# /extensions/cli/ 匹配该目录及其全部子路径（含 .cursor/BUGBOT.md）。
-# 自动请求审查靠本文件；要变成合并前的必须人审，还得在 main 的分支保护或规则集里打开 Require review from Code Owners。
-/extensions/cli/ @VirusPC

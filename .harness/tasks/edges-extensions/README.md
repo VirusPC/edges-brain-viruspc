@@ -1,39 +1,9 @@
 # Edges Extensions
 
-edges CLI/脚手架/发布/鉴权等平台层。
+个人仓只留拆仓这张卡。其余 CLI、脚手架、发布与鉴权卡在框架仓 [VirusPC/edges 的 edges-extensions 看板](https://github.com/VirusPC/edges/tree/main/.harness/tasks/edges-extensions)。
 
 <!-- project-entries-local:start -->
 ## 本层内容
 
-- [CLI与MCP需加鉴权](<backlog/2026-09-09--CLI%E4%B8%8EMCP%E9%9C%80%E5%8A%A0%E9%89%B4%E6%9D%83/INDEX.md>) — CLI 与 MCP 后续需要加鉴权（产品/基建待办）
-- [system\_project\_or\_user\_home](<backlog/2026-09-12--%E7%B3%BB%E7%BB%9F%E5%8F%AF%E8%B7%9F%E9%A1%B9%E7%9B%AE%E6%88%96%E6%8C%82%E7%94%A8%E6%88%B7%E7%9B%AE%E5%BD%95/INDEX.md>) — 系统很通用：可跟随项目，也可放到用户目录（tasks 可做用户级）；像 Claude Code auto memory 的扩展
-- [project\_memory\_scripts\_to\_edges\_cli](<backlog/2026-09-13--project-memory%E8%84%9A%E6%9C%AC%E8%BF%81%E5%88%B0edges-CLI/INDEX.md>) — 把 project\-memory\-init/remember/ask/doctor 等 Python scripts 迁到 edges CLI
-- [publish\_edges\_cli\_as\_package](<done/2026-09-14--edges-CLI%E5%8F%91%E5%B8%83%E6%88%90package/INDEX.md>) — 把 edges CLI 发布成 package，可安装而不是只在仓里跑
-- [encapsulate\_edges\_as\_scaffold\_and\_framework](<backlog/2026-09-16--edges-%E5%B0%81%E8%A3%85%E4%B8%BA%E8%84%9A%E6%89%8B%E6%9E%B6%E6%A1%86%E6%9E%B6%E5%B9%B6%E5%AE%9A%E4%B9%89%E5%8D%87%E7%BA%A7%E8%B7%AF%E5%BE%84/INDEX.md>) — 脚手架管出生、框架管版本升级；非纯 template；knowledge/ 不同步
-- [project\_memory\_tree\_operations\_as\_cli](<backlog/2026-09-24--project-memory-%E6%A0%91%E7%BB%93%E6%9E%84%E6%93%8D%E4%BD%9C%E5%B0%81%E8%A3%85%E4%B8%BACLI/INDEX.md>) — 将 project\-memory 的树结构操作（至少含找最近父节点）封装成 edges CLI，避免散落在 skill 或脚本里
-- [node\-immutability](<backlog/2026-10-05--%E8%8A%82%E7%82%B9%E6%A8%A1%E5%9E%8B%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%BB%93%E6%9E%9C%E7%9A%84-immutable-%E4%BC%98%E5%8C%96/INDEX.md>) — 当前 Node 采用原地更新；后续评估 immutable 与实例生命周期，普通优先级，不阻塞递归节点重构。
-- [extensions\_clis\_extensions\_cli](<done/2026-09-29--%E6%8A%8A-extensionsclis-%E6%94%B9%E5%90%8D%E4%B8%BA-extensionscli/INDEX.md>) — 目录实际是一套统一 edges 命令，复数名容易让人以为有多套 CLI。
-- [edges\_cli\_command](<done/2026-09-30--%E8%B7%91%E9%80%9A-edges-cli-%E5%AE%8C%E6%95%B4%E7%BC%96%E8%AF%91%E4%BF%AE%E5%A5%BD-command-%E5%AD%97%E6%AE%B5%E6%92%9E%E8%BD%A6/INDEX.md>) — 拆开装 nginx 结果里两个都叫 command 的字段，让 pnpm \-\-filter edges\-cli build 通过。
-- [edges\_cli\_scope](<done/2026-10-01--%E4%B8%BA-Edges-CLI-%E5%BB%BA%E7%AB%8B%E7%BB%9F%E4%B8%80%E7%9A%84%E5%B7%A5%E4%BD%9C-scope-%E8%A7%A3%E6%9E%90/INDEX.md>) — 基于递归记忆模型，先解析本次工作 scope，再确定操作归属、适用上下文和读写位置，使共享 CLI 能力可服务不同作用域。
-- [commands\-service\-decoupling](<done/2026-10-06--%E8%A7%A3%E8%80%A6-CLI-commands-%E4%B8%8E-Service/INDEX.md>) — 明确命令适配与完整业务用例的边界，移除 Service 对 CLI 上下文的依赖，整理审阅页与 Artifacts 编排。
-- [cli\_skills\_notes](<done/2026-10-07--CLI-%E9%A1%B6%E5%B1%82%E5%91%BD%E4%BB%A4%E4%B8%8E%E6%96%87%E4%BB%B6%E5%A4%B9%E5%90%8D%E5%AF%B9%E9%BD%90skills-notes/INDEX.md>) — 能对齐的 edges 顶层命令跟文件夹走；硬改 skill→skills、note→notes，不留别名。
-- [cli\_harness\_notes\_edges\_projects\_archive](<backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md>) — 按文件夹名，在 edges 顶层命令和根 .harness 材料登记里补上这四块。
-- [model\_by\_node\_responsibility](<done/2026-10-06--%E6%8C%89%E8%8A%82%E7%82%B9%E8%81%8C%E8%B4%A3%E6%95%B4%E7%90%86-Model-%E5%B9%B6%E8%A1%A5%E9%BD%90%E4%B8%AD%E6%96%87%E6%9E%B6%E6%9E%84%E8%AF%B4%E6%98%8E/INDEX.md>) — 把分散的模型类按 core/agents/tasks/memory/notes/skills 归组，通用 Markdown 回 utils，并补 domain 架构与中文 CLI README；commands↔Service 解耦另开卡。
-- [system\_forest\_harness\_materials](<done/2026-10-07--%E8%90%BD%E5%9C%B0%E9%80%92%E5%BD%92%E7%B3%BB%E7%BB%9F%E4%BA%8C%E5%85%A5%E5%8F%A3%E7%B3%BB%E7%BB%9F%E6%A3%AE%E6%9E%97%E4%B8%8E-harness-materials/INDEX.md>) — AGENTS/README 并列登记，traverse 只跑单系统 children，森林外拼；引入 harness\-materials 与 \`\-\-super\` / \`forest list\`，删掉旧 content\-face 兼容。
-- [notes\-skills\-crud\-via\-nodeservice](<done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md>) — 消灭 notes/skills 对 NodeService 的旁路：create/get/update/delete（skills 无 update）全部经 NodeService，与 tasks/memory、list 一致。
-- [projects\-cli\-and\-harness\-init\-notes\-projects](<backlog/2026-10-08--projects-CLI-%E5%AF%B9%E9%BD%90-notes%E5%B9%B6%E6%A0%B9-harness-init-%E5%90%AB-projects-%E4%B8%8E-notes/INDEX.md>) — notes/skills CRUD 收口合入后：补 projects CLI（先简单参照 notes 的 list/get/create/update/delete \+ meta/\-\-body \+ filter/group），并在根 \`.harness\` 与 init 命令里登记/生成 projects、notes。
-- [edges\-unified\-init](<done/2026-10-08--%E8%A1%A5%E5%85%85%E7%BB%9F%E4%B8%80%E7%9A%84-edges-init%E6%A8%A1%E5%9D%97-init-%E5%8F%AA%E8%B0%83-init-service/INDEX.md>) — init 是与 list/get/create 同级的标准命令族，并拥有根命令 \`edges init\`。各 \`edges \<domain\> init\`（如 \`edges memory init\`）是同族域入口，只委托同一 init service 初始化具体模块。NodeService 提供底层能力；service 薄封装；commands 直接调 service。
-- [cli\_cli](<backlog/2026-10-08--%E5%A2%9E%E5%BC%BA-CLI-%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7%E6%A8%A1%E5%9D%97%E9%85%8D%E7%BD%AE%E5%8C%96%E6%94%AF%E6%8C%81%E9%80%9A%E8%BF%87-CLI-%E6%B7%BB%E5%8A%A0%E8%87%AA%E5%AE%9A%E4%B9%89%E6%A8%A1%E5%9D%97/INDEX.md>) — 现在加一个模块要改好几处代码。目标是让模块主要靠配置声明，用户也能用 CLI 自己加模块。
-- [edges\_cli\_scope](<backlog/2026-10-08--%E9%83%A8%E7%BD%B2%E8%83%BD%E5%8A%9B%E5%B0%81%E8%A3%85%E8%BF%9B-edges-CLI%E6%94%AF%E6%8C%81%E4%BB%BB%E6%84%8F-scope-%E9%83%A8%E7%BD%B2/INDEX.md>) — 现在部署逻辑写死在 GitHub Actions 的 deploy.yml 和服务器脚本里，只能部署本仓固定的几个站点；想把它收进 edges CLI，任意 scope 下都能部署自己的内容。
-- [shelve\_cli\_pr\_bugbot\_auto\_trigger](<todo/2026-10-11--%E6%90%81%E7%BD%AE%E5%8F%AA%E8%AE%A9-CLI-%E7%9A%84-PR-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91-Bugbot/INDEX.md>) — Bugbot 不能按目录自动跑；Action、PAT、云端 Agent 身份都不通，先记结论，另议方案。
-- [厘清\_harness\_模块在知识流转中的位置](<backlog/2026-10-11--%E5%8E%98%E6%B8%85-Harness-%E6%A8%A1%E5%9D%97%E5%9C%A8%E7%9F%A5%E8%AF%86%E6%B5%81%E8%BD%AC%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE/INDEX.md>) — Harness 模块在增多，但各模块在知识流转里该站哪一格还不够清楚。要把这条流转关系设计清楚，让新模块也能对号入座，而不是各自堆目录。
-- [探索新的\_cr\_方式](<backlog/2026-10-11--%E6%8E%A2%E7%B4%A2%E6%96%B0%E7%9A%84-CR-%E6%96%B9%E5%BC%8F/INDEX.md>) — 在 Cursor Bugbot 之外，为 edges 找到可控、可试点的自动/半自动 PR Code Review 方式。
-- [agent\_取外部内容优先走\_rss浏览器爬取只作退路](<backlog/2026-10-15--Agent-%E5%8F%96%E5%A4%96%E9%83%A8%E5%86%85%E5%AE%B9%E4%BC%98%E5%85%88%E8%B5%B0-RSS%E6%B5%8F%E8%A7%88%E5%99%A8%E7%88%AC%E5%8F%96%E5%8F%AA%E4%BD%9C%E9%80%80%E8%B7%AF/INDEX.md>) — 现在 Agent 抓文章常靠开浏览器爬页面，又慢又不稳。改成先找 RSS 源拉结构化内容，找不到再爬。
-- [入库类\_skill\_增加无工作区降级模式](<backlog/2026-10-15--%E5%85%A5%E5%BA%93%E7%B1%BB-skill-%E5%A2%9E%E5%8A%A0%E6%97%A0%E5%B7%A5%E4%BD%9C%E5%8C%BA%E9%99%8D%E7%BA%A7%E6%A8%A1%E5%BC%8F/INDEX.md>) — 聊天窗口没有工作区时，skill 只输出完整 Markdown 和目标路径，交给有工作区的 Agent 入库
-- [安装\_edges\_后自动装好\_skills](<done/2026-10-18--%E5%AE%89%E8%A3%85-edges-%E5%90%8E%E8%87%AA%E5%8A%A8%E8%A3%85%E5%A5%BD-skills/INDEX.md>) — 只装 npm 包拿不到 edges skills；目标是一次安装加一次初始化，同时装好 CLI 和 skills。
-- [配置\_github\_actions\_oidc\_发布\_viruspc\_edges](<backlog/2026-10-18--%E9%85%8D%E7%BD%AE-GitHub-ActionsOIDC-%E5%8F%91%E5%B8%83-viruspcedges/INDEX.md>) — 推约定 tag 后，用 GitHub Actions 和 npm Trusted Publishing（OIDC）把 @viruspc/edges 发到 npm，发版前经过测试和 Environment 审批。本卡只锁定 grill 已定范围，保持 backlog。
-- [重合\_208211软链登记与\_scope\_大小写\_path\_修复](<done/2026-10-18--%E9%87%8D%E5%90%88-208211%E8%BD%AF%E9%93%BE%E7%99%BB%E8%AE%B0%E4%B8%8E-scope-%E5%A4%A7%E5%B0%8F%E5%86%99-path-%E4%BF%AE%E5%A4%8D/INDEX.md>) — PR \#208 的父级软链登记和 \#211 的 scope 大小写 path 修复只留在叠层分支，main 上从未落地。本卡跟踪把这两处丢失的修复重新合进 main。
-- [artifacts\_preview\_server\_bundled\_in\_npm](<backlog/2026-10-19--artifacts-%E9%A2%84%E8%A7%88%E6%9C%8D%E5%8A%A1%E9%9A%8F-npm-%E5%8C%85%E5%8F%91%E5%B8%83%E4%B8%8D%E5%86%8D%E7%BB%91%E5%AE%9A%E4%BD%9C%E8%80%85%E6%9C%8D%E5%8A%A1%E5%99%A8/INDEX.md>) — \`@viruspc/edges\` 现在只打包了 \`dist\` 和 \`skills\`，没有 artifacts 服务端，部署脚本和示例又都是照作者那台 ECS 写的。把服务本体打进包里，让任何人装好 CLI 就能自己起一个预览服务。
-- [compose\_worktree\_写入与\_compose\_sync](<backlog/2026-10-20--Compose-worktree-%E5%86%99%E5%85%A5%E4%B8%8E-compose-sync/INDEX.md>) — clone/pull 后建 worktree；写入走 worktree；compose sync 做 commit\+push\+PR；合入后 prune。
 - [把个人大脑从\_viruspc\_edges\_系统仓拆出去](<in_progress/2026-10-20--%E6%8A%8A%E4%B8%AA%E4%BA%BA%E5%A4%A7%E8%84%91%E4%BB%8E-VirusPCedges-%E7%B3%BB%E7%BB%9F%E4%BB%93%E6%8B%86%E5%87%BA%E5%8E%BB/INDEX.md>) — 现在系统实现和个人知识混在同一个公开仓里。拆开以后，edges 只放系统本身，个人大脑走独立仓，再用 Compose 挂回来。
 <!-- project-entries-local:end -->

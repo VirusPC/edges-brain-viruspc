@@ -1,4 +1,0 @@
-[submodule "evaluation/third_party/locomo"]
-	path = .harness/evaluation/third_party/locomo
-	url = https://github.com/VirusPC/locomo.git
-	branch = main

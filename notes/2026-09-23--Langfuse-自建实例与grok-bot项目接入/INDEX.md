@@ -68,10 +68,10 @@
 
 **仓内已有决策（供对照，不是这次新做的部署）**
 
-- [ADR 0014](../../docs/adr/0014-self-hosted-langfuse-on-minigtr.md) — 宿主是物理机 minigtr。
-- [ADR 0016](../../docs/adr/0016-langfuse-docker-compose.md) — v1 用官方 docker compose。
-- [ADR 0018](../../docs/adr/0018-langfuse-secrets-stay-on-minigtr.md) — 密钥留在 minigtr 本机，不进本仓。
-- [ADR 0017](../../docs/adr/0017-langfuse-tailscale-only-access.md) — 2026-09-20 把 v1 访问面记成仅 Tailscale，公网 HTTPS 当时还是后续。这次对话里实际打开的入口已经是 Cloudflare Tunnel 上的 `https://langfuse.viruspc.tech`。
+- [ADR 0014](https://github.com/VirusPC/edges/blob/main/docs/adr/0014-self-hosted-langfuse-on-minigtr.md) — 宿主是物理机 minigtr。
+- [ADR 0016](https://github.com/VirusPC/edges/blob/main/docs/adr/0016-langfuse-docker-compose.md) — v1 用官方 docker compose。
+- [ADR 0018](https://github.com/VirusPC/edges/blob/main/docs/adr/0018-langfuse-secrets-stay-on-minigtr.md) — 密钥留在 minigtr 本机，不进本仓。
+- [ADR 0017](https://github.com/VirusPC/edges/blob/main/docs/adr/0017-langfuse-tailscale-only-access.md) — 2026-09-20 把 v1 访问面记成仅 Tailscale，公网 HTTPS 当时还是后续。这次对话里实际打开的入口已经是 Cloudflare Tunnel 上的 `https://langfuse.viruspc.tech`。
 
 **参考链接**
 

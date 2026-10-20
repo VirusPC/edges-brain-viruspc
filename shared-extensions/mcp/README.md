@@ -2,7 +2,7 @@
 
 跨机器、跨 Agent 共用的 MCP **配置**。
 
-这里放「连哪些 server、命令是什么、环境变量叫什么」，不放 server 的实现。为 Edges 实现的 MCP server 在 [`extensions/mcp-servers/`](../../extensions/mcp-servers/README.md)。
+这里放「连哪些 server、命令是什么、环境变量叫什么」，不放 server 的实现。为 Edges 实现的 MCP server 在 [`extensions/mcp-servers/`](https://github.com/VirusPC/edges/blob/main/extensions/mcp-servers/README.md)。
 
 ## 怎么写
 

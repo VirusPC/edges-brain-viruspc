@@ -1,6 +1,6 @@
 # 这套 project-memory 系统的优点
 
-本文只收「为什么值得用」：文件系统树 + `AGENTS.md` + `.memory` + ask / remember / doctor 这一族，相对常见的向量记忆 / 常驻服务，便宜在哪、稳在哪。机制、树算法和「当前边界」见 [memory-filesystem-tree.md](memory-filesystem-tree.md)；形状契约见 [PROTOCOL.md](../../extensions/skills/project-memory-init/references/PROTOCOL.md)。不重画架构，也不主张「第一次把记忆写成 Markdown / 树 / Git」——那些已有先例，见 [related-work](memory-filesystem-tree-related-work.md)。
+本文只收「为什么值得用」：文件系统树 + `AGENTS.md` + `.memory` + ask / remember / doctor 这一族，相对常见的向量记忆 / 常驻服务，便宜在哪、稳在哪。机制、树算法和「当前边界」见 [memory-filesystem-tree.md](memory-filesystem-tree.md)；形状契约见 [PROTOCOL.md](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/references/PROTOCOL.md)。不重画架构，也不主张「第一次把记忆写成 Markdown / 树 / Git」——那些已有先例，见 [related-work](memory-filesystem-tree-related-work.md)。
 
 真正站得住的优点是组合：把 harness 已经会做的事（加载 `AGENTS.md`）当成发现层，把目录位置当成作用域，把 Markdown 当成事实源。下面每条都是工程判断，不是产品口号。
 
@@ -62,4 +62,4 @@
 
 ## 这些优点对应的代价
 
-便宜来自「白拿 harness、白拿目录、白拿 Git」，脆点也在同一批假设上：子树 `AGENTS.md` 的加载是 harness 行为，不是本仓库能保证的；下层索引缺独立事实源，所以要 doctor；常驻入口没有硬上限；结构正确不等于 description 能选路、内容仍然对。这些不是附录里的免责声明，是这套优点的另一面——展开见 [memory-filesystem-tree.md](memory-filesystem-tree.md) 的「当前边界」，以及 skill 层 [承重点与最脆三处](../../extensions/skills/project-memory-init/.harness/memory/projects/project_architecture.md)。
+便宜来自「白拿 harness、白拿目录、白拿 Git」，脆点也在同一批假设上：子树 `AGENTS.md` 的加载是 harness 行为，不是本仓库能保证的；下层索引缺独立事实源，所以要 doctor；常驻入口没有硬上限；结构正确不等于 description 能选路、内容仍然对。这些不是附录里的免责声明，是这套优点的另一面——展开见 [memory-filesystem-tree.md](memory-filesystem-tree.md) 的「当前边界」，以及 skill 层 [承重点与最脆三处](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/.harness/memory/projects/project_architecture/INDEX.md)。
