@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `new-server/`、`others/`：从框架仓 `extensions/new-server/`、`extensions/others/` 原样搬来的个人运维笔记和 X / Twitter 搜索查询。只是笔记，不装到各机器，不升版本。
+
 ## [4.1.0] - 2026-10-19
 
 ### Added

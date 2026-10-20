@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **系统副本已从个人主干移除：** 本仓只保留 peng cheng 的个人大脑：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`，以及 `edges-publish` 的写入目标。Edges 框架（CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点、artifacts 预览服务和相关 workflow）在 [VirusPC/edges](https://github.com/VirusPC/edges)。要用 CLI，执行 `npm install -g @viruspc/edges`，或到框架仓开发。ECS 上 `/teaching/` 仍由本仓 Deploy 更新检出 `/home/cheng-dev/projects/edges`，并检查 `teaching/index.html`；`/tasks/` 与 artifacts 预览由框架仓检出 `/home/cheng-dev/projects/edges-framework` 部署。
 
+- **博客与站点内容只在本仓：** 博客成稿 `posts/` 和「站点与内容」维护项目 [`.harness/tasks/site-and-content/`](.harness/tasks/site-and-content/README.md)（4 张 backlog 卡：Astro 博客与 CI、仓库主页 badge、整理 posts 并建站、posts 外更丰富的输出形态）现在只在本仓，框架仓会删掉它们。对应的项目记忆「posts 对外展示，Astro 博客 + Actions CI」从框架仓搬到 [`.harness/memory/projects/`](.harness/memory/projects/README.md)，在 [`.harness/README.md`](.harness/README.md) 登记。新服务器运维笔记和 X / Twitter 搜索查询搬到 [`shared-extensions/new-server/`](shared-extensions/new-server/bootstrap.md) 与 [`shared-extensions/others/`](shared-extensions/others/twitter-query.md)，见 [`shared-extensions/README.md`](shared-extensions/README.md)。
+
 ### 组合仓库
 
 - **登记组合仓库必须写说明：** `edges compose register` 现在要求 `--description`。不传，或只传空白，命令以校验错误退出（退出码 2，`errorCode` 为 `VALIDATION_ERROR`），不会把缺说明的条目写进作用域 `AGENTS.md`。说明要写清这个仓存什么、什么时候该往里写。操作见 [`edges-compose`](https://github.com/VirusPC/edges/blob/main/extensions/skills/edges-compose/SKILL.md)（beta，版本 `0.1.0`）。

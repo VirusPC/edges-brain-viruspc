@@ -50,7 +50,7 @@ edges --scope . compose clone --name edges
 | [`notes/`](notes/README.md)、[`projects/`](projects/)、[`memory/`](memory/README.md)、[`teaching/`](teaching/README.md) | 知识生产：低成本捕获、专项工作区、调研备忘、教学工作区 |
 | [`retrospectives/`](retrospectives/README.md) | 阶段性回看：周复盘与日复盘 |
 | [`edges/`](edges/README.md) | 提炼出来、可以反复使用的判断 |
-| [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护 |
+| [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护。博客成稿和「站点与内容」维护项目（[`.harness/tasks/site-and-content/`](.harness/tasks/site-and-content/README.md)）只在本仓，框架仓不再保留 |
 | [`tasks/`](tasks/README.md)、[`.harness/tasks/`](.harness/tasks/README.md) | 领域任务，以及仍留在本仓的个人维护任务（技术阅读、客户端体验、站点与内容、拆仓卡） |
 | [`archive/`](archive/README.md) | 退出活跃区域的内容 |
 | [`shared-extensions/`](shared-extensions/README.md) | 不依赖 Edges、跨机器跨 Agent 共用的能力。通用 skill 在 [`shared-extensions/skills/`](shared-extensions/skills/README.md)，不打进 `@viruspc/edges` |
