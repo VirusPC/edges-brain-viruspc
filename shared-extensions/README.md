@@ -26,6 +26,10 @@
 - **`mcp/`**: MCP **配置**（连哪些 server、怎么启动）。实现一个 Edges 用的 MCP server 仍走 `extensions/mcp-servers/`。
 - **`plugins/`**: Agent 插件。
 - **`hooks/`**: Agent 生命周期钩子。
+- **`new-server/`**: 新服务器开荒的个人运维笔记，不是可安装的扩展：[`bootstrap.md`](new-server/bootstrap.md)（建用户、装 tmux / git / nvm / Agent CLI）、[`dns.md`](new-server/dns.md)（Cloudflare 要关橙云改 DNS only，否则 SSH 22 端口不通）、[`claude code + kimi&minimax.md`](<new-server/claude code + kimi&minimax.md>)（Claude Code 切 Kimi / MiniMax 的 bash 函数）。
+- **`others/`**: 零散的个人备忘，目前是 [`twitter-query.md`](others/twitter-query.md)（X / Twitter 高级搜索查询）。
+
+`new-server/` 和 `others/` 是 2026-10-20 从框架仓 `extensions/` 搬来的个人笔记，不装到各机器，改它们不升 `VERSION`。
 
 需要新类型（如 `commands/`）时再加目录，并在本 README 登记。各家 `commands` 的目录名和格式不同，不要整目录软链。
 
