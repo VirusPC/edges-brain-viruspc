@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T04:45:19.036Z'
+  edges-updated-at: '2026-10-20T04:54:14.338Z'
   edges-title: 把个人大脑从 VirusPC/edges 系统仓拆出去
   edges-tasks-status: in_progress
   edges-task-priority: none
@@ -67,14 +67,15 @@ peng cheng 觉得 VirusPC/edges 不该把 Edges 系统和个人大脑混在一�
 **目标：**
 新 `VirusPC/edges` 只承载 Edges 系统；现有仓改名 `VirusPC/edges-brain-viruspc` 作个人主干长期保留；两边双向 Compose。
 
-**进展（2026-10-20）：**
-- 已完成：原仓已改名为 `VirusPC/edges-brain-viruspc`（个人主干），历史全部保留。
-- 已完成：新建框架仓 `VirusPC/edges`，main 保护规则照搬原仓；VirusPC/edges#1 已合：Compose 登记个人仓，eval 锁到拆仓前提交 `025904fa`。
-- 已完成：VirusPC/edges-brain-viruspc#329 已合：个人仓 README 补上反向 Compose 登记。
-- 已完成：ECS 已改指个人仓，teaching 与 tasks 两个站点都返回 200。
-- 进行中：两个补 `.github/workflows` 的 PR。
-- 待办：删掉个人仓里的系统副本，再切换 ECS 上的 tasks；最后由 peng cheng 配置 npm Trusted Publishing。
-- 说明：本卡在两个仓都有（个人仓是原卡，框架仓是快照），以个人仓这份为准。
+**进展（2026-10-20）：** 主线已完成。
+- 已完成：原仓已改名为 `VirusPC/edges-brain-viruspc`，作个人主干长期保留。
+- 已完成：新建公开框架仓 `VirusPC/edges`，从初始快照起步；VirusPC/edges#1 已合。
+- 已完成：双向 Compose 登记：个人仓 VirusPC/edges-brain-viruspc#329，框架仓 VirusPC/edges#1。
+- 已完成：ECS 的 origin 已固定到 `edges-brain-viruspc`；peng cheng 各台机器上的本地克隆也已改好 remote。
+- 已完成：个人仓部署固定 VirusPC/edges-brain-viruspc#331 已合，Deploy 成功；`/teaching/` 与 `/tasks/` 都返回 200。
+- 已完成：框架仓 workflows VirusPC/edges#2 已合（deploy 只在 workflow_dispatch 时触发、frozen-install、publish-edges-cli）。
+- 有意延后（不阻塞主线）：（1）ECS 上再检出一份框架仓，nginx `/tasks/` 零停机切过去；（2）切换后删掉个人仓里的系统路径副本；（3）npm Trusted Publishing，最后由 peng cheng 自己配置。
+- 说明：本卡在两个仓都有，以个人仓这份为准。
 
 **完成标准：**
 - [x] 有一份拍板的边界：系统仓留什么、个人仓放什么
