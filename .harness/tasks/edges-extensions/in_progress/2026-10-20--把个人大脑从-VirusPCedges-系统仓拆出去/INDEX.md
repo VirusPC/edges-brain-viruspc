@@ -75,6 +75,7 @@ peng cheng 觉得 VirusPC/edges 不该把 Edges 系统和个人大脑混在一�
 - 已完成：个人仓部署固定 VirusPC/edges-brain-viruspc#331 已合，Deploy 成功；`/teaching/` 与 `/tasks/` 都返回 200。
 - 已完成：框架仓 workflows VirusPC/edges#2 已合（deploy 只在 workflow_dispatch 时触发、frozen-install、publish-edges-cli）。
 - 有意延后（不阻塞主线）：（1）ECS 上再检出一份框架仓，nginx `/tasks/` 零停机切过去；（2）切换后删掉个人仓里的系统路径副本；（3）npm Trusted Publishing，最后由 peng cheng 自己配置。
+- 进行中（2026-10-20）：ECS 切换之后，个人仓删系统路径副本。CLI、extensions、docs、构建配置、框架任务卡与记忆副本从本仓去掉；`posts/`、站点与内容、客户端体验、技术阅读和本卡留下。Deploy 只更新 `/teaching/`。框架侧以 VirusPC/edges 为准。
 - 说明：本卡在两个仓都有，以个人仓这份为准。
 
 **完成标准：**

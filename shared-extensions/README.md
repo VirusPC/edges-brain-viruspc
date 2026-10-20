@@ -2,7 +2,7 @@
 
 `shared-extensions/` 是**个人 agent harness 的真源**：同一套扩展，装到所有本地和云端机器、被所有 Agent 共用。
 
-它不是 Edges 的对外接口。接入或操作 Edges 知识库的能力在 [`extensions/`](../extensions/README.md)。
+它不是 Edges 的对外接口。接入或操作 Edges 知识库的能力在 [`extensions/`](https://github.com/VirusPC/edges/blob/main/extensions/README.md)。
 
 ## 收录标准
 
@@ -10,7 +10,7 @@
 
 | 放这里 | 不放这里 |
 | --- | --- |
-| 通用 skill、MCP **配置**、plugins、hooks | 为接入 Edges 而存在的 CLI / MCP server / skill → [`extensions/`](../extensions/README.md) |
+| 通用 skill、MCP **配置**、plugins、hooks | 为接入 Edges 而存在的 CLI / MCP server / skill → [`extensions/`](https://github.com/VirusPC/edges/blob/main/extensions/README.md) |
 | 换机器仍要用的 harness 片段 | 只在某一台机器、某一个 Agent 上的实验 |
 | 愿意随公开仓库发布的配置 | 凭据、token、cookie、未脱敏的内部信息 → 绝对不入库 |
 
@@ -73,7 +73,7 @@ git tag -l 'shared-extensions@*'
 
 每台机器克隆本仓库后，把这里的内容安装到该机器的全局 Agent 目录。安装脚本尚未落地；有第一份真实内容时再加 `pnpm` 入口，在此之前不要手拷到 `~/.claude/`、`~/.codex/` 等处以免漂移。
 
-本仓库工作区里的 `.agents/skills` 只链 [`extensions/skills`](../extensions/skills/README.md)（项目级、服务本仓）。`shared-extensions/skills` 的主路径是**本机全局**，不默认链进项目发现位。两个 skill 目录的 `name` 禁止撞车。
+本仓库工作区里的 `.agents/skills` 只链 [`extensions/skills`](https://github.com/VirusPC/edges/blob/main/extensions/skills/README.md)（项目级、服务本仓）。`shared-extensions/skills` 的主路径是**本机全局**，不默认链进项目发现位。两个 skill 目录的 `name` 禁止撞车。
 
 ## 隐私
 

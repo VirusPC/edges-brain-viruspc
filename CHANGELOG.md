@@ -5,15 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-本文件只记 Edges 这个仓库本身的重要变化，方便扫一眼「系统最近能做什么」。某个对外技能自己的版本记录，看 [`extensions/skills/`](extensions/skills/) 下面各自的 changelog；跨机器共用、但不绑定 Edges 的扩展，看 [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)。尚未发版的变化按功能模块分组。Unreleased 的 `###` 用功能模块原名，不要改成「模块：摘要」或只留摘要；每条 `-` 前面加短小标题，写成 `- **小标题：** 正文…`。完整约定在项目记忆 `project_repo_changelog`，示例是 commit `a80d1b0`。
+本文件记 `VirusPC/edges-brain-viruspc` 的仓库级变化。2026-10-20 之前的条目描述的是当时还在本仓里的 Edges 系统；那些系统内容现在在框架仓 [VirusPC/edges](https://github.com/VirusPC/edges)。对外 skill 的版本记录看框架仓 [`extensions/skills/`](https://github.com/VirusPC/edges/tree/main/extensions/skills)；不绑定 Edges、留在本仓的扩展看 [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)。尚未发版的变化按功能模块分组。Unreleased 的 `###` 用功能模块原名，不要改成「模块：摘要」或只留摘要；每条 `-` 前面加短小标题，写成 `- **小标题：** 正文…`。
 
-领域决策、术语表和实现计划不写进这份根 changelog，分别看 [`docs/adr/`](docs/adr/)、[`CONTEXT.md`](CONTEXT.md) 和 [`docs/superpowers/plans/`](docs/superpowers/plans/)。
+领域决策、术语表和实现计划不写进这份 changelog。它们在框架仓：[`docs/adr/`](https://github.com/VirusPC/edges/tree/main/docs/adr)、[`CONTEXT.md`](https://github.com/VirusPC/edges/blob/main/CONTEXT.md)、[`docs/superpowers/plans/`](https://github.com/VirusPC/edges/tree/main/docs/superpowers/plans)。
 
 ## [Unreleased]
 
+### 个人仓
+
+- **系统副本已从个人主干移除：** 本仓只保留 peng cheng 的个人大脑：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`，以及 `edges-publish` 的写入目标。Edges 框架（CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点、artifacts 预览服务和相关 workflow）在 [VirusPC/edges](https://github.com/VirusPC/edges)。要用 CLI，执行 `npm install -g @viruspc/edges`，或到框架仓开发。ECS 上 `/teaching/` 仍由本仓 Deploy 更新检出 `/home/cheng-dev/projects/edges`，并检查 `teaching/index.html`；`/tasks/` 与 artifacts 预览由框架仓检出 `/home/cheng-dev/projects/edges-framework` 部署。
+
 ### 组合仓库
 
-- **登记组合仓库必须写说明：** `edges compose register` 现在要求 `--description`。不传，或只传空白，命令以校验错误退出（退出码 2，`errorCode` 为 `VALIDATION_ERROR`），不会把缺说明的条目写进作用域 `AGENTS.md`。说明要写清这个仓存什么、什么时候该往里写。操作见 [`edges-compose`](extensions/skills/edges-compose/SKILL.md)（beta，版本 `0.1.0`）。
+- **登记组合仓库必须写说明：** `edges compose register` 现在要求 `--description`。不传，或只传空白，命令以校验错误退出（退出码 2，`errorCode` 为 `VALIDATION_ERROR`），不会把缺说明的条目写进作用域 `AGENTS.md`。说明要写清这个仓存什么、什么时候该往里写。操作见 [`edges-compose`](https://github.com/VirusPC/edges/blob/main/extensions/skills/edges-compose/SKILL.md)（beta，版本 `0.1.0`）。
 
 ### CLI
 
@@ -28,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### CLI
 
-- **正式发布到公共 npm：** `@viruspc/edges` 已可在装了 Node.js 22.20 及以上的机器上执行 `npm install -g @viruspc/edges`，然后 `edges --help`；`edges init` 与 `edges memory remember` 不必再克隆本仓。命令名仍是 `edges`。审阅页随安装包 `dist` 里编好的 HTML/JS/CSS 走，不另发 `tasks-review-app`。仓库里开发用 `pnpm --filter @viruspc/edges`（旧名 `edges-cli` 已改掉）。命令行包已可发布，不再保持 private。版本记录见 [`extensions/cli/CHANGELOG.md`](extensions/cli/CHANGELOG.md)。
+- **正式发布到公共 npm：** `@viruspc/edges` 已可在装了 Node.js 22.20 及以上的机器上执行 `npm install -g @viruspc/edges`，然后 `edges --help`；`edges init` 与 `edges memory remember` 不必再克隆本仓。命令名仍是 `edges`。审阅页随安装包 `dist` 里编好的 HTML/JS/CSS 走，不另发 `tasks-review-app`。仓库里开发用 `pnpm --filter @viruspc/edges`（旧名 `edges-cli` 已改掉）。命令行包已可发布，不再保持 private。版本记录见 [`extensions/cli/CHANGELOG.md`](https://github.com/VirusPC/edges/blob/main/extensions/cli/CHANGELOG.md)。
 - **推 annotated tag 经 GitHub Actions 发版：** 在 main 上把 `extensions/cli/package.json` 的 `version` 对齐后，打 annotated tag `@viruspc/edges@x.y.z` 并推送，会跑 `.github/workflows/publish-edges-cli.yml`：先测，再进入 Environment `npm-publish` 等人批，批准后用 OIDC Trusted Publishing 执行 `pnpm --filter @viruspc/edges publish --no-git-checks --access public`，不放长效 `NPM_TOKEN`。版本号必须和 `package.json` 一致。
 - **init 安装包内 skills：** `edges skills init` 和无参 `edges init` 在建 skill 类型索引之后，用依赖里的 `skills@1.7.2` 把包内 Edges skill 装给本机 agent。edges 只补包内目录和 `--skill '*'`；`--` 之后的旗标原样转交。没有 TTY、安装器又没探测到 agent 时，在 `--` 后加 `-g -y`（例如 `edges init -- -g -y`），否则安装器退出 1，init 用同一退出码失败，信封里的 `errorCode` 是 `SKILLS_INSTALL_FAILED`。
 

@@ -37,4 +37,4 @@ metadata:
 - 实现 PR：https://github.com/VirusPC/edges/pull/126
 - 相关 backlog：`backlog/2026-09-24--Tasks-审阅壳-deploy-分支-GitHub-Actions-预览部署`（本条不改其状态）
 
-**Grill（2026-09-24，peng cheng，accepted）：** 完成标准已锁在 [ADR 0023](../../../../../docs/adr/0023-review-shell-narrow-vertical-layout.md)。窄于 Tailwind `md`（`<768px`）是同一壳的纵向长滚动（项目筛选 → 状态板 → 详情接在下方），双端卡片菜单「移到项目…」只改页内 JSON。上面「抽屉 / 单栏」是开卡时的想法，以 ADR 为准。本卡不改成实现计划，也不动 deploy 预览那张 backlog。
+**Grill（2026-09-24，peng cheng，accepted）：** 完成标准已锁在 [ADR 0023](https://github.com/VirusPC/edges/blob/main/docs/adr/0023-review-shell-narrow-vertical-layout.md)。窄于 Tailwind `md`（`<768px`）是同一壳的纵向长滚动（项目筛选 → 状态板 → 详情接在下方），双端卡片菜单「移到项目…」只改页内 JSON。上面「抽屉 / 单栏」是开卡时的想法，以 ADR 为准。本卡不改成实现计划，也不动 deploy 预览那张 backlog。

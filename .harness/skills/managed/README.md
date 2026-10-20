@@ -15,5 +15,4 @@ format: skills
 ## 本层内容
 
 - [linux-nas-direct-link](linux-nas-direct-link/SKILL.md) — 当要把消费级 NAS（尤其绿联 UGOS）用网线直连到 Linux 主机时使用：共享上网/NAT、专用用户 SMB 挂载、Tailscale（含 tailscale0 缺 IPv4）、SSH 防锁与管理页访问。
-- [用云端 Obsidian 预览 tasks 看板](preview-tasks-with-box-obsidian/SKILL.md) — 在 Grok Bot 云端电脑用 Obsidian 打开 /workspace/edges，浏览 .harness/tasks 状态夹与 artifacts；适合看板预览，不适合当主编辑入口。
 <!-- project-entries-local:end -->

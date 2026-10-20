@@ -16,9 +16,9 @@
 
 ### 上期行动
 
-1. 没做成。根 [`AGENTS.md`](../../../AGENTS.md)、[`extensions/AGENTS.md`](../../../extensions/AGENTS.md)、`extensions/cli/AGENTS.md` 里都搜不到 `NodeService`。那张卡仍在 [`.harness/tasks/edges-extensions/in_progress/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService/INDEX.md`](../../../.harness/tasks/edges-extensions/in_progress/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService/INDEX.md)。窗口内它只随 [#221](https://github.com/VirusPC/edges/pull/221) 从 `edges-cli-platform` 改名搬到 `edges-extensions`，状态没变。
+1. 没做成。根 [`AGENTS.md`](../../../AGENTS.md)、[`extensions/AGENTS.md`](https://github.com/VirusPC/edges/blob/main/extensions/AGENTS.md)、`extensions/cli/AGENTS.md` 里都搜不到 `NodeService`。那张卡仍在 [`.harness/tasks/edges-extensions/in_progress/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md)。窗口内它只随 [#221](https://github.com/VirusPC/edges/pull/221) 从 `edges-cli-platform` 改名搬到 `edges-extensions`，状态没变。
 2. 没做成。窗口末的两块看板里没有 doctor 或软链接相关的卡。窗口外的 [#289](https://github.com/VirusPC/edges/pull/289)（10-19 03:14 开）正文写着：「`edges memory doctor` 的 `dead-entry` 仍然不会报告这类断链。#208 当时就没做这个诊断，这次也没有补。」
-3. 没做成。卡仍在 [`backlog`](../../../.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-与根-harness-补齐-notes-edges-projects-archive/INDEX.md)，窗口内同样只随 #221 改了项目名。没有找到补齐四块目录的 PR。
+3. 没做成。卡仍在 [`backlog`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)，窗口内同样只随 #221 改了项目名。没有找到补齐四块目录的 PR。
 
 ### 上期的一处事实写错了：#208、#211 没有进 main
 
@@ -32,11 +32,11 @@
 
 ### CLI：发成 npm 包，加了 Compose
 
-- 发包：[#263](https://github.com/VirusPC/edges/pull/263) 补卡的背景，[#264](https://github.com/VirusPC/edges/pull/264)（10-18 19:06 合入）把包准备成 `@viruspc/edges` 0.1.0。npm 上 0.1.0 的发布时间是 10-18 19:29。[#274](https://github.com/VirusPC/edges/pull/274)、[#275](https://github.com/VirusPC/edges/pull/275) 定了 [ADR 0036](../../../docs/adr/0036-edges-init-installs-bundled-skills.md)，[#276](https://github.com/VirusPC/edges/pull/276) 让 `edges skills init` 通过 vercel skills 装随包 skill。[#278](https://github.com/VirusPC/edges/pull/278)（23:18）把版本切到 0.2.0，但 npm 上没有 0.2.0；下一个版本 0.2.1 是窗口外 10-19 02:06 经 Actions 发的（[ADR 0037](../../../docs/adr/0037-npm-publish-via-github-actions.md)）。
+- 发包：[#263](https://github.com/VirusPC/edges/pull/263) 补卡的背景，[#264](https://github.com/VirusPC/edges/pull/264)（10-18 19:06 合入）把包准备成 `@viruspc/edges` 0.1.0。npm 上 0.1.0 的发布时间是 10-18 19:29。[#274](https://github.com/VirusPC/edges/pull/274)、[#275](https://github.com/VirusPC/edges/pull/275) 定了 [ADR 0036](https://github.com/VirusPC/edges/blob/main/docs/adr/0036-edges-init-installs-bundled-skills.md)，[#276](https://github.com/VirusPC/edges/pull/276) 让 `edges skills init` 通过 vercel skills 装随包 skill。[#278](https://github.com/VirusPC/edges/pull/278)（23:18）把版本切到 0.2.0，但 npm 上没有 0.2.0；下一个版本 0.2.1 是窗口外 10-19 02:06 经 Actions 发的（[ADR 0037](https://github.com/VirusPC/edges/blob/main/docs/adr/0037-npm-publish-via-github-actions.md)）。
   - 0.2.0 为什么没发，对话依据（全栈开发专家，10-18 晚）：#278 合入后 0.2.0 已经 `npm stage publish` 成功，助手说明还要用户在 npm 的 Staging 页用两步验证批准才算正式发布。用户约 23:23 回「你先继续搞GitHub actions去」，转去做发包 Actions 的 grill，窗口内再没有批准这一步。也就是说 0.2.0 不是被决定不发，而是停在了等批准，然后被 Actions 发的 0.2.1 跳过。
   - 0.1.0 的发布方式是用户当场纠正出来的（Grok Bot，10-18 19:24）：「现在应该是 stage only吧，不能直接publish」。这条做法后来进了 ADR 0037 的方向，但窗口内没有写进仓库。
 - Compose：[#265](https://github.com/VirusPC/edges/pull/265)（clone / pull / push）、[#270](https://github.com/VirusPC/edges/pull/270)（方案）、[#272](https://github.com/VirusPC/edges/pull/272)（`ComposeNode` 与 `--with-composed`）。
-- 结构：[#262](https://github.com/VirusPC/edges/pull/262)（[ADR 0035](../../../docs/adr/0035-harness-readme-as-layer-material-index.md)，本层材料索引落在 `.harness/README.md`），[#267](https://github.com/VirusPC/edges/pull/267)、[#268](https://github.com/VirusPC/edges/pull/268)、[#269](https://github.com/VirusPC/edges/pull/269)、[#271](https://github.com/VirusPC/edges/pull/271) 四次重构，[#223](https://github.com/VirusPC/edges/pull/223) 让中文标题的笔记和项目目录保留汉字。
+- 结构：[#262](https://github.com/VirusPC/edges/pull/262)（[ADR 0035](https://github.com/VirusPC/edges/blob/main/docs/adr/0035-harness-readme-as-layer-material-index.md)，本层材料索引落在 `.harness/README.md`），[#267](https://github.com/VirusPC/edges/pull/267)、[#268](https://github.com/VirusPC/edges/pull/268)、[#269](https://github.com/VirusPC/edges/pull/269)、[#271](https://github.com/VirusPC/edges/pull/271) 四次重构，[#223](https://github.com/VirusPC/edges/pull/223) 让中文标题的笔记和项目目录保留汉字。
 - 评测：[#279](https://github.com/VirusPC/edges/pull/279) 加了检索评测冒烟。
 
 ### 部署挂了约 7 小时
@@ -107,7 +107,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### 该保持的
 
-- 决定随手写成 ADR：这周新增 ADR 0034 至 0036（Compose、本层材料索引、安装随包 skill）；窗口外紧接着的发包改用 Actions 也先写了 [ADR 0037](../../../docs/adr/0037-npm-publish-via-github-actions.md)。
+- 决定随手写成 ADR：这周新增 ADR 0034 至 0036（Compose、本层材料索引、安装随包 skill）；窗口外紧接着的发包改用 Actions 也先写了 [ADR 0037](https://github.com/VirusPC/edges/blob/main/docs/adr/0037-npm-publish-via-github-actions.md)。
 - 日复盘每天开 PR 落库，「不做」的候选也写明理由（例如 [2026-10-18 日复盘](../../daily/2026-10-18--日复盘/INDEX.md) 里「不做：…项目记忆。#264 的 CLI README 与 CHANGELOG 已写明」），后来的人能看到为什么没收。
 
 ## 下次做什么
@@ -123,7 +123,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 建议去处：根 `AGENTS.md` 硬约束。处理结果：已列入下次做什么第 3 条。
 
-为什么值得补：[ADR 0030](../../../docs/adr/0030-content-leaf-crud-via-nodeservice.md) 已经写了「一律调用 `NodeService.create` / `get` / `update` / `destroy`」，#289 这次重落修复时也是走 `NodeService.move`。规则在用，只是不在每次开工都会读的地方。
+为什么值得补：[ADR 0030](https://github.com/VirusPC/edges/blob/main/docs/adr/0030-content-leaf-crud-via-nodeservice.md) 已经写了「一律调用 `NodeService.create` / `get` / `update` / `destroy`」，#289 这次重落修复时也是走 `NodeService.move`。规则在用，只是不在每次开工都会读的地方。
 
 不补的代价：#187 那张卡已经在 `in_progress` 停了两周，看板对这件事的进度是错的；新来的 Agent 仍可能开旁路写盘。
 
@@ -137,7 +137,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### #174 四块目录补齐（上期延续）
 
-建议去处：现有 [backlog 卡](../../../.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-与根-harness-补齐-notes-edges-projects-archive/INDEX.md)。处理结果：留待触发条件。这周 Compose 和 ADR 0035 都动了目录与材料登记，建议等 1.5.0 发完、下一轮动 CLI 目录结构时一并做，先把卡的完成标准从「待 grill 后再补」补上。
+建议去处：现有 [backlog 卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)。处理结果：留待触发条件。这周 Compose 和 ADR 0035 都动了目录与材料登记，建议等 1.5.0 发完、下一轮动 CLI 目录结构时一并做，先把卡的完成标准从「待 grill 后再补」补上。
 
 为什么值得补：卡的完成标准仍然空着，别人无法判断做没做完。
 
@@ -185,7 +185,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### `docs/architecture.md` 还写着要接 RAG、PageIndex
 
-建议去处：[`docs/architecture.md`](../../../docs/architecture.md) 第 49 行附近。处理结果：待用户确认。截至本稿，那句仍是「后续计划接入 RAG、PageIndex 等索引方式」。Agent Memory 专家 10-17 22:27 合 #260 时自己点名过：「它现在跟 ADR 0034 的结论对不上」，之后没改。
+建议去处：[`docs/architecture.md`](https://github.com/VirusPC/edges/blob/main/docs/architecture.md) 第 49 行附近。处理结果：待用户确认。截至本稿，那句仍是「后续计划接入 RAG、PageIndex 等索引方式」。Agent Memory 专家 10-17 22:27 合 #260 时自己点名过：「它现在跟 ADR 0034 的结论对不上」，之后没改。
 
 为什么值得补：ADR 0034 已经决定 edges 不管大规模记忆检索，只做本地组合树。
 

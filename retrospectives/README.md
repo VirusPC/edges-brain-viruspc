@@ -14,7 +14,7 @@
 | Task | 领域 [`tasks/`](../tasks/README.md) 或维护 [`.harness/tasks/`](../.harness/tasks/README.md)，命令 `edges tasks` |
 | `AGENTS.md` 硬约束 | 目标作用域 `AGENTS.md` 的「本层硬约束」 |
 
-可复用的判断先记成笔记，再按 [`edges/README.md`](../edges/README.md) 提炼成 Edge。单次对话整理成笔记时用四栏结构（背景、过程、所学、行动指南），术语见 [`CONTEXT.md`](../CONTEXT.md) 的「复盘四栏」。周复盘和日复盘的章节见 [`weekly/README.md`](weekly/README.md) 与 [`daily/README.md`](daily/README.md)。
+可复用的判断先记成笔记，再按 [`edges/README.md`](../edges/README.md) 提炼成 Edge。单次对话整理成笔记时用四栏结构（背景、过程、所学、行动指南），术语见 [`CONTEXT.md`](https://github.com/VirusPC/edges/blob/main/CONTEXT.md) 的「复盘四栏」。周复盘和日复盘的章节见 [`weekly/README.md`](weekly/README.md) 与 [`daily/README.md`](daily/README.md)。
 
 ## 约定
 

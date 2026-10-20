@@ -4,7 +4,7 @@
 
 一个 skill 一个子目录，必须有 `SKILL.md`，frontmatter 的 `name` 与目录名一致。`description` 写清何时触发、何时不该触发。
 
-**不要**给单个 skill 写 `version` 或 `CHANGELOG.md`。本目录跟 mcp / plugins / hooks 一起，走 shared-extensions **整层**的 [`VERSION`](../VERSION) 和 [`CHANGELOG.md`](../CHANGELOG.md)。这点和 [`extensions/skills/`](../../extensions/skills/README.md) 相反。
+**不要**给单个 skill 写 `version` 或 `CHANGELOG.md`。本目录跟 mcp / plugins / hooks 一起，走 shared-extensions **整层**的 [`VERSION`](../VERSION) 和 [`CHANGELOG.md`](../CHANGELOG.md)。这点和 [`extensions/skills/`](https://github.com/VirusPC/edges/blob/main/extensions/skills/README.md) 相反。
 
 ## 和 `extensions/skills` 的分工
 
