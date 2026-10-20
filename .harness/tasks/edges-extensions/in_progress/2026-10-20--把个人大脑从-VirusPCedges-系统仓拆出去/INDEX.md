@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T02:41:22.154Z'
+  edges-updated-at: '2026-10-20T03:05:00.000Z'
   edges-title: 把个人大脑从 VirusPC/edges 系统仓拆出去
   edges-tasks-status: in_progress
   edges-task-priority: none
@@ -21,7 +21,18 @@ peng cheng 觉得 VirusPC/edges 不该把 Edges 系统和个人大脑混在一�
 - 系统仓留下：`extensions/`（CLI）、`scripts/`、`docs/`（ADR、架构）、`posts/`、根目录 AGENTS/README/CHANGELOG/CONTEXT 与构建配置、`.github`；`.harness/tasks` 中的 `evaluation`、`site-and-content` 等讲 Edges 系统的项目留系统仓。
 - 个人仓搬走：`edges/`（知识主体）、`notes/`、`archive/`、`teaching/`（连同其部署）、`retrospectives/`、`memory/`、`tasks/`、`projects/`、`shared-extensions/`、`.obsidian`。
 - 个人仓保持公开，沿用脱敏约束。
-- 待定：`.harness` 下 memory、notes、skills、observation、projects 的归属；其余与系统无关的 `.harness/tasks` 项目逐个确认；个人仓名字。
+- 待定：Compose 怎么挂回来；外部引用（日/周复盘、edges-publish、teaching 部署、retrieval eval 用例）怎么改；迁移顺序与 PR 拆分；与 edges-private 的关系。
+
+**grill R1 拍板（2026-10-20）：**
+- `.harness/memory`（feedbacks / projects / references）整体留系统仓：条目几乎都在讲 Edges 开发；个人仓以后自己 `edges init`。
+- `.harness/observation`（Langfuse 接收器代码与冒烟）留系统仓。
+- `.harness/skills`：`managed/linux-nas-direct-link` 去个人仓；`managed/preview-tasks-with-box-obsidian` 与 `referenced/` 留系统仓。
+- `.harness/notes`、`.harness/projects`：系统仓保留模块入口；`projects/2026-10-11--CrewAI概念与协作边界` 去个人仓，`projects/2026-10-11--code-review` 留。
+- 其余 `.harness/tasks` 项目：`_default`、`agent-clients-ux`、`edges-routines`、`edges-tasks`、`observation`、`project-memory` 留系统仓；只有 `tech-reading` 去个人仓。
+- 根 `tasks/`：搬走前先把讲系统的卡挪进 `.harness/tasks` 同名项目（如「整理posts文件夹并建站」「edges-connector自建远程MCP」「笔记洗成project-memory格式」），其余随 `tasks/` 走。
+- `.agents/`、`.claude/`、`.factory/`、`skills-lock.json`、`.gitmodules` 留系统仓。
+- 个人仓名：`VirusPC/edges-viruspc-brain`。
+- 迁移用 `git filter-repo` 抽出搬走的路径，保留历史。
 
 **目标：**
 VirusPC/edges 只承载 Edges 系统；个人大脑落在独立仓库，经 Compose 挂到系统仓使用。
