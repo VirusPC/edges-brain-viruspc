@@ -2,9 +2,9 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T02:29:59.057Z'
+  edges-updated-at: '2026-10-20T02:37:55.507Z'
   edges-title: 把个人大脑从 VirusPC/edges 系统仓拆出去
-  edges-tasks-status: backlog
+  edges-tasks-status: in_progress
   edges-task-priority: none
 name: 把个人大脑从_viruspc_edges_系统仓拆出去
 description: 现在系统实现和个人知识混在同一个公开仓里。拆开以后，edges 只放系统本身，个人大脑走独立仓，再用 Compose 挂回来。
