@@ -95,7 +95,17 @@ python3 .harness/evaluation/retrieval_eval/run.py print-command --client pi --sa
 MINIMAX_API_KEY=... python3 .harness/evaluation/retrieval_eval/run.py run --client pi --samples retrieval-smoke/edges-one
 ```
 
-`retrieval-smoke/edges-one` 只有 `edges_smoke_0008`。`pi` 的 provider / model 是 `minimax-cn` / `MiniMax-M3`，thinking 是 `high`，工具是 `read,grep,find,ls,bash`。命令是最小内核：`--mode json --no-session -ne -ns -np -nc --no-themes --no-mcp -na --offline`，工作目录是克隆下来的仓库，stdin 关闭。没有 sandbox，也没有 `-o` 和 max-turns，只靠 `timeout_seconds`（默认 600）。`clients.json` 里 `MINIMAX_CN_API_KEY` 写成 `$MINIMAX_API_KEY`，运行时从进程环境展开；变量缺失则该样本记 `parse_error`，错误里只有变量名。`PI_TELEMETRY` 固定为 `0`。每次运行另建一个空的临时 `PI_CODING_AGENT_DIR`，结束后删除。认证失败时退出码仍可能是 0，最后一条 assistant `message_end` 的 `stopReason` 为 `error` 或 `aborted` 时记为失败。`pi --version` 的第一行写入 trace metadata `client_version`。
+`retrieval-smoke/edges-one` 只有 `edges_smoke_0008`。`pi` 的 provider / model 是 `minimax-cn` / `MiniMax-M3`，thinking 是 `high`。不传 `--tools`，用 pi 的默认工具 `read`、`bash`、`edit`、`write`。命令是 `--mode json --no-session -ns -np -nc --no-themes --no-mcp -na --offline`，工作目录是克隆下来的仓库，stdin 关闭。没有 `-o` 和 max-turns，只靠 `timeout_seconds`（默认 600）。Codex 的命令和沙箱不变。
+
+每次运行另建一个临时 `PI_CODING_AGENT_DIR`。先写入 `sandbox.json`，再执行 `pi install npm:pi-sandbox@0.7.1 --no-approve`，然后用同一份读写列表在沙箱里跑一条 `true`，通过后才跑上面的命令。不传 `-ne`，装进这个目录的包才会被加载；`--no-approve` 仍忽略项目里的 `.pi`。结束后删除该目录。见 [ADR 0039](../../docs/adr/0039-pi-client-sandbox-read-scope.md)。
+
+`filesystem.denyRead` 由 Python 把 `/` 展开成根下的真实目录：跳过符号链接，也跳过 `proc`、`dev`、`sys`。`allowRead` 是 `["."]` 再加上仍是真实目录、不是符号链接的系统路径（候选为 `/usr`、`/bin`、`/lib`、`/lib64`，macOS 上还有 `/System`）。merged-/usr 上 `/bin`、`/lib`、`/lib64` 是指向 `usr/...` 的符号链接，两边都不写；`/usr` 仍在 `allowRead` 里，`bash`、`rg`、`git`、`python3` 走 `/usr/bin`。`allowWrite` 是 `[]`。插件写了某个数组就不再并上该键的默认值，所以空的 `allowWrite` 会去掉默认的 `.` 和 `/tmp`。若把 `denyRead` 写成 `["/"]`，插件会跟符号链接给 `/bin` 挂 tmpfs，bubblewrap 0.11 及以上报 `Can't mount on symlink destination /bin`，每条 bash 退出码 1，而 pi 进程仍可能是 0。展开后副本内可读，副本外的仓库文件、`/home`、`/etc`、宿主机 `/tmp` 不可读；`/proc/1/root` 为 Permission denied。`read` / `write` / `edit` 走同一份允许列表。
+
+`@carderne/sandbox-runtime` 仍会把 `/tmp/agents`、`~/.npm/_logs`、`~/.claude/debug` 做成可写挂载，空的 `allowWrite` 去不掉。`denyWrite` 写上这几项（以及 macOS 的 `/private/tmp/agents`），写入变成只读文件系统错误。这几项目录里的已有文件，bash 仍能读到。bash 往其它 `/tmp` 路径写，会写进那块空 tmpfs，退出码可能是 0，但落不到宿主机，也改不到真正的 `sandbox.json`。bash 里仍能看到 `MINIMAX_CN_API_KEY`。
+
+`--mode json` 没有界面。沙箱初始化失败时，插件只做一次不会显示出来的通知，然后继续无沙箱运行。评测不跟着降级：Linux 上缺少 `rg`、`bwrap` 或 `socat`，macOS 上缺少 `sandbox-exec`，`pi install` 失败，或沙箱里的 `true` 非 0，该样本记 `parse_error`（自检失败为 `pi sandbox bash check failed: ...`），不启动后面的 pi。依赖齐全且自检通过时，越界由沙箱阻止，评测不再另做越界检测或标记。
+
+`clients.json` 里 `MINIMAX_CN_API_KEY` 写成 `$MINIMAX_API_KEY`，运行时从进程环境展开；变量缺失则该样本记 `parse_error`，错误里只有变量名。`PI_TELEMETRY` 固定为 `0`。认证失败时退出码仍可能是 0，最后一条 assistant `message_end` 的 `stopReason` 为 `error` 或 `aborted` 时记为失败。`pi --version` 的第一行写入 trace metadata `client_version`。
 
 过程痕迹留在缓存，不进 `reports/`。一次 `run` 后，样本 `<sample_id>` 的事件流（Codex 的 `command_execution`、`reasoning`、`agent_message`、`turn.completed`，或 pi 的 `message_end` / `tool_execution_*`）在：
 

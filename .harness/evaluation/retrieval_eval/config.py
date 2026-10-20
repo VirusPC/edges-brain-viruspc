@@ -36,7 +36,6 @@ class Client:
     provider: str | None = None
     model: str | None = None
     thinking: str | None = None
-    tools: str | None = None
     env: dict[str, str] | None = None
 
     def codex_config_overrides(self) -> list[str]:
@@ -235,9 +234,8 @@ def _load_clients(path: Path) -> dict[str, Client]:
         provider = _optional_token(body, "provider", client_id)
         model = _optional_token(body, "model", client_id)
         thinking = _optional_token(body, "thinking", client_id)
-        tools = _optional_token(body, "tools", client_id)
-        if kind == "pi" and not all((provider, model, thinking, tools)):
-            raise ConfigError(f"{client_id} requires provider, model, thinking, and tools")
+        if kind == "pi" and not all((provider, model, thinking)):
+            raise ConfigError(f"{client_id} requires provider, model, and thinking")
         clients[client_id] = Client(
             id=client_id,
             command=_required_str(body, "command", client_id),
@@ -250,7 +248,6 @@ def _load_clients(path: Path) -> dict[str, Client]:
             provider=provider,
             model=model,
             thinking=thinking,
-            tools=tools,
             env=_optional_env(body, client_id),
         )
     return clients

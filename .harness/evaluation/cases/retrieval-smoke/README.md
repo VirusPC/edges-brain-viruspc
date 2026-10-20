@@ -7,7 +7,7 @@
 - [`edges.json`](edges.json)：6 题，默认 `codex` cell 用这份
 - [`edges-one.json`](edges-one.json)：只含 `edges_smoke_0008`，给单样本冒烟
 
-跑法见 [`../../retrieval_eval/run.py`](../../retrieval_eval/run.py)。`print-command` 只打印命令；`run` 会克隆仓库并调用 client。默认是本机 `codex exec --json`。pi（Node.js >= 22.19，`minimax-cn` / `MiniMax-M3`）用：
+跑法见 [`../../retrieval_eval/run.py`](../../retrieval_eval/run.py)。`print-command` 只打印命令；`run` 会克隆仓库并调用 client。默认是本机 `codex exec --json`。pi（Node.js >= 22.19，`minimax-cn` / `MiniMax-M3`）用默认工具，并在当次临时 `PI_CODING_AGENT_DIR` 里 `pi install npm:pi-sandbox@0.7.1`。`denyRead` 是根下真实目录（跳过符号链接和 proc/dev/sys），`allowRead` 是当前目录和仍为真实目录的系统路径，`allowWrite` 为 `[]`；prompt 前用同一配置跑 `true`。Codex 不变。命令：
 
 ```bash
 python3 .harness/evaluation/retrieval_eval/run.py print-command --client pi --samples retrieval-smoke/edges-one

@@ -13,7 +13,6 @@
     "provider": "minimax-cn",
     "model": "MiniMax-M3",
     "thinking": "high",
-    "tools": "read,grep,find,ls,bash",
     "timeout_seconds": 600,
     "env": {
       "MINIMAX_CN_API_KEY": "$MINIMAX_API_KEY",
