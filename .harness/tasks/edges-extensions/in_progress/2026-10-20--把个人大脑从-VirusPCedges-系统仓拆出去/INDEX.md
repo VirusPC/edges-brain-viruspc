@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T03:15:00.000Z'
+  edges-updated-at: '2026-10-20T03:20:00.000Z'
   edges-title: 把个人大脑从 VirusPC/edges 系统仓拆出去
   edges-tasks-status: in_progress
   edges-task-priority: none
@@ -21,7 +21,7 @@ peng cheng 觉得 VirusPC/edges 不该把 Edges 系统和个人大脑混在一�
 - 系统仓留下：`extensions/`（CLI）、`scripts/`、`docs/`（ADR、架构）、`posts/`、根目录 AGENTS/README/CHANGELOG/CONTEXT 与构建配置、`.github`；`.harness/tasks` 中的 `evaluation`、`site-and-content` 等讲 Edges 系统的项目留系统仓。
 - 个人仓搬走：`edges/`（知识主体）、`notes/`、`archive/`、`teaching/`（连同其部署）、`retrospectives/`、`memory/`、`tasks/`、`projects/`、`shared-extensions/`、`.obsidian`。
 - 个人仓保持公开，沿用脱敏约束。
-- 待定（R3）：ECS 上 teaching 与系统仓怎么并存；部署密钥放哪；双向 Compose 个人仓侧何时写；新仓创建与分支保护。
+- 待定：无（grill R1–R3 已收口）。
 
 **grill R1 拍板（2026-10-20）：**
 - `.harness/memory`（feedbacks / projects / references）整体留系统仓：条目几乎都在讲 Edges 开发；个人仓以后自己 `edges init`。
@@ -44,11 +44,18 @@ peng cheng 觉得 VirusPC/edges 不该把 Edges 系统和个人大脑混在一�
 - 默认保留：系统仓不重写历史（只删除，不 force-push 受保护的 main）；`edges-private` 保持独立私有仓，不并入、不登记进公开系统仓。
 - 本轮结论只写任务卡，不另写 ADR / 术语表。
 
+
+**grill R3 拍板（2026-10-20）：**
+- ECS：两份检出。系统仓 `/home/cheng-dev/projects/edges` 继续跑 tasks / artifacts（`deploy.yml` 去掉 teaching）；个人仓单独检出 `/home/cheng-dev/projects/edges-viruspc-brain`，nginx `/teaching/` 指到它的 `teaching/`；线上 URL 不变。
+- 部署密钥：把 `TEACH_DEPLOY_HOST / USER / SSH_KEY` 复制到个人仓的 GitHub Environment（同名），系统仓密钥不动。
+- 反向 Compose（个人仓登记 `VirusPC/edges` 作参考项目）：第 2 步建仓时就写进个人仓 `AGENTS.md`；系统仓侧登记仍在第 3 步 PR。
+- 新仓：由实现方用 peng cheng 的 GitHub 权限全部完成：建公开仓 `VirusPC/edges-viruspc-brain`，main 开与 edges 同级保护（强制 PR、enforce_admins、禁 force-push / 删分支）。
+
 **目标：**
 VirusPC/edges 只承载 Edges 系统；个人大脑落在独立仓库，经 Compose 挂到系统仓使用。
 
 **完成标准：**
-- [ ] 有一份拍板的边界：系统仓留什么、个人仓放什么
+- [x] 有一份拍板的边界：系统仓留什么、个人仓放什么
 - [ ] 个人大脑有独立仓库，并从 edges 通过 Compose 登记挂上
 - [ ] 该迁出的内容已迁出；edges 公开仓不再混入个人大脑主体
 - [ ] AGENTS.md / README 写清两边各自职责，以及怎么用 Compose 挂个人仓
