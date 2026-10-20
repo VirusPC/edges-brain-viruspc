@@ -27,4 +27,5 @@
 - [2026\-10\-19\-\-edges\-CLI\-npm\-%E5%8F%91%E5%B8%83%E4%BB%8E%E6%89%8B%E5%8A%A8\-stage\-%E5%88%B0\-GitHub\-Actions/INDEX.md](<2026-10-19--edges-CLI-npm-%E5%8F%91%E5%B8%83%E4%BB%8E%E6%89%8B%E5%8A%A8-stage-%E5%88%B0-GitHub-Actions/INDEX.md>)
 - [2026\-10\-19\-\-html\-plan\-%E5%AE%A1%E9%98%85%E9%A1%B5%E4%B8%8E\-grill\-with\-docs\-%E7%9A%84%E9%85%8D%E5%90%88/INDEX.md](<2026-10-19--html-plan-%E5%AE%A1%E9%98%85%E9%A1%B5%E4%B8%8E-grill-with-docs-%E7%9A%84%E9%85%8D%E5%90%88/INDEX.md>)
 - [2026\-10\-20\-\-%E5%A4%9A%E4%BB%93%E6%95%B4%E4%BB%93%E6%8C%82%E8%BD%BD%E8%A1%8C%E4%B8%9A%E6%96%B9%E6%A1%88%E4%B8%8E\-compose/INDEX.md](<2026-10-20--%E5%A4%9A%E4%BB%93%E6%95%B4%E4%BB%93%E6%8C%82%E8%BD%BD%E8%A1%8C%E4%B8%9A%E6%96%B9%E6%A1%88%E4%B8%8E-compose/INDEX.md>)
+- [2026\-10\-21\-\-%E8%B7%A8%E5%B7%A5%E5%85%B7\-skill\-%E4%B8%8E\-plugin\-%E7%9A%84%E4%B8%80%E5%A4%84%E7%BC%96%E5%86%99%E5%A4%9A%E5%A4%84%E5%AE%89%E8%A3%85/INDEX.md](<2026-10-21--%E8%B7%A8%E5%B7%A5%E5%85%B7-skill-%E4%B8%8E-plugin-%E7%9A%84%E4%B8%80%E5%A4%84%E7%BC%96%E5%86%99%E5%A4%9A%E5%A4%84%E5%AE%89%E8%A3%85/INDEX.md>)
 <!-- project-harness-local:end -->

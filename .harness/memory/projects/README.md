@@ -17,4 +17,5 @@ format: ordinary
 ## 本层内容
 
 - [posts 对外展示，Astro 博客 + Actions CI](project_posts_public_astro_blog/INDEX.md) — posts 面向对外展示；后续以 posts 为数据用 Astro 搭博客，并用 GitHub Actions 在服务器做 CI
+- [个人仓是长期主干，系统往外拆](<project_personal_repo_is_trunk/INDEX.md>) — 本仓（原 VirusPC/edges）是个人主干，长期保留不归档；系统只往外拆成新仓，旧 PR 链接用新仓名引用
 <!-- project-entries-local:end -->

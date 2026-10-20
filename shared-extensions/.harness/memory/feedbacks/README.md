@@ -16,5 +16,5 @@ format: ordinary
 <!-- project-entries-local:start -->
 ## 本层内容
 
-- 暂无条目。
+- [html\-plan 审阅页整页用中文](<feedback_html_plan_pages_in_chinese/INDEX.md>) — 生成给用户看的 html\-plan 审阅页或让子代理生成时打开：标题、claim、选项、注释全部中文，prompt 里明说；代码与路径不译
 <!-- project-entries-local:end -->
