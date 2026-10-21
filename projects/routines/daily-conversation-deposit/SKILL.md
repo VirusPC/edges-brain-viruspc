@@ -7,6 +7,8 @@ description: 每日沉淀扫描（日复盘）。回顾过去 24 小时各 Grok 
 
 回顾 peng cheng 过去 24 小时（Asia/Shanghai）在所有 Grok Bot 助手里的对话，按 VirusPC/edges-brain-viruspc 根 AGENTS.md 判断哪些该沉淀、落到哪里（笔记、任务、记忆、feedback，以及它定义的其它类型）。个人内容去 VirusPC/edges-brain-viruspc-private。
 
+入口是 Compose 工作区根 `VirusPC/edges-workspace-viruspc`（`.harness/compose/` 下挂着公开脑和私密脑）：先读它的根 `AGENTS.md`，再按公开脑根 AGENTS.md 判断去向。候选和当日复盘的 PR 开在挂进来的子仓（公开脑或私密脑），不写进工作区根。（2026-10-21 用户确认，通用约定见公开脑 `.harness/memory/projects/project_workspace_is_deposit_entry/`。）
+
 何时跑见同目录 [schedule.md](schedule.md)。本文件不写日程。
 
 ## 步骤
