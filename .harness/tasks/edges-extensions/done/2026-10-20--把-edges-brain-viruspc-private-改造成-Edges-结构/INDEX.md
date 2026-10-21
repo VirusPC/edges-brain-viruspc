@@ -2,9 +2,9 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T15:27:21.709Z'
+  edges-updated-at: '2026-10-21T17:28:44.706Z'
   edges-title: 把 edges-brain-viruspc-private 改造成 Edges 结构
-  edges-tasks-status: todo
+  edges-tasks-status: done
   edges-task-priority: none
 name: 把 edges-brain-viruspc-private 改造成 Edges 结构
 description: >-
@@ -24,3 +24,8 @@ description: >-
 3. 和公开大脑 `edges-brain-viruspc` 配对，约定好私密内容放在哪里。
 
 细节 grill 后补。
+
+## 进展
+
+- **2026-10-22 完成：** VirusPC/edges-brain-viruspc-private PR #1 squash 合入（merge commit `40947c2`）。
+- 去掉 `knowlege/`；`projects/` 平铺；原 `knowlege/edges` 笔记进 `notes/`；套上 `.harness/` + project-harness AGENTS；`MEMORY.md` 迁入 `.harness/memory`；memory doctor ok。
