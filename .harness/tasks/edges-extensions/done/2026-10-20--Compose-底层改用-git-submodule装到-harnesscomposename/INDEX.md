@@ -45,7 +45,9 @@ description: >-
 - **已上线：** VirusPC/edges#14 已 squash 合入 main（2026-10-20 23:46 UTC+8，merge commit `b1e3ab42`）。Compose 底层改用 git submodule，被组合的仓库装在仓内 `.harness/compose/<name>`；日常命令只有 `add` / `list` / `update`。决定见框架仓 ADR 0042。
 - **后续：** VirusPC/edges#19（`72980dd`）去掉了虚拟 ComposeNode，入口改成真实的 `.harness/compose/README.md`；遍历默认展开 Compose，可用根级 `--exclude` 排除；新增一次性迁移命令 `edges compose doctor`；edges-compose skill 升到 0.2.0。
 - **实测：** 私有工作空间根仓已用 submodule 挂上公开和私有两个大脑，并升级到 0.2.0 的 edges-compose skill。
+- **遗留（已完成）：**
+  - 框架仓里的个人仓名已清掉（VirusPC/edges#22，`e16b736`）。
+  - 重复编号的 ADR 已理顺：Compose worktree 那份保留 0039，pi 沙箱那份改为 0044（VirusPC/edges#23，`cffe757`）。
 - **遗留（待定）：**
   - 框架仓和公开个人仓之间仍是旧式互相登记，还没有改成 submodule。
   - ADR 0039 的 worktree 部分需要重新评估。
-  - 框架仓里清理个人仓名的工作还在进行中。
