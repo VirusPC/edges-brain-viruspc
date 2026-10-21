@@ -57,4 +57,5 @@
 - [Edges Extensions](<edges-extensions/README.md>) — 个人仓只留拆仓卡；其余平台卡在框架仓。
 - [Site and Content](<site-and-content/README.md>) — 站点/posts/badge/内容整理检索。
 - [技术阅读](<tech-reading/README.md>) — 记录所有技术阅读相关进展（论文、长文、官方文档、源码精读等）。看板管阅读工作项与进度；可读笔记仍可落 notes。
+- [deepseek-harness](<deepseek-harness/README.md>) — 围绕 DeepSeek Harness / recipe 的学习与实践看板。
 <!-- project-entries-local:end -->
