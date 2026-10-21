@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-20T06:16:53.796Z'
+  edges-updated-at: '2026-10-21T02:10:00.000Z'
   edges-title: 把个人大脑从 VirusPC/edges 系统仓拆出去
   edges-tasks-status: done
   edges-task-priority: none
@@ -62,13 +62,15 @@ peng cheng 觉得 VirusPC/edges 不该把 Edges 系统和个人大脑混在一�
 - 框架**新建仓 `VirusPC/edges`**，从单个初始提交开始；npm 包名 `@viruspc/edges` 不变，只换仓库地址；新仓需配 Environments（`production` 用于 tasks 站点、`npm-publish`）、secrets、npm Trusted Publishing。
 - 以后的规矩：个人新项目直接在个人仓里长；系统再拆就从个人仓往外拆成新仓（单个初始提交或 filter-repo 带系统路径历史），个人仓删掉对应路径；要公开 / 开源的东西从一开始就单独开仓。已写入个人仓项目记忆 `project_personal_repo_is_trunk`。
 - 个人仓公开，commit 历史不刻意脱敏。代价已接受：拆出去的系统，旧 commit 与 PR 留在个人仓；个人仓若转私有，外人看不到这段历史。
-- 仍有效：R1 边界（系统留什么 / 个人放什么）；R2 双向 Compose 语义；eval 锁拆仓前提交（ref 指向个人仓）；R3 ECS 两份检出、nginx `/teaching/` 指个人仓检出；仓外引用由实现方统一改并通知各助手；`edges-private` 不动；新仓由实现方用 peng cheng 的 GitHub 权限建并保护 main。
+- 仍有效：R1 边界（系统留什么 / 个人放什么）；eval 锁拆仓前提交（ref 指向个人仓）；R3 ECS 两份检出、nginx `/teaching/` 指个人仓检出；仓外引用由实现方统一改并通知各助手；`edges-private` 不动；新仓由实现方用 peng cheng 的 GitHub 权限建并保护 main。R2 双向 Compose 不再有效，见下方进展里的 2026-10-21 决定。
 - 迁移五步：（1）冻结：合完开着的 PR（已合 #320/#321/#326），根 `tasks/` 系统卡挪进 `.harness/tasks`（#327）；（2）GitHub 改名 `VirusPC/edges` → `VirusPC/edges-brain-viruspc`；（3）新建 `VirusPC/edges`：推系统路径快照，保护 main，配 Environments / secrets / Trusted Publishing / tasks 站点部署；（4）个人仓 PR 删系统路径、补 AGENTS/README、反向 Compose 登记 edges；新仓 PR Compose 登记个人仓；（5）ECS 新增框架仓检出 + nginx、eval ref、仓外引用与助手记忆，通知各助手。第 2→3 步 `VirusPC/edges` 名字空窗尽量短；改名、建仓前再与 peng cheng 确认一次。
 
 **目标：**
 新 `VirusPC/edges` 只承载 Edges 系统；现有仓改名 `VirusPC/edges-brain-viruspc` 作个人主干长期保留；两边双向 Compose。
 
 **进展（2026-10-20）：** 已全部完成，本卡关闭。
+
+- **后续决定（2026-10-21）：** 公开仓库不互相 Compose。本仓去掉对框架仓的登记，不改成 submodule。挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`。本卡里的双向 Compose 是当天做法，不再有效。
 - 改名：原仓改名为 `VirusPC/edges-brain-viruspc`，作个人主干长期保留。
 - 新框架仓：公开仓 `VirusPC/edges` 从单个初始快照起步，历史里没有个人内容；VirusPC/edges#1 已合。
 - 双向 Compose 登记：个人仓 VirusPC/edges-brain-viruspc#329，框架仓 VirusPC/edges#1。

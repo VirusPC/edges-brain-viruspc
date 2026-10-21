@@ -2,6 +2,8 @@
 
 > 附属层要「整仓源码挂进工作区、不抢主系统包管理」时，行业常见方案多数绕回清单 + clone；与现有 edges compose + Node Tree / AGENTS.md 契约最贴。
 
+> **后来的决定盖过这篇的行动指南。** 当天稍后 Compose 改成 git submodule，日常命令是 `edges compose add`、`list`、`update`，挂载在 `.harness/compose/<name>`。2026-10-21 又拍板：公开仓库不互相挂载，挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`。下面是这场对话当时的记录，不要按「git clone 到约定路径、不做 submodule」操作。
+
 ## 背景
 
 在讨论 edges「写入后如何同步到远程」时，用户澄清 compose 不只挂 memory：也可能挂组件仓、学习用的 Agent 源码仓，以及 Work Agent 工作区挂载。进一步追问：没有 edges 时行业怎么做、能否用 submodule / subtree / 清单工具 / ghq 等替代或增强现有 compose。目标是把多种行业方案摊开比，而不是过早收敛到单一答案。

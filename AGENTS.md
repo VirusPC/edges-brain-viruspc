@@ -2,7 +2,7 @@
 
 你是维护 peng cheng 个人大脑仓 `VirusPC/edges-brain-viruspc` 的 AI 工程师。个人内容在这里长：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`。本仓也是 `edges-publish` 写入这些个人内容的目标。
 
-**本仓是个人主干（2026-10-20 由原 `VirusPC/edges` 改名而来，长期保留，不归档）。** Edges 框架在 [`VirusPC/edges`](https://github.com/VirusPC/edges)：CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点构建、artifacts 预览服务，以及相关 workflow。改框架去那边开 PR。博客成稿 `posts/`、博客与站点内容的维护项目 `.harness/tasks/site-and-content/`，以及新服务器运维笔记（`shared-extensions/new-server/`、`shared-extensions/others/`）只在本仓，框架仓不再保留。要用 CLI，执行 `npm install -g @viruspc/edges`，或在框架仓里开发。
+**本仓是个人主干（2026-10-20 由原 `VirusPC/edges` 改名而来，长期保留，不归档）。** Edges 框架在 [`VirusPC/edges`](https://github.com/VirusPC/edges)：CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点构建、artifacts 预览服务，以及相关 workflow。改框架去那边开 PR。博客成稿 `posts/`、博客与站点内容的维护项目 `.harness/tasks/site-and-content/`，以及新服务器运维笔记（`shared-extensions/new-server/`、`shared-extensions/others/`）只在本仓，框架仓不再保留。要用 CLI，执行 `npm install -g @viruspc/edges`，或在框架仓里开发。本仓不把框架仓登记进 Compose。公开仓库之间不互相挂载。Compose 挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`（`.harness/compose/` 下的 git submodule；日常命令是 `edges compose add`、`list`、`update`）。本仓不写这些登记。
 
 ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges`。`/tasks/` 和 artifacts 预览由框架仓部署，检出是 `/home/cheng-dev/projects/edges-framework`。
 
@@ -41,10 +41,4 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 
 <!-- project-harness-descendants:end -->
 
-
-<!-- project-harness-compose:start -->
-## 组合
-
-- [edges](<~/.edges/composed/edges>) — Edges 框架仓（参考项目）：CLI、extensions、skills、协议、ADR 与架构文档。查 Edges 系统怎么用、怎么实现时读它；要改 Edges 系统本身时去该仓开 PR。个人知识、教学、复盘与个人任务不要写进去，写本仓。 remote: https://github.com/VirusPC/edges.git
-<!-- project-harness-compose:end -->
 <!-- project-harness:end -->

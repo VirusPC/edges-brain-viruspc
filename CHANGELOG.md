@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 组合仓库
 
-- **登记组合仓库必须写说明：** `edges compose register` 现在要求 `--description`。不传，或只传空白，命令以校验错误退出（退出码 2，`errorCode` 为 `VALIDATION_ERROR`），不会把缺说明的条目写进作用域 `AGENTS.md`。说明要写清这个仓存什么、什么时候该往里写。操作见 [`edges-compose`](https://github.com/VirusPC/edges/blob/main/extensions/skills/edges-compose/SKILL.md)（beta，版本 `0.1.0`）。
+- **公开个人仓不再挂框架仓：** 根 `AGENTS.md` 去掉 `project-harness-compose` 区块，不再登记 [`VirusPC/edges`](https://github.com/VirusPC/edges)。公开仓库之间不互相 Compose，本仓也不把框架仓或私有仓写进 `.harness/compose/`。挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`，那边已经用 git submodule 把两个大脑装在 `.harness/compose/`。Compose 日常命令是 `edges compose add`、`list`、`update`，没有 `clone`。本仓不执行这些挂载。操作见框架仓 [`edges-compose`](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-compose/SKILL.md)。
 
 ### CLI
 
@@ -51,8 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 组合仓库
 
-- **组合进来的仓库可以登记、clone、pull 和 push：** `edges compose register --name <名字> [--path <目录>] [--remote <git 地址>] [--description <说明>]` 把仓库写进作用域 `AGENTS.md` 的组合区块，不传 `--path` 时目录是 `~/.edges/composed/<名字>`。`edges compose list` 列出已登记的仓库；`edges compose unregister --name <名字>` 删掉一条登记，已经 clone 的目录不动。`edges compose clone` 把 remote 拉到登记目录，如果那里已经是同一 origin 的检出就不动；`edges compose pull`、`edges compose push` 在这个目录里执行该仓库自己的 `git pull` / `git push`，不额外建提交。
-- **查询可以带上一层组合仓库：** 默认的 list 和查询只看当前作用域，不进组合仓库。根命令加 `--with-composed` 时，结果里多一层组合仓库的入口 `AGENTS.md`，只到这一层，不能代替 `--all`，写命令也不顺着这条边走。
+- **第一版组合命令随系统留在框架仓：** 1.5.0 在当时还含 Edges 系统的本仓加入了组合仓库的登记、检出、拉取和推送，默认放在本机家目录，并用根级开关把组合仓库的一层入口纳入查询。那些子命令、家目录默认路径和那个根级开关后来都删了，不留别名。不要按这一节的旧做法操作。现行日常命令是 `edges compose add`、`list`、`update`，挂载是仓内 `.harness/compose/<name>` 的 git submodule。说明见框架仓 [`edges-compose`](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-compose/SKILL.md)。
 
 ### 项目记忆（project-memory）
 

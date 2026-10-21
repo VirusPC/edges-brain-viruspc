@@ -17,14 +17,11 @@
 | 怎么用 | 直接在本仓写个人内容 | `npm install -g @viruspc/edges`，或克隆框架仓开发 |
 | ECS | `/teaching/`：检出 `/home/cheng-dev/projects/edges`，本仓 Deploy 只更新这份检出 | `/tasks/` 与 `/artifacts`：检出 `/home/cheng-dev/projects/edges-framework`，由框架仓部署 |
 
-本仓根 `AGENTS.md` 把框架仓登记为 Compose 参考项目。在本仓执行：
+公开仓库之间不互相 Compose。本仓不挂 [`VirusPC/edges`](https://github.com/VirusPC/edges)，框架仓也不挂本仓。Compose 挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`：那边已经把两个大脑装成 `.harness/compose/` 下的 git submodule。
 
-```bash
-npm install -g @viruspc/edges
-edges --scope . compose clone --name edges
-```
+要用 Compose，日常命令是 `edges compose add`、`edges compose list`、`edges compose update`。没有 `clone`。挂载目录是仓内 `.harness/compose/<name>`，底层是 git submodule。这些挂载不写在本仓。
 
-会把框架仓检到 `~/.edges/composed/edges`。查 CLI、extensions、skills、ADR 时读那份检出；要改框架，去 [VirusPC/edges](https://github.com/VirusPC/edges) 开 PR。个人知识不要写进框架仓。
+查 CLI、extensions、skills、ADR 时直接看框架仓；要改框架，去那边开 PR。个人知识写本仓。
 
 术语表与架构决策在框架仓：[`CONTEXT.md`](https://github.com/VirusPC/edges/blob/main/CONTEXT.md)、[`docs/adr/`](https://github.com/VirusPC/edges/tree/main/docs/adr)。
 
@@ -69,7 +66,7 @@ edges --help
 
 ## 文档
 
-- [`AGENTS.md`](AGENTS.md)：本仓 Agent 入口，含硬约束、个人内容索引，以及指向框架仓的 Compose 登记。
+- [`AGENTS.md`](AGENTS.md)：本仓 Agent 入口，含硬约束与个人内容索引。本仓没有 Compose 登记。
 - [`CHANGELOG.md`](CHANGELOG.md)：本仓变更。拆仓前的系统条目仍留在这里，对应正文在框架仓。
 - [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)：留在本仓的通用扩展版本记录。
 

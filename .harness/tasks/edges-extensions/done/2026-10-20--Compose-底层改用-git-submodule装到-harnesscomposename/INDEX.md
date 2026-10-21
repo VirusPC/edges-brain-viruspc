@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: edges-extensions
-  edges-updated-at: '2026-10-21T01:18:16.571Z'
+  edges-updated-at: '2026-10-21T02:10:00.000Z'
   edges-title: Compose 底层改用 git submodule，装到 `.harness/compose/<name>`
   edges-tasks-status: done
   edges-task-priority: none
@@ -14,7 +14,7 @@ description: >-
 
 **背景：**
 现在 compose 把本机绝对路径写进 AGENTS.md：相对的 `--path` 会被转成绝对路径；默认的 `~/.edges/composed/<name>` 又强制固定位置。换一台机器，这些登记就不能用。clone / pull / push 也都是 compose 自己实现的。另外，两个仓库互相登记时，担心出现套娃（无限展开）和依赖方向不清的问题。
-- 相关现状：本仓 AGENTS.md 的 compose 块登记了 `edges`，链接指向 `~/.edges/composed/edges`。
+- 相关现状（开卡时）：本仓 AGENTS.md 的 compose 块登记了 `edges`，链接指向 `~/.edges/composed/edges`。2026-10-21 已删掉这条登记，不改成 submodule。
 - 关联：VirusPC/edges PR #13（compose 失败跳过 + warning）。
 
 **目标：**
@@ -48,6 +48,6 @@ description: >-
 - **遗留（已完成）：**
   - 框架仓里的个人仓名已清掉（VirusPC/edges#22，`e16b736`）。
   - 重复编号的 ADR 已理顺：Compose worktree 那份保留 0039，pi 沙箱那份改为 0044（VirusPC/edges#23，`cffe757`）。
+- **遗留（已拍板，2026-10-21）：** 公开仓库不互相 Compose。框架仓和公开个人仓之间的旧登记删掉，不改成 submodule。挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`。
 - **遗留（待定）：**
-  - 框架仓和公开个人仓之间仍是旧式互相登记，还没有改成 submodule。
   - ADR 0039 的 worktree 部分需要重新评估。
