@@ -20,4 +20,5 @@ format: ordinary
 - [沉淀以 Compose 工作区根为入口](<project_workspace_is_deposit_entry/INDEX.md>) — 往两脑沉淀笔记、任务、记忆或跑日复盘前打开：先读 edges\-workspace\-viruspc 根 AGENTS.md，正文写进 composed 子仓，不写工作区根
 - [在用户机器上操作 edges 前先对齐 npm 最新版](<project_use_latest_edges_cli_on_machines/INDEX.md>) — 在用户机器上 edges init、重装 skill 或其他 edges 操作前打开：先对比本机版本与 npm latest，落后先升级；main 未发版的改动先说明再让用户选
 - [派云端 Agent 验证：验收写具体，不提示答案](<project_cloud_agent_blind_verification/INDEX.md>) — 派云端 Agent 验证约定或功能能否被自然用对时打开：写清产出、要点和交付形式，不提示期望落点或参数
+- [个人仓是长期主干，系统往外拆](<project_personal_repo_is_trunk/INDEX.md>) — 本仓（原 VirusPC/edges）是个人主干，长期保留不归档；系统只往外拆成新仓，旧 PR 链接用新仓名引用
 <!-- project-entries-local:end -->
