@@ -1,0 +1,3 @@
+[submodule "projects/routines/grokbot-langfuse-export/vendor/cursor-observability-plugin"]
+	path = projects/routines/grokbot-langfuse-export/vendor/cursor-observability-plugin
+	url = https://github.com/langfuse/cursor-observability-plugin.git
