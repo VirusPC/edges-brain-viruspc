@@ -30,7 +30,6 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 - [目录与内容说明](<README.md>) — 目录与内容说明入口。
 - [框架仓术语](https://github.com/VirusPC/edges/blob/main/CONTEXT.md) — Edges 领域术语在框架仓。
 - [框架仓架构决策](https://github.com/VirusPC/edges/tree/main/docs/adr) — ADR 在框架仓。
-- [.harness/tasks/README.md](<.harness/tasks/README.md>)
 <!-- project-harness-local:end -->
 
 <!-- project-harness-descendants:start -->
