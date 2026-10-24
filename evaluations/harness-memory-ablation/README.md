@@ -196,27 +196,37 @@ rm -rf .harness/memory
 - 题集加多步任务（例如真开 PR、改文件），测做事时守不守约定；单轮问答测不到这一点。
 - 目标：回答「在 harness 里用 memory 划不划算」，而不是「memory 正文拼进上下文有没有用」。
 
-### 2. 压 token（近似路径，次优先）
+### 2. 持续利用线上数据
+
+真实 harness 跑起来后，日常会话本身就是最贴近生产的评测来源。按下面五个切入点把它接回评测：
+
+- **从线上 trace 扩充题库**：每周从 Langfuse 里挑出出过错、被用户纠正或返工的会话，转成新题加进 Dataset `harness-memory-ablation`。新题标上 M/I/C 分类，Dataset 版本递增（v2、v3…）。
+- **线上 A/B**：给会话打上 `memory:on` / `memory:off` 和 commit 的 tag，直接对比真实使用中的 token、耗时和返工率。按约定，可过滤的维度放 tags，其余放 metadata。
+- **反向查 memory 命中**：从 trace 里看 Agent 实际读了哪些 memory 条目。长期没人用的条目考虑删掉；常被纠正却没写进 memory 的规则就补上。
+- **用用户纠正当标签**：把「不对」「重做」这类回复当成负信号，打成线上 score。再抽样人工校准评审模型，避免只靠关键词误判。
+- **定期回归**：Dataset 稳定后挂每周 routine 重跑，报告按日期存到 `evaluations/harness-memory-ablation/<YYYY-MM-DD>.md`。这样 memory 每次改动都能看到前后差异。
+
+### 3. 压 token（近似路径，次优先）
 
 - 跑条件 C：只放索引，正文按需读。注意：C 仍是 prompt 侧近似，**不是**真实 harness。
 - 再试检索注入：只注入最相关的几条，而不是全文。
 - 给 memory 瘦身：合并重复、删过时条目、压短表述。
 - 目标：在保住 dependent 增益的前提下，把输入增量压进 ≤15% 门槛（或重新标定可接受区间并写进判定门槛）。
 
-### 3. 结论更可信
+### 4. 结论更可信
 
 - 每题每组 ≥3 次，报告均值与波动（勿再用单次 smoke 当定论）。
 - judge 换与被测不同的模型，降低同模自评偏差。
 - 人工先标约 15 题，做 judge 与人工的一致性校准后再全量。
 
-### 4. 题目更有代表性
+### 5. 题目更有代表性
 
 - 补 memory 未覆盖的真实题（从近期会话精选）。
 - 补 Cursor / Codex 等编码 Agent 任务，不限聊天问答。
 - 从单轮扩到多步（例如真开 PR，看是否违约定）。
 - 题量扩到约 50 题后再做「可否默认开启」复核。
 
-### 5. 多用 Langfuse
+### 6. 多用 Langfuse
 
 - A / B / C 各开一次 Experiment，并排对比，并挂基线。
 - 用 Experiment 级评估器拿 `expectedOutput`（更正：线上 observation 评估器拿不到期望；Experiment 级可以）。
