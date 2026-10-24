@@ -33,7 +33,6 @@
 
 ## 决定
 
-- 0.2.5 按既定发版路径发；npm 临时 503 时先等故障，再对失败 run 重跑，不改 Trusted Publisher、不升版本号重打 tag。
 - 长期 AI 问题用「稳定问题定义 + 定时追踪」；Routines 侧目标是目录下加 Project 分组层（卡已开，实现未做）。
 - 发版与升机：用户可授权助手代批 `npm-publish`；镜像滞后时允许临时指定官方 registry。
 
@@ -46,7 +45,7 @@
 
 ## 下次做什么
 
-- 审本 PR：一条项目记忆、一篇 npm 503 笔记、本篇日复盘。
+- 审本 PR：一条项目记忆、本篇日复盘。
 - 推进或 grill routines Project 分组卡；需要时再开「问题追踪」分组下的具体 routine。
 - 合 #347 / #348；确认各机 `edges --version`。
 - 插件化 grill（先厘清与 ADR 0046 的关系）。
@@ -69,7 +68,7 @@
 ## 建议补充内容清单
 
 - 记忆（project，根作用域）：长期 AI 问题先写成稳定定义，再用 Routines 定时追踪解法演进。来自 Grok Bot 2026-10-23「始终存在但解决方案在不断演进」「不断地定义这种问题，然后用 ai 定时去追踪」。写入：`.harness/memory/projects/project_enduring_ai_problems_timed_tracking/INDEX.md`（`edges memory remember`，`.harness/memory/projects/README.md` 已登记）。
-- 笔记：npm 发 0.2.5 时 registry 503 / 部分故障，先等再 `gh run rerun --failed`；与 Trusted Publisher 404 区分；镜像滞后时临时用官方 registry。来自全栈开发专家 / Grok Bot 2026-10-22。写入：`notes/2026-10-24--npm-发版遇-registry-503先等故障再重跑/INDEX.md`（`edges notes create`，`notes/README.md` 已登记）。
+- 不做：npm 503 发版故障笔记（用户：出问题时现场排查即可，不沉淀）。
 - 不做：#349 已合的四条（工作区入口、npm 最新版、云端盲测、Trusted Publisher 404）——已在仓内。
 - 不做：notes 叶子改挂 `notes/README`——#350 已合。
 - 不做：routines 目录 Project 分组任务卡——#352 已合；本篇只沉淀判断轴记忆，不重复开卡。
