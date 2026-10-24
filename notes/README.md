@@ -27,4 +27,5 @@
 - [2026\-10\-24\-\-grokbot\-langfuse\-export\-transcript\-sources\-on\-grok\-bot\-box/INDEX.md](<2026-10-24--grokbot-langfuse-export-transcript-sources-on-grok-bot-box/INDEX.md>)
 - [2026\-10\-24\-\-codex\-cloud\-%E4%BC%9A%E8%AF%9D%E8%BF%BD%E8%B8%AA%E5%88%B0%E8%87%AA%E5%BB%BA\-langfuse/INDEX.md](<2026-10-24--codex-cloud-%E4%BC%9A%E8%AF%9D%E8%BF%BD%E8%B8%AA%E5%88%B0%E8%87%AA%E5%BB%BA-langfuse/INDEX.md>)
 - [2026\-10\-24\-\-cursor\-cloud\-%E4%BC%9A%E8%AF%9D%E8%BF%BD%E8%B8%AA%E5%88%B0%E8%87%AA%E5%BB%BA\-langfuse/INDEX.md](<2026-10-24--cursor-cloud-%E4%BC%9A%E8%AF%9D%E8%BF%BD%E8%B8%AA%E5%88%B0%E8%87%AA%E5%BB%BA-langfuse/INDEX.md>)
+- [2026\-10\-24\-\-grokbot\-langfuse\-export\-frequency\-usage\-eval/INDEX.md](<2026-10-24--grokbot-langfuse-export-frequency-usage-eval/INDEX.md>)
 <!-- project-entries-local:end -->
