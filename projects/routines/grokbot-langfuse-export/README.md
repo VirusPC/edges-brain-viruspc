@@ -1,6 +1,6 @@
 # grokbot-langfuse-export
 
-把全部 Grok Bot 助手的对话按真实时间（分钟精度）写进自建 Langfuse 项目 Edges，每轮一条 trace。写入复用官方 [langfuse/cursor-observability-plugin](https://github.com/langfuse/cursor-observability-plugin) 的 `emitTurn`，插件源码不改；本目录只补「读 Grok Bot 对话」和「把 Cursor 字样换成 Grok Bot」两件事。routine 的每小时流程见 [SKILL.md](SKILL.md)，日程见 [schedule.md](schedule.md)。
+把全部 Grok Bot 助手的对话按真实时间（分钟精度）写进自建 Langfuse 项目 Edges，每轮一条 trace。写入复用官方 [langfuse/cursor-observability-plugin](https://github.com/langfuse/cursor-observability-plugin) 的 `emitTurn`，插件源码不改；本目录只补「读 Grok Bot 对话」和「把 Cursor 字样换成 Grok Bot」两件事。routine 流程见 [SKILL.md](SKILL.md)；运行频率见 [schedule.md](schedule.md)。
 
 ## 文件
 
@@ -12,12 +12,12 @@
 | `adapter/to-plugin-turn.mjs` | 轮次转成插件自己的 `Turn` 和 `Config` | 通过插件已有字段设 traceId 种子、sessionId、tags、userId、`grokbot.*` metadata，避免改插件 |
 | `adapter/rename-cursor-to-grokbot.mjs` | SpanProcessor 包装：`Cursor Turn` 改 `Grok Bot Turn`，去掉 `cursor` tag，`cursor.*` metadata 改 `grokbot.*` | 这三处在插件里写死，Config / Turn 改不了 |
 | `adapter/instrumentation-with-rename.mjs` | 照抄插件 `setupInstrumentation`（约 30 行），在 Langfuse 处理器外套一层上面的改名处理器，`service.name=grok-bot`，dry-run 用内存 exporter | 插件在函数内部 new 处理器和 exporter，没有挂钩，只能复制一份再插入改名 |
-| `adapter/export-cli.mjs` | 入口：读 cursor、首次只回填 24 小时、分批调 `emitTurn` 并 flush、失败批次不推进 cursor、输出 JSON summary | 每小时增量导出与去重 |
+| `adapter/export-cli.mjs` | 入口：读 cursor、首次只回填 24 小时、分批调 `emitTurn` 并 flush、失败批次不推进 cursor、输出 JSON summary | 增量导出与去重 |
 | `package.json` | `npm run stage` / `npm run export`；依赖版本按插件 `pnpm-lock.yaml` 精确钉住 | 用 `tsx` 直接 import 插件 TS 源 |
 
 ## 对话信息怎么读
 
-通用流程与源能力对比见 [SKILL.md § 对话来源](SKILL.md#对话来源)。本环境（Grok Bot box）对 `search-index` / `agent-transcripts` 的取舍见笔记：[../../../notes/2026-10-24--grokbot-langfuse-export-transcript-sources-on-grok-bot-box/INDEX.md](../../../notes/2026-10-24--grokbot-langfuse-export-transcript-sources-on-grok-bot-box/INDEX.md)。
+通用流程与源能力对比见 [SKILL.md § 数据流](SKILL.md#数据流)。本环境（Grok Bot box）对 `search-index` / `agent-transcripts` 的取舍见笔记：[../../../notes/2026-10-24--grokbot-langfuse-export-transcript-sources-on-grok-bot-box/INDEX.md](../../../notes/2026-10-24--grokbot-langfuse-export-transcript-sources-on-grok-bot-box/INDEX.md)。
 
 
 ## 准备（新 checkout）
