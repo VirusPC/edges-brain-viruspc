@@ -8,4 +8,4 @@
 - platform: Grok Bot routine
 - owner: Grok Bot
 - skill: [SKILL.md](SKILL.md)
-- notes: 24/7 每小时整点；首次回填仅过去 24 小时（由脚本 cursor 控制）。频率取舍见 [evaluations/frequency-usage/](evaluations/frequency-usage/)（当前结论与历次报告；2026-10-24 实测见 [evaluations/frequency-usage/2026-10-24.md](evaluations/frequency-usage/2026-10-24.md)）。
+- notes: 24/7 每小时整点；首次回填仅过去 24 小时（由脚本 cursor 控制）。导出 traces 的 Langfuse environment 为 `grok-bot`（可用 `LANGFUSE_TRACING_ENVIRONMENT` 覆盖）。频率取舍见 [evaluations/frequency-usage/](evaluations/frequency-usage/)（当前结论与历次报告；2026-10-24 实测见 [evaluations/frequency-usage/2026-10-24.md](evaluations/frequency-usage/2026-10-24.md)）。

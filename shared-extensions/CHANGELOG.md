@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `new-server/`、`others/`：从框架仓 `extensions/new-server/`、`extensions/others/` 原样搬来的个人运维笔记和 X / Twitter 搜索查询。只是笔记，不装到各机器，不升版本。
 
+## [4.5.0] - 2026-10-25
+
+### Changed
+
+- `skills/langfuse-agent-tracing`：定稿 Langfuse `environment` 命名——本机 `codex-local` / `cursor-local` / `claude-code-local` / `opencode-local` / `pi-local`，云端 `codex-cloud` / `cursor-cloud`，Grok Bot 小时导出 `grok-bot`；设备继续只进 tags（`device:<MagicDNS短名>`）。OpenCode / Pi 无 tags 口时仍用 `*-local` 作 environment，不再用设备名顶替；缺口写明等上游 tags。
+
 ## [4.4.0] - 2026-10-24
 
 ### Added
@@ -58,7 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 整层一份 `VERSION`、本 changelog、tag `shared-extensions@<version>`。
 - 本层项目记忆（`AGENTS.md` + `.memory/`）。
 
-[Unreleased]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.4.0...HEAD
+[Unreleased]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.5.0...HEAD
+[4.5.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.4.0...shared-extensions@4.5.0
 [4.4.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.3.0...shared-extensions@4.4.0
 [4.3.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.2.0...shared-extensions@4.3.0
 [4.2.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.1.0...shared-extensions@4.2.0

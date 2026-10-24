@@ -46,7 +46,8 @@ const base = {
   publicKey: process.env.LANGFUSE_PUBLIC_KEY ?? "",
   secretKey: process.env.LANGFUSE_SECRET_KEY ?? "",
   baseUrl: (a.host ?? process.env.LANGFUSE_HOST ?? process.env.LANGFUSE_BASE_URL ?? DEFAULTS.host).replace(/\/+$/, ""),
-  environment: process.env.LANGFUSE_TRACING_ENVIRONMENT,
+  // Prefer LANGFUSE_TRACING_ENVIRONMENT; never silently fall through to Langfuse "default".
+  environment: (process.env.LANGFUSE_TRACING_ENVIRONMENT || "").trim() || "grok-bot",
   source,
 };
 if (!dryRun && (!base.publicKey || !base.secretKey)) {
@@ -78,7 +79,7 @@ const exportErrors = [];
 setGlobalErrorHandler((err) => exportErrors.push(err instanceof Error ? err.message : String(err)));
 const inst = setupInstrumentation({ public_key: base.publicKey, secret_key: base.secretKey, base_url: base.baseUrl, environment: base.environment }, { dryRun });
 
-const summary = { bots_seen: 0, turns_candidates: 0, turns_written: 0, turns_skipped_cursor: 0, failures: [], dry_run: dryRun, host: base.baseUrl, source };
+const summary = { bots_seen: 0, turns_candidates: 0, turns_written: 0, turns_skipped_cursor: 0, failures: [], dry_run: dryRun, host: base.baseUrl, environment: base.environment, source };
 const maxTurns = Number(a["max-turns"]);
 const batchSize = Math.max(1, Number(a["batch-size"]));
 let writtenThisRun = 0;
