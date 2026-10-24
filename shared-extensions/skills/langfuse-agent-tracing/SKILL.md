@@ -53,12 +53,28 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 - **OpenCode 单次 `run`：** 进程退出可能来不及 flush，冒烟可用文档认可的 serve/attach 或交互界面；平时交互用法一般正常。
 - **私有 npm 镜像：** 若 `@langfuse/*` 502，单次用官方源覆盖安装；长期可在 `~/.npmrc` 加 `@langfuse:registry=https://registry.npmjs.org`（**改前先问用户**）。
 
-### 设备标签与自定义参数
+### Tags 与 Metadata
 
-- **约定：** 设备名统一打成 tag `device:<Tailscale MagicDNS 短名>`（如 `device:macbookpro-w`），不用系统主机名或序列号。所有插件都不会自动带 hostname，每台机器要各配一次。设备的规范名以 IT 资产台账或 tailnet 现网为准。
-- **能配 tags 的：** Codex 在 `langfuse.json` 的 `tags` 或 `LANGFUSE_CODEX_TAGS`；Cursor 在 `langfuse.json` 的 `tags` 或 `LANGFUSE_TAGS`；Claude Code（marketplace 插件）在 `settings.json` 的 `env.CC_LANGFUSE_TRACE_TAGS`（官网表未写，见[源码](https://github.com/langfuse/claude-observability-plugin/blob/main/hooks/langfuse_hook.py)）。
-- **还不能配 tags 的：** OpenCode（[issue #57](https://github.com/langfuse/opencode-observability-plugin/issues/57)）和 Pi（源码写死 `["pi"]`）。上游支持前临时写进 environment：OpenCode 用 `LANGFUSE_ENVIRONMENT`，Pi 用 `LANGFUSE_TRACING_ENVIRONMENT`，值只能小写、不超过 40 字符、不带 `device:` 前缀。上游支持后改回 tags。
-- **自定义参数：** 放 metadata。Codex 用 `metadata` 或 `LANGFUSE_CODEX_METADATA`，Cursor 用 `metadata` 或 `LANGFUSE_CURSOR_METADATA`，Pi 只能经 `OTEL_RESOURCE_ATTRIBUTES` 落到 `resourceAttributes`；Claude Code 和 OpenCode 未开放。Langfuse 4.59 以下按嵌套 metadata 筛选弱，要筛的维度改用 `key:value` 形式的 tag。
+两者都是 Langfuse 的 trace 字段，分工不同：
+
+- **tags：** 字符串标签，用来筛选和分组（UI 过滤、dashboard 拆分）。上报后不可改。要筛的维度都放这里，写成 `key:value`，如 `device:macbookpro-w`。
+- **metadata：** 键值对，挂打开 trace 才看的附加信息。Langfuse 4.59 以下按嵌套 metadata 筛选弱，别指望拿它筛。
+- **environment：** 语义是 prod / dev，不拿来放设备名，除非插件没有 tags 口（见下）。
+
+**设备约定：** tag `device:<Tailscale MagicDNS 短名>`，不用系统主机名或序列号。所有插件都不自动带 hostname，每台机器各配一次。设备规范名以 IT 资产台账或 tailnet 现网为准。
+
+各插件配置口（2026-10 核对，以文档和源码为准，变了就以新的为准）：
+
+| Agent | tags | metadata | 备注 |
+|---|---|---|---|
+| Codex | `~/.codex/langfuse.json` 的 `"tags": [...]`，或 `LANGFUSE_CODEX_TAGS` | `"metadata": {...}`，或 `LANGFUSE_CODEX_METADATA` | 文档有写 |
+| Cursor | `~/.cursor/langfuse.json` 的 `"tags": [...]`，或 `LANGFUSE_TAGS` / `LANGFUSE_CURSOR_TAGS` | `"metadata": {...}`，或 `LANGFUSE_CURSOR_METADATA` | 文档有写；固定追加 `cursor` |
+| Claude Code | `~/.claude/settings.json` 的 `env.CC_LANGFUSE_TRACE_TAGS`（逗号分隔或 JSON 数组） | 不支持 | tags 仅见[源码](https://github.com/langfuse/claude-observability-plugin/blob/main/hooks/langfuse_hook.py)；固定带 `claude-code` |
+| OpenCode | 不支持（[issue #57](https://github.com/langfuse/opencode-observability-plugin/issues/57)） | 不支持 | 临时用 `opencode-langfuse.json` 的 `"environment"` 或 `LANGFUSE_ENVIRONMENT` |
+| Pi | 不支持，写死 `["pi"]` | 只能经 `OTEL_RESOURCE_ATTRIBUTES` 落到 `resourceAttributes` | 临时用 `~/.pi/agent/langfuse.json` 的 `"environment"` 或 `LANGFUSE_TRACING_ENVIRONMENT`；自动带 `cwd`、`git_branch` |
+
+- 临时借 environment 时，值只能小写、不超过 40 字符、不带 `device:` 前缀。上游支持 tags 后改回 tags。
+- 配置里的 metadata 是静态的，每次会话都一样。仓库、分支、commit 这类每轮在变的现场信息配不进去，需要插件自己采集。
 
 ### 验证与回报
 
