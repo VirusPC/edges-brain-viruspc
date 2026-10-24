@@ -177,33 +177,45 @@ rm -rf .harness/memory
 
 ## 当前结论
 
-**首轮 smoke（2026-10-25）：不将「完整 memory 全文注入」记为默认开启。** 质量过门槛（memory-dependent A 33.3% → B 75.0%，+41.7pp；irrelevant 未帮倒忙；耗时中位 +3.9%），token 未过（prompt 中位 +246%，远超 ≤15%）。全文注入约多出的 ~3500 token 里应有冗余。报告：[`2026-10-25.md`](2026-10-25.md)（PR #373，可能尚未合并）。改进空间见下节。
+**定位：无 harness 的内容级 smoke（2026-10-25），不是真实 harness 消融。** 本轮直接调 MiniMax API，把 `AGENTS.md` + memory 全文拼进 prompt 做单轮问答；没有 Agent 运行时，没有读文件/搜索/开 PR 等工具，也没有 harness 按 `AGENTS.md` 索引按需读 memory 的机制。报告：[`2026-10-25.md`](2026-10-25.md)（PR #373，仍 open，不合并）。
+
+在该设定下：质量过门槛（memory-dependent A 33.3% → B 75.0%，+41.7pp；irrelevant 未帮倒忙；耗时中位 +3.9%），token 未过（prompt 中位 +246%，远超 ≤15%）。因此否决的是「每请求全文注入」这种注入方式，不是「在 harness 里用 memory」。本轮只能说明 **memory 内容本身有用**，不能回答「在 harness 里用 memory 划不划算」。C 组（仅索引/检索注入）仍是近似，不是真实 harness。改进空间见下节。
 
 ## 后续改进
 
-按优先级排列；建议下一步顺序：先跑 C 组并对比检索注入，同时把每题重复做到 ≥3 次并换独立 judge。
+按优先级排列；建议下一步顺序：**先用真实 harness 重跑 A/B**（高优先级），再视情况做 C 组近似与题库/判分加固。
 
-### 1. 压 token
+### 1. 用真实 harness 重跑（高优先级）
 
-- 跑条件 C：只放索引，正文按需读。
+本轮是无 harness 的内容级 smoke，结论不能外推到生产宿主。更对的做法：
+
+- 在真实 harness（Cursor / Codex CLI、Claude Code、或 edges Agent）里用 A/B worktree 对照。
+- 让 Agent 自己决定是否读 memory、读哪一条（走 `AGENTS.md` 索引与按需读文件），不要由实验脚本全文注入。
+- token / 耗时取 harness 实际 tracing（可进 Langfuse），不要用「全文拼进 prompt」的 API 计量当真实成本。
+- 题集加多步任务（例如真开 PR、改文件），测做事时守不守约定；单轮问答测不到这一点。
+- 目标：回答「在 harness 里用 memory 划不划算」，而不是「memory 正文拼进上下文有没有用」。
+
+### 2. 压 token（近似路径，次优先）
+
+- 跑条件 C：只放索引，正文按需读。注意：C 仍是 prompt 侧近似，**不是**真实 harness。
 - 再试检索注入：只注入最相关的几条，而不是全文。
 - 给 memory 瘦身：合并重复、删过时条目、压短表述。
 - 目标：在保住 dependent 增益的前提下，把输入增量压进 ≤15% 门槛（或重新标定可接受区间并写进判定门槛）。
 
-### 2. 结论更可信
+### 3. 结论更可信
 
 - 每题每组 ≥3 次，报告均值与波动（勿再用单次 smoke 当定论）。
 - judge 换与被测不同的模型，降低同模自评偏差。
 - 人工先标约 15 题，做 judge 与人工的一致性校准后再全量。
 
-### 3. 题目更有代表性
+### 4. 题目更有代表性
 
 - 补 memory 未覆盖的真实题（从近期会话精选）。
 - 补 Cursor / Codex 等编码 Agent 任务，不限聊天问答。
 - 从单轮扩到多步（例如真开 PR，看是否违约定）。
 - 题量扩到约 50 题后再做「可否默认开启」复核。
 
-### 4. 多用 Langfuse
+### 5. 多用 Langfuse
 
 - A / B / C 各开一次 Experiment，并排对比，并挂基线。
 - 用 Experiment 级评估器拿 `expectedOutput`（更正：线上 observation 评估器拿不到期望；Experiment 级可以）。
@@ -214,7 +226,7 @@ rm -rf .harness/memory
 
 | 日期 | 报告 | 要点 |
 |---|---|---|
-| 2026-10-25 | [`2026-10-25.md`](2026-10-25.md) | Smoke 30×2×1，MiniMax-M2.5；质量过、token 不过；否决全文注入默认开启 |
+| 2026-10-25 | [`2026-10-25.md`](2026-10-25.md) | 无 harness 内容级 smoke 30×2×1，MiniMax-M2.5；质量过、token 不过；只能说明内容有用，不能答 harness 划不划算 |
 
 ## 本轮明确不做（设计 PR 时）
 
