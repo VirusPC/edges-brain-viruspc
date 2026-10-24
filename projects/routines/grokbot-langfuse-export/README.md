@@ -7,13 +7,18 @@
 | 路径 | 作用 | 为什么需要 |
 |---|---|---|
 | `vendor/cursor-observability-plugin/` | 官方插件，git submodule，钉在 `a36d39a7` | 复用它的 `emitTurn`、确定性 id、密钥遮罩，不自己写 Langfuse 写入逻辑 |
-| `adapter/stage-from-search-index.mjs` | 从 box 本地消息索引 `/home/box/agent-data/search-index.db` 导出每个 bot 的全量对话到 `<staging>/<botId>.jsonl` | routine 里 ReadTranscript 可能不可用；索引有可见 user/assistant 文本和真实时间戳（无 tool 名） |
+| `adapter/stage-from-search-index.mjs` | 从 `/home/box/agent-data/search-index.db` 的 `messages` 表导出每个 bot 全量对话到 `/workspace/langfuse-export-staging/<botId>.jsonl`（Cursor 插件行形状；user 行带 `_ts`） | **正式导出走这条链路**；索引有可见 user/assistant 与毫秒时间戳、无 tool 名。替代源 `ReadTranscript` 可写成同形状 JSONL；本机 `agent-transcripts/*.jsonl` 虽有 tool 角色但覆盖不全，**不用** |
 | `adapter/read-grokbot-transcripts.mjs` | 读 staging / daily-scan JSONL，切成轮次：分钟时间戳、可见文本、tool 名、3 小时 session 规则、`turnPos` 编号 | 插件只懂 Cursor 的 hook 事件，不懂 Grok Bot 对话格式 |
 | `adapter/to-plugin-turn.mjs` | 轮次转成插件自己的 `Turn` 和 `Config` | 通过插件已有字段设 traceId 种子、sessionId、tags、userId、`grokbot.*` metadata，避免改插件 |
 | `adapter/rename-cursor-to-grokbot.mjs` | SpanProcessor 包装：`Cursor Turn` 改 `Grok Bot Turn`，去掉 `cursor` tag，`cursor.*` metadata 改 `grokbot.*` | 这三处在插件里写死，Config / Turn 改不了 |
 | `adapter/instrumentation-with-rename.mjs` | 照抄插件 `setupInstrumentation`（约 30 行），在 Langfuse 处理器外套一层上面的改名处理器，`service.name=grok-bot`，dry-run 用内存 exporter | 插件在函数内部 new 处理器和 exporter，没有挂钩，只能复制一份再插入改名 |
 | `adapter/export-cli.mjs` | 入口：读 cursor、首次只回填 24 小时、分批调 `emitTurn` 并 flush、失败批次不推进 cursor、输出 JSON summary | 每小时增量导出与去重 |
 | `package.json` | `npm run stage` / `npm run export`；依赖版本按插件 `pnpm-lock.yaml` 精确钉住 | 用 `tsx` 直接 import 插件 TS 源 |
+
+## 对话信息怎么读
+
+正式链路：`search-index.db`（`messages`）→ `npm run stage` → staging JSONL → `npm run export`（adapter + vendored `emitTurn`）→ Langfuse。不是直接读 `/home/box/agent-data/agent-transcripts/`。细节与源表见 [SKILL.md § 对话来源](SKILL.md#对话来源)。
+
 
 ## 准备（新 checkout）
 

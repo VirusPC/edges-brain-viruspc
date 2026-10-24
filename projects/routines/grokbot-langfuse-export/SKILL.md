@@ -24,12 +24,14 @@ description: 每小时把全部 Grok Bot 助手会话导出到自建 Langfuse（
 
 ## 对话来源
 
+一句话：对话信息 → SQLite 索引（`search-index.db`）→ 我们生成的 staging JSONL → Langfuse；**不是**直接读 `agent-transcripts`。
+
 | 来源 | 时间戳 | 说明 |
 |---|---|---|
-| `/home/box/agent-data/search-index.db`（`messages` 表） | 真实毫秒时间戳 | 默认来源，首次正式运行即用它。只有可见 user/assistant 文本，没有 tool 名 |
-| `ReadTranscript` | user 消息有分钟时间戳 | 带 tool 名；routine 里可能不可用，可用时可替代上一行 |
+| `/home/box/agent-data/search-index.db`（`messages` 表） | 真实毫秒时间戳 | **正式导出默认链路**。可见 user/assistant 文本，**没有 tool 名**。`npm run -s stage`（`adapter/stage-from-search-index.mjs`）写成 `/workspace/langfuse-export-staging/<botId>.jsonl`；行形状对齐 Cursor 插件：`{ "role", "message": { "content": [...] } }`，user 行带 `_ts`（Asia/Shanghai 分钟墙钟）。再由 `export` 读这些 JSONL，经 adapter + vendored `emitTurn` 写 Langfuse |
+| `ReadTranscript` | user 消息有分钟时间戳 | **替代源**：可带 tool 名；routine 里经常不可用。可用时也可写成同形状的 `<botId>.jsonl` |
 | `/workspace/daily-scan/` | 有 | 日复盘产物，仅冒烟 / 补数用（`--source daily-scan`） |
-| `/home/box/agent-data/agent-transcripts/` | 无 | 不用 |
+| `/home/box/agent-data/agent-transcripts/<agentId>/<agentId>.jsonl` | 本机有 | **明确不用**。格式也是 `{role, message}`，且能看到 `tool` 角色；但覆盖不全（例如 Grok Bot 主助手目录可能不存在），当前导出不走这份 |
 
 ## 步骤（每小时）
 
