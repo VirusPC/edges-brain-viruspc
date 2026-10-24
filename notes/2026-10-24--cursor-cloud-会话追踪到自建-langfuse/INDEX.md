@@ -76,6 +76,24 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
   "$LANGFUSE_BASE_URL/api/public/v2/observations?name=Cursor%20Turn&limit=20"
 ```
 
+### 三环境 rollout：快照不是启动时拉代码
+
+Asia/Shanghai 2026-10-24 晚，约 23:26–23:31，把同一套接入扩到 Compose 下另外三个仓。每个仓对应自己的 Cursor saved environment，按与 workspace 相同的方式接：该仓自己的 hooks、该 environment 自己的四个 Runtime Secret（名字与 workspace 相同，Scope=Environment）、以及该 environment 自己的 active build。workspace 环境已经通，不会让挂在 workspace 下的 brain / framework 环境跟着追踪。
+
+| 仓库 | hooks | env id | Config change build | active commit |
+| --- | --- | --- | --- | --- |
+| `VirusPC/edges-brain-viruspc` | PR #367 合入 `4a4fda4` | `dd6e8e7d-cc40-11f1-bec7-b2318963e0b6` | `bld-20261024-cc41f50a-…` | `4a4fda4` |
+| `VirusPC/edges-brain-viruspc-private` | PR #5 合入 `3880247` | `287e377d-cd73-11f1-89ee-7aa6f0729b11` | `bld-20261024-a8f32a90-…` | `3880247` |
+| `VirusPC/edges` | PR #29 合入 `9b29acb` | `d999f199-a889-11f1-b532-320a589b8025` | `bld-20261024-4afd4685-…` | `9b29acb` |
+
+时间线：
+
+1. hooks 已在各仓 main，四个 Secret 也已写入，但 Config change build 还没完成。三环境首轮冒烟都报 hooks 文件 missing。`printenv` 已经能看到四个 `LANGFUSE_*`，容器里没有 `.cursor/`。
+2. 保存 Secrets 之后，UI 没有立刻出现新构建。约 23:26–23:28 各环境自动出现并完成 Config change build，且成为 active。这次没有再点 Trigger New Build。手动触发容易停在 Draft、不转正，见上文「第一次云端测试跑在旧快照上」。
+3. 核对 active build 的 commit 含 hooks 之后做第二轮冒烟，hooks 存在。23:31 Langfuse 收到 3 条 `Cursor Turn`，`environment=cursor-cloud`。
+
+Cloud Agent 跑的是 active build 快照，不会在每次启动时 git pull 最新 main。此前误以为「启动会拉最新代码」，把「main 已有 hooks」当成「环境里已有文件」。推到 main 不等于正在跑的快照已经换过。Secrets 已经写入，也不等于新快照已经生效：改 Secrets 会触发 Config change build，构建要一两分钟；在它 Success 并成为 active 之前开的 Cloud Agent 仍用旧快照。
+
 ## 结果
 
 做成了：
@@ -85,6 +103,7 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 - active build 含 commit `5eac8c7` 后，云端出现 `Cursor Turn`（`environment=cursor-cloud`），并带 LLM 与 Shell 子观测。
 - 本机 smoke 能导出 turn，且 status 连上项目 Edges。
 - 落地文件在 `VirusPC/edges-workspace-viruspc` 的 main `5eac8c7`：`.cursor/hooks.json` 与 `.cursor/hooks/langfuse.sh`（`100755`）。可复用副本在本仓 skill 的 `templates/`。
+- 三 Compose 对应 env 已通。公开脑 `VirusPC/edges-brain-viruspc` hooks PR #367（`4a4fda4`）、私有脑 `VirusPC/edges-brain-viruspc-private` hooks PR #5（`3880247`）、框架仓 `VirusPC/edges` hooks PR #29（`9b29acb`）。各环境 Config change build 已是 active，commit 与上述合入一致。23:31 Langfuse 收到 3 条 `Cursor Turn`（`environment=cursor-cloud`）。密钥不入库。
 
 还剩（未开任务，仅记录）：
 
@@ -101,6 +120,9 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 - Saved environment 的运行内容等于 **active** build 的快照。改 Secret 会拉一次带最新 commit 的 Config change build；Trigger New Build 的 Draft 不会自动转正。
 - 自建 Langfuse v4 `events_only` 的验收接口是 `GET /api/public/v2/observations`，按 `Cursor Turn` 和 `environment=cursor-cloud` 过滤。
 - 同一份项目 hooks 会被本机 Cursor 加载。用 `LANGFUSE_CURSOR_PROJECT_HOOKS` 做云端开关，本机未设置时关掉上报或失败放行，避免双份 trace。
+- Cloud Agent 跑的是 active build 快照，不会在每次启动时 git pull 最新 main。推 hooks 到 main 不等于环境里已有这些文件。
+- Secrets 已经写入、`printenv` 能看到四个 `LANGFUSE_*`，快照仍可能是旧的。改 Secrets 会触发 Config change build，要等它 Success 并成为 active、且 commit 含 hooks，再冒烟，再查 Langfuse。
+- Compose 子仓各自接一次。workspace 环境通了，不等于挂在 workspace 下的 brain / framework 环境会追踪。每个 env 要自己的仓库 hooks、自己的 Secrets、自己的 active build。
 
 ## 行动指南
 
@@ -120,8 +142,8 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
    （可选项：按文档 `npm install` 或在 install 脚本里预装插件 —— 不做。2026-10-24 npm 404，且 install 脚本不是这条路径的依赖。）
 2. 在该 environment 加上四个 Runtime Secret：`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`、`LANGFUSE_BASE_URL`、`LANGFUSE_CURSOR_PROJECT_HOOKS=1`。本机不设最后一个。  
    （可选项：本机也打开项目 hooks 上报 —— 不做，会和用户级插件重复。）
-3. 核对 **active** build 的 commit 已经包含这两个文件。改 Secret 触发的 Config change build 会拉最新 commit；手动 Trigger New Build 的 Draft 不算。  
-   （可选项：push 之后立刻用旧环境做验收 —— 不做，旧快照里没有 `.cursor/`。）
+3. 核对 **active** build 的 commit 已经包含这两个文件，再冒烟，再查 Langfuse。Cloud Agent 用的是 active build 快照，启动时不会 git pull 最新 main。若刚改完 Secrets，先等它触发的 Config change build Success 且成为 active，核对 commit，不要一保存就验：此时 `printenv` 可能已经能看到四个 `LANGFUSE_*`，旧快照里仍然没有 `.cursor/`。手动 Trigger New Build 的 Draft 不算。  
+   （可选项：push 或刚保存 Secrets 之后立刻验收 —— 不做。）
 4. 跑一轮真实 Cloud Agent 对话，用 `GET /api/public/v2/observations?name=Cursor%20Turn` 确认 `environment=cursor-cloud`。  
    （可选项：用 `GET /api/public/traces` —— `events_only` 下不可用。）
 
@@ -136,11 +158,15 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 
 #### 若目标是另一个 Cursor Cloud environment
 
-则：拷同一对文件，在**那个** environment 加同样的四个 Secret，再确认它自己的 active build。插件 pin、缓存目录和开关语义都在 `templates/langfuse.sh` 里，不要在笔记里另抄一份脚本。
+则：拷同一对文件，在**那个** environment 加同样的四个 Secret，再确认它自己的 active build。Compose 下每个子仓是独立的 saved environment，workspace 通了不会让 brain / framework 跟着追踪。插件 pin、缓存目录和开关语义都在 `templates/langfuse.sh` 里，不要在笔记里另抄一份脚本。
 
 #### 若云端任务报 hooks 缺失或 `.cursor/` 不存在
 
-则：看 active build 的 commit，而不是 Draft build 或本地 main。需要新快照时，用会成为 active 的构建（例如改 Secret 触发的 Config change build），并核对 commit 哈希。
+则：看 active build 的 commit，而不是 Draft build、本地 main，或「启动时会拉最新代码」。`printenv` 已有 `LANGFUSE_*` 只说明密钥在，不说明快照已换。需要新快照时，用会成为 active 的构建（例如改 Secret 触发的 Config change build），等它 Success，并核对 commit 哈希，再冒烟。
+
+#### 若刚改完 Secrets
+
+则：先等 Config change build Success 且成为 active，核对 commit 含 hooks，再冒烟，再查 Langfuse。不要一保存 Secrets 就验。保存后 UI 可能过一两分钟才出现这次构建。手动 Trigger New Build 容易停在 Draft，不要靠它转正。
 
 #### 若 permission 类动作被 hook 挡住
 
@@ -152,7 +178,7 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 
 ## 补充说明
 
-- 原始材料：Asia/Shanghai 2026-10-24 的接入事实（已验证的 `hooks.json` 与 `langfuse.sh`）。本笔记按 `conversation-to-notes` 的章节（背景 / 主题 / 过程 / 结果 / 所学 / 行动指南 / 补充说明）整理。凭证与 Cursor 账号邮箱不写入本公开仓。
+- 原始材料：Asia/Shanghai 2026-10-24 的接入事实（已验证的 `hooks.json` 与 `langfuse.sh`）；同日晚三环境 rollout（公开脑 hooks PR #367、私有脑 hooks PR #5、框架仓 hooks PR #29），验证时间 23:31，助手「全栈开发专家」。本笔记按 `conversation-to-notes` 的章节（背景 / 主题 / 过程 / 结果 / 所学 / 行动指南 / 补充说明）整理。凭证与 Cursor 账号邮箱不写入本公开仓。
 - 可复用资产：`shared-extensions/skills/cursor-cloud-langfuse-tracing/`（`SKILL.md` 与 `templates/`）。
 - 同日姊妹笔记：[Codex Cloud 会话追踪到自建 Langfuse](../2026-10-24--codex-cloud-会话追踪到自建-langfuse/INDEX.md)、[多机 Langfuse Agent 追踪安装与验收](../2026-10-24--多机-langfuse-agent-追踪安装与验收/INDEX.md)。
 - 遗留项（npm 仍 404、云端部分 hook 不触发、Draft build、账号可见性）只记在「结果」。本篇不另开任务。
@@ -168,6 +194,6 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 
 **插件 pin：** `a36d39a7c5cf9da34662159b70d51b6b36855abc`（`langfuse/cursor-observability-plugin`）。缓存目录 `~/.cache/langfuse-cursor-plugin/<pin>`。
 
-**本次跑通的云端：** environment `edges-workspace-viruspc`，仓库 `VirusPC/edges-workspace-viruspc`，active build commit `5eac8c7`。观测时间 `2026-10-24T15:07:36Z`。
+**本次跑通的云端：** environment `edges-workspace-viruspc`，仓库 `VirusPC/edges-workspace-viruspc`，active build commit `5eac8c7`。观测时间 `2026-10-24T15:07:36Z`。同日晚三环境见过程「三环境 rollout」，观测时间北京时间 23:31。
 
 **写入与验收：** 插件自己向 `LANGFUSE_BASE_URL` 上报。人验收用 `GET /api/public/v2/observations?name=Cursor%20Turn`，看 `environment=cursor-cloud`。
