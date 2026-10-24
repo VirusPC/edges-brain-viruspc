@@ -4,7 +4,7 @@
 
 ## 评估目的
 
-回答用户问题：`.harness` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录存方法、口径、题库（已对齐 Dataset `harness-memory-ablation/v1`）与按日期命名的实测报告；本轮尚未跑模型。
+回答用户问题：`.harness` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录存方法、口径、题库（已对齐 Dataset `harness-memory-ablation/v1`）与按日期命名的实测报告。
 
 ## 假设
 
@@ -76,7 +76,7 @@ npx --yes langfuse-cli api dataset-items list --dataset-name 'harness-memory-abl
 
 题面与判对要点变更时：先改 `cases.md`，再按同上 upsert Dataset item，并在本 README「历次报告」或新日期报告里记一笔。Observations 查询用 `/api/public/v2/observations`（带时间窗）；`/api/public/traces` 在本实例为 legacy，`/api/public/sessions` 不可用。
 
-本轮**不跑**模型、**不跑** Experiment；跑批见下文步骤。
+首轮 A/B smoke 已跑（见 [`2026-10-25.md`](2026-10-25.md)）；条件 C 与 Experiment UI 挂载仍见下文步骤。
 
 ## 指标
 
@@ -177,20 +177,71 @@ rm -rf .harness/memory
 
 ## 当前结论
 
-**尚未跑数据。** 本轮已落地实验设计、真实题库与 Langfuse Dataset `harness-memory-ablation/v1`；不实际跑模型、不改生产 memory、不合并本 PR。
+**定位：无 harness 的内容级 smoke（2026-10-25），不是真实 harness 消融。** 本轮直接调 MiniMax API，把 `AGENTS.md` + memory 全文拼进 prompt 做单轮问答；没有 Agent 运行时，没有读文件/搜索/开 PR 等工具，也没有 harness 按 `AGENTS.md` 索引按需读 memory 的机制。报告：[`2026-10-25.md`](2026-10-25.md)（PR #373，仍 open，不合并）。
+
+在该设定下：质量过门槛（memory-dependent A 33.3% → B 75.0%，+41.7pp；irrelevant 未帮倒忙；耗时中位 +3.9%），token 未过（prompt 中位 +246%，远超 ≤15%）。因此否决的是「每请求全文注入」这种注入方式，不是「在 harness 里用 memory」。本轮只能说明 **memory 内容本身有用**，不能回答「在 harness 里用 memory 划不划算」。C 组（仅索引/检索注入）仍是近似，不是真实 harness。改进空间见下节。
+
+## 后续改进
+
+按优先级排列；建议下一步顺序：**先用真实 harness 重跑 A/B**（高优先级），再视情况做 C 组近似与题库/判分加固。
+
+### 1. 用真实 harness 重跑（高优先级）
+
+本轮是无 harness 的内容级 smoke，结论不能外推到生产宿主。更对的做法：
+
+- 在真实 harness（Cursor / Codex CLI、Claude Code、或 edges Agent）里用 A/B worktree 对照。
+- 可复用框架仓 VirusPC/edges 已有的 [`packages/evaluation/retrieval_eval/`](https://github.com/VirusPC/edges/tree/main/packages/evaluation/retrieval_eval)：它已用 `codex exec`（也支持 `pi`）在干净 clone 上跑真实 Agent，落 events 与 token 用量并出报告，可选导出 Langfuse（参考报告 [`2026-10-18-224305-retrieval-smoke-edges__codex__retrieval-smoke_edges.md`](https://github.com/VirusPC/edges/blob/main/packages/evaluation/reports/2026-10-18-224305-retrieval-smoke-edges__codex__retrieval-smoke_edges.md)）。重跑时按它的 client / clone / report 结构，把 A/B 两组做成 memory 有无的两个 worktree 即可。注意它原本评的是检索（P@5 等），不是 memory 消融。
+- 让 Agent 自己决定是否读 memory、读哪一条（走 `AGENTS.md` 索引与按需读文件），不要由实验脚本全文注入。
+- token / 耗时取 harness 实际 tracing（可进 Langfuse），不要用「全文拼进 prompt」的 API 计量当真实成本。
+- 题集加多步任务（例如真开 PR、改文件），测做事时守不守约定；单轮问答测不到这一点。
+- 目标：回答「在 harness 里用 memory 划不划算」，而不是「memory 正文拼进上下文有没有用」。
+
+### 2. 持续利用线上数据
+
+真实 harness 跑起来后，日常会话本身就是最贴近生产的评测来源。按下面五个切入点把它接回评测：
+
+- **从线上 trace 扩充题库**：每周从 Langfuse 里挑出出过错、被用户纠正或返工的会话，转成新题加进 Dataset `harness-memory-ablation`。新题标上 M/I/C 分类，Dataset 版本递增（v2、v3…）。
+- **线上 A/B**：给会话打上 `memory:on` / `memory:off` 和 commit 的 tag，直接对比真实使用中的 token、耗时和返工率。按约定，可过滤的维度放 tags，其余放 metadata。
+- **反向查 memory 命中**：从 trace 里看 Agent 实际读了哪些 memory 条目。长期没人用的条目考虑删掉；常被纠正却没写进 memory 的规则就补上。
+- **用用户纠正当标签**：把「不对」「重做」这类回复当成负信号，打成线上 score。再抽样人工校准评审模型，避免只靠关键词误判。
+- **定期回归**：Dataset 稳定后挂每周 routine 重跑，报告按日期存到 `evaluations/harness-memory-ablation/<YYYY-MM-DD>.md`。这样 memory 每次改动都能看到前后差异。
+
+### 3. 压 token（近似路径，次优先）
+
+- 跑条件 C：只放索引，正文按需读。注意：C 仍是 prompt 侧近似，**不是**真实 harness。
+- 再试检索注入：只注入最相关的几条，而不是全文。
+- 给 memory 瘦身：合并重复、删过时条目、压短表述。
+- 目标：在保住 dependent 增益的前提下，把输入增量压进 ≤15% 门槛（或重新标定可接受区间并写进判定门槛）。
+
+### 4. 结论更可信
+
+- 每题每组 ≥3 次，报告均值与波动（勿再用单次 smoke 当定论）。
+- judge 换与被测不同的模型，降低同模自评偏差。
+- 人工先标约 15 题，做 judge 与人工的一致性校准后再全量。
+
+### 5. 题目更有代表性
+
+- 补 memory 未覆盖的真实题（从近期会话精选）。
+- 补 Cursor / Codex 等编码 Agent 任务，不限聊天问答。
+- 从单轮扩到多步（例如真开 PR，看是否违约定）。
+- 题量扩到约 50 题后再做「可否默认开启」复核。
+
+### 6. 多用 Langfuse
+
+- A / B / C 各开一次 Experiment，并排对比，并挂基线。
+- 用 Experiment 级评估器拿 `expectedOutput`（更正：线上 observation 评估器拿不到期望；Experiment 级可以）。
+- 建 Annotation Queue，承接人工校准与抽检。
+- memory 变更后自动回归（同一 Dataset + 固定评估器）。
 
 ## 历次报告
 
 | 日期 | 报告 | 要点 |
 |---|---|---|
-| （无） | | |
+| 2026-10-25 | [`2026-10-25.md`](2026-10-25.md) | 无 harness 内容级 smoke 30×2×1，MiniMax-M2.5；质量过、token 不过；只能说明内容有用，不能答 harness 划不划算 |
 
-## 本轮明确不做
+## 本轮明确不做（设计 PR 时）
 
-- 不实际调用被测模型跑 A/B
-- 不修改生产 `.harness/memory`
-- 不修改根 `AGENTS.md` 的生产内容（实验 A 的删索引仅在一次性 worktree 内）
-- 不合并本设计 PR（由人审阅后决定）
+设计落地阶段曾约定：不跑模型、不改生产 memory、不合并设计 PR。A/B smoke 已在独立 worktree 完成；仍禁止：改生产 memory、force-push、持久改根 `AGENTS.md`、合并无关 PR。
 
 ## 局限（设计层预告）
 
