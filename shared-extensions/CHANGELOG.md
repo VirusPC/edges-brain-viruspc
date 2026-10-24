@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `new-server/`、`others/`：从框架仓 `extensions/new-server/`、`extensions/others/` 原样搬来的个人运维笔记和 X / Twitter 搜索查询。只是笔记，不装到各机器，不升版本。
 
+## [4.4.0] - 2026-10-24
+
+### Added
+
+- `skills/cursor-cloud-langfuse-tracing`：把 Cursor Cloud Agents 的会话追踪进（自建）Langfuse。云端只跑项目级 `.cursor/hooks.json`；包装脚本懒加载官方 cursor-observability-plugin 的指定 commit（npm 包 404）。环境加 4 个 Secrets，确认 active build 含该 commit，自建 v4 events_only 用 `/api/public/v2/observations` 验证。附 `templates/hooks.json` 与 `templates/langfuse.sh`。
+
+### Changed
+
+- `skills/codex-cloud-langfuse-tracing`、`skills/langfuse-agent-tracing`：互链到 `cursor-cloud-langfuse-tracing`，标明 Cloud Agents 与本机会话各用哪份 skill。
+
 ## [4.3.0] - 2026-10-24
 
 ### Added
@@ -48,7 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 整层一份 `VERSION`、本 changelog、tag `shared-extensions@<version>`。
 - 本层项目记忆（`AGENTS.md` + `.memory/`）。
 
-[Unreleased]: https://github.com/VirusPC/edges/compare/shared-extensions@4.1.0...HEAD
-[4.1.0]: https://github.com/VirusPC/edges/compare/shared-extensions@4.0.0...shared-extensions@4.1.0
-[4.0.0]: https://github.com/VirusPC/edges/compare/shared-extensions@1.0.0...shared-extensions@4.0.0
-[1.0.0]: https://github.com/VirusPC/edges/releases/tag/shared-extensions@1.0.0
+[Unreleased]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.4.0...HEAD
+[4.4.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.3.0...shared-extensions@4.4.0
+[4.3.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.2.0...shared-extensions@4.3.0
+[4.2.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.1.0...shared-extensions@4.2.0
+[4.1.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.0.0...shared-extensions@4.1.0
+[4.0.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@1.0.0...shared-extensions@4.0.0
+[1.0.0]: https://github.com/VirusPC/edges-brain-viruspc/releases/tag/shared-extensions@1.0.0
