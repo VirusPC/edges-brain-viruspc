@@ -14,6 +14,12 @@
 | `adapter/instrumentation-with-rename.mjs` | 照抄插件 `setupInstrumentation`（约 30 行），在 Langfuse 处理器外套一层上面的改名处理器，`service.name=grok-bot`，dry-run 用内存 exporter | 插件在函数内部 new 处理器和 exporter，没有挂钩，只能复制一份再插入改名 |
 | `adapter/export-cli.mjs` | 入口：读 cursor、首次只回填 24 小时、分批调 `emitTurn` 并 flush、失败批次不推进 cursor、输出 JSON summary | 增量导出与去重 |
 | `package.json` | `npm run stage` / `npm run export`；依赖版本按插件 `pnpm-lock.yaml` 精确钉住 | 用 `tsx` 直接 import 插件 TS 源 |
+| `evaluations/` | 对照实验与重测记录（频率与用量等） | 用实测支撑日程取舍；方法与历次报告见 [evaluations/](evaluations/) |
+
+
+## 评估
+
+运行频率与用量等对照实验见 [evaluations/](evaluations/)。当前频率取舍结论见 [evaluations/frequency-usage/](evaluations/frequency-usage/)。
 
 ## 对话信息怎么读
 
