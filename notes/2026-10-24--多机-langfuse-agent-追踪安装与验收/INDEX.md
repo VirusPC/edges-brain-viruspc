@@ -1,152 +1,290 @@
-# 多机 Langfuse Agent 追踪安装与验收
+---
+title: 多机 Langfuse Agent 追踪安装与验收
+date: 2026-10-24
+tags: [langfuse, agent-tracing, codex, claude-code, cursor, opencode, multi-device]
+---
 
-> 把本机各编码 Agent 的会话接到自建 Langfuse，并按设备标签验收。
+# 多机 Langfuse Agent 追踪安装与验收
 
 ## 背景
 
-要把 Codex、Cursor、Claude Code、OpenCode 等编码 Agent 的 session / turn 接到自建 Langfuse（项目 Edges），在多台在线设备上按统一约定打设备标签，装好后跑冒烟并在 Langfuse 里确认有数据。过程中顺带澄清了 minigtr 双系统命名与是否继续用 Win11 侧，以及「助手可代点 Codex hook 信任、中间不要用进度问卷打断」的工作习惯。
+要把家里几台开发机上的编码 Agent（Codex、Claude Code、Cursor、OpenCode）会话，统一打到自建 Langfuse（`https://langfuse.viruspc.tech`，项目 Edges），方便按设备和 Agent 类型对照排查。此前单机已接过一部分；这次目标是四台设备、四类 Agent 一次装齐并做 API 验收。
+
+设备短名约定（与 MagicDNS / `device:` 标签一致）：`macbookpro-w`、`macmini`、`minigtr-ubuntu`、`4070ts-win11`。安装与排查主要跟 skill `langfuse-agent-tracing`；密钥只落本机配置文件（权限多为 `600`），不进仓库、不进对话明文。
 
 ## 主题
 
-这场是在多台真实机器上，按 `langfuse-agent-tracing` 流程完成安装、修 blocker、冒烟验收，直到已有设备上的已有 Agent 能上报。
-
-- 难点一：Codex 的 Stop hook 必须由 Codex 自家交互界面信任，不能手写 `hooks.state` 的 hash 绕过；无人值守的 `codex exec` 在未信任时往往不上报。
-- 难点二：自建 Langfuse v4 开了 events-only 后，旧版 `/api/public/traces` 会 404，验收要改用 `/api/public/v2/observations`；该接口响应里又没有 tags 字段，按设备筛要靠网页或 environment / 时间对齐。
-- 难点三：各 Agent 登录态与工具链版本不一致（Claude 未登录、MacBook Codex 过旧、OpenCode Console key 过期、公司 npm 源 502、PATH 上的 `agent` 不是 Cursor CLI），冒烟会大面积「跑不成」或「跑成了但没数据」。
-- 难点四：minigtr 是 Win11 / Ubuntu 双系统，两侧不能同时在线；是否还要给离线的 Win11 侧补装，需要产品决策而不是技术死等。
+- **多机统一接入自建 Langfuse**：四台设备 × 最多四类 Agent，凭证与设备标签对齐。
+- **设备标签约定**：`device:<MagicDNS短名>`（Codex/Claude/Cursor 用 tags；OpenCode 用 `environment` 字段，因插件不支持 tags）。
+- **验收方式**：Langfuse v4 事件模型下，`/api/public/traces` 会 404，改查 `/api/public/v2/observations`，按时间窗、名称、environment 对齐。
+- **难点**：
+  - Codex 版本过旧时 hooks 形同虚设；Stop hook 需人工信任，且信任绑定 hooks 内容哈希，插件更新后可能要再批一次。
+  - Windows 上 Codex 信任要用 `winpty` / `--no-daemon`，不能只靠非交互脚本。
+  - 国内 npm 镜像对 `@langfuse/*` scoped 包常 502；改走 `registry.npmjs.org` 或本机 `.npmrc`。
+  - Cursor 官方 npm 包名曾 404，Mac mini 上改为 GitHub 克隆 + `npm link`。
+  - Claude Code 配置写了仍可能长时间无 observation（本轮验收未落点）。
+  - 设备改名：`mini-gtr-ubuntu` → `minigtr-ubuntu`，需 Tailscale hostname 与标签同步。
 
 ## 过程
 
-### 傍晚 改名与命名约定
+以下时间均为 **Asia/Shanghai（UTC+8）**。原始会话导出在约 17:00–20:15 有缺口，安装波细节部分来自助手状态汇报与后续验收探针，缺口处标「未记录」。
 
-把 Tailscale 节点 `mini-gtr-ubuntu` 改成 `minigtr-ubuntu`（须在本机执行 `tailscale set --hostname`；用户纠正：离线机也可在管理后台改名）。Win 侧一度想改成 `minigtr-win`，最终决定保持 `minigtr-win11`，`4070ts-win11` 同样保持。设备标签约定为 `device:<Tailscale MagicDNS 短名>`。
+### 1. 设备改名（约 16:48–17:00）
 
-### 安装波次 在线机装 tracing
+- **机器**：`minigtr-ubuntu`（原 MagicDNS 名 `mini-gtr-ubuntu`）。
+- **动作**：在线机器上执行 `tailscale set --hostname=minigtr-ubuntu`；离线改名也可在管理端改 hostname，上线后生效。
+- **结果**：短名与后续 `device:minigtr-ubuntu` / OpenCode `environment` 对齐；旧名不再作为标签目标。
 
-按 skill 读官方文档后，在在线机合并配置（先备份再合并，不覆盖其它插件）：
+### 2. 安装波（约 17:00–20:15，会话导出有缺口）
 
-- MacBook Pro：Cursor / Codex / Claude / OpenCode，标签 `device:macbookpro-w`；OpenCode 用 `environment=macbookpro-w`（无 tags 口）。曾把 OpenCode 配置键从旧的 `plugin` 改成 `plugins`。
-- Mac mini：同上四件，标签 `device:macmini` / OpenCode `environment=macmini`。Cursor 的 npm 包名在 registry 404，改为从 GitHub 克隆并 `npm link`。
-- minigtr Ubuntu：仅 Codex，标签 `device:minigtr-ubuntu`。
-- 4070ts Win11：仅 Codex，标签 `device:4070ts-win11`。
+按 skill 在四台机器上分别装 Codex / Claude Code / Cursor / OpenCode 的 Langfuse 插件或 hooks，写入本机凭证与设备标签。共通约定：
 
-密钥与 base URL 指向 `https://langfuse.viruspc.tech`，项目 Edges。未伪造任何 Codex `hooks.state` 条目。
+| Agent | 配置落点（脱敏） | 设备区分 |
+| --- | --- | --- |
+| Codex | `~/.codex/config.toml` 开 `[features] hooks` 与 `[plugins."tracing@codex-observability-plugin"]`；凭证 `~/.codex/langfuse.json` 或环境变量；可选 `TRACE_TO_LANGFUSE=true` | `tags` 含 `device:<短名>` |
+| Claude Code | `~/.claude/settings.json` 的 `env`：`LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_HOST` / `CC_LANGFUSE_TRACE_TAGS` | `CC_LANGFUSE_TRACE_TAGS=device:<短名>` |
+| Cursor | Marketplace 或 npm/`hooks.json`；凭证 `~/.cursor/langfuse.json`；`hooks.json` 里 **node 用绝对路径**（避免 Dock 启动找不到 PATH） | `tags` 或 `LANGFUSE_TAGS` 含 `device:<短名>` |
+| OpenCode | `~/.config/opencode/opencode.json(c)` 的 `plugins`（v2）或 `plugin`（v1）；凭证 `~/.config/opencode/opencode-langfuse.json` | **`environment`: `<短名>`**（无 tags） |
 
-### 用户说明 minigtr 双系统
+各机要点（能记清的）：
 
-用户明确：minigtr 的 Win11 与 Ubuntu 不能共存（双系统），以后大概率不用 Win11。因此 `minigtr-win11` 不再列入补装待办，离线属正常。
+- **macbookpro-w**：Codex 装 `tracing@codex-observability-plugin`（后见版本问题）；Cursor Marketplace 插件；OpenCode `plugins`；Claude `settings.json` env。密钥文件权限 `600`。
+- **macmini**：Cursor 官方 npm 包名 404 → 按文档从 GitHub 装并 `npm link`，注册约 18 个 hook，**node 绝对路径**；Codex / OpenCode / Claude 同步写入。助手汇报过 Cursor 已导出 turn、Codex 曾手动调 hook 看到 `Codex Turn`（非交互 `exec` 未真正跑起 Stop hook）。
+- **minigtr-ubuntu**：四类均装；Cursor `hooks.json` 使用 node 绝对路径。
+- **4070ts-win11**：路径形如 `C:\Users\<用户>\...`；Codex 侧准备用 `--no-daemon`；OpenCode 侧为绕过镜像，本机 `.npmrc` 指向 `registry.npmjs.org`。
 
-### 约 20:15 冒烟与首查 Langfuse
+安装波结束时，用户侧尚未做完整 API 对照验收。
 
-用户要求「都跑一下，再去 Langfuse 看有没有数据」。命令行对各 Agent 发一句短 prompt 后查询：
+### 3. 首次冒烟（约 20:15）
 
-- 当时只有 Mac mini 的 OpenCode 打进 1 条 `opencode.turn`。
-- MacBook：Claude / Cursor CLI 未登录；Codex CLI 过旧且默认模型与 ChatGPT 账号不匹配；OpenCode Console API key 过期。
-- Mac mini / 4070ts / minigtr：Codex 能跑通回复，但因 Stop hook 未信任，没有上传痕迹。
-- 确认自建实例 events-only：旧 traces API 404，改用 v2 observations。
+- 各机做短会话 / 短 turn，意图在 Langfuse 里看到对应名称。
+- **API 验收结果**：当时窗口内**仅**能稳定对上 **macmini 的 OpenCode turn**（observation 名称与 `environment=macmini` 一致）。
+- 其余组合多数「配置在、库里没有」或尚未触发有效 Stop/export。
 
-### 约 20:23 目标改为修到全绿；授权代点信任
+### 4. 修复波（约 20:45 前后）
 
-用户设目标：已有设备上已有 Agent 都要能上报。对 Codex hook 说「你给我点击信任就行」。并要求：这类进行中的事不要用问卷打断问进度，重要节点记下来，做完或真正卡在登录时再报。
+针对首次冒烟缺口逐项修：
 
-### 自动修复与验证（MacBook 等）
+1. **macbookpro-w / macmini · Codex 过旧**  
+   - 现象：hooks 开了仍无 `Codex Turn`。  
+   - 处理：`brew` 升级 `openai/app/codex`（记录从约 `0.144.3` 升到 `0.164.0` 量级；以本机 `codex --version` 为准）。  
+   - 之后新开会话，批准 Langfuse **Stop hook**，再发两条短消息做上传（Stop 在 turn 结束时跑；最新一条常在下一轮 hook 才收尾）。
 
-- MacBook Codex 经 Homebrew 从约 0.144 升到 0.164，原默认模型在升级后可跑；确认 hooks 与 tracing 插件仍在，并已能上报。
-- MacBook OpenCode：公司 npm registry 502，改为用官方 npmjs 装到本机 OpenCode 目录下的 `node_modules`，并写目录级 `.npmrc`，不改动全局工作源；此后能上报（`environment=macbookpro-w`）。
-- 核对 Mac mini、minigtr 的 Codex：此时 hooks 已信任且观测已出现。
-- Cursor：MacBook 真 CLI 在 `~/.local/bin/agent`（PATH 上的 `agent` 可能是其它工具），此前 hook 曾成功导出；Mac mini 仅有桌面版，无 CLI。
+2. **OpenCode · npm 镜像 502**  
+   - 现象：装 `@langfuse/opencode-observability-plugin` 失败或装不上。  
+   - 处理：对该 scope 改用 `https://registry.npmjs.org`（全局或项目/用户 `.npmrc`）；Windows 上同样写本机 `.npmrc`。
 
-### 约 20:45 4070ts 用 TUI 完成信任并验证
+3. **4070ts-win11 · Codex hook 信任**  
+   - 现象：非交互装完后 Stop hook 未真正生效。  
+   - 处理：用 `winpty` 驱动交互式 Codex，或 `codex --no-daemon`，在提示时批准 Langfuse Stop hook；信任写入本机 hook state（**不要**手工伪造 `hooks.json` 里的哈希）。
 
-在用户授权下，用伪终端驱动 Windows 上 Codex 交互界面：进入 `/hooks`，对 Stop 项「Uploading Codex trace to Langfuse」按信任键完成信任，**未**手写 hash、**未**用仅临时绕过的危险开关做持久化。冒烟后 Langfuse 出现 `Codex Turn`（约 20:45）。桌面版 Codex 可执行文件在部分场景需加 `--no-daemon` 才能正常冒烟。
+4. **Cursor**  
+   - MacBook：Marketplace 路径为主。  
+   - Mac mini：维持 GitHub + `npm link`；必要时 `Developer: Reload Window`，查 `~/.cursor/langfuse/hook.log` 是否出现 `Exported turn`。
+
+修复后再跑短会话，Codex / OpenCode / Cursor 在多台设备上陆续能在 observations 里对上；**Claude Code 仍无对应 observation**（配置已写，原因未在本轮坐实，见踩坑清单）。
+
+### 5. 验收查询（修复后）
+
+用 Basic Auth（公钥:私钥）调自建实例：
+
+- `GET /api/public/traces` → **404**，响应提示 events-only / 请改用 observations（v4 行为）。
+- `GET /api/public/v2/observations` → 可用；按 `fromStartTime` / `toStartTime`、`name`、分页拉取后，在客户端按名称关键字与 `environment` / metadata 里的设备信息过滤。
+- **注意**：observations 列表 API **不提供 tags 过滤参数**；`device:*` 标签需在 UI 或拉回后再筛，或对 OpenCode 直接用 `environment`。
+
+（具体 curl 与参数见下文「验收查询方法」。）
 
 ## 结果
 
-已做成：
+- **改名完成**：`minigtr-ubuntu` 短名统一。
+- **安装面**：四机均写入凭证与插件/hooks；密钥仅本机文件。
+- **修复后可见（API 侧）**：多台 Codex Turn、OpenCode turn、Cursor Turn 能按时间与名称对齐；首次冒烟仅 macmini OpenCode 一点的情况已扩大。
+- **仍未验收通过**：各机 **Claude Code** 在本次时间窗内**未见**对应 observation（配置存在 ≠ 已上报）。
+- **未做**：合并相关 PR、改 main、把密钥或 hook 哈希写入仓库。
 
-- Codex 上报：`macbookpro-w`、`macmini`、`minigtr-ubuntu`、`4070ts-win11` 均已验证有观测。
-- OpenCode 上报：MacBook、Mac mini 已验证。
-- Cursor：配置与 hook 已就绪；MacBook 侧曾有成功导出记录；Mac mini 需在桌面版里实际用一次 Agent 才完成验收。
-- 台账与习惯：minigtr Win11 侧不再补装；中间进度不打断用户。
+### 设备 × Agent 状态表
 
-还剩：
+状态含义：✅ 本轮 API/日志已见到上报；⚠️ 已装或已配、本轮未见到有效 observation；❓ 过程记录不完整。版本以当时本机命令为准，表中为记录到的量级。
 
-- 两台 Mac 的 Claude Code 仍未登录，需本机 `claude` 后 `/login`，再重启会话并冒烟。
-- Cursor 桌面版：建议 Reload Window 后正常用一次 Agent，完成该路径验收。
-- MacBook OpenCode 的 Console key 仍过期；当前可用其它已配置提供方路径上报，续 key 为可选项。
+| 设备 | Agent | 版本 / 安装方式（记录到的） | 设备标签或 environment | 验证时间（约） | 状态 | 遗留 |
+| --- | --- | --- | --- | --- | --- | --- |
+| macbookpro-w | Codex | brew `openai/app/codex`，约 0.144.3→0.164.0；plugin `tracing@codex-observability-plugin` | `device:macbookpro-w` | 修复波后 | ✅ | 新会话需再批 Stop hook（若插件更新） |
+| macbookpro-w | Claude Code | `~/.claude/settings.json` env | `CC_LANGFUSE_TRACE_TAGS=device:macbookpro-w` | 修复波后 | ⚠️ | 无 observation，原因未坐实 |
+| macbookpro-w | Cursor | Marketplace / observability plugin | `device:macbookpro-w` | 修复波后 | ✅ | Dock 启动依赖 hooks 内 node 绝对路径 |
+| macbookpro-w | OpenCode | `plugins` + npmjs 源 | `environment=macbookpro-w` | 修复波后 | ✅ | scoped 包勿走坏镜像 |
+| macmini | Codex | 同上量级升级 + plugin | `device:macmini` | 修复波后 | ✅ | 非交互 exec 不触发 Stop；要交互会话 |
+| macmini | Claude Code | settings env | `device:macmini` | 修复波后 | ⚠️ | 同「未上报」 |
+| macmini | Cursor | npm 包名 404 → GitHub 克隆 + `npm link`；~18 hooks；node 绝对路径 | `device:macmini` | 安装波已有导出；修复波再验 | ✅ | 官方包名变更时跟文档 |
+| macmini | OpenCode | `plugins` + 凭证文件 | `environment=macmini` | **~20:15 首次冒烟即 ✅** | ✅ | — |
+| minigtr-ubuntu | Codex | plugin + hooks | `device:minigtr-ubuntu` | 修复波后 | ✅/❓ | 细版本号未写入导出则标未记录 |
+| minigtr-ubuntu | Claude Code | settings env | `device:minigtr-ubuntu` | 修复波后 | ⚠️ | 未上报 |
+| minigtr-ubuntu | Cursor | hooks.json + node 绝对路径 | `device:minigtr-ubuntu` | 修复波后 | ✅/❓ | — |
+| minigtr-ubuntu | OpenCode | plugins + environment | `environment=minigtr-ubuntu` | 修复波后 | ✅/❓ | — |
+| 4070ts-win11 | Codex | Win；`--no-daemon` / `winpty` 批 hook | `device:4070ts-win11` | 修复波后 | ✅ | 信任不可脚本伪造 hash |
+| 4070ts-win11 | Claude Code | settings env | `device:4070ts-win11` | 修复波后 | ⚠️ | 未上报 |
+| 4070ts-win11 | Cursor | 本机 hooks + langfuse.json | `device:4070ts-win11` | 修复波后 | ✅/❓ | — |
+| 4070ts-win11 | OpenCode | 本机 `.npmrc` → npmjs；plugins | `environment=4070ts-win11` | 修复波后 | ✅ | 镜像 502 时保持 npmjs |
 
-无回退；配置均有按日备份后缀。
+表中「✅/❓」表示助手汇报或探针曾对齐，但导出原文未逐条钉死版本号时保守标注。
 
 ## 所学
 
-- Codex 可观测性的硬边界是「信任记录必须由 Codex 自己写入」。可选项包括：等人手点、用伪终端代点（需明确授权）、或临时危险开关（不落盘、不适合当验收）。最终采用：未信任前不伪造；用户授权后用 TUI 代点。
-- 设备维度应进 tags（可筛）；没有 tags 口的插件（如 OpenCode）临时用 environment 承载短设备名，且不加 `device:` 前缀。可选项「全塞进 metadata」在旧版 Langfuse 上筛选弱，不做主筛维度。
-- 验收 API 必须匹配实例模式：events-only 下旧 traces 列表不可用；v2 observations 又能对上时间与 trace 名，但缺 tags 字段时，不能假装「已用 API 按 tag 过滤成功」，网页筛选仍有价值。
-- 双系统主机不要把「另一侧 OS 上线」当成安装前置；产品上决定弃用的一侧直接移出范围。
-- 修链路时不要用进度问卷消耗用户注意力；阻塞在真实账号登录时再开口。
+1. **v4 查 observations，不查 traces**：自建 Langfuse v4 上 `/api/public/traces` 返回 404 并提示 events-only；验收脚本应打 `/api/public/v2/observations`。
+2. **OpenCode 用 environment，不用 tags**：插件侧无 tags；设备短名写进 `opencode-langfuse.json` 的 `environment`，验收时按该字段过滤最省事。
+3. **Codex：版本 + 信任 + 交互**：hooks 需要足够新的 CLI；Stop hook 必须人工批准；信任与 hooks 内容哈希绑定，**不要**手改 `hooks.state` 里的 hash；Windows 用 `winpty` / `--no-daemon`。
+4. **npm scoped 包与镜像**：`@langfuse/*` 在部分国内镜像 502 或包名 404；OpenCode 走 npmjs，Cursor 曾需 GitHub 安装。
+5. **Cursor node 绝对路径**：`hooks.json` 里写死 node 路径，Dock / GUI 启动才稳定。
+6. **配置 ≠ 上报**：Claude Code 写了 `settings.json` env 仍可能整窗无数据，验收必须以 API/UI 为准。
+7. **标签与 API**：observations 列表无 tags 查询参数；`device:*` 适合 UI 或二次过滤。
+
+### 踩坑清单
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `/api/public/traces` 404，文案提到 events-only | Langfuse v4 事件模型，traces 路由不可用 | 改 `GET /api/public/v2/observations`，用时间窗与 `name` |
+| Codex 开了 hooks 仍无 `Codex Turn` | CLI 过旧（如 0.14x）或未批 Stop hook，或只用了非交互 exec | `brew upgrade` 到文档要求的版本区间；新开交互会话批准 hook；发 ≥2 条短消息 |
+| Windows 上 hook 一直未信任 | 非交互安装无法点批准；信任绑哈希 | `winpty` 或 `codex --no-daemon` 交互批准；禁止伪造 hash |
+| 装 `@langfuse/opencode-observability-plugin` 502 | 镜像源拉 scoped 包失败 | `.npmrc` 或命令行 registry 指到 `registry.npmjs.org` |
+| Cursor npm 包 404（macmini） | 当时官方包名/发布与文档不一致 | 按官方文档从 GitHub 克隆并 `npm link`，再注册 hooks |
+| Dock 打开的 Cursor 不上报 | `hooks.json` 里 `node` 走 PATH，GUI 无该 PATH | 改为本机 node **绝对路径** |
+| OpenCode 有数据但按 tags 搜不到设备 | 插件不写 tags | 用 `environment=<短名>` 过滤 |
+| Claude Code 配置齐全仍无 observation | 未记录到单一根因（未触发、凭证项目不一致、或集成未跑） | 本轮标未通过；复查 env 键名、`LANGFUSE_HOST`、是否新开过会话；勿假定「写了就会有」 |
+| 设备标签对不上 MagicDNS | 主机曾用 `mini-gtr-ubuntu` 等旧名 | `tailscale set --hostname=...` 与配置里 `device:` / `environment` 一并改 |
 
 ## 行动指南
 
-### 主题行动指南
+### 新机器接入（顺序）
 
-#### 背景
+1. 确认 MagicDNS 短名；需要时 `tailscale set --hostname=<短名>`。
+2. 按 Agent 安装插件/hooks（Codex marketplace + `config.toml`；Claude `settings.json` env；Cursor Marketplace 或文档推荐的 GitHub/npm；OpenCode `plugins`/`plugin`）。
+3. 只写本机凭证文件（`langfuse.json` / `opencode-langfuse.json` 等），权限收紧；**不要**把密钥、hook 哈希、内网 IP 写进 git。
+4. 打上 `device:<短名>` 或 OpenCode `environment`。
+5. **交互**跑短会话：Codex 批准 Stop hook 并至少两轮；Cursor Reload 后看 `hook.log`；OpenCode 开一轮 turn。
+6. 用下文 curl 查 observations，按时间与名称/environment 对齐；没有就先查版本、信任、registry、node 路径，而不是先改 Langfuse 服务端。
 
-需要在多台开发机上，把多种编码 Agent 的会话接到同一自建 Langfuse 项目，并按设备区分数据。
+### 验收最小集
 
-#### 核心问题
+- 时间窗覆盖操作时间（注意 UI 可能显示 UTC）。
+- 名称关键字：`Codex Turn`、`OpenCode`/`opencode`、`Cursor Turn`（以实际 observation name 为准）。
+- OpenCode：`environment` = 设备短名。
+- Claude：若仍空，记「未通过」并单开排查，不阻塞其他 Agent。
 
-如何在不破坏各 Agent 已有配置的前提下装好官方可观测插件、打上可筛选的设备维度，并证明数据真的进了实例——同时处理 hook 信任、登录态与版本差异。
+### 不要做的事
 
-#### 核心解决方案
-
-1. 先读各 Agent 官方集成文档，再准备同一对项目密钥与自建 base URL；改任何配置前先备份，只合并不覆盖。
-2. 按 Agent 安装官方插件；设备筛选项写入 tags（写成 `device:<短名>`）。没有 tags 口时，把短名写入 environment（不加 `device:` 前缀）。可选项：自造上报脚本——不做，优先官方插件以免双份 trace 与字段漂移。
-3. Codex：开启 hooks 与 tracing 插件后，必须在新开的交互会话里信任 Stop hook；禁止手写信任 hash。若负责人授权代操作，可用伪终端驱动官方 TUI 完成信任，仍不要伪造文件。可选项：只跑非交互 exec 宣布完成——不做，因未信任时常无上传。
-4. Cursor：hooks 里的 node 用绝对路径；装完 Reload Window。注意 PATH 上的同名命令是否真是 Cursor CLI。
-5. Claude Code：先登录再验证；已开会话要重启才加载插件；设备 tag 走环境变量约定。
-6. OpenCode：确认配置键为现行 `plugins`；私有 npm 源失败时，可在 OpenCode 配置目录用官方 registry 装插件，避免改全局工作源。
-7. 验收：触发真实一轮对话或文档推荐的测试方式；对 events-only 实例用 v2 observations（或网页）确认，并核对设备 tag / environment。可选项：只看本地 hook 日志——不够，必须以实例侧数据为准。
-
-#### 验收标准
-
-- 目标范围内每台在线设备、每种已安装 Agent，在 Langfuse 中至少出现一条与本次冒烟时间对齐的观测或会话。
-- Codex 各机 `hooks.state` 中存在由 Codex 写入的 tracing Stop 信任记录（非手写伪造）。
-- 带 tags 的 Agent 在网页可按 `device:<短名>` 筛到；OpenCode 等可按约定 environment 对齐。
-- 配置改动均有备份；密钥未进入公开笔记或聊天明文。
-- 明确排除的设备（如弃用的双系统另一侧）不出现在未完成清单里。
-
-### 细节与其他
-
-#### 若设备短名从哪来
-
-则：优先 Tailscale MagicDNS 短名；取不到再退回系统主机名；不用序列号。本场实际短名：`macbookpro-w`、`macmini`、`minigtr-ubuntu`、`4070ts-win11`。
-
-#### 若自建实例是 v4 且旧 traces API 404
-
-则：改查 `/api/public/v2/observations`；接受响应可能无 tags，改用时间、trace 名、environment 对齐，并保留网页按 tag 人工核对。
-
-#### 若 Windows 上 Desktop Codex 冒烟异常
-
-则：尝试加 `--no-daemon`；信任仍走交互 `/hooks`。可用 winpty 等伪终端驱动 TUI（需用户授权代点时）。
-
-#### 若 MacBook 上 `agent` 命令行为不对
-
-则：先 `which agent`；本场真 Cursor CLI 在用户目录下的 `~/.local/bin/agent`，PATH 上可能是其它工具。
-
-#### 若公司 npm registry 导致 OpenCode 插件装失败
-
-则：在 OpenCode 配置目录使用指向官方 npmjs 的目录级 `.npmrc` 安装插件，不要轻易改全局 `~/.npmrc` 以免影响工作包。
-
-#### 若对象是双系统同一物理机
-
-则：只给当前在线且仍使用的那一侧装；另一侧若产品上弃用，直接移出范围，不要挂成长期待办。
-
-#### 若 Claude 报 Not logged in
-
-则：本机交互运行 `claude`，执行 `/login`，重启会话后再冒烟；未登录时 SessionEnd hook 取消不代表 tracing 配错。
+- 不要手写/伪造 Codex `hooks.state` 哈希。
+- 不要把 Langfuse 公钥/私钥真值、Tailscale 或局域网地址、邮箱、机器序列号推进公开仓库。
+- 不要用 `/traces` 当 v4 验收主路径。
 
 ## 补充说明
 
-- 原始材料：IT资产管理 助手会话（2026-10-24，约改名至 20:45 验收）；skill `langfuse-agent-tracing`；Langfuse 官方 integrations（Codex / Cursor / Claude Code / OpenCode）；实例 `https://langfuse.viruspc.tech`（项目 Edges）。
-- 相关：盒子上密钥目录仅作运行时引用，不入库；各机配置备份后缀形如 `.bak-langfuse-YYYYMMDD`。
-- 遗留（未开任务卡）：两台 Mac 的 Claude `/login`；Cursor 桌面版 Reload 后实跑一次；可选续 MacBook OpenCode Console key。
+### 验收查询方法
+
+自建实例 Base：`https://langfuse.viruspc.tech`。认证：HTTP Basic，用户名为公钥、密码为私钥（环境变量占位，勿把真值写进笔记或脚本仓库）。
+
+**为何不用 traces：**
+
+```bash
+curl -sS -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
+  "https://langfuse.viruspc.tech/api/public/traces?limit=1"
+# 预期：404，正文提示 events-only / 改用 observations（措辞以实例为准）
+```
+
+**推荐：v2 observations**
+
+```bash
+# 按时间窗拉取（时间用 UTC 的 ISO8601；对照时换算到 Asia/Shanghai）
+curl -sS -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
+  "https://langfuse.viruspc.tech/api/public/v2/observations?limit=100&fromStartTime=2026-10-24T12:00:00.000Z&toStartTime=2026-10-24T14:00:00.000Z"
+```
+
+对齐建议：
+
+1. 先用操作前后的 UTC 时间窗缩小结果。
+2. 再按 `name` 包含 `Codex` / `Cursor` / `OpenCode`（或实际名称）分组。
+3. OpenCode 看字段 `environment` 是否等于 `macbookpro-w` / `macmini` / `minigtr-ubuntu` / `4070ts-win11`。
+4. Codex/Cursor 的 `device:*`：列表 API **无 tags 参数**，在 UI 筛标签，或把 JSON 拉回后本地过滤 metadata/tags。
+5. 分页：若结果到 `limit`，用返回游标/页参数继续拉（以当时 OpenAPI 为准）；不要只盯第一页。
+
+脱敏排障时，脚本只打印 `id`、`name`、`startTime`、`environment`，避免把输入内容、密钥打进日志。
+
+### 配置片段（脱敏示例）
+
+**Codex · `~/.codex/config.toml`**
+
+```toml
+[features]
+hooks = true
+
+[plugins."tracing@codex-observability-plugin"]
+enabled = true
+
+# 信任项由 Codex 在批准 Stop hook 后自行写入；不要手造 hash。
+# [hooks.state."tracing@codex-observability-plugin:hooks/hooks.json:stop:0:0"]
+# enabled = true
+```
+
+**Codex · `~/.codex/langfuse.json`（或环境变量）**
+
+```json
+{
+  "enabled": true,
+  "public_key": "$LANGFUSE_PUBLIC_KEY",
+  "secret_key": "$LANGFUSE_SECRET_KEY",
+  "base_url": "https://langfuse.viruspc.tech",
+  "tags": ["device:macbookpro-w"]
+}
+```
+
+环境变量备选：`TRACE_TO_LANGFUSE=true`，以及 `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_BASE_URL`（Codex 亦支持 `LANGFUSE_CODEX_*` 覆盖）。
+
+**Claude Code · `~/.claude/settings.json`（仅示 env 键名）**
+
+```json
+{
+  "env": {
+    "LANGFUSE_PUBLIC_KEY": "$LANGFUSE_PUBLIC_KEY",
+    "LANGFUSE_SECRET_KEY": "$LANGFUSE_SECRET_KEY",
+    "LANGFUSE_HOST": "https://langfuse.viruspc.tech",
+    "CC_LANGFUSE_TRACE_TAGS": "device:macbookpro-w"
+  }
+}
+```
+
+**OpenCode · `~/.config/opencode/opencode.jsonc`（v2 用 `plugins`）**
+
+```jsonc
+{
+  "plugins": ["@langfuse/opencode-observability-plugin@latest"]
+}
+```
+
+**OpenCode · `~/.config/opencode/opencode-langfuse.json`**
+
+```json
+{
+  "publicKey": "$LANGFUSE_PUBLIC_KEY",
+  "secretKey": "$LANGFUSE_SECRET_KEY",
+  "baseUrl": "https://langfuse.viruspc.tech",
+  "environment": "macbookpro-w"
+}
+```
+
+**Cursor · `~/.cursor/langfuse.json`**
+
+```json
+{
+  "publicKey": "$LANGFUSE_PUBLIC_KEY",
+  "secretKey": "$LANGFUSE_SECRET_KEY",
+  "baseUrl": "https://langfuse.viruspc.tech",
+  "tags": ["device:macbookpro-w"]
+}
+```
+
+**Cursor · hooks 中的 node**：在 `~/.cursor/hooks.json`（或项目 `.cursor/hooks.json`）里，把 hook 命令中的 `node` 换成本机绝对路径（例如 Homebrew 的 node 路径）。具体路径因机器而异，不在此写死；原则是 GUI/Dock 启动也能解析到同一二进制。
+
+### 其他
+
+- 项目：自建 Langfuse **Edges**（若误指到其他项目，换对应项目的公钥/私钥并更新本机 json）。
+- 主机：`https://langfuse.viruspc.tech`。
+- 相关 skill：`langfuse-agent-tracing`（安装步骤以 skill / 官方集成文档为准；本文记的是本轮实操与验收差异）。
+- 会话导出缺口：约 17:00–20:15 的逐命令细节若未出现在 transcript，表中已用「未记录」/「❓」，不编造命令行。
