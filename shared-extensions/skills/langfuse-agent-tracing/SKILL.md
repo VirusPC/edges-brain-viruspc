@@ -59,8 +59,8 @@ Langfuse trace 上有三个相关字段：
 
 ### 设备约定
 
-- tag 写成 `device:<Tailscale MagicDNS 短名>`，如 `device:macbookpro-w`。不用系统主机名或序列号。
-- 规范名以 IT 资产台账或 tailnet 现网为准。
+- tag 写成 `device:<短名>`。短名优先取 Tailscale MagicDNS 短名（如 `macbookpro-w`）；没有 Tailscale 或取不到时，退回系统主机名（`hostname`）。不用序列号。
+- 有 Tailscale 时，规范名以 IT 资产台账或 tailnet 现网为准。
 - 插件都不会自动带 hostname，每台机器各配一次。
 
 ### 各插件怎么配
