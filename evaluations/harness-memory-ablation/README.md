@@ -4,7 +4,7 @@
 
 ## 评估目的
 
-回答用户问题：`.harness` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录存方法、口径、题库（已对齐 Dataset `harness-memory-ablation/v1`）与按日期命名的实测报告；本轮尚未跑模型。
+回答用户问题：`.harness` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录存方法、口径、题库（已对齐 Dataset `harness-memory-ablation/v1`）与按日期命名的实测报告。
 
 ## 假设
 
@@ -76,7 +76,7 @@ npx --yes langfuse-cli api dataset-items list --dataset-name 'harness-memory-abl
 
 题面与判对要点变更时：先改 `cases.md`，再按同上 upsert Dataset item，并在本 README「历次报告」或新日期报告里记一笔。Observations 查询用 `/api/public/v2/observations`（带时间窗）；`/api/public/traces` 在本实例为 legacy，`/api/public/sessions` 不可用。
 
-本轮**不跑**模型、**不跑** Experiment；跑批见下文步骤。
+首轮 A/B smoke 已跑（见 [`2026-10-25.md`](2026-10-25.md)）；条件 C 与 Experiment UI 挂载仍见下文步骤。
 
 ## 指标
 
@@ -177,20 +177,17 @@ rm -rf .harness/memory
 
 ## 当前结论
 
-**尚未跑数据。** 本轮已落地实验设计、真实题库与 Langfuse Dataset `harness-memory-ablation/v1`；不实际跑模型、不改生产 memory、不合并本 PR。
+**首轮 smoke（2026-10-25）：不将「完整 memory 全文注入」记为默认开启。** memory-dependent 正确率 A 33.3% → B 75.0%（+41.7pp），irrelevant 未帮倒忙，耗时中位 +3.9%；但 prompt 中位 +246%（远超 ≤15%）。详见 [`2026-10-25.md`](2026-10-25.md)。下一步优先条件 C（仅索引 / 按需检索）。
 
 ## 历次报告
 
 | 日期 | 报告 | 要点 |
 |---|---|---|
-| （无） | | |
+| 2026-10-25 | [`2026-10-25.md`](2026-10-25.md) | Smoke 30×2×1，MiniMax-M2.5；质量过、token 不过；否决全文注入默认开启 |
 
-## 本轮明确不做
+## 本轮明确不做（设计 PR 时）
 
-- 不实际调用被测模型跑 A/B
-- 不修改生产 `.harness/memory`
-- 不修改根 `AGENTS.md` 的生产内容（实验 A 的删索引仅在一次性 worktree 内）
-- 不合并本设计 PR（由人审阅后决定）
+设计落地阶段曾约定：不跑模型、不改生产 memory、不合并设计 PR。A/B smoke 已在独立 worktree 完成；仍禁止：改生产 memory、force-push、持久改根 `AGENTS.md`、合并无关 PR。
 
 ## 局限（设计层预告）
 
