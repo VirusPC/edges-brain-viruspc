@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `skills/langfuse-agent-tracing`：把编码 Agent（Codex、Cursor、Claude Code、OpenCode、Pi 等）的会话追踪接到 Langfuse。安装一律跟 Langfuse 官方集成文档，本 skill 只补文档没写清的坑（配置合并、自建 v4 events-only 的验证接口、Cursor Dock PATH 与双 hook、Codex Stop hook 批准、Claude 登录、OpenCode flush、私有 npm 镜像），以及按 `device:<Tailscale 短名>` 打设备 tag、各插件 tags / metadata 的配置口与缺口。
+- `skills/langfuse-agent-tracing`：把编码 Agent（Codex、Cursor、Claude Code、OpenCode、Pi 等）的会话追踪接到 Langfuse。安装一律跟 Langfuse 官方集成文档，本 skill 只补文档没写清的坑（配置合并、自建 v4 events-only 的验证接口、Cursor Dock PATH 与双 hook、Codex Stop hook 批准、Claude 登录、OpenCode flush），以及按 `device:<Tailscale 短名>` 打设备 tag、各插件 tags / metadata 的配置口与缺口。
 
 ## [4.1.0] - 2026-10-19
 

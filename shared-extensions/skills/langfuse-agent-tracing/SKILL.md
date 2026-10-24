@@ -34,7 +34,6 @@ description: >-
 - **项目和 key：** 同一台机、同一 Langfuse 项目，各 Agent 复用同一对 key。装前用文档里的 status / setup（或 API）确认 key 实际落在哪个项目。
 - **baseUrl：** 自建实例填根地址，含协议。
 - **备份并合并：** 改配置前先备份（如 `.bak-langfuse-YYYYMMDD`），把新内容**合并**进已有的 `config.toml`、`settings.json`、`hooks.json`、`opencode.json(c)`，不要覆盖其它插件。
-- **私有 npm 镜像：** `@langfuse/*` 返回 502 时，单次用官方源安装；长期可在 `~/.npmrc` 加 `@langfuse:registry=https://registry.npmjs.org`，改之前先问用户。
 
 ## 3. 按 Agent 安装
 
