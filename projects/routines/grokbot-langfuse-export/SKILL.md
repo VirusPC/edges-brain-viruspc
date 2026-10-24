@@ -64,6 +64,7 @@ description: 把全部 Grok Bot 助手会话导出到自建 Langfuse（与本机
 - 内容：可见 user / assistant 文本 + tool 名称（来源有才写）。不要 tool args / results，不要 reasoning。
 - Tags：`agent:grok-bot`、`device:grokbot`、`bot:<助手显示名>`；userId `peng-cheng`。
 - Environment：`grok-bot`（可用 `LANGFUSE_TRACING_ENVIRONMENT` 覆盖；勿与本机 `*-local` / 云端 `*-cloud` 混用）。
+- Model：turn/LLM 的 `model` / `providedModelName` 有真实模型名则写真实名；否则写字面量 `default`（勿留空，看板会显示 n/a；与「忘记加模型名」的空值区分）。
 
 ## 去重与失败
 
