@@ -38,6 +38,21 @@ export function pluginConfig(base, t, extraMetadata = {}) {
   };
 }
 
+/** Non-empty string, else undefined. */
+function nonEmpty(v) {
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
+
+/**
+ * Model name for Langfuse generation (model / providedModelName).
+ * Prefer a real name from the turn (`modelId` then `model`); if neither is set,
+ * use the literal `default` so the dashboard does not show n/a (reserved for
+ * traces that forgot to set a model at all).
+ */
+export function resolveModelName(t) {
+  return nonEmpty(t?.modelId) ?? nonEmpty(t?.model) ?? "default";
+}
+
 /**
  * Plugin Turn. One user message → one trace:
  *   Grok Bot Turn (agent) → LLM (generation, ChatML in/out) + tool siblings (names only).
@@ -45,6 +60,7 @@ export function pluginConfig(base, t, extraMetadata = {}) {
  */
 export function pluginTurn(t, sessionId) {
   const ts = t.userTs;
+  const modelName = resolveModelName(t);
   return {
     conversationId: sessionId, // → Langfuse sessionId
     turnNumber: t.turnPos, // → trace seed suffix
@@ -52,6 +68,9 @@ export function pluginTurn(t, sessionId) {
     endTime: ts,
     prompt: t.userText || undefined,
     finalText: t.assistantText || undefined,
+    // emitTurn → generation.model → langfuse.observation.model.name / providedModelName
+    model: modelName,
+    modelId: modelName,
     status: "completed",
     closedBy: "unknown",
     generations: [
