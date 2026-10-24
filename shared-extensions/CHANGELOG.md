@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `new-server/`、`others/`：从框架仓 `extensions/new-server/`、`extensions/others/` 原样搬来的个人运维笔记和 X / Twitter 搜索查询。只是笔记，不装到各机器，不升版本。
 
+## [4.3.0] - 2026-10-24
+
+### Added
+
+- `skills/codex-cloud-langfuse-tracing`：把 Codex Cloud 任务会话追踪进 Langfuse。云端容器只读、hooks 不支持，改用本机带外轮询：旧式 `task_e_` 任务走 `codex cloud list` + wham turns，新版 `/local/` 任务走 WebSocket app-server JSON-RPC；只读 `auth.json`、不 refresh、鉴权失败退出 2；OTLP 写入、确定性 trace id 幂等。
+
 ## [4.2.0] - 2026-10-24
 
 ### Added
