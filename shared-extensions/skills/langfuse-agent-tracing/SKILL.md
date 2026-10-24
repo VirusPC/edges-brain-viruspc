@@ -53,6 +53,13 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 - **OpenCode 单次 `run`：** 进程退出可能来不及 flush，冒烟可用文档认可的 serve/attach 或交互界面；平时交互用法一般正常。
 - **私有 npm 镜像：** 若 `@langfuse/*` 502，单次用官方源覆盖安装；长期可在 `~/.npmrc` 加 `@langfuse:registry=https://registry.npmjs.org`（**改前先问用户**）。
 
+### 设备标签与自定义参数
+
+- **约定：** 设备名统一打成 tag `device:<Tailscale MagicDNS 短名>`（如 `device:macbookpro-w`），不用系统主机名或序列号。所有插件都不会自动带 hostname，每台机器要各配一次。设备的规范名以 IT 资产台账或 tailnet 现网为准。
+- **能配 tags 的：** Codex 在 `langfuse.json` 的 `tags` 或 `LANGFUSE_CODEX_TAGS`；Cursor 在 `langfuse.json` 的 `tags` 或 `LANGFUSE_TAGS`；Claude Code（marketplace 插件）在 `settings.json` 的 `env.CC_LANGFUSE_TRACE_TAGS`（官网表未写，见[源码](https://github.com/langfuse/claude-observability-plugin/blob/main/hooks/langfuse_hook.py)）。
+- **还不能配 tags 的：** OpenCode（[issue #57](https://github.com/langfuse/opencode-observability-plugin/issues/57)）和 Pi（源码写死 `["pi"]`）。上游支持前临时写进 environment：OpenCode 用 `LANGFUSE_ENVIRONMENT`，Pi 用 `LANGFUSE_TRACING_ENVIRONMENT`，值只能小写、不超过 40 字符、不带 `device:` 前缀。上游支持后改回 tags。
+- **自定义参数：** 放 metadata。Codex 用 `metadata` 或 `LANGFUSE_CODEX_METADATA`，Cursor 用 `metadata` 或 `LANGFUSE_CURSOR_METADATA`，Pi 只能经 `OTEL_RESOURCE_ATTRIBUTES` 落到 `resourceAttributes`；Claude Code 和 OpenCode 未开放。Langfuse 4.59 以下按嵌套 metadata 筛选弱，要筛的维度改用 `key:value` 形式的 tag。
+
 ### 验证与回报
 
 对每个 Agent：按文档完成安装 → 触发一轮真实对话（或文档写明的测试方式）→ 在 Langfuse 看到对应 turn / observation → 用短中文告诉用户：装了谁、接到哪个项目、谁已见到 trace、还缺哪步交互（登录 / 批 hook / Reload）。
