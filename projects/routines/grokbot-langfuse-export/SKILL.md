@@ -31,7 +31,7 @@ description: 每小时把全部 Grok Bot 助手会话导出到自建 Langfuse（
 | `/home/box/agent-data/search-index.db`（`messages` 表） | 真实毫秒时间戳 | **正式导出默认链路**。可见 user/assistant 文本，**没有 tool 名**。`npm run -s stage`（`adapter/stage-from-search-index.mjs`）写成 `/workspace/langfuse-export-staging/<botId>.jsonl`；行形状对齐 Cursor 插件：`{ "role", "message": { "content": [...] } }`，user 行带 `_ts`（Asia/Shanghai 分钟墙钟）。再由 `export` 读这些 JSONL，经 adapter + vendored `emitTurn` 写 Langfuse |
 | `ReadTranscript` | user 消息有分钟时间戳 | **替代源**：可带 tool 名；routine 里经常不可用。可用时也可写成同形状的 `<botId>.jsonl` |
 | `/workspace/daily-scan/` | 有 | 日复盘产物，仅冒烟 / 补数用（`--source daily-scan`） |
-| `/home/box/agent-data/agent-transcripts/<agentId>/<agentId>.jsonl` | 本机有 | **明确不用**。格式也是 `{role, message}`，且能看到 `tool` 角色；但覆盖不全（例如 Grok Bot 主助手目录可能不存在），当前导出不走这份 |
+| `/home/box/agent-data/agent-transcripts/<agentId>/<agentId>.jsonl` | 本机有 | **明确不用**。格式也是 `{role, message}`，且能看到 `tool` 角色；但 2026-10-24 21:00（UTC+8）实测：**不实时**（全部文件 mtime 停在 box 恢复时约 09:29，之后对话不追加，是快照不是实时日志）；**不全**（对照 search-index.db 的 60 个助手，15 个没有 JSONL，含主 Grok Bot、日复盘、周复盘、设备助手、Agent Memory 专家等）。增量导出只用 search-index.db；原生 JSONL 至多在补历史时补 tool 过程 |
 
 ## 步骤（每小时）
 
