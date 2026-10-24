@@ -7,7 +7,7 @@ description: >-
 ---
 # Codex Cloud 会话追踪到 Langfuse
 
-Codex Cloud 任务跑在 OpenAI 托管容器里，官方 Langfuse 插件、Stop hook、OTel 配置都上不去。本 skill 用**本机带外轮询**：读本机 `codex login` 的登录态，拉云端任务的 turns，以 OTLP 写进 Langfuse。本地 Codex 会话见 [langfuse-agent-tracing](../langfuse-agent-tracing/SKILL.md)。
+Codex Cloud 任务跑在 OpenAI 托管容器里，官方 Langfuse 插件、Stop hook、OTel 配置都上不去。本 skill 用**本机带外轮询**：读本机 `codex login` 的登录态，拉云端任务的 turns，以 OTLP 写进 Langfuse。本地 Codex 会话见 [langfuse-agent-tracing](../langfuse-agent-tracing/SKILL.md)。Cursor Cloud Agents 见 [cursor-cloud-langfuse-tracing](../cursor-cloud-langfuse-tracing/SKILL.md)。
 
 ## 为什么不能 in-process（已验证，2026-10）
 

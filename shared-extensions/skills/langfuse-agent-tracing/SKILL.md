@@ -8,6 +8,8 @@ description: >-
 
 把编码 Agent 的 session / turn 接到 Langfuse。**命令和配置格式一律以官方文档为准**，本 skill 只给流程，并补文档没写清的部分。
 
+云端编排不在本 skill 里。Cursor Cloud Agents 用 [cursor-cloud-langfuse-tracing](../cursor-cloud-langfuse-tracing/SKILL.md)。Codex Cloud 用 [codex-cloud-langfuse-tracing](../codex-cloud-langfuse-tracing/SKILL.md)。
+
 ## 流程
 
 1. 读文档
@@ -42,7 +44,7 @@ description: >-
 | Agent | 坑 |
 |---|---|
 | Codex | Stop hook 需要用户**新开交互会话**批准，不要手写 `[hooks.state.…]` 的 hash 绕过；只跑 `codex exec` 可能不触发 hook。 |
-| Cursor | Marketplace 和 npm hook 只选一条，否则每个动作两份 trace。从 Dock 启动读不到 shell 的 `PATH`，hooks 里的 `node` 用绝对路径。装完要 Reload Window（命令面板搜 `Reload Window`；只有 `Cmd+P` 时输入 `>Reload Window`）。 |
+| Cursor | Marketplace 和 npm hook 只选一条，否则每个动作两份 trace。从 Dock 启动读不到 shell 的 `PATH`，hooks 里的 `node` 用绝对路径。装完要 Reload Window（命令面板搜 `Reload Window`；只有 `Cmd+P` 时输入 `>Reload Window`）。Cloud Agents 不跑用户级 / Marketplace 插件，见 [cursor-cloud-langfuse-tracing](../cursor-cloud-langfuse-tracing/SKILL.md)。 |
 | Claude Code | 未登录无法验证，先 `/login`；已开的会话要重启才加载插件。 |
 | OpenCode | 单次 `opencode run` 退出太快可能来不及上报，验证用交互界面或文档里的 serve / attach。 |
 | Pi | 无额外坑。 |
