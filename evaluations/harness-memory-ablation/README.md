@@ -190,6 +190,7 @@ rm -rf .harness/memory
 本轮是无 harness 的内容级 smoke，结论不能外推到生产宿主。更对的做法：
 
 - 在真实 harness（Cursor / Codex CLI、Claude Code、或 edges Agent）里用 A/B worktree 对照。
+- 可复用框架仓 VirusPC/edges 已有的 [`packages/evaluation/retrieval_eval/`](https://github.com/VirusPC/edges/tree/main/packages/evaluation/retrieval_eval)：它已用 `codex exec`（也支持 `pi`）在干净 clone 上跑真实 Agent，落 events 与 token 用量并出报告，可选导出 Langfuse（参考报告 [`2026-10-18-224305-retrieval-smoke-edges__codex__retrieval-smoke_edges.md`](https://github.com/VirusPC/edges/blob/main/packages/evaluation/reports/2026-10-18-224305-retrieval-smoke-edges__codex__retrieval-smoke_edges.md)）。重跑时按它的 client / clone / report 结构，把 A/B 两组做成 memory 有无的两个 worktree 即可。注意它原本评的是检索（P@5 等），不是 memory 消融。
 - 让 Agent 自己决定是否读 memory、读哪一条（走 `AGENTS.md` 索引与按需读文件），不要由实验脚本全文注入。
 - token / 耗时取 harness 实际 tracing（可进 Langfuse），不要用「全文拼进 prompt」的 API 计量当真实成本。
 - 题集加多步任务（例如真开 PR、改文件），测做事时守不守约定；单轮问答测不到这一点。
