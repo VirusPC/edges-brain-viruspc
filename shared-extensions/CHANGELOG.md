@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `new-server/`、`others/`：从框架仓 `extensions/new-server/`、`extensions/others/` 原样搬来的个人运维笔记和 X / Twitter 搜索查询。只是笔记，不装到各机器，不升版本。
 
+## [4.3.0] - 2026-10-24
+
+### Added
+
+- `skills/cloud-agent-oob-tracing`：云端 / 托管 Agent 无法用官方 hooks、插件或本地 OTel 上报时，用带外轮询把会话 turns 写入 Langfuse。决策树：先探运行时 → 能写配置走 in-process，不能则官方 API → REST → WebSocket/JSON-RPC → 桌面 DB；鉴权只读、禁止 refresh、失败退出 2；OTLP + 幂等 state；附 Codex Cloud（旧 wham + 新 `/local/` WS）参考实现表。
+
 ## [4.2.0] - 2026-10-24
 
 ### Added
