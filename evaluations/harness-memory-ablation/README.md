@@ -4,7 +4,7 @@
 
 ## 评估目的
 
-回答用户问题：`.harness` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录只存方法、口径、题库草稿与按日期命名的实测报告；不假装已跑过数据。
+回答用户问题：`.harness` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录存方法、口径、题库（已对齐 Dataset `harness-memory-ablation/v1`）与按日期命名的实测报告；本轮尚未跑模型。
 
 ## 假设
 
@@ -39,17 +39,44 @@
 
 ## 考题（Dataset）
 
-目标规模 30-50 题；首轮可用 10-15 题做 smoke。题库草稿见 [`cases.md`](cases.md)（待人工审，未宣称已跑）。
+目标规模约 30 题（本轮已落地 30）。题库见 [`cases.md`](cases.md)，已从真实会话精选并导入自建 Langfuse。
+
+### Dataset
+
+| 项 | 值 |
+|---|---|
+| 名称 | `harness-memory-ablation/v1` |
+| 实例 | https://langfuse.viruspc.tech |
+| 条数 | 30（memory-dependent 12 / memory-irrelevant 10 / conflict-stale 8） |
+| 关联 | VirusPC/edges-brain-viruspc PR #372 |
 
 三类：
 
-1. **memory-dependent**：答对依赖项目约定，且主真源在 `.harness/memory`（例如 Compose 沉淀入口、brain 仓改名与引用旧 PR 的方式、云端盲测写法、子仓合入后要 bump workspace 指针等）。
-2. **memory-irrelevant**：普通问答或与本仓约定无关的编码题，用于测是否帮倒忙（质量是否下降、是否无谓多读 memory）。
-3. **conflict/stale**：在 B 侧为该题临时写入过时或冲突的 memory 条目（或使用事先准备好的冲突片段），观察是否被带偏。冲突材料只进实验 worktree，跑完丢弃，不进 main。
+1. **memory-dependent**：答对依赖项目约定，主真源在 `.harness/memory` 或根 `AGENTS.md` / 相关 skill（Compose 沉淀入口、brain 改名与旧 PR 引用、云端盲测、CLI 对齐 npm latest、长期 AI 问题追踪、Langfuse tags 与 metadata 分工、evaluations 落点、worktree、禁止直推 main、`posts/` 禁改等）。
+2. **memory-irrelevant**：真实会话里的产品/工程问答（多为 Langfuse 概念与上报方案），与 harness 约定无关，用来测是否帮倒忙。
+3. **conflict-stale**：约定确实变过的场景（`VirusPC/edges`→`edges-brain-viruspc`、`knowledge/`→`notes/`、Compose 可写、沉淀入口改到 workspace、公开仓不互挂等）。B 侧若另注入冲突 memory，只进实验 worktree，跑完丢弃。
 
-每题须写：题干、类别、期望答案或判对要点、主真源路径（若适用）。导入 Langfuse 时，Dataset item 的 `input` 为题干，`expected_output` 为判对要点，`metadata` 含 `category`、`case_id`。
+每题：`input={question}`，`expectedOutput={criteria, violations}`，`metadata` 含 `category`、`case_id`、`source_agent`、`source_date`、`original_text`、`source_files` 等；有源 observation 时填 `sourceObservationId`。
 
-建议 Dataset 名：`harness-memory-ablation`（或带版本后缀，如 `harness-memory-ablation-v1`）。
+### 重建或加题
+
+环境变量：`LANGFUSE_HOST`（或 `LANGFUSE_BASE_URL`）、`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。
+
+```bash
+# 查看 / 创建 Dataset
+npx --yes langfuse-cli api datasets get 'harness-memory-ablation/v1' --json
+npx --yes langfuse-cli api datasets create --body-json '{"name":"harness-memory-ablation/v1","description":"..."}'
+
+# 加题或按 id upsert（id 建议 harness-memory-ablation-M13）
+npx --yes langfuse-cli api dataset-items create --body-file item.json
+
+# 核对条数
+npx --yes langfuse-cli api dataset-items list --dataset-name 'harness-memory-ablation/v1' --all --json
+```
+
+题面与判对要点变更时：先改 `cases.md`，再按同上 upsert Dataset item，并在本 README「历次报告」或新日期报告里记一笔。Observations 查询用 `/api/public/v2/observations`（带时间窗）；`/api/public/traces` 在本实例为 legacy，`/api/public/sessions` 不可用。
+
+本轮**不跑**模型、**不跑** Experiment；跑批见下文步骤。
 
 ## 指标
 
@@ -143,14 +170,14 @@ rm -rf .harness/memory
 |---|---|
 | `evaluations/README.md` | 本仓级评估索引（非 routine 专属） |
 | `evaluations/harness-memory-ablation/README.md` | 本实验方法与口径（本文件） |
-| `evaluations/harness-memory-ablation/cases.md` | 题库草稿，待人工审 |
+| `evaluations/harness-memory-ablation/cases.md` | 真实题库（对齐 Dataset v1） |
 | `evaluations/harness-memory-ablation/YYYY-MM-DD.md` | 单次实测报告 |
 
 与 routine 前例的关系：方法结构（摘要、背景、设计、指标、步骤、判定、局限）对齐 `frequency-usage`；落点不同：本实验评估的是 harness memory 能力本身，故放在脑仓根 `evaluations/`，不挂某个 routine，也不进 `notes/`。
 
 ## 当前结论
 
-**尚未跑数据。** 本轮只落地实验设计与题库草稿；不实际跑模型、不改生产 memory、不合并本 PR。
+**尚未跑数据。** 本轮已落地实验设计、真实题库与 Langfuse Dataset `harness-memory-ablation/v1`；不实际跑模型、不改生产 memory、不合并本 PR。
 
 ## 历次报告
 
