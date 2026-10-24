@@ -14,7 +14,7 @@ description: >-
 2. 准备：确认项目和 key，备份配置
 3. 按 Agent 安装
 4. 打设备标签
-5. 验证并回报
+5. 验证
 
 ## 1. 读文档
 
@@ -80,7 +80,7 @@ Langfuse trace 上有三个相关字段：
 
 **metadata 的限制：** 配置里写的是静态值，每次会话都一样。仓库、分支、commit 这类每轮在变的现场信息配不进去，要靠插件自己采集。
 
-## 5. 验证并回报
+## 5. 验证
 
 - 每个 Agent 触发一轮真实对话，或用文档里的测试方式。
 - 在 Langfuse 的 Traces / Sessions 页面查看，或调 API。实例开了 v4 events-only 时 `GET /api/public/traces` 会 404，改用：
@@ -91,4 +91,3 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
 ```
 
 - 确认 trace 带上了设备 tag（或 environment）。
-- 用简短中文告诉用户：装了哪些 Agent、接到哪个项目、哪些已见到 trace、还差哪步要用户自己做（登录、批 hook、Reload）。
