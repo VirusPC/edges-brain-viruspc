@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: default
-  edges-updated-at: '2026-10-24T11:19:34.700Z'
+  edges-updated-at: '2026-10-24T12:00:00.000Z'
   edges-title: Grok Bot 会话每小时写入 Langfuse
   edges-tasks-status: backlog
   edges-task-priority: none
@@ -20,7 +20,16 @@ description: 本地插件抓不到 Grok Bot；用定时任务按真实时间线�
 Grok Bot 的会话按小时定时写入 Langfuse，时间线按真实发生时间排列，可被检索与统计。
 
 **动作：**
-- 每小时跑一次导出，写入 Langfuse（observation 带原始起止时间）
-- 开做前先定：导出哪些助手、进哪个 Langfuse 项目、打什么 tag、如何避免重复写入
+- 在 `projects/routines/grokbot-langfuse-export/` 落地 skill + `export_to_langfuse.py`（Grok Bot 小时 routine 调用；本卡不负责在产品里点创建 routine）
+- 每小时：对全部助手 `ReadTranscript` → staging JSONL → 脚本经 OTLP 写入 Langfuse（自建实例 `events_only`，不用已拒绝的 `/api/public/ingestion` trace 写入）
+- 范围：全部助手含记录员；同一 Langfuse 项目 Edges；tags `agent:grok-bot` / `device:grokbot` / `bot:<显示名>`；分钟精度 + metadata `time_precision: minute`
+- Session：同 bot、与上一轮 user-message 间隔 ≤3h 同 session，否则新 session；`sessionId=grokbot:<botId>:<首条 user 稳定 id>`
+- 一轮 user→assistant 最终可见回复 = 一条 trace；内容仅可见文本 + tool 名（无 args/results/reasoning）
+- 去重：box 本地 cursor `/home/box/agent-data/langfuse/grokbot-export-cursors.json`（不进 git）+ 稳定 hashed trace id（botId + turn_pos）
+- 首次回填仅过去 24h；写失败只推进成功批次的 cursor，失败留待下一小时并报告
 
-**完成标准：** 待 grill-with-docs 补（范围、项目、tag、去重尚未拍板）
+**完成标准：**
+- PR 合入后，box 上可用文档中的命令单次跑通导出（dry-run / 小批量真写）
+- cursor 文件只在 box 本地；重复跑不重复造 trace
+- Langfuse 能按 `device:grokbot` / `bot:<名>` 筛到，observation 时间为分钟整点
+- 小时 routine 创建后可按 `schedule.md`（`0 * * * *` Asia/Shanghai）挂上本 skill（routine 创建本身是后续一步）
