@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 60
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 60
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "afterShellExecution": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "afterMCPExecution": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "afterAgentThought": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 10
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/langfuse.sh",
+        "timeout": 60
+      }
+    ]
+  }
+}
