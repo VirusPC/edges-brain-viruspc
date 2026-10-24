@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Grok Bot → Langfuse hourly export: thin adapter over vendored langfuse/cursor-observability-plugin emitTurn",
   "scripts": {
-    "export": "node --import tsx adapter/cli.mjs"
+    "stage": "node --no-warnings=ExperimentalWarning adapter/stage-from-search-index.mjs",
+    "export": "node --import tsx adapter/export-cli.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -1,4 +1,4 @@
-// Grok Bot transcript JSONL (ReadTranscript staging / daily-scan) → turns.
+// Grok Bot transcript JSONL (staging from search-index.db / ReadTranscript, or daily-scan) → turns.
 // Ported 1:1 from the previous export_to_langfuse.py parsing (same locked rules).
 import { createHash } from "node:crypto";
 import * as fs from "node:fs";

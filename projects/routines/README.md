@@ -12,7 +12,7 @@ Routine 专项工作区：跨平台 routine 的形态调研，以及 skill 与�
 
 - [daily-conversation-deposit/SKILL.md](daily-conversation-deposit/SKILL.md) — 日复盘。意图在 `SKILL.md`，日程在同目录 [schedule.md](daily-conversation-deposit/schedule.md)，只引用 Skill。扫描出的候选按根 AGENTS.md 直接落文件，与当日 [`retrospectives/daily/`](../../retrospectives/daily/README.md) 同一个 PR（个人内容在 edges-brain-viruspc-private 另开 PR）。审阅在 PR 上，不自动合并。
 - [weekly-retrospective/SKILL.md](weekly-retrospective/SKILL.md) — 周复盘。意图在 `SKILL.md`，日程在同目录 [schedule.md](weekly-retrospective/schedule.md)，只引用 Skill。结果写入 [`retrospectives/weekly/`](../../retrospectives/weekly/README.md)。
-- [grokbot-langfuse-export/SKILL.md](grokbot-langfuse-export/SKILL.md) — 每小时把全部 Grok Bot 助手会话写入自建 Langfuse（OTLP）。日程 [schedule.md](grokbot-langfuse-export/schedule.md)；薄适配层 [adapter/](grokbot-langfuse-export/adapter/) 复用 vendored langfuse/cursor-observability-plugin 的 `emitTurn`。
+- [grokbot-langfuse-export/SKILL.md](grokbot-langfuse-export/SKILL.md)：每小时把全部 Grok Bot 助手会话写入自建 Langfuse（OTLP）。日程 [schedule.md](grokbot-langfuse-export/schedule.md)；代码结构见 [README.md](grokbot-langfuse-export/README.md)。
 
 ## 改名对照
 

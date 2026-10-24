@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // Grok Bot → Langfuse hourly export.
 // Write path = vendored langfuse/cursor-observability-plugin `emitTurn` (unmodified).
-// Run: node --import tsx adapter/cli.mjs [options]   (or: npm run export -- [options])
+// Run: node --import tsx adapter/export-cli.mjs [options]   (or: npm run export -- [options])
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { setGlobalErrorHandler } from "@opentelemetry/core";
 
 import { emitTurn, traceIdForTurn } from "../vendor/cursor-observability-plugin/src/trace.ts";
-import { setupInstrumentation } from "./instrumentation.mjs";
-import { assignSessions, collectTurns, loadAgents, minuteIso } from "./transcript.mjs";
-import { pluginConfig, pluginTurn } from "./turn.mjs";
+import { setupInstrumentation } from "./instrumentation-with-rename.mjs";
+import { assignSessions, collectTurns, loadAgents, minuteIso } from "./read-grokbot-transcripts.mjs";
+import { pluginConfig, pluginTurn } from "./to-plugin-turn.mjs";
 
 const DEFAULTS = {
   host: "https://langfuse.viruspc.tech",

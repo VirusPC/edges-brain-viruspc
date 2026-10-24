@@ -14,7 +14,7 @@ import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
 
 import { DeterministicIdGenerator } from "../vendor/cursor-observability-plugin/src/ids.ts";
 import { createSecretMask } from "../vendor/cursor-observability-plugin/src/privacy.ts";
-import { GrokBotRewriteProcessor } from "./rewrite-processor.mjs";
+import { GrokBotRewriteProcessor } from "./rename-cursor-to-grokbot.mjs";
 
 export const ADAPTER_VERSION = "0.2.0";
 
