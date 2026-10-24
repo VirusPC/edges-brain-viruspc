@@ -31,6 +31,7 @@ description: 把全部 Grok Bot 助手会话导出到自建 Langfuse（与本机
 - 依赖：本目录 `npm ci`；`vendor/cursor-observability-plugin` submodule 已 init（首次或插件更新后）。
 - 凭证：环境变量 `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY`；与本机 Codex / Pi 插件同一 Langfuse 项目。
 - Host：`--host` > `LANGFUSE_HOST` > `LANGFUSE_BASE_URL` > `https://langfuse.viruspc.tech`。
+- Environment：`LANGFUSE_TRACING_ENVIRONMENT`（若设且非空）> 固定回退 `grok-bot`。脚本**不会**让 Langfuse 静默落成 `default`。设备维度继续用 tags（`device:grokbot`），不写进 environment。
 
 ## 步骤
 
@@ -62,6 +63,7 @@ description: 把全部 Grok Bot 助手会话导出到自建 Langfuse（与本机
 - Session：同一 bot，与上一轮 user 消息间隔 ≤3 小时为同一 session，否则新 session。`sessionId = grokbot:<botId>:<首条 user message 的稳定 id>`。
 - 内容：可见 user / assistant 文本 + tool 名称（来源有才写）。不要 tool args / results，不要 reasoning。
 - Tags：`agent:grok-bot`、`device:grokbot`、`bot:<助手显示名>`；userId `peng-cheng`。
+- Environment：`grok-bot`（可用 `LANGFUSE_TRACING_ENVIRONMENT` 覆盖；勿与本机 `*-local` / 云端 `*-cloud` 混用）。
 
 ## 去重与失败
 

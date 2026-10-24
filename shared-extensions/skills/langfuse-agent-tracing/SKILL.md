@@ -2,7 +2,7 @@
 name: langfuse-agent-tracing
 description: >-
   当用户要把编码 Agent（Codex、Cursor、Claude Code、OpenCode、Pi 等）的会话追踪接到 Langfuse
-  时使用：安装以官方文档为准，本 skill 给出流程，并补文档没写清的坑、设备标签约定与验证方法。
+  时使用：安装以官方文档为准，本 skill 给出流程，并补文档没写清的坑、environment（*-local / *-cloud / grok-bot）与设备 tags 约定、验证方法。
 ---
 # Langfuse Agent 追踪
 
@@ -15,7 +15,7 @@ description: >-
 1. 读文档
 2. 准备：确认项目和 key，备份配置
 3. 按 Agent 安装
-4. 打设备标签
+4. Environment 与设备标签
 5. 验证
 
 ## 1. 读文档
@@ -49,7 +49,7 @@ description: >-
 | OpenCode | 单次 `opencode run` 退出太快可能来不及上报，验证用交互界面或文档里的 serve / attach。 |
 | Pi | 无额外坑。 |
 
-## 4. 打设备标签
+## 4. Environment 与设备标签
 
 ### 用哪个字段
 
@@ -57,27 +57,42 @@ Langfuse trace 上有三个相关字段：
 
 - **tags：** 字符串标签，用来筛选、分组、dashboard 拆分，上报后不可改。**要筛的维度都放这里**，写成 `key:value`。
 - **metadata：** 键值对，放打开 trace 才看的附加信息。Langfuse 4.59 以下按嵌套 metadata 筛选弱，不要指望用它筛。
-- **environment：** 语义是 prod / dev，不放设备名，除非插件没有 tags 口。
+- **environment：** 产品 × 运行位置（本机 / 云端 / Grok Bot 导出），**不放设备名**。
 
-### 设备约定
+### Environment 约定（产品 × 位置）
 
-- tag 写成 `device:<短名>`。短名优先取 Tailscale MagicDNS 短名（如 `macbookpro-w`）；没有 Tailscale 或取不到时，退回系统主机名（`hostname`）。不用序列号。
-- 有 Tailscale 时，规范名以 IT 资产台账或 tailnet 现网为准。
+本机与云端成对；Grok Bot 小时导出单独一档。值只能小写字母 / 数字 / 连字符，建议 ≤40 字符。
+
+| 位置 | environment | 说明 |
+|---|---|---|
+| 本机 Codex | `codex-local` | 与云端 `codex-cloud` 成对 |
+| 本机 Cursor | `cursor-local` | 与云端 `cursor-cloud` 成对 |
+| 本机 Claude Code | `claude-code-local` | 官方文档未单列 env 口；在 `~/.claude/settings.json` 的 `env` 里设 `LANGFUSE_TRACING_ENVIRONMENT`（若进程读得到标准 Langfuse 变量） |
+| 本机 OpenCode | `opencode-local` | `opencode-langfuse.json` 的 `"environment"`，或 `LANGFUSE_ENVIRONMENT` |
+| 本机 Pi | `pi-local` | `~/.pi/agent/langfuse.json` 的 `"environment"`，或 `LANGFUSE_TRACING_ENVIRONMENT` |
+| Codex Cloud | `codex-cloud` | 见 [codex-cloud-langfuse-tracing](../codex-cloud-langfuse-tracing/SKILL.md) |
+| Cursor Cloud | `cursor-cloud` | 见 [cursor-cloud-langfuse-tracing](../cursor-cloud-langfuse-tracing/SKILL.md) |
+| Grok Bot 小时导出 | `grok-bot` | 见 `projects/routines/grokbot-langfuse-export`；`LANGFUSE_TRACING_ENVIRONMENT` 可覆盖，未设则脚本回退 `grok-bot`（不落 Langfuse `default`） |
+
+### 设备约定（tags）
+
+- 设备**只**进 tags：`device:<短名>`。短名优先 Tailscale MagicDNS（如 `macbookpro-w`）；没有 Tailscale 或取不到时退回 `hostname`。不用序列号、不用台账别名当 tag。
+- 有 Tailscale 时以 tailnet 现网短名为准（可与 IT 资产台账对照，改名以现网为准）。
 - 插件都不会自动带 hostname，每台机器各配一次。
 
 ### 各插件怎么配
 
 2026-10 按文档和源码核对；插件更新后以新文档为准。
 
-| Agent | tags | metadata |
-|---|---|---|
-| Codex | `~/.codex/langfuse.json` 的 `"tags"`，或 `LANGFUSE_CODEX_TAGS` | `"metadata"`，或 `LANGFUSE_CODEX_METADATA` |
-| Cursor | `~/.cursor/langfuse.json` 的 `"tags"`，或 `LANGFUSE_TAGS`；固定追加 `cursor` | `"metadata"`，或 `LANGFUSE_CURSOR_METADATA` |
-| Claude Code | `~/.claude/settings.json` 的 `env.CC_LANGFUSE_TRACE_TAGS`；文档未写，见[源码](https://github.com/langfuse/claude-observability-plugin/blob/main/hooks/langfuse_hook.py) | 不支持 |
-| OpenCode | 不支持（[issue #57](https://github.com/langfuse/opencode-observability-plugin/issues/57)） | 不支持 |
-| Pi | 不支持，源码写死 `["pi"]` | 只能用 `OTEL_RESOURCE_ATTRIBUTES`，落在 `resourceAttributes`；自带 `cwd`、`git_branch` |
+| Agent | environment | tags | metadata |
+|---|---|---|---|
+| Codex | `langfuse.json` 的 `"environment"`，或 `LANGFUSE_TRACING_ENVIRONMENT` → `codex-local` | `"tags"` / `LANGFUSE_CODEX_TAGS` → `device:<短名>` | `"metadata"` / `LANGFUSE_CODEX_METADATA` |
+| Cursor | `"environment"` / `LANGFUSE_TRACING_ENVIRONMENT` → `cursor-local` | `"tags"` / `LANGFUSE_TAGS` → `device:<短名>`（固定追加 `cursor`） | `"metadata"` / `LANGFUSE_CURSOR_METADATA` |
+| Claude Code | `settings.json` → `env.LANGFUSE_TRACING_ENVIRONMENT=claude-code-local`（文档未写 env 标签口） | `env.CC_LANGFUSE_TRACE_TAGS`；见[源码](https://github.com/langfuse/claude-observability-plugin/blob/main/hooks/langfuse_hook.py) | 不支持 |
+| OpenCode | `"environment"` / `LANGFUSE_ENVIRONMENT` → `opencode-local` | **不支持**（[issue #57](https://github.com/langfuse/opencode-observability-plugin/issues/57)） | 不支持 |
+| Pi | `"environment"` / `LANGFUSE_TRACING_ENVIRONMENT` → `pi-local` | **不支持**（源码写死 `["pi"]`） | 只能用 `OTEL_RESOURCE_ATTRIBUTES` → `resourceAttributes` |
 
-**没有 tags 口时：** 临时把设备名写进 environment。OpenCode 用 `opencode-langfuse.json` 的 `"environment"` 或 `LANGFUSE_ENVIRONMENT`；Pi 用 `langfuse.json` 的 `"environment"` 或 `LANGFUSE_TRACING_ENVIRONMENT`。值只能小写、不超过 40 字符、不带 `device:` 前缀。上游支持 tags 后改回 tags。
+**OpenCode / Pi 缺口：** 没有可配 tags 时，**仍把 environment 设成 `*-local`**，不要再把设备短名写进 environment（与上表成对命名优先）。设备维度暂时筛不到，等上游支持 tags 后再补 `device:<短名>`；不要为了设备筛选用 environment 顶替。
 
 **metadata 的限制：** 配置里写的是静态值，每次会话都一样。仓库、分支、commit 这类每轮在变的现场信息配不进去，要靠插件自己采集。
 
@@ -91,4 +106,4 @@ curl -s -u "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" \
   "$LANGFUSE_BASE_URL/api/public/v2/observations?limit=20"
 ```
 
-- 确认 trace 带上了设备 tag（或 environment）。
+- 确认：`environment` 为对应的 `*-local` / `*-cloud` / `grok-bot`；有 tags 口的 Agent 带 `device:<短名>`。
