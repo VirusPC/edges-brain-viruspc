@@ -24,4 +24,5 @@
 - [2026\-10\-21\-\-跨工具\-skill\-与\-plugin\-的一处编写多处安装/INDEX.md](<2026-10-21--跨工具-skill-与-plugin-的一处编写多处安装/INDEX.md>)
 - [2026\-10\-24\-\-%E8%B1%86%E5%8C%85%E8%AF%AD%E9%9F%B3%E8%BE%93%E5%85%A5%E4%B8%8E\-dji\-mic\-3/INDEX.md](<2026-10-24--%E8%B1%86%E5%8C%85%E8%AF%AD%E9%9F%B3%E8%BE%93%E5%85%A5%E4%B8%8E-dji-mic-3/INDEX.md>)
 - [2026\-10\-24\-\-%E5%A4%9A%E6%9C%BA\-langfuse\-agent\-%E8%BF%BD%E8%B8%AA%E5%AE%89%E8%A3%85%E4%B8%8E%E9%AA%8C%E6%94%B6/INDEX.md](<2026-10-24--%E5%A4%9A%E6%9C%BA-langfuse-agent-%E8%BF%BD%E8%B8%AA%E5%AE%89%E8%A3%85%E4%B8%8E%E9%AA%8C%E6%94%B6/INDEX.md>)
+- [2026\-10\-24\-\-grokbot\-langfuse\-export\-transcript\-sources\-on\-grok\-bot\-box/INDEX.md](<2026-10-24--grokbot-langfuse-export-transcript-sources-on-grok-bot-box/INDEX.md>)
 <!-- project-entries-local:end -->
