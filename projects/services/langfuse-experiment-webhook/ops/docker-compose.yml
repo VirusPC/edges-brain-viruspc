@@ -1,6 +1,7 @@
-# 运维壳里的可选保活。只包这个 webhook，不并进 Langfuse compose。
-# 日常保活用同目录的 systemd unit。
-# 镜像在构建时检出框架包（Dockerfile 的 EDGES_REF），并设置 EDGES_ROOT。
+# 运维壳里的可选容器。只包这个 webhook，不并进 Langfuse compose。
+# 宿主日常保活是 edges evaluation server（user systemd），不是这份 compose。
+# 镜像没有 edges CLI，所以容器仍跑 python -m langfuse_experiment_webhook。
+# 构建时按 Dockerfile 的 EDGES_REF 检出框架包，并设置 EDGES_ROOT。
 services:
   langfuse-experiment-webhook:
     build:

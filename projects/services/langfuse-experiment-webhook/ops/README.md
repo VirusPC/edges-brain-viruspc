@@ -1,42 +1,44 @@
 # 运维壳：公网 HTTPS / 保活
 
-业务进程是普通 HTTP，听 `0.0.0.0:8787`（环境文件没写监听时也是这个）。Langfuse 保存 webhook 时会跑 `validateWebhookURL`：要公网 HTTPS、端口 443，并且拒绝 localhost 和内网地址。壳是下面几件事。
+业务进程是普通 HTTP。这台部署没写监听时，薄封装默认 `0.0.0.0:8787`，与隧道 ingress 一致。框架包自己的默认是 `127.0.0.1:8791`。Langfuse 保存 webhook 时会跑 `validateWebhookURL`：要公网 HTTPS、端口 443，并且拒绝 localhost 和内网地址。壳是下面几件事。
 
 公网 URL：`https://lf-experiment.viruspc.tech/langfuse/experiment`
 
-签名、按 Dataset 名字调用 runner、写 Langfuse trace，都在框架仓 `packages/services/experiment-webhook`。本目录不复制那套代码。
+签名、按 Dataset 名字调用 runner、写 Langfuse trace，都在框架仓 `packages/services/evaluation`。本目录不复制那套代码。宿主上的运维入口是 `edges evaluation server`。`python -m langfuse_experiment_webhook` 只留给直接跑 python，以及下面的可选容器（镜像里没有 Node，也没有 `edges`）。
 
-## 迁移
+## 宿主
 
-2026-10-25 之前，`python3 -m langfuse_experiment_webhook` 是本仓自带的 dry-run 进程：没设 `LANGFUSE_WEBHOOK_SECRET` 就跳过签名，`DRY_RUN` 默认开着，评测靠 `EXPERIMENT_RUNNER_CMD` 或 `EXPERIMENT_RUNNER_URL`。
+配置在 `~/.config/edges/edges.env`（`LANGFUSE_*`、`EXPERIMENT_WEBHOOK_*`，以及这台部署的 `HOST` / `PORT`）。`edges` 不再读 `artifacts-preview.env`，也不再读 `/etc/langfuse-experiment-webhook.env`。
 
-现在这条命令只做薄封装。已经在跑的 systemd unit **先不要重启**，按下面做完再切：
+```bash
+edges config init
+# 编辑 ~/.config/edges/edges.env：LANGFUSE_WEBHOOK_SECRET、LANGFUSE_*、EXPERIMENT_WEBHOOK_*、HOST、PORT
+edges evaluation server install   # user systemd，只安装，不启动
+edges evaluation server start
+edges evaluation server status
+edges evaluation server start --dev   # 前台，阻塞到进程退出
+```
 
-1. 框架仓检出要含 `packages/services/experiment-webhook`（`VirusPC/edges` main，`7da7994ad6a269514248c3f1a0f5827279f4969c` 起）。这台机器上的框架检出是 `/home/cheng-dev/projects/edges-framework`。
-2. 在 unit 或 EnvironmentFile 里设置 `EDGES_ROOT`（框架仓根）或 `EXPERIMENT_WEBHOOK_HOME`（指到 `packages/services/experiment-webhook`）。两个都不设时，新进程退出，不会退回旧的 dry-run 服务器。
-3. 设置 `LANGFUSE_WEBHOOK_SECRET`，并在 Langfuse 的 webhook 配置里用同一个 secret。签名现在默认开启：密钥为空时 POST 返回 401，不再当未签名请求收下。只有本机调试可以设 `EXPERIMENT_WEBHOOK_SIGNATURE=off`。公网不要关。
-4. `DRY_RUN`、`EXPERIMENT_RUNNER_CMD`、`EXPERIMENT_RUNNER_URL` 不再有效。runner 由框架包的 `registry.json` 按 `datasetName` 选择。旧变量若还留在环境文件里，进程只记下变量名。
-5. 健康检查从 `{"status":"ok"}` 变成 `{"ok":true}`。202 的正文字段从 `jobId` 变成 `runId`。路径仍是 `GET /health` 和 `POST /langfuse/experiment`。
-6. 监听默认仍是 `8787`，隧道 ingress 不用改。环境文件里如果写了 `PORT`，以文件为准。
+`install` 不启动。默认 `start` 用 user systemd。`start --dev` 在前台跑 `python3 -m experiment_webhook`。
 
-`ExecStart` 仍是 `python3 -m langfuse_experiment_webhook`，`WorkingDirectory` 仍是本服务的 `business/`。
+这台机器上的框架检出是 `/home/cheng-dev/projects/edges-framework`。`edges` 要在这个账号的 `PATH` 上，并且该账号拥有 `~/.config/edges/edges.env`。
+
+若仍要一份 system unit，用同目录的 `langfuse-experiment-webhook.service`。`ExecStart` 是 `edges evaluation server start --dev`，这样这份 unit 自己监督前台进程。不要写成不带 `--dev` 的 `start`，那会再去拉起 user systemd。把 `User=` 设成上面那个账号；没设 `User=` 时 `%h` 是 `/root`。
+
+监听：环境文件里写了 `HOST` / `PORT`（或 `EXPERIMENT_WEBHOOK_HOST` / `EXPERIMENT_WEBHOOK_PORT`）就用文件里的值。这台部署要继续对隧道暴露时，写成 `HOST=0.0.0.0` 和 `PORT=8787`。
+
+签名默认开启。密钥为空时 POST 返回 401。只有本机调试可以设 `EXPERIMENT_WEBHOOK_SIGNATURE=off`。公网不要关。`DRY_RUN`、`EXPERIMENT_RUNNER_CMD`、`EXPERIMENT_RUNNER_URL` 不再有效。健康检查是 `{"ok": true}`。202 的正文字段是 `runId`。路径仍是 `GET /health` 和 `POST /langfuse/experiment`。
 
 ## 文件
 
 | 文件 | 作用 |
 |---|---|
-| `.env.example` | 托管时的环境变量名。复制成机器上的 env 文件再填，真实值不入库 |
-| `langfuse-experiment-webhook.service` | systemd 保活。`Restart=always` |
+| `.env.example` | 变量名。宿主写进 `~/.config/edges/edges.env`；可选容器复制为本目录 `.env`。真实值不入库 |
+| `langfuse-experiment-webhook.service` | 可选的 system unit。`ExecStart` 调用 `edges evaluation server start --dev` |
 | `cloudflared-ingress.yml` | 只给本服务的隧道 ingress：`lf-experiment.viruspc.tech` → `http://127.0.0.1:8787` |
-| `docker-compose.yml`、`Dockerfile` | 可选的另一套保活。镜像在构建时检出框架包的固定 commit |
+| `docker-compose.yml`、`Dockerfile` | 可选的另一套保活。镜像里没有 `edges`，所以容器仍跑 `python -m langfuse_experiment_webhook`，构建时检出框架包的固定 commit |
 
 Langfuse 自建 compose 不动。tunnel token 和 DNS 凭证留在本机。
-
-## 保活
-
-1. 把仓库里的 `business/` 放到这台机器上。
-2. `cp .env.example` 到 unit 里的 `EnvironmentFile` 路径（示例是 `/etc/langfuse-experiment-webhook.env`），填上 `EDGES_ROOT` 和 `LANGFUSE_WEBHOOK_SECRET`。改掉 unit 里的 `WorkingDirectory`。
-3. 确认框架包能被这个环境找到之后，再 `sudo systemctl enable --now langfuse-experiment-webhook.service`。
 
 ## 公网
 
@@ -51,4 +53,4 @@ cp .env.example .env
 docker compose up --build
 ```
 
-镜像默认检出 `7da7994ad6a269514248c3f1a0f5827279f4969c`。要换框架版本，构建时传 `EDGES_REF`。
+镜像默认检出 `b054de961e580ae0c1ce478e3eb4065d22b958ca`（`packages/services/evaluation`）。要换框架版本，构建时传 `EDGES_REF`。

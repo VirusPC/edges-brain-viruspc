@@ -1,6 +1,7 @@
 """Personal Langfuse Custom Experiment URL.
 
-Thin wrap around VirusPC/edges ``packages/services/experiment-webhook``.
+Thin wrap around VirusPC/edges ``packages/services/evaluation``.
+The host ops entry is ``edges evaluation server``.
 Domain, tunnel, and process supervision stay under ``ops/``.
 """
 

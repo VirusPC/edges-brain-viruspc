@@ -1,21 +1,22 @@
-# 运维壳：把 business/ 里的薄封装保活。
-# WorkingDirectory 和 EnvironmentFile 换成这台机器上的绝对路径。
-# EnvironmentFile 从 ops/.env.example 复制，填好的文件不要提交。
-# 重启前先看 ops/README.md 的「迁移」：要有框架仓检出和 LANGFUSE_WEBHOOK_SECRET。
-# 缺了框架包时进程退出，不会退回旧的 dry-run HTTP。
+# 宿主入口是 Edges CLI，不再用 python -m langfuse_experiment_webhook。
+# 日常保活不必用这份 system unit：
+#   edges config init
+#   edges evaluation server install
+#   edges evaluation server start
+# 若仍用这份 system unit：把 User= 设成拥有 ~/.config/edges/edges.env、
+# 且 PATH 上有 edges 的账号。--dev 让本 unit 当前台监督者。
+# 不要调用不带 --dev 的 start，那会再去拉起 user systemd。
+# 没设 User= 时 %h 是 /root。
 
 [Unit]
-Description=Langfuse experiment webhook
+Description=Edges evaluation server
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/ABSOLUTE/PATH/langfuse-experiment-webhook/business
-ExecStart=/usr/bin/python3 -m langfuse_experiment_webhook
-EnvironmentFile=-/etc/langfuse-experiment-webhook.env
-# Environment=EDGES_ROOT=/ABSOLUTE/PATH/edges-framework
-# Environment=EXPERIMENT_WEBHOOK_HOME=/ABSOLUTE/PATH/edges-framework/packages/services/experiment-webhook
+EnvironmentFile=-%h/.config/edges/edges.env
+ExecStart=/usr/bin/env edges evaluation server start --dev
 Restart=always
 RestartSec=2
 
