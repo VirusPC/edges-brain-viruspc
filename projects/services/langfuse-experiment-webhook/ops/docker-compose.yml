@@ -1,0 +1,15 @@
+# 运维壳里的可选保活。只包这个 webhook，不并进 Langfuse compose。
+# 日常保活用同目录的 systemd unit。
+services:
+  langfuse-experiment-webhook:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile
+    ports:
+      - "8787:8787"
+    env_file:
+      - .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8787"
+    restart: unless-stopped

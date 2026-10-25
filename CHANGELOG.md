@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### langfuse-experiment-webhook
+
+- **独立的 Langfuse Custom Experiment webhook：** `projects/services/langfuse-experiment-webhook/` 提供 `GET /health` 和 `POST /langfuse/experiment`。默认 dry-run，尽快返回 2xx，后台在配了 Public API 时按数据集名称读取条数。具体评测用 `EXPERIMENT_RUNNER_CMD` 或 `EXPERIMENT_RUNNER_URL` 外接。Langfuse 自建 compose 保持原样。
+- **目录分成业务和运维壳：** `business/` 是收 POST 的进程；`ops/` 是 systemd 保活、Cloudflare Tunnel、托管环境变量和可选容器。进程行为不变。
+
 ### 个人仓
 
 - **系统副本已从个人主干移除：** 本仓只保留 peng cheng 的个人大脑：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`，以及 `edges-publish` 的写入目标。Edges 框架（CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点、artifacts 预览服务和相关 workflow）在 [VirusPC/edges](https://github.com/VirusPC/edges)。要用 CLI，执行 `npm install -g @viruspc/edges`，或到框架仓开发。ECS 上 `/teaching/` 仍由本仓 Deploy 更新检出 `/home/cheng-dev/projects/edges`，并检查 `teaching/index.html`；`/tasks/` 与 artifacts 预览由框架仓检出 `/home/cheng-dev/projects/edges-framework` 部署。
