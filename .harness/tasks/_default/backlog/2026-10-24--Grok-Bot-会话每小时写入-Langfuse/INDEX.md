@@ -2,13 +2,14 @@
 metadata:
   edges-type: task
   edges-task-project: default
-  edges-updated-at: '2026-10-24T12:00:00.000Z'
+  edges-updated-at: '2026-10-25T16:52:45.554Z'
   edges-title: Grok Bot 会话每小时写入 Langfuse
   edges-tasks-status: backlog
   edges-task-priority: none
 name: grok_bot_会话每小时写入_langfuse
 description: 本地插件抓不到 Grok Bot；用定时任务按真实时间线把会话写进 Langfuse。
 ---
+
 **背景：**
 谈 Observation / Langfuse 接入时发现，本机插件只能抓 Codex、Cursor 本地、Claude Code、OpenCode、Pi，抓不到 Grok Bot（跑在 24 小时主机上）和 Cursor 云端。讨论过三种导出：会话结束立刻写、定时写、手动拉。用户选定「最好是定时任务，每小时写一次」。又确认：写入时可带上消息原本的开始结束时间，时间线不会因为导出时刻挤在一起；只有「哪天出现在 Langfuse」会晚一点。用户要求先开卡，再想清范围、项目、tag 与去重。
 - 现状：自建 Langfuse 在 `langfuse.viruspc.tech`；本机多 Agent 已用 tags 打设备；Grok Bot 尚无自动上报。
@@ -32,4 +33,4 @@ Grok Bot 的会话按小时定时写入 Langfuse，时间线按真实发生时�
 - PR 合入后，box 上可用文档中的命令单次跑通导出（dry-run / 小批量真写）
 - cursor 文件只在 box 本地；重复跑不重复造 trace
 - Langfuse 能按 `device:grokbot` / `bot:<名>` 筛到，observation 时间为分钟整点
-- 小时 routine 创建后可按 `schedule.md`（`0 * * * *` Asia/Shanghai）挂上本 skill（routine 创建本身是后续一步）
+- 小时 routine 创建后可按 `.harness/routines/grokbot-langfuse-export/INDEX.md`（`0 * * * *` Asia/Shanghai）挂上本 skill（routine 创建本身是后续一步）

@@ -4,7 +4,7 @@
 
 `INDEX.md` 的一级标题是 `# <YYYY-MM-DD> 周复盘`。下面六节都是二级标题，顺序固定。
 
-周复盘由 [周复盘 routine](../../projects/routines/weekly-retrospective/SKILL.md) 产出，经 PR 写入本目录。入口是 Compose 工作区根 `VirusPC/edges-workspace-viruspc`，正文落在本仓。例程运行时只看 GitHub；对话层由主聊天逐个助手补进后再合成。正文 `INDEX.md` 写定后不改，后续评论记同目录 `COMMENTS.md`。
+周复盘由 [周复盘 routine](../../.harness/routines/weekly-retrospective/INDEX.md) 产出，经 PR 写入本目录。入口是 Compose 工作区根 `VirusPC/edges-workspace-viruspc`，正文落在本仓。例程运行时只看 GitHub；对话层由主聊天逐个助手补进后再合成。正文 `INDEX.md` 写定后不改，后续评论记同目录 `COMMENTS.md`。
 
 本仓公开。不写个人身份细节、未公开 IP、鉴权链接、凭据、私人生活细节。原始对话记录不进本目录。细则见根 [README](../../README.md) 的「隐私与脱敏」。
 
