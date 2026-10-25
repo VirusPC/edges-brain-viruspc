@@ -11,30 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-25
+
 ### langfuse-experiment-webhook
 
 - **宿主保活改走 edges evaluation server：** `ops/langfuse-experiment-webhook.service` 的 `ExecStart` 改为 `edges evaluation server start --dev`，环境文件改为 `%h/.config/edges/edges.env`。日常入口是 `edges config init` 之后 `edges evaluation server install` / `start`。薄封装 `python -m langfuse_experiment_webhook` 仍留给直接跑 python 和可选容器；容器镜像检出框架仓 `packages/services/evaluation`（`b054de961e580ae0c1ce478e3eb4065d22b958ca`）。
-- **薄封装委托框架仓的 experiment-webhook：** `projects/services/langfuse-experiment-webhook/business/` 不再自带签名、HTTP 和后台调度。`python3 -m langfuse_experiment_webhook` 在能找到 `experiment_webhook` 时调用框架仓 `packages/services/experiment-webhook`（`VirusPC/edges` main `7da7994`）。找不到就退出，不退回以前的 dry-run 进程。
+- **薄封装委托框架仓的 evaluation 包：** `projects/services/langfuse-experiment-webhook/business/` 不再自带签名、HTTP 和后台调度。`python3 -m langfuse_experiment_webhook` 在能找到 `experiment_webhook` 时调用框架仓 `packages/services/evaluation`（`VirusPC/edges` `b054de961e580ae0c1ce478e3eb4065d22b958ca`）。找不到就退出，不退回以前的 dry-run 进程。
 - **公网入口仍在本仓：** `lf-experiment.viruspc.tech`、Cloudflare Tunnel、systemd 和可选容器留在 `ops/`。未设置监听时仍是 `0.0.0.0:8787`。签名改为框架仓的默认：要校验，没密钥则 401。`DRY_RUN` 和 `EXPERIMENT_RUNNER_CMD` / `EXPERIMENT_RUNNER_URL` 退役。重启前的步骤在 `ops/README.md`。Langfuse 自建 compose 保持原样。
 
 ### 个人仓
 
 - **系统副本已从个人主干移除：** 本仓只保留 peng cheng 的个人大脑：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`，以及 `edges-publish` 的写入目标。Edges 框架（CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点、artifacts 预览服务和相关 workflow）在 [VirusPC/edges](https://github.com/VirusPC/edges)。要用 CLI，执行 `npm install -g @viruspc/edges`，或到框架仓开发。ECS 上 `/teaching/` 仍由本仓 Deploy 更新检出 `/home/cheng-dev/projects/edges`，并检查 `teaching/index.html`；`/tasks/` 与 artifacts 预览由框架仓检出 `/home/cheng-dev/projects/edges-framework` 部署。
-
-- **博客与站点内容只在本仓：** 博客成稿 `posts/` 和「站点与内容」维护项目 [`.harness/tasks/site-and-content/`](.harness/tasks/site-and-content/README.md)（4 张 backlog 卡：Astro 博客与 CI、仓库主页 badge、整理 posts 并建站、posts 外更丰富的输出形态）现在只在本仓，框架仓会删掉它们。对应的项目记忆「posts 对外展示，Astro 博客 + Actions CI」从框架仓搬到 [`.harness/memory/projects/`](.harness/memory/projects/README.md)，在 [`.harness/README.md`](.harness/README.md) 登记。新服务器运维笔记和 X / Twitter 搜索查询搬到 [`shared-extensions/new-server/`](shared-extensions/new-server/bootstrap.md) 与 [`shared-extensions/others/`](shared-extensions/others/twitter-query.md)，见 [`shared-extensions/README.md`](shared-extensions/README.md)。
+- **博客与站点内容只在本仓：** 博客成稿 `posts/` 和「站点与内容」维护项目 [`.harness/tasks/site-and-content/`](.harness/tasks/site-and-content/README.md)（4 张 backlog 卡：Astro 博客与 CI、仓库主页 badge、整理 posts 并建站、posts 外更丰富的输出形态）现在只在本仓，框架仓已删掉这些路径。对应的项目记忆「posts 对外展示，Astro 博客 + Actions CI」从框架仓搬到 [`.harness/memory/projects/`](.harness/memory/projects/README.md)，在 [`.harness/README.md`](.harness/README.md) 登记。新服务器运维笔记和 X / Twitter 搜索查询搬到 [`shared-extensions/new-server/`](shared-extensions/new-server/bootstrap.md) 与 [`shared-extensions/others/`](shared-extensions/others/twitter-query.md)，见 [`shared-extensions/README.md`](shared-extensions/README.md)。
 
 ### 组合仓库
 
 - **公开个人仓不再挂框架仓：** 根 `AGENTS.md` 去掉 `project-harness-compose` 区块，不再登记 [`VirusPC/edges`](https://github.com/VirusPC/edges)。公开仓库之间不互相 Compose，本仓也不把框架仓或私有仓写进 `.harness/compose/`。挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`，那边已经用 git submodule 把两个大脑装在 `.harness/compose/`。Compose 日常命令是 `edges compose add`、`list`、`update`，没有 `clone`。本仓不执行这些挂载。操作见框架仓 [`edges-compose`](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-compose/SKILL.md)。
-
-### CLI
-
-- **发往 main 的 PR 先做冻结安装：** `.github/workflows/frozen-install.yml` 在 pull request 的目标分支是 main 时，用根 `package.json` 的 `packageManager` 跑与 Deploy 相同的 `pnpm install --frozen-lockfile --filter @viruspc/edges... --filter tasks-review-app...`。锁文件和 `.pnpmfile.cjs` 对不上时，在合入前失败。
-- **npm 发版工作流使用仓库锁定的 pnpm：** `.github/workflows/publish-edges-cli.yml` 不再在 `pnpm/action-setup` 里写 `version: 10`。根 `package.json` 的 `packageManager` 已是 `pnpm@10.34.7`，两边同时指定会让 `@viruspc/edges@*` 的发布在安装前失败。
-
-### 项目记忆（project-memory）
-
-- **旧平铺记忆可以迁到当前布局：** 在仍使用早期 `.memory/` 平铺文件的仓库里，先跑 `edges memory migrate --dry-run`，确认映射后再跑 `edges memory migrate`。它按 `project` / `feedback` / `reference` / `user` 前缀把 `<type>_<slug>.md` 收进 `.harness/memory/<plural>/<type>_<slug>/INDEX.md`，大写的 `FEEDBACK.md`、`PROJECT.md`、`REFERENCE.md`、`USER.md` 重写成类型 `README.md`。条目用相对路径引用的附件目录一起搬走。对不上的路径列在结果的 `diagnostics` 里，正式迁移时进 `.project-memory-migration/unclassified/`，不再因为一个文件让整次迁移失败。`edges init` 碰到旧层时，会直接提示这两条命令。
 
 ## [1.5.0] - 2026-10-19
 
@@ -238,7 +230,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 办公文档（`.docx` / `.xlsx` / `.pptx`）入库。
 - 未公开的专利交底材料。
 
-[Unreleased]: https://github.com/VirusPC/edges/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/VirusPC/edges-brain-viruspc/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/VirusPC/edges/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/VirusPC/edges/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/VirusPC/edges/compare/v1.2.0...v1.3.0
