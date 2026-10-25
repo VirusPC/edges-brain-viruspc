@@ -13,8 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### langfuse-experiment-webhook
 
-- **独立的 Langfuse Custom Experiment webhook：** `projects/services/langfuse-experiment-webhook/` 提供 `GET /health` 和 `POST /langfuse/experiment`。默认 dry-run，尽快返回 2xx，后台在配了 Public API 时按数据集名称读取条数。具体评测用 `EXPERIMENT_RUNNER_CMD` 或 `EXPERIMENT_RUNNER_URL` 外接。Langfuse 自建 compose 保持原样。
-- **目录分成业务和运维壳：** `business/` 是收 POST 的进程；`ops/` 是 systemd 保活、Cloudflare Tunnel、托管环境变量和可选容器。进程行为不变。
+- **薄封装委托框架仓的 experiment-webhook：** `projects/services/langfuse-experiment-webhook/business/` 不再自带签名、HTTP 和后台调度。`python3 -m langfuse_experiment_webhook` 在能找到 `experiment_webhook` 时调用框架仓 `packages/services/experiment-webhook`（`VirusPC/edges` main `7da7994`）。找不到就退出，不退回以前的 dry-run 进程。
+- **公网入口仍在本仓：** `lf-experiment.viruspc.tech`、Cloudflare Tunnel、systemd 和可选容器留在 `ops/`。未设置监听时仍是 `0.0.0.0:8787`。签名改为框架仓的默认：要校验，没密钥则 401。`DRY_RUN` 和 `EXPERIMENT_RUNNER_CMD` / `EXPERIMENT_RUNNER_URL` 退役。重启前的步骤在 `ops/README.md`。Langfuse 自建 compose 保持原样。
 
 ### 个人仓
 
