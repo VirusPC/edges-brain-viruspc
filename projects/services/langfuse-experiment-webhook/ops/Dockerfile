@@ -1,7 +1,8 @@
+# 运维壳：把 business/ 里的进程装进镜像。业务逻辑不在这个文件里。
 FROM python:3.12-slim
 
 WORKDIR /app
-COPY langfuse_experiment_webhook /app/langfuse_experiment_webhook
+COPY business/langfuse_experiment_webhook /app/langfuse_experiment_webhook
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

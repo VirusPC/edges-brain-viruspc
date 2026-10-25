@@ -1,0 +1,19 @@
+# 运维壳：把 business/ 里的进程保活。
+# WorkingDirectory 和 EnvironmentFile 换成这台机器上的绝对路径。
+# EnvironmentFile 从 ops/.env.example 复制，填好的文件不要提交。
+
+[Unit]
+Description=Langfuse experiment webhook
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/ABSOLUTE/PATH/langfuse-experiment-webhook/business
+ExecStart=/usr/bin/python3 -m langfuse_experiment_webhook
+EnvironmentFile=-/etc/langfuse-experiment-webhook.env
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

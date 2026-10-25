@@ -1,5 +1,4 @@
-__pycache__
 **/__pycache__
-tests
-.env
-*.pyc
+**/*.pyc
+**/.env
+business/tests

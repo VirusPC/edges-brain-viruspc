@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### langfuse-experiment-webhook
 
 - **独立的 Langfuse Custom Experiment webhook：** `projects/services/langfuse-experiment-webhook/` 提供 `GET /health` 和 `POST /langfuse/experiment`。默认 dry-run，尽快返回 2xx，后台在配了 Public API 时按数据集名称读取条数。具体评测用 `EXPERIMENT_RUNNER_CMD` 或 `EXPERIMENT_RUNNER_URL` 外接。Langfuse 自建 compose 保持原样。
+- **目录分成业务和运维壳：** `business/` 是收 POST 的进程；`ops/` 是 systemd 保活、Cloudflare Tunnel、托管环境变量和可选容器。进程行为不变。
 
 ### 个人仓
 

@@ -1,0 +1,7 @@
+# 运维壳：只给这个 webhook 的一条 ingress。
+# 合并进本机 cloudflared 配置。不要写进 Langfuse compose。
+# tunnel token、证书留在本机。
+ingress:
+  - hostname: lf-experiment.viruspc.tech
+    service: http://127.0.0.1:8787
+  - service: http_status:404
