@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### langfuse-experiment-webhook
 
+- **宿主保活改走 edges evaluation server：** `ops/langfuse-experiment-webhook.service` 的 `ExecStart` 改为 `edges evaluation server start --dev`，环境文件改为 `%h/.config/edges/edges.env`。日常入口是 `edges config init` 之后 `edges evaluation server install` / `start`。薄封装 `python -m langfuse_experiment_webhook` 仍留给直接跑 python 和可选容器；容器镜像检出框架仓 `packages/services/evaluation`（`b054de961e580ae0c1ce478e3eb4065d22b958ca`）。
 - **薄封装委托框架仓的 experiment-webhook：** `projects/services/langfuse-experiment-webhook/business/` 不再自带签名、HTTP 和后台调度。`python3 -m langfuse_experiment_webhook` 在能找到 `experiment_webhook` 时调用框架仓 `packages/services/experiment-webhook`（`VirusPC/edges` main `7da7994`）。找不到就退出，不退回以前的 dry-run 进程。
 - **公网入口仍在本仓：** `lf-experiment.viruspc.tech`、Cloudflare Tunnel、systemd 和可选容器留在 `ops/`。未设置监听时仍是 `0.0.0.0:8787`。签名改为框架仓的默认：要校验，没密钥则 401。`DRY_RUN` 和 `EXPERIMENT_RUNNER_CMD` / `EXPERIMENT_RUNNER_URL` 退役。重启前的步骤在 `ops/README.md`。Langfuse 自建 compose 保持原样。
 

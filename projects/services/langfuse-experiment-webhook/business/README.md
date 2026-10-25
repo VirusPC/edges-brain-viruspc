@@ -12,7 +12,7 @@
 | `langfuse_experiment_webhook/server.py` | 兼容入口，转到 `wrap.main` |
 | `tests/test_wrap.py` | 路径优先级、退役变量只记名字、以及对着固定 commit 的框架包打一次签名 POST |
 
-框架包在 `PYTHONPATH` 上、或 `EDGES_ROOT` 指向框架仓检出、或 `EXPERIMENT_WEBHOOK_HOME` 指向 `packages/services/experiment-webhook` 时可用。三者都没有时进程退出。
+宿主入口是 `edges evaluation server`（见 [`../ops/`](../ops/README.md)）。本目录的 `python3 -m langfuse_experiment_webhook` 是薄封装：框架包在 `PYTHONPATH` 上、或 `EDGES_ROOT` 指向框架仓检出、或 `EXPERIMENT_WEBHOOK_HOME` 指向 `packages/services/evaluation` 时可用。三者都没有时进程退出。
 
 `EXPERIMENT_WEBHOOK_HOME` 优先于 `EDGES_ROOT`，两者都优先于已经能导入的 `experiment_webhook`。
 
@@ -33,4 +33,4 @@ EDGES_ROOT=/path/to/edges python3 -m langfuse_experiment_webhook
 python3 -m unittest discover -s tests -v
 ```
 
-集成测试会把 `VirusPC/edges` 的 `7da7994ad6a269514248c3f1a0f5827279f4969c` 稀疏检到临时目录。需要能访问 GitHub。
+集成测试会把 `VirusPC/edges` 的 `b054de961e580ae0c1ce478e3eb4065d22b958ca` 稀疏检到临时目录（`packages/services/evaluation`）。需要能访问 GitHub。

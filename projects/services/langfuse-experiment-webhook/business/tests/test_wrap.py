@@ -64,7 +64,7 @@ def _ensure_framework() -> Path:
         cache
         / "packages"
         / "services"
-        / "experiment-webhook"
+        / "evaluation"
         / "experiment_webhook"
         / "server.py"
     )
@@ -98,7 +98,7 @@ def _ensure_framework() -> Path:
             str(cache),
             "sparse-checkout",
             "set",
-            "packages/services/experiment-webhook",
+            "packages/services/evaluation",
         ],
         check=True,
         capture_output=True,
@@ -128,7 +128,7 @@ class ResolveTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             edges = root / "edges"
-            service = edges / "packages" / "services" / "experiment-webhook"
+            service = edges / "packages" / "services" / "evaluation"
             _write_fake(service, "edges")
             other = root / "other"
             _write_fake(other, "home")
@@ -145,7 +145,7 @@ class ResolveTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             edges = Path(tmp) / "edges"
-            service = edges / "packages" / "services" / "experiment-webhook"
+            service = edges / "packages" / "services" / "evaluation"
             _write_fake(service, "edges")
             chosen = wrap.resolve_framework_home({"EDGES_ROOT": str(edges)})
             self.assertEqual(chosen, service.resolve())
@@ -335,7 +335,12 @@ class OpsContractTests(unittest.TestCase):
         dockerfile = (SERVICE / "ops" / "Dockerfile").read_text(encoding="utf-8")
         self.assertIn(wrap.PIN, dockerfile)
         unit = (SERVICE / "ops" / "langfuse-experiment-webhook.service").read_text(encoding="utf-8")
-        self.assertIn("python3 -m langfuse_experiment_webhook", unit)
+        exec_lines = [line for line in unit.splitlines() if line.startswith("ExecStart=")]
+        self.assertEqual(
+            exec_lines,
+            ["ExecStart=/usr/bin/env edges evaluation server start --dev"],
+        )
+        self.assertIn("EnvironmentFile=-%h/.config/edges/edges.env", unit)
 
 
 def _wait_health(

@@ -1,9 +1,10 @@
 """Personal entry for the Langfuse experiment URL.
 
 Signature checks, HTTP, and in-process dispatch live in the framework package
-``experiment_webhook`` (VirusPC/edges ``packages/services/experiment-webhook``).
+``experiment_webhook`` (VirusPC/edges ``packages/services/evaluation``).
 This module finds that package and applies the bind defaults for this
-deployment. Domain, tunnel, and process supervision stay under ``ops/``.
+deployment. The host ops entry is ``edges evaluation server``. Domain and
+tunnel stay under ``ops/``.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from pathlib import Path
 
 
 # Framework commit this wrap was written against (VirusPC/edges main).
-PIN = "7da7994ad6a269514248c3f1a0f5827279f4969c"
+PIN = "b054de961e580ae0c1ce478e3eb4065d22b958ca"
 
 RETIRED = (
     "DRY_RUN",
@@ -33,14 +34,19 @@ _REPORTS = Path(__file__).resolve().parent.parent / "reports"
 UNAVAILABLE = f"""\
 langfuse-experiment-webhook: 找不到框架包 experiment_webhook。
 
-HTTP、签名和调度在 VirusPC/edges 的 packages/services/experiment-webhook
-（main 上 {PIN} 起）。本进程不再自带一套，也不会退回以前的 dry-run 服务器。
+HTTP、签名和调度在 VirusPC/edges 的 packages/services/evaluation
+（{PIN} 起）。本进程不再自带一套，也不会退回以前的 dry-run 服务器。
 
-设置下面其中一个再启动：
+宿主上的运维入口是：
+  edges config init
+  edges evaluation server install
+  edges evaluation server start
+
+这条薄封装只在还要直接跑 python 时使用。设置下面其中一个：
   EDGES_ROOT=/path/to/edges
-  EXPERIMENT_WEBHOOK_HOME=/path/to/edges/packages/services/experiment-webhook
+  EXPERIMENT_WEBHOOK_HOME=/path/to/edges/packages/services/evaluation
 
-隧道、域名和 systemd 的 ExecStart 不变。迁移步骤在 ops/README.md。
+隧道和域名仍在 ops/。步骤在 ops/README.md。
 """
 
 
@@ -79,11 +85,11 @@ def resolve_framework_home(environ: Mapping[str, str]) -> Path:
         return root
     edges = _raw(environ, "EDGES_ROOT")
     if edges:
-        root = package_root(Path(edges) / "packages" / "services" / "experiment-webhook")
+        root = package_root(Path(edges) / "packages" / "services" / "evaluation")
         if root is None:
             raise SystemExit(
                 "langfuse-experiment-webhook: EDGES_ROOT 下没有 "
-                f"packages/services/experiment-webhook ({edges})。"
+                f"packages/services/evaluation ({edges})。"
             )
         return root
     found = _importable_home()
