@@ -1,6 +1,8 @@
-# 运维壳：把 business/ 里的进程保活。
+# 运维壳：把 business/ 里的薄封装保活。
 # WorkingDirectory 和 EnvironmentFile 换成这台机器上的绝对路径。
 # EnvironmentFile 从 ops/.env.example 复制，填好的文件不要提交。
+# 重启前先看 ops/README.md 的「迁移」：要有框架仓检出和 LANGFUSE_WEBHOOK_SECRET。
+# 缺了框架包时进程退出，不会退回旧的 dry-run HTTP。
 
 [Unit]
 Description=Langfuse experiment webhook
@@ -12,6 +14,8 @@ Type=simple
 WorkingDirectory=/ABSOLUTE/PATH/langfuse-experiment-webhook/business
 ExecStart=/usr/bin/python3 -m langfuse_experiment_webhook
 EnvironmentFile=-/etc/langfuse-experiment-webhook.env
+# Environment=EDGES_ROOT=/ABSOLUTE/PATH/edges-framework
+# Environment=EXPERIMENT_WEBHOOK_HOME=/ABSOLUTE/PATH/edges-framework/packages/services/experiment-webhook
 Restart=always
 RestartSec=2
 
