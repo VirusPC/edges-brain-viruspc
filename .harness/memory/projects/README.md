@@ -24,4 +24,5 @@ format: ordinary
 - [长期 AI 问题写成稳定定义，用定时追踪看解法演进](<project_enduring_ai_problems_timed_tracking/INDEX.md>) — 要把记忆管理、多 agent、评估等长期问题时打开：先写成稳定问题定义，再用 Routines 定时扫公开进展，对照本仓实践记差异
 - [Langfuse 历史 trace 不可改 environment/model，脏数据保留](<project_langfuse_traces_immutable_keep_dirty/INDEX.md>) — 自建 Langfuse 上已写入的 environment 与 model 不可事后 PATCH；命名规范落地前的脏数据保留，不按同 id 重灌。
 - [Grok Bot box 上 Tailscale 重建后可能静默丢失，按台账重装](<project_grok_bot_box_tailscale_silent_loss/INDEX.md>) — Grok Bot 云电脑曾多次出现 Tailscale 装过又丢；再断时先对 IT 台账确认该装，再重装验收，hostname 用 grok\-bot。
+- [Langfuse 数据在 named volume，停机不丢；down \-v / 擦盘才会丢](<project_langfuse_data_named_volumes_survive_restart/INDEX.md>) — 自建 Langfuse 数据在宿主 Docker named volume；正常停容器或关机不丢；compose down \-v、删 volume 或擦系统盘会丢；查数优先走 Langfuse API 而非直连库。
 <!-- project-entries-local:end -->
