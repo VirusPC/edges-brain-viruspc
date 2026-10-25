@@ -1,6 +1,8 @@
 ---
 name: daily-conversation-deposit
-description: 每日沉淀扫描（日复盘）。回顾过去 24 小时各 Grok Bot 助手的对话，把沉淀候选直接落成文件并开 PR 到 main；当日复盘写入 retrospectives/daily。审阅在 PR 上，不自动合并。
+description: >-
+  每日沉淀扫描（日复盘）。回顾过去 24 小时各 Grok Bot 助手的对话，把沉淀候选直接落成文件并开 PR 到 main；当日复盘写入
+  retrospectives/daily。审阅在 PR 上，不自动合并。
 ---
 
 # 每日沉淀扫描（日复盘）
@@ -9,7 +11,7 @@ description: 每日沉淀扫描（日复盘）。回顾过去 24 小时各 Grok 
 
 入口是 Compose 工作区根 `VirusPC/edges-workspace-viruspc`（`.harness/compose/` 下挂着公开脑和私密脑）：先读它的根 `AGENTS.md`，再按公开脑根 AGENTS.md 判断去向。候选和当日复盘的 PR 开在挂进来的子仓（公开脑或私密脑），不写进工作区根。（2026-10-21 用户确认，通用约定见公开脑 `.harness/memory/projects/project_workspace_is_deposit_entry/`。）
 
-何时跑见同目录 [schedule.md](schedule.md)。本文件不写日程。
+何时跑见同目录 [INDEX.md](INDEX.md)。本文件不写日程。
 
 ## 步骤
 

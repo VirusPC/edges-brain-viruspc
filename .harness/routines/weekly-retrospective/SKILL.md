@@ -1,6 +1,8 @@
 ---
 name: weekly-retrospective
-description: 每周一周复盘。以 Compose 工作区根 VirusPC/edges-workspace-viruspc 为入口，回顾上一个自然周；结果经 PR 写入公开脑 retrospectives/weekly（敏感内容如有则私密脑另开 PR）。
+description: >-
+  每周一周复盘。以 Compose 工作区根 VirusPC/edges-workspace-viruspc 为入口，回顾上一个自然周；结果经 PR
+  写入公开脑 retrospectives/weekly（敏感内容如有则私密脑另开 PR）。
 ---
 
 # 每周一周复盘
@@ -9,7 +11,7 @@ description: 每周一周复盘。以 Compose 工作区根 VirusPC/edges-workspa
 
 入口是 Compose 工作区根 `VirusPC/edges-workspace-viruspc`（`.harness/compose/` 下挂着公开脑、私密脑和框架仓）：先读它的根 `AGENTS.md` 与 `.harness/compose/README.md`，再读公开脑 `VirusPC/edges-brain-viruspc` 根 AGENTS.md。仓库层复盘要覆盖挂进来的子仓：公开脑、框架仓 `VirusPC/edges`（`@viruspc/edges` 仓库里的 CLI、skills、extensions、ADR 等框架改动）、必要时私密脑。私密脑只在「范围」里说明读了；公开清单不写私人正文。周复盘的 PR 开在挂进来的子仓，不写进工作区根。（2026-10-21 用户确认，通用约定见公开脑 `.harness/memory/projects/project_workspace_is_deposit_entry/`。）
 
-何时跑见同目录 [schedule.md](schedule.md)。本文件不写日程。
+何时跑见同目录 [INDEX.md](INDEX.md)。本文件不写日程。
 
 ## 提示词
 

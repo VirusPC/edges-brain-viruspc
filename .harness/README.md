@@ -8,4 +8,5 @@
 - [根维护任务](<tasks/README.md>) — 仍留在本仓的个人维护任务。
 - [.harness/projects/README.md](<projects/README.md>) — 项目内容叶子的组织清单。
 - [.harness/notes/README.md](<notes/README.md>) — 笔记模块的 harness 条目。叶子登记在 scope 的 notes/README.md。
+- [Routines](<routines/README.md>) — 例行任务定义；执行与调度由外部平台负责。
 <!-- project-entries-local:end -->

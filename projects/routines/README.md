@@ -1,18 +1,18 @@
 # routines
 
-Routine 专项工作区：跨平台 routine 的形态调研，以及 skill 与日程怎么放。不定义跨厂商的统一类型。
+Routine 调研与实现材料。现行例程定义统一登记在根 [.harness/routines/README.md](../../.harness/routines/README.md)，每条以 `INDEX.md` 记录日程并引用 Skill；外部平台每次运行重新读取定义与 Skill。平台日程字段保留各自表达，不定义跨厂商的统一日程类型。
 
-默认把日程和内容分开。打进同一份文件不再是首选。两种放法：一个目录里放极简日程文件，内容来自 Skill（日程引用 Skill）；或者一份 Skill 和它的日程文件放在同一目录。四种形态是业界分类，见调研笔记。定义不放进 `notes/`。
+本目录保留跨平台调研，以及带代码、npm 依赖和 git submodule 的 Grok Bot 导出实现。日复盘、周复盘的 Skill 与定义已迁入 `.harness/routines/`。
 
 ## 文档
 
 - [2026-10-11--跨平台定义调研.md](2026-10-11--跨平台定义调研.md) — 四种形态、拆分布局，以及各家字段的分开示意
 
-## 示例
+## 现行例程
 
-- [daily-conversation-deposit/SKILL.md](daily-conversation-deposit/SKILL.md) — 日复盘。意图在 `SKILL.md`，日程在同目录 [schedule.md](daily-conversation-deposit/schedule.md)，只引用 Skill。扫描出的候选按根 AGENTS.md 直接落文件，与当日 [`retrospectives/daily/`](../../retrospectives/daily/README.md) 同一个 PR（个人内容在 edges-brain-viruspc-private 另开 PR）。审阅在 PR 上，不自动合并。
-- [weekly-retrospective/SKILL.md](weekly-retrospective/SKILL.md) — 周复盘。意图在 `SKILL.md`，日程在同目录 [schedule.md](weekly-retrospective/schedule.md)，只引用 Skill。结果写入 [`retrospectives/weekly/`](../../retrospectives/weekly/README.md)。
-- [grokbot-langfuse-export/SKILL.md](grokbot-langfuse-export/SKILL.md)：每小时把全部 Grok Bot 助手会话写入自建 Langfuse（OTLP）。日程 [schedule.md](grokbot-langfuse-export/schedule.md)；代码结构见 [README.md](grokbot-langfuse-export/README.md)。
+- [日复盘](../../.harness/routines/daily-conversation-deposit/INDEX.md) — 每日沉淀扫描；定义引用同目录 Skill，产出经 PR 写入对应子仓。
+- [周复盘](../../.harness/routines/weekly-retrospective/INDEX.md) — 回顾上一个自然周；结果写入 [`retrospectives/weekly/`](../../retrospectives/weekly/README.md)。
+- [Grok Bot → Langfuse 导出](../../.harness/routines/grokbot-langfuse-export/INDEX.md) — 每小时导出全部助手会话；[Skill](grokbot-langfuse-export/SKILL.md) 与 [代码说明](grokbot-langfuse-export/README.md) 保留在现有实现目录。
 
 ## 改名对照
 

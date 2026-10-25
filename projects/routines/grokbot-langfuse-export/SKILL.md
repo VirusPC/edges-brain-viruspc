@@ -1,6 +1,10 @@
 ---
 name: grokbot-langfuse-export
-description: 把全部 Grok Bot 助手会话导出到自建 Langfuse（与本机 Codex/Pi 同一项目）。从 box 本地消息索引 search-index.db（或 ReadTranscript）落 staging，再用 vendored langfuse/cursor-observability-plugin 的 emitTurn 经 OTLP 写入。运行频率见 schedule.md。
+description: >-
+  把全部 Grok Bot 助手会话导出到自建 Langfuse（与本机 Codex/Pi 同一项目）。从 box 本地消息索引
+  search-index.db（或 ReadTranscript）落 staging，再用 vendored
+  langfuse/cursor-observability-plugin 的 emitTurn 经 OTLP 写入。运行频率见
+  .harness/routines/grokbot-langfuse-export/INDEX.md。
 ---
 
 # Grok Bot → Langfuse 导出
@@ -10,7 +14,7 @@ description: 把全部 Grok Bot 助手会话导出到自建 Langfuse（与本机
 把 peng cheng 名下全部 Grok Bot 助手（含记录员）的会话，按真实发生时间写入自建 Langfuse 项目 Edges（`https://langfuse.viruspc.tech`），与本机 Codex / Pi 插件共用同一对 key。
 
 - 范围：全部助手（`/home/box/agent-data/agents/*/profile.json`），含记录员。
-- 运行频率见 [schedule.md](schedule.md)。
+- 运行频率见 [Routine INDEX.md](../../../.harness/routines/grokbot-langfuse-export/INDEX.md)。
 - 代码结构、文件用途、升级插件见 [README.md](README.md)。
 
 ## 数据流

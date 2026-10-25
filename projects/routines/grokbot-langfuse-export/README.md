@@ -1,6 +1,6 @@
 # grokbot-langfuse-export
 
-把全部 Grok Bot 助手的对话按真实时间（分钟精度）写进自建 Langfuse 项目 Edges，每轮一条 trace。写入复用官方 [langfuse/cursor-observability-plugin](https://github.com/langfuse/cursor-observability-plugin) 的 `emitTurn`，插件源码不改；本目录只补「读 Grok Bot 对话」和「把 Cursor 字样换成 Grok Bot」两件事。routine 流程见 [SKILL.md](SKILL.md)；运行频率见 [schedule.md](schedule.md)。
+把全部 Grok Bot 助手的对话按真实时间（分钟精度）写进自建 Langfuse 项目 Edges，每轮一条 trace。写入复用官方 [langfuse/cursor-observability-plugin](https://github.com/langfuse/cursor-observability-plugin) 的 `emitTurn`，插件源码不改；本目录只补「读 Grok Bot 对话」和「把 Cursor 字样换成 Grok Bot」两件事。routine 流程见 [SKILL.md](SKILL.md)；运行频率见 [Routine INDEX.md](../../../.harness/routines/grokbot-langfuse-export/INDEX.md)。
 
 ## 文件
 
