@@ -1,5 +1,4 @@
-ok
-��复盘
+# 周复盘
 
 命名：`retrospectives/weekly/<周一日期>--周复盘/INDEX.md`（周一到周日，日期取该周周一；例 `retrospectives/weekly/2026-10-05--周复盘/INDEX.md`）。同一周一只保留一篇。
 
