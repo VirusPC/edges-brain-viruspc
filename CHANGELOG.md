@@ -5,11 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-本文件记 `VirusPC/edges-brain-viruspc` 的仓库级变化。2026-10-20 之前的条目描述的是当时还在本仓里的 Edges 系统；那些系统内容现在在框架仓 [VirusPC/edges](https://github.com/VirusPC/edges)。对外 skill 的版本记录看框架仓 [`extensions/skills/`](https://github.com/VirusPC/edges/tree/main/extensions/skills)；不绑定 Edges、留在本仓的扩展看 [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)。尚未发版的变化按功能模块分组。Unreleased 的 `###` 用功能模块原名，不要改成「模块：摘要」或只留摘要；每条 `-` 前面加短小标题，写成 `- **小标题：** 正文…`。
+本文件记 `VirusPC/edges-brain-viruspc` 的仓库级变化。2026-10-20 之前的条目描述的是当时还在本仓里的 Edges 系统；那些系统内容现在在框架仓 [VirusPC/edges](https://github.com/VirusPC/edges)。对外 skill 的版本记录看框架仓 [`packages/skills/`](https://github.com/VirusPC/edges/tree/main/packages/skills)；不绑定 Edges、留在本仓的扩展看 [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)。尚未发版的变化按功能模块分组。Unreleased 的 `###` 用功能模块原名，不要改成「模块：摘要」或只留摘要；每条 `-` 前面加短小标题，写成 `- **小标题：** 正文…`。
 
 领域决策、术语表和实现计划不写进这份 changelog。它们在框架仓：[`docs/adr/`](https://github.com/VirusPC/edges/tree/main/docs/adr)、[`CONTEXT.md`](https://github.com/VirusPC/edges/blob/main/CONTEXT.md)、[`docs/superpowers/plans/`](https://github.com/VirusPC/edges/tree/main/docs/superpowers/plans)。
 
 ## [Unreleased]
+
+### shared-extensions
+
+- **Langfuse 接入 skill 迁出本层：** `langfuse-agent-tracing`、`cursor-cloud-langfuse-tracing`、`codex-cloud-langfuse-tracing` 从 `shared-extensions/skills/` 删除。它们改由框架仓 `packages/skills/` 随 `@viruspc/edges` 分发（主入口 `langfuse-agent-tracing`，子 skill `langfuse-local-agent-tracing`、`langfuse-cursor-cloud-tracing`、`langfuse-codex-cloud-tracing`、`langfuse-grokbot-tracing`）。本层版本升到 `5.0.0`。明细见 [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)。
 
 ## [1.6.0] - 2026-10-25
 

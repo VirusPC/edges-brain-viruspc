@@ -8,7 +8,7 @@
 
 当天（Asia/Shanghai 2026-10-24）的接入已经在真实环境里跑通。环境是 saved environment `edges-workspace-viruspc`（仓库 `VirusPC/edges-workspace-viruspc`，env id `2b29527a-cd15-11f1-bec7-b2318963e0b6`）。Langfuse 基址为公开域名 `langfuse.viruspc.tech`，版本 v4，摄取模式 `events_only`，项目名 Edges。
 
-可复用步骤沉淀在 skill `shared-extensions/skills/cursor-cloud-langfuse-tracing`。本篇记当时为什么这样接、验证到了什么。
+可复用步骤现随 `@viruspc/edges` 从框架仓 [`packages/skills/langfuse-cursor-cloud-tracing`](https://github.com/VirusPC/edges/tree/main/packages/skills/langfuse-cursor-cloud-tracing) 分发（主入口 [`langfuse-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-agent-tracing/SKILL.md)）。本篇记当时为什么这样接、验证到了什么。
 
 ## 主题
 
@@ -102,7 +102,7 @@ Cloud Agent 跑的是 active build 快照，不会在每次启动时 git pull �
 - 四个 Secret 放在 environment；开关把云端上报和本机去重分开。
 - active build 含 commit `5eac8c7` 后，云端出现 `Cursor Turn`（`environment=cursor-cloud`），并带 LLM 与 Shell 子观测。
 - 本机 smoke 能导出 turn，且 status 连上项目 Edges。
-- 落地文件在 `VirusPC/edges-workspace-viruspc` 的 main `5eac8c7`：`.cursor/hooks.json` 与 `.cursor/hooks/langfuse.sh`（`100755`）。可复用副本在本仓 skill 的 `templates/`。
+- 落地文件在 `VirusPC/edges-workspace-viruspc` 的 main `5eac8c7`：`.cursor/hooks.json` 与 `.cursor/hooks/langfuse.sh`（`100755`）。可复用模板现随 `@viruspc/edges` 放在框架仓 [`packages/skills/langfuse-cursor-cloud-tracing/templates/`](https://github.com/VirusPC/edges/tree/main/packages/skills/langfuse-cursor-cloud-tracing/templates)。
 - 三 Compose 对应 env 已通。公开脑 `VirusPC/edges-brain-viruspc` hooks PR #367（`4a4fda4`）、私有脑 `VirusPC/edges-brain-viruspc-private` hooks PR #5（`3880247`）、框架仓 `VirusPC/edges` hooks PR #29（`9b29acb`）。各环境 Config change build 已是 active，commit 与上述合入一致。23:31 Langfuse 收到 3 条 `Cursor Turn`（`environment=cursor-cloud`）。密钥不入库。
 
 还剩（未开任务，仅记录）：
@@ -138,7 +138,7 @@ Cloud Agent 跑的是 active build 快照，不会在每次启动时 git pull �
 
 #### 核心解决方案
 
-1. 把 skill 里的两个模板拷进目标仓库：`.cursor/hooks.json` 与可执行的 `.cursor/hooks/langfuse.sh`。不改 environment install 脚本。  
+1. 把 [`langfuse-cursor-cloud-tracing`](https://github.com/VirusPC/edges/tree/main/packages/skills/langfuse-cursor-cloud-tracing) 里的两个模板拷进目标仓库：`.cursor/hooks.json` 与可执行的 `.cursor/hooks/langfuse.sh`。该 skill 随 `@viruspc/edges` 从框架仓 `packages/skills/` 分发，主入口是 `langfuse-agent-tracing`。不改 environment install 脚本。  
    （可选项：按文档 `npm install` 或在 install 脚本里预装插件 —— 不做。2026-10-24 npm 404，且 install 脚本不是这条路径的依赖。）
 2. 在该 environment 加上四个 Runtime Secret：`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`、`LANGFUSE_BASE_URL`、`LANGFUSE_CURSOR_PROJECT_HOOKS=1`。本机不设最后一个。  
    （可选项：本机也打开项目 hooks 上报 —— 不做，会和用户级插件重复。）
@@ -158,7 +158,7 @@ Cloud Agent 跑的是 active build 快照，不会在每次启动时 git pull �
 
 #### 若目标是另一个 Cursor Cloud environment
 
-则：拷同一对文件，在**那个** environment 加同样的四个 Secret，再确认它自己的 active build。Compose 下每个子仓是独立的 saved environment，workspace 通了不会让 brain / framework 跟着追踪。插件 pin、缓存目录和开关语义都在 `templates/langfuse.sh` 里，不要在笔记里另抄一份脚本。
+则：拷同一对文件，在**那个** environment 加同样的四个 Secret，再确认它自己的 active build。Compose 下每个子仓是独立的 saved environment，workspace 通了不会让 brain / framework 跟着追踪。插件 pin、缓存目录和开关语义都在框架仓 [`packages/skills/langfuse-cursor-cloud-tracing/templates/langfuse.sh`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-cursor-cloud-tracing/templates/langfuse.sh) 里，不要在笔记里另抄一份脚本。
 
 #### 若云端任务报 hooks 缺失或 `.cursor/` 不存在
 
@@ -174,12 +174,12 @@ Cloud Agent 跑的是 active build 快照，不会在每次启动时 git pull �
 
 #### 若只要本机 Cursor
 
-则：走 [langfuse-agent-tracing](../../shared-extensions/skills/langfuse-agent-tracing/SKILL.md)，不要设 `LANGFUSE_CURSOR_PROJECT_HOOKS`。Codex Cloud 走 [codex-cloud-langfuse-tracing](../../shared-extensions/skills/codex-cloud-langfuse-tracing/SKILL.md)。
+则：走框架仓主入口 [langfuse-agent-tracing](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-agent-tracing/SKILL.md) 下的 [langfuse-local-agent-tracing](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-local-agent-tracing/SKILL.md)，不要设 `LANGFUSE_CURSOR_PROJECT_HOOKS`。这些 skill 随 `@viruspc/edges` 分发。Codex Cloud 走 [langfuse-codex-cloud-tracing](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-codex-cloud-tracing/SKILL.md)。
 
 ## 补充说明
 
 - 原始材料：Asia/Shanghai 2026-10-24 的接入事实（已验证的 `hooks.json` 与 `langfuse.sh`）；同日晚三环境 rollout（公开脑 hooks PR #367、私有脑 hooks PR #5、框架仓 hooks PR #29），验证时间 23:31，助手「全栈开发专家」。本笔记按 `conversation-to-notes` 的章节（背景 / 主题 / 过程 / 结果 / 所学 / 行动指南 / 补充说明）整理。凭证与 Cursor 账号邮箱不写入本公开仓。
-- 可复用资产：`shared-extensions/skills/cursor-cloud-langfuse-tracing/`（`SKILL.md` 与 `templates/`）。
+- 可复用资产：框架仓 [`packages/skills/langfuse-cursor-cloud-tracing/`](https://github.com/VirusPC/edges/tree/main/packages/skills/langfuse-cursor-cloud-tracing)（`SKILL.md` 与 `templates/`），随 `@viruspc/edges` 分发；主入口是 `langfuse-agent-tracing`。
 - 同日姊妹笔记：[Codex Cloud 会话追踪到自建 Langfuse](../2026-10-24--codex-cloud-会话追踪到自建-langfuse/INDEX.md)、[多机 Langfuse Agent 追踪安装与验收](../2026-10-24--多机-langfuse-agent-追踪安装与验收/INDEX.md)。
 - 遗留项（npm 仍 404、云端部分 hook 不触发、Draft build、账号可见性）只记在「结果」。本篇不另开任务。
 
@@ -189,8 +189,8 @@ Cloud Agent 跑的是 active build 快照，不会在每次启动时 git pull �
 
 | 文件 | 放到目标仓库 |
 | --- | --- |
-| `shared-extensions/skills/cursor-cloud-langfuse-tracing/templates/hooks.json` | `.cursor/hooks.json` |
-| `shared-extensions/skills/cursor-cloud-langfuse-tracing/templates/langfuse.sh` | `.cursor/hooks/langfuse.sh`（`100755`） |
+| [`packages/skills/langfuse-cursor-cloud-tracing/templates/hooks.json`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-cursor-cloud-tracing/templates/hooks.json) | `.cursor/hooks.json` |
+| [`packages/skills/langfuse-cursor-cloud-tracing/templates/langfuse.sh`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-cursor-cloud-tracing/templates/langfuse.sh) | `.cursor/hooks/langfuse.sh`（`100755`） |
 
 **插件 pin：** `a36d39a7c5cf9da34662159b70d51b6b36855abc`（`langfuse/cursor-observability-plugin`）。缓存目录 `~/.cache/langfuse-cursor-plugin/<pin>`。
 
