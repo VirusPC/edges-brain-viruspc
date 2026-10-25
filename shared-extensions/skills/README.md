@@ -4,7 +4,7 @@
 
 一个 skill 一个子目录，必须有 `SKILL.md`，frontmatter 的 `name` 与目录名一致。`description` 写清何时触发、何时不该触发。
 
-**不要**给单个 skill 写 `version` 或 `CHANGELOG.md`。本目录跟 mcp / plugins / hooks 一起，走 shared-extensions **整层**的 [`VERSION`](../VERSION) 和 [`CHANGELOG.md`](../CHANGELOG.md)。这点和 [`extensions/skills/`](https://github.com/VirusPC/edges/blob/main/extensions/skills/README.md) 相反。
+**不要**给单个 skill 写 `version` 或 `CHANGELOG.md`。本目录跟 mcp / plugins / hooks 一起，走 shared-extensions **整层**的 [`VERSION`](../VERSION) 和 [`CHANGELOG.md`](../CHANGELOG.md)。这点和框架仓 [`packages/skills/`](https://github.com/VirusPC/edges/blob/main/packages/skills/README.md) 相反。
 
 ## 和 `extensions/skills` 的分工
 
@@ -16,4 +16,6 @@
 
 一件 skill 只放一处。`name` 在两个目录之间也不得重复。
 
-为 Edges 知识库服务的 skill（如 `conversation-to-notes`、`project-memory-*`）留在 `extensions/skills`，不要搬过来。
+为 Edges 知识库服务的 skill（如 `conversation-to-notes`、`project-memory-*`）留在框架仓 [`packages/skills/`](https://github.com/VirusPC/edges/tree/main/packages/skills)，不要搬过来。
+
+Langfuse 接入类 skill 也不在本目录。它们随 `@viruspc/edges` 从同一处 `packages/skills/` 分发：主入口 `langfuse-agent-tracing`，子 skill `langfuse-local-agent-tracing`、`langfuse-cursor-cloud-tracing`、`langfuse-codex-cloud-tracing`、`langfuse-grokbot-tracing`。

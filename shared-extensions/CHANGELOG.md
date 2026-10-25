@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 本文件记 **shared-extensions 整层**变更。不按单个 skill / mcp / plugin / hook 拆 changelog。版本号以 [`VERSION`](VERSION) 为准，tag 为 `shared-extensions@<version>`。
 
-仓库级变更见根 [`CHANGELOG.md`](../CHANGELOG.md)（`vX.Y.Z`）。Edges 对外 skill 见 [`extensions/skills/<name>/CHANGELOG.md`](https://github.com/VirusPC/edges/tree/main/extensions/skills)。
+仓库级变更见根 [`CHANGELOG.md`](../CHANGELOG.md)（`vX.Y.Z`）。Edges 对外 skill 见框架仓 [`packages/skills/<name>/CHANGELOG.md`](https://github.com/VirusPC/edges/tree/main/packages/skills)。
 
 ## [Unreleased]
 
 ### Added
 
 - `new-server/`、`others/`：从框架仓 `extensions/new-server/`、`extensions/others/` 原样搬来的个人运维笔记和 X / Twitter 搜索查询。只是笔记，不装到各机器，不升版本。
+
+## [5.0.0] - 2026-10-25
+
+### Removed
+
+- `skills/langfuse-agent-tracing`、`skills/cursor-cloud-langfuse-tracing`、`skills/codex-cloud-langfuse-tracing`：迁入框架 [`packages/skills/`](https://github.com/VirusPC/edges/tree/main/packages/skills)，改名为 `langfuse-local-agent-tracing` / `langfuse-cursor-cloud-tracing` / `langfuse-codex-cloud-tracing`，另加主入口 `langfuse-agent-tracing` 与 `langfuse-grokbot-tracing`。随 `@viruspc/edges` 分发（`edges skills init`）。`projects/routines/grokbot-langfuse-export/` 仍留在本仓。
 
 ## [4.5.0] - 2026-10-25
 
@@ -64,7 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 整层一份 `VERSION`、本 changelog、tag `shared-extensions@<version>`。
 - 本层项目记忆（`AGENTS.md` + `.memory/`）。
 
-[Unreleased]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.5.0...HEAD
+[Unreleased]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@5.0.0...HEAD
+[5.0.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.5.0...shared-extensions@5.0.0
 [4.5.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.4.0...shared-extensions@4.5.0
 [4.4.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.3.0...shared-extensions@4.4.0
 [4.3.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.2.0...shared-extensions@4.3.0
