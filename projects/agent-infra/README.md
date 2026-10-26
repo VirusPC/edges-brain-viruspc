@@ -16,3 +16,4 @@ Agent 基础设施专项工作区：记录支撑 Agent 运行的底层设施，�
 - [2026-10-19--OpenCode生态.md](2026-10-19--OpenCode生态.md)：基于 OpenCode 的项目分类表、为什么选它、v2 迁移等风险
 - [2026-10-26--E2B-Embed自部署调研.md](2026-10-26--E2B-Embed自部署调研.md)：官方 E2B Embed 单机 Compose 自托管（Firecracker/KVM）、主机要求、端口，以及与 Langfuse 共址的风险。已在 minigtr-ubuntu 部署，见部署记录
 - [2026-10-26--E2B-Embed-minigtr部署.md](2026-10-26--E2B-Embed-minigtr部署.md)：同机避开 Langfuse 改端口、smoke 通过
+- [2026-10-26--E2B-Embed-Cloudflare公网接入.md](2026-10-26--E2B-Embed-Cloudflare公网接入.md)：已有 Cloudflare Tunnel 暴露三个公网域名（API `e2b`、Dashboard `e2b-dash`、sandbox 代理 `e2b-sandbox`，均为 `viruspc.tech`）

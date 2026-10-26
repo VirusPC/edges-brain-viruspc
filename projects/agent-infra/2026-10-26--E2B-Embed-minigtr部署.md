@@ -68,4 +68,18 @@ Tailscale 他机访问时，把 `localhost` 换成该机 MagicDNS / Tailscale IP
 
 ## 结果
 
-minigtr-ubuntu 上 E2B Embed 已可本地用；与 Langfuse 端口冲突通过改 E2B 侧解决；官方 smoke 通过。公网 Tunnel / 固定域名未做，需要时另开。
+minigtr-ubuntu 上 E2B Embed 已可本地用；与 Langfuse 端口冲突通过改 E2B 侧解决；官方 smoke 通过。公网 Tunnel 已做（三域名），过程见同目录 `2026-10-26--E2B-Embed-Cloudflare公网接入.md`，入口见下文。
+
+## 公网接入（Cloudflare Tunnel，2026-10-26）
+
+挂在已有 `minigtr` Tunnel（与 langfuse / lf-experiment 同隧道），DNS 在 `viruspc.tech`：
+
+| 用途 | 公网 | 本机 |
+|---|---|---|
+| API | https://e2b.viruspc.tech | 127.0.0.1:3100 |
+| Dashboard | https://e2b-dash.viruspc.tech | 127.0.0.1:3001 |
+| Sandbox 代理 | https://e2b-sandbox.viruspc.tech | 127.0.0.1:3002 |
+
+Dashboard：`compose.yaml` 中 `PUBLIC_SANDBOX_URL=https://e2b-sandbox.viruspc.tech`，`DASHBOARD_COOKIE_SECURE=true`（相对官方 `http://${E2B_DASHBOARD_HOST:-localhost}:3002`）。
+
+远程 SDK：上述 API / Sandbox HTTPS + `sdk.env` 的 `E2B_API_KEY`（勿写入公开笔记）。过程笔记见同目录 `2026-10-26--E2B-Embed-Cloudflare公网接入.md`。
