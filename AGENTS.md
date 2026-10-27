@@ -1,8 +1,8 @@
 # Agent Developer Guide
 
-你是维护 peng cheng 个人大脑仓 `VirusPC/edges-brain-viruspc` 的 AI 工程师。个人内容在这里长：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`。本仓也是 `edges-publish` 写入这些个人内容的目标。
+你是维护 peng cheng 个人大脑仓 `VirusPC/edges-brain-viruspc` 的 AI 工程师。个人内容在这里长：笔记、教学、复盘、个人任务、个人项目、博客成稿。本仓也是 `edges-publish` 写入这些个人内容的目标。
 
-**本仓是个人主干（2026-10-20 由原 `VirusPC/edges` 改名而来，长期保留，不归档）。** Edges 框架在 [`VirusPC/edges`](https://github.com/VirusPC/edges)：CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点构建、artifacts 预览服务，以及相关 workflow。改框架去那边开 PR。博客成稿 `posts/`、博客与站点内容的维护项目 `.edges/tasks/site-and-content/`，以及新服务器运维笔记（`shared-extensions/new-server/`、`shared-extensions/others/`）只在本仓，框架仓不再保留。要用 CLI，执行 `npm install -g @viruspc/edges`，或在框架仓里开发。本仓不把框架仓登记进 Compose。公开仓库之间不互相挂载。Compose 挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`（`.edges/compose/` 下的 git submodule；日常命令是 `edges compose add`、`list`、`update`）。本仓不写这些登记。
+**本仓是个人主干（2026-10-20 由原 `VirusPC/edges` 改名而来，长期保留，不归档）。** Edges 框架在 [`VirusPC/edges`](https://github.com/VirusPC/edges)：CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点构建、artifacts 预览服务，以及相关 workflow。改框架去那边开 PR。博客成稿 `posts/`、博客与站点内容的维护项目 `.edges/tasks/site-and-content/`，以及新服务器运维笔记（`new-server/`）与相关 notes 只在本仓，框架仓不再保留。不绑定 Edges 的通用 skill 在 [`.edges/skills/managed/`](.edges/skills/managed/README.md)，与 `linux-nas-direct-link` 并列。跨机靠 Compose 挂本脑仓即可用这些材料，不再做全局 `~/.agents` 安装，也不再打 `shared-extensions@*`。要用 CLI，执行 `npm install -g @viruspc/edges`，或在框架仓里开发。本仓不把框架仓登记进 Compose。公开仓库之间不互相挂载。Compose 挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`（`.edges/compose/` 下的 git submodule；日常命令是 `edges compose add`、`list`、`update`）。本仓不写这些登记。
 
 ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges`。`/tasks/` 和 artifacts 预览由框架仓部署，检出是 `/home/cheng-dev/projects/edges-framework`。
 
@@ -37,7 +37,6 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 ## 下层系统维护信息
 - [teaching/AGENTS.md](teaching/AGENTS.md) — 教学与学习状态。
 - [领域任务](<tasks/AGENTS.md>) — 领域任务入口。
-- [共享扩展约束](<shared-extensions/AGENTS.md>) — 共享扩展约束入口。
 - [笔记规范](<notes/AGENTS.md>) — 笔记规范入口。
 
 <!-- edges-descendants:end -->

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-本文件记 `VirusPC/edges-brain-viruspc` 的仓库级变化。2026-10-20 之前的条目描述的是当时还在本仓里的 Edges 系统；那些系统内容现在在框架仓 [VirusPC/edges](https://github.com/VirusPC/edges)。对外 skill 的版本记录看框架仓 [`packages/skills/`](https://github.com/VirusPC/edges/tree/main/packages/skills)；不绑定 Edges、留在本仓的扩展看 [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)。尚未发版的变化按功能模块分组。Unreleased 的 `###` 用功能模块原名，不要改成「模块：摘要」或只留摘要；每条 `-` 前面加短小标题，写成 `- **小标题：** 正文…`。
+本文件记 `VirusPC/edges-brain-viruspc` 的仓库级变化。2026-10-20 之前的条目描述的是当时还在本仓里的 Edges 系统；那些系统内容现在在框架仓 [VirusPC/edges](https://github.com/VirusPC/edges)。对外 skill 的版本记录看框架仓 [`packages/skills/`](https://github.com/VirusPC/edges/tree/main/packages/skills)。不绑定 Edges 的通用 skill 在本仓 [`.edges/skills/managed/`](.edges/skills/managed/README.md)。`shared-extensions/` 隔间已废止，最后一版是 annotated tag `shared-extensions@6.0.0`，之后不再打该系列 tag。尚未发版的变化按功能模块分组。Unreleased 的 `###` 用功能模块原名，不要改成「模块：摘要」或只留摘要；每条 `-` 前面加短小标题，写成 `- **小标题：** 正文…`。
 
 领域决策、术语表和实现计划不写进这份 changelog。它们在框架仓：[`docs/adr/`](https://github.com/VirusPC/edges/tree/main/docs/adr)、[`CONTEXT.md`](https://github.com/VirusPC/edges/blob/main/CONTEXT.md)、[`docs/superpowers/plans/`](https://github.com/VirusPC/edges/tree/main/docs/superpowers/plans)。
 
@@ -14,10 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 个人仓
 
 - **材料目录硬切到 `.edges`：** 按框架仓 [ADR 0047](https://github.com/VirusPC/edges/blob/main/docs/adr/0047-rename-harness-directory-to-edges.md)，各层材料目录从 `.harness/` 改为 `.edges/`，`AGENTS.md` 层标记改为 `edges` / `edges-*`。不留旧路径别名。历史任务 slug 与旧规格文件名里的 `project-harness` 未改。
+- **废止 shared-extensions 隔间：** 删除整棵 `shared-extensions/`。最后 annotated tag 为 `shared-extensions@6.0.0`（deprecated），之后不再打 `shared-extensions@*`，也不再维护隔间级 `VERSION`。七个通用 skill 迁到 [`.edges/skills/managed/`](.edges/skills/managed/README.md)：`horizontal-vertical-research`、`html-plan`、`learn-repo`、`paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`。装机笔记迁到顶层 [`new-server/`](new-server/)。Twitter / X 查询迁到 [`notes/2026-10-27--twitter-ai-query/`](notes/2026-10-27--twitter-ai-query/INDEX.md)。跨机靠 Compose 挂本脑仓，不再做全局 `~/.agents` 安装。
 
 ### shared-extensions
 
-- **Langfuse 接入 skill 迁出本层：** `langfuse-agent-tracing`、`cursor-cloud-langfuse-tracing`、`codex-cloud-langfuse-tracing` 从 `shared-extensions/skills/` 删除。它们改由框架仓 `packages/skills/` 随 `@viruspc/edges` 分发（主入口 `langfuse-agent-tracing`，子 skill `langfuse-local-agent-tracing`、`langfuse-cursor-cloud-tracing`、`langfuse-codex-cloud-tracing`、`langfuse-grokbot-tracing`）。本层版本升到 `5.0.0`。明细见 [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)。
+- **Langfuse 接入 skill 迁出本层：** `langfuse-agent-tracing`、`cursor-cloud-langfuse-tracing`、`codex-cloud-langfuse-tracing` 从当时的 `shared-extensions/skills/` 删除。它们改由框架仓 `packages/skills/` 随 `@viruspc/edges` 分发（主入口 `langfuse-agent-tracing`，子 skill `langfuse-local-agent-tracing`、`langfuse-cursor-cloud-tracing`、`langfuse-codex-cloud-tracing`、`langfuse-grokbot-tracing`）。本层版本升到 `5.0.0`。明细在 tag `shared-extensions@5.0.0` 的 `shared-extensions/CHANGELOG.md`。隔间本身已在 `shared-extensions@6.0.0` 废止。
 
 ## [1.6.0] - 2026-10-25
 
@@ -30,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 个人仓
 
 - **系统副本已从个人主干移除：** 本仓只保留 peng cheng 的个人大脑：笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions`，以及 `edges-publish` 的写入目标。Edges 框架（CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点、artifacts 预览服务和相关 workflow）在 [VirusPC/edges](https://github.com/VirusPC/edges)。要用 CLI，执行 `npm install -g @viruspc/edges`，或到框架仓开发。ECS 上 `/teaching/` 仍由本仓 Deploy 更新检出 `/home/cheng-dev/projects/edges`，并检查 `teaching/index.html`；`/tasks/` 与 artifacts 预览由框架仓检出 `/home/cheng-dev/projects/edges-framework` 部署。
-- **博客与站点内容只在本仓：** 博客成稿 `posts/` 和「站点与内容」维护项目 [`.edges/tasks/site-and-content/`](.edges/tasks/site-and-content/README.md)（4 张 backlog 卡：Astro 博客与 CI、仓库主页 badge、整理 posts 并建站、posts 外更丰富的输出形态）现在只在本仓，框架仓已删掉这些路径。对应的项目记忆「posts 对外展示，Astro 博客 + Actions CI」从框架仓搬到 [`.edges/memory/projects/`](.edges/memory/projects/README.md)，在 [`.edges/README.md`](.edges/README.md) 登记。新服务器运维笔记和 X / Twitter 搜索查询搬到 [`shared-extensions/new-server/`](shared-extensions/new-server/bootstrap.md) 与 [`shared-extensions/others/`](shared-extensions/others/twitter-query.md)，见 [`shared-extensions/README.md`](shared-extensions/README.md)。
+- **博客与站点内容只在本仓：** 博客成稿 `posts/` 和「站点与内容」维护项目 [`.edges/tasks/site-and-content/`](.edges/tasks/site-and-content/README.md)（4 张 backlog 卡：Astro 博客与 CI、仓库主页 badge、整理 posts 并建站、posts 外更丰富的输出形态）现在只在本仓，框架仓已删掉这些路径。对应的项目记忆「posts 对外展示，Astro 博客 + Actions CI」从框架仓搬到 [`.edges/memory/projects/`](.edges/memory/projects/README.md)，在 [`.edges/README.md`](.edges/README.md) 登记。新服务器运维笔记和 X / Twitter 搜索查询搬到 [`shared-extensions/new-server/`](https://github.com/VirusPC/edges-brain-viruspc/blob/shared-extensions@6.0.0/shared-extensions/new-server/bootstrap.md) 与 [`shared-extensions/others/`](https://github.com/VirusPC/edges-brain-viruspc/blob/shared-extensions@6.0.0/shared-extensions/others/twitter-query.md)，见 [`shared-extensions/README.md`](https://github.com/VirusPC/edges-brain-viruspc/blob/shared-extensions@6.0.0/shared-extensions/README.md)。
 
 ### 组合仓库
 

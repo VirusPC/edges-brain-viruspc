@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/@viruspc/edges?label=npm&color=CB3837)](https://www.npmjs.com/package/@viruspc/edges) [![教学站部署](https://github.com/VirusPC/edges-brain-viruspc/actions/workflows/deploy.yml/badge.svg)](https://github.com/VirusPC/edges-brain-viruspc/actions/workflows/deploy.yml)
 
-> **这是 peng cheng 的个人大脑主干仓。** 笔记、教学、复盘、个人任务、个人项目、博客成稿、`shared-extensions` 都在这里长，也是 `edges-publish` 写入个人内容的目标。长期保留，不归档。
+> **这是 peng cheng 的个人大脑主干仓。** 笔记、教学、复盘、个人任务、个人项目、博客成稿都在这里长，也是 `edges-publish` 写入个人内容的目标。不绑定 Edges 的通用 skill 在 [`.edges/skills/managed/`](.edges/skills/managed/README.md)，装机笔记在 [`new-server/`](new-server/)。长期保留，不归档。
 
 **harness 任何目录。你的大脑，也是一个目录。**
 
@@ -13,7 +13,7 @@
 | | 本仓 `VirusPC/edges-brain-viruspc` | 框架仓 [`VirusPC/edges`](https://github.com/VirusPC/edges) |
 | --- | --- | --- |
 | 是什么 | peng cheng 的个人大脑 | Edges 框架 |
-| 放什么 | 笔记、教学、复盘、个人任务、个人项目、博客成稿（`posts/`）、`shared-extensions`、`edges-publish` 的写入目标 | CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点构建、artifacts 预览服务、相关 workflow |
+| 放什么 | 笔记、教学、复盘、个人任务、个人项目、博客成稿（`posts/`）、通用 skill（`.edges/skills/managed/`）、装机笔记（`new-server/`）、`edges-publish` 的写入目标 | CLI `@viruspc/edges`、extensions、skills、ADR、任务看板站点构建、artifacts 预览服务、相关 workflow |
 | 怎么用 | 直接在本仓写个人内容 | `npm install -g @viruspc/edges`，或克隆框架仓开发 |
 | ECS | `/teaching/`：检出 `/home/cheng-dev/projects/edges`，本仓 Deploy 只更新这份检出 | `/tasks/` 与 `/artifacts`：检出 `/home/cheng-dev/projects/edges-framework`，由框架仓部署 |
 
@@ -50,8 +50,8 @@
 | [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护。博客成稿和「站点与内容」维护项目（[`.edges/tasks/site-and-content/`](.edges/tasks/site-and-content/README.md)）只在本仓，框架仓不再保留 |
 | [`tasks/`](tasks/README.md)、[`.edges/tasks/`](.edges/tasks/README.md) | 领域任务，以及仍留在本仓的个人维护任务（技术阅读、客户端体验、站点与内容、拆仓卡） |
 | [`archive/`](archive/README.md) | 退出活跃区域的内容 |
-| [`shared-extensions/`](shared-extensions/README.md) | 不依赖 Edges、跨机器跨 Agent 共用的能力。通用 skill 在 [`shared-extensions/skills/`](shared-extensions/skills/README.md)，不打进 `@viruspc/edges` |
-| [`.edges/`](.edges/README.md) | 本仓自己的项目叶子、个人 skill、个人任务 |
+| [`new-server/`](new-server/) | 新服务器开荒的个人运维笔记（建用户、DNS、Claude Code 切模型）。不是可安装扩展 |
+| [`.edges/`](.edges/README.md) | 本仓自己的项目叶子、个人 skill、个人任务。不绑定 Edges 的通用 skill 在 [`.edges/skills/managed/`](.edges/skills/managed/README.md)，与 `linux-nas-direct-link` 并列。跨机靠 Compose 挂本脑仓即可用，不再做全局 `~/.agents` 安装，也不再打 `shared-extensions@*` |
 
 对外可以看：[教学站](https://edges.viruspc.tech/teaching/)。任务看板 [https://edges.viruspc.tech/tasks/](https://edges.viruspc.tech/tasks/) 和 artifacts 预览由框架仓部署，不在本仓的 Deploy 里构建。
 
@@ -67,8 +67,7 @@ edges --help
 ## 文档
 
 - [`AGENTS.md`](AGENTS.md)：本仓 Agent 入口，含硬约束与个人内容索引。本仓没有 Compose 登记。
-- [`CHANGELOG.md`](CHANGELOG.md)：本仓变更。拆仓前的系统条目仍留在这里，对应正文在框架仓。
-- [`shared-extensions/CHANGELOG.md`](shared-extensions/CHANGELOG.md)：留在本仓的通用扩展版本记录。
+- [`CHANGELOG.md`](CHANGELOG.md)：本仓变更。拆仓前的系统条目仍留在这里，对应正文在框架仓。`shared-extensions/` 隔间已废止，最后 annotated tag 是 [`shared-extensions@6.0.0`](https://github.com/VirusPC/edges-brain-viruspc/releases/tag/shared-extensions@6.0.0)，之后不再打该系列 tag。
 
 ## 隐私与脱敏
 
