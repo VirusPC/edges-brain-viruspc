@@ -60,7 +60,7 @@
 | `publishConfig.access` | `public` |
 | 依赖里 | 无 `workspace:`，无 `tasks-review-app` |
 | `edges --help` | 命令树正常（含后来合入的 `compose` 等） |
-| `edges init` | `"status":"success"`，能建 `.harness/memory` 等 |
+| `edges init` | `"status":"success"`，能建 `.edges/memory` 等 |
 | `edges memory remember` | `"ok": true`，写出记忆叶子 |
 | 用 npm 打包（伪造 pnpm UA） | prepack 拒绝，exit ≠ 0 |
 

@@ -25,8 +25,8 @@
 ## 建议补充内容清单
 
 - 笔记：让自动沉淀型知识 skill 被用户感知并拿到反馈（「用上时点名」、存时轻提示、反馈挂在提示上等）。去处：`notes/`。写入：`notes/2026-10-15--让自动沉淀型知识-skill-被用户感知并拿到反馈/INDEX.md`。
-- 任务：入库类 skill 增加无工作区降级模式（connector 卡把它列为非目标、另行处理，至今没有卡）。去处：根看板 `edges-extensions`。写入：`.harness/tasks/edges-extensions/backlog/2026-10-15--入库类-skill-增加无工作区降级模式/INDEX.md`。
-- 反馈：精简内容前先把要删的迁到合适去处（#240 删播客时被用户纠正）。去处：根记忆 feedbacks。写入：`.harness/memory/feedbacks/feedback_migrate_before_delete/INDEX.md`。
+- 任务：入库类 skill 增加无工作区降级模式（connector 卡把它列为非目标、另行处理，至今没有卡）。去处：根看板 `edges-extensions`。写入：`.edges/tasks/edges-extensions/backlog/2026-10-15--入库类-skill-增加无工作区降级模式/INDEX.md`。
+- 反馈：精简内容前先把要删的迁到合适去处（#240 删播客时被用户纠正）。去处：根记忆 feedbacks。写入：`.edges/memory/feedbacks/feedback_migrate_before_delete/INDEX.md`。
 - 不做：「笔记里不记工作量估算」（#249 用户要求删掉）。只针对那一篇，看不出是通用偏好，写成反馈就是过度推广。
 - 不做：大厂团队知识库调研。用户没要求入库，部分结论未核实，写了容易把未核实内容固化。
 - 不做：「edges 算弱 RSI」的讨论。是观点问答，没有可执行的结论。

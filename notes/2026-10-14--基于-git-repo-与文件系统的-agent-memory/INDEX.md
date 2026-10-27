@@ -17,7 +17,7 @@ peng cheng 一直把 edges 仓库当作「外部大脑」：Agent 的记忆、�
 ### 2026-10-14 下午 读仓库确认现状
 
 - 读了仓库根 `README.md`、`AGENTS.md`、`CONTEXT.md`、`docs/adr/0003`、`docs/adr/0006`，以及 `extensions/cli/src/commands/memory/`。
-- 确认 `memory init` 的命令描述写明 `Does not read --super`，`remember` 中也没有 `--super` 分支；对应任务卡在 `.harness/tasks/project-memory/backlog/`，由 PR #245 合入看板。
+- 确认 `memory init` 的命令描述写明 `Does not read --super`，`remember` 中也没有 `--super` 分支；对应任务卡在 `.edges/tasks/project-memory/backlog/`，由 PR #245 合入看板。
 
 ### 2026-10-14 下午 联网核实一手材料
 
@@ -156,9 +156,9 @@ peng cheng 一直把 edges 仓库当作「外部大脑」：Agent 的记忆、�
 ### edges 现状（已在仓库核实）
 
 - edges 仓库就是外部大脑：README 写明「harness 就是一组 Markdown 文件加 Git」「你的大脑，也是一个目录」。
-- `.harness/memory/` 是仓库自身的维护记忆，按类型分目录（`feedbacks/`、`projects/`、`references/`，以及 gitignore 的 `users/`），由根 `AGENTS.md` 的本层索引登记。ADR 0003 规定用户记忆权威副本在工作树内并 gitignore；ADR 0006 规定新增类型只改布局，不另建注册表。
+- `.edges/memory/` 是仓库自身的维护记忆，按类型分目录（`feedbacks/`、`projects/`、`references/`，以及 gitignore 的 `users/`），由根 `AGENTS.md` 的本层索引登记。ADR 0003 规定用户记忆权威副本在工作树内并 gitignore；ADR 0006 规定新增类型只改布局，不另建注册表。
 - 仓库根 `memory/` 放不属于任何主题的通用笔记（例如 `memory/references/`），约定必须由 edges CLI 以 `--super` 初始化和写入、索引由 CLI 自动生成，不手写目录或 README。
-- 目前 `memory init` / `remember` 还不读 `--super`（`init` 命令描述写明 `Does not read --super`），任务卡在 `.harness/tasks/project-memory/backlog/`，相关 PR #245 已合并到看板。现有根 `memory/` 下内容仍是手写结构，待 CLI 补齐后重整。
+- 目前 `memory init` / `remember` 还不读 `--super`（`init` 命令描述写明 `Does not read --super`），任务卡在 `.edges/tasks/project-memory/backlog/`，相关 PR #245 已合并到看板。现有根 `memory/` 下内容仍是手写结构，待 CLI 补齐后重整。
 - 变更走 PR，main 受保护；多 Agent 必须各用独立 git worktree 加独立分支；Grok Bot 自己的记忆只做次级索引，真源在仓库。
 
 ### edges 与业界的对照
@@ -294,4 +294,4 @@ peng cheng 一直把 edges 仓库当作「外部大脑」：Agent 的记忆、�
 ### 原始材料引用
 
 - 本笔记由 Grok Bot 于 2026-10-14 按 peng cheng 的调研委托整理。
-- 仓库内依据：`README.md`、`AGENTS.md`、`CONTEXT.md`、`docs/adr/0003-user-memory-in-repo-gitignored.md`、`docs/adr/0006-extensible-project-memory-types.md`、`extensions/cli/src/commands/memory/init.ts`、`.harness/tasks/project-memory/backlog/2026-10-14--edges-memory-init-remember-支持-super写入仓库根-memory/`、PR #240、PR #245。
+- 仓库内依据：`README.md`、`AGENTS.md`、`CONTEXT.md`、`docs/adr/0003-user-memory-in-repo-gitignored.md`、`docs/adr/0006-extensible-project-memory-types.md`、`extensions/cli/src/commands/memory/init.ts`、`.edges/tasks/project-memory/backlog/2026-10-14--edges-memory-init-remember-支持-super写入仓库根-memory/`、PR #240、PR #245。

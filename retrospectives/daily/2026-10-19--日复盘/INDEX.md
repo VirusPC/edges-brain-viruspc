@@ -46,15 +46,15 @@
 - 审合 #289 → #288 → #287，再在合入提交上打 annotated `v1.5.0` 并开 GitHub Release（已授权全栈开发专家执行）。
 - 决定 ECS 旧目录的处理（清掉或开卡）。
 - 发布已改走 OIDC 且 npm 侧禁 token，可以去 npmjs.com 撤销当天手动发布用的 stage-only token，并清掉 box 上对应的环境变量。
-- 审本 PR 的三条反馈记忆与 routines 卡补充；routines 是否升为 `.harness` 模块，等 grill 时再定。
+- 审本 PR 的三条反馈记忆与 routines 卡补充；routines 是否升为 `.edges` 模块，等 grill 时再定。
 
 ## 建议补充内容清单
 
 - 笔记：html-plan 的来源（Anthropic 社区插件仓库，非第三方索引站）、Respond 需手动粘贴、与 md plan 的分工，以及和 grill-with-docs 的配合。去处：`notes/`。写入：`notes/2026-10-19--html-plan-审阅页与-grill-with-docs-的配合/INDEX.md`（`notes/AGENTS.md` 已由 `edges notes create` 登记）。
-- 记忆（feedback，根作用域）：grill-with-docs 每一轮提问和每个实现 PR 都附 html-plan 审阅页；用户当时明确说「memory 里记下」，但只记进了助手的个人记忆，仓库里没有。写入：`.harness/memory/feedbacks/feedback_grill_rounds_as_html_plan/INDEX.md`。
-- 记忆（feedback，extensions 作用域）：新增文件不造新概念、文件名一眼看懂职责、符合语义；同时写明「简单命名不等于降低分层质量」。写入：`extensions/.harness/memory/feedbacks/feedback_new_files_no_new_concepts/INDEX.md`。
-- 记忆（feedback，根作用域）：叠层 PR 的底层 squash 进 main 前确认上层已合入，合完把剩余上层改指向 main；验收修复以 main 为准，不只看 PR 状态。来自 #208/#211 丢失这件事，不是用户原话，请审阅时确认是否保留。写入：`.harness/memory/feedbacks/feedback_stacked_pr_merge_order/INDEX.md`。
-- 任务（补充已有卡）：用户提出「routines 有潜力升为 `.harness` 模块」，补进已有 backlog 卡「Routines 模块：Skill 与调度文件分离」的补充想法，完成标准留待 grill。写入：`.harness/tasks/edges-routines/backlog/2026-10-11--Routines-模块Skill-与调度文件分离/INDEX.md`（`edges tasks update`）。
+- 记忆（feedback，根作用域）：grill-with-docs 每一轮提问和每个实现 PR 都附 html-plan 审阅页；用户当时明确说「memory 里记下」，但只记进了助手的个人记忆，仓库里没有。写入：`.edges/memory/feedbacks/feedback_grill_rounds_as_html_plan/INDEX.md`。
+- 记忆（feedback，extensions 作用域）：新增文件不造新概念、文件名一眼看懂职责、符合语义；同时写明「简单命名不等于降低分层质量」。写入：`extensions/.edges/memory/feedbacks/feedback_new_files_no_new_concepts/INDEX.md`。
+- 记忆（feedback，根作用域）：叠层 PR 的底层 squash 进 main 前确认上层已合入，合完把剩余上层改指向 main；验收修复以 main 为准，不只看 PR 状态。来自 #208/#211 丢失这件事，不是用户原话，请审阅时确认是否保留。写入：`.edges/memory/feedbacks/feedback_stacked_pr_merge_order/INDEX.md`。
+- 任务（补充已有卡）：用户提出「routines 有潜力升为 `.edges` 模块」，补进已有 backlog 卡「Routines 模块：Skill 与调度文件分离」的补充想法，完成标准留待 grill。写入：`.edges/tasks/edges-routines/backlog/2026-10-11--Routines-模块Skill-与调度文件分离/INDEX.md`（`edges tasks update`）。
 - 不做：npm 发布全流程（手动 stage 与 Actions）笔记。已由 #283 合入，#287 负责挪到 `notes/`。
 - 不做：Deploy pnpmfileChecksum 修复笔记。已由 #286 合入。
 - 不做：安装 skills、npm Actions 的设计决定。已在 ADR 0036、0037 和对应任务卡里。

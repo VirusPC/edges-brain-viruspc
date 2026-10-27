@@ -4,7 +4,7 @@
 
 ## 评估目的
 
-回答两个问题：提高运行频率会多消耗多少 Cursor Ultra 周额度；多消耗的额度换来了什么延迟改善。结论写入本目录，并回写 [Routine `INDEX.md`](../../../../../.harness/routines/grokbot-langfuse-export/INDEX.md)。
+回答两个问题：提高运行频率会多消耗多少 Cursor Ultra 周额度；多消耗的额度换来了什么延迟改善。结论写入本目录，并回写 [Routine `INDEX.md`](../../../../../.edges/routines/grokbot-langfuse-export/INDEX.md)。
 
 ## 实验方法与计量口径
 
@@ -25,7 +25,7 @@
 1. 将日程临时改为目标频率，保留足够长的观测窗口（建议不少于 2 小时）。
 2. 从 cursor.com/dashboard/usage 导出当日 CSV，按上述口径汇总。
 3. 在本目录新增 `YYYY-MM-DD.md`，按正式实验报告结构书写（摘要、背景、设计、结果、分析、局限、建议、附录）。数字以 CSV 与当次运行记录为准，不编造。
-4. 更新本 README 的「当前结论」与「历次报告」；若结论影响日程，同步 [Routine `INDEX.md`](../../../../../.harness/routines/grokbot-langfuse-export/INDEX.md)。
+4. 更新本 README 的「当前结论」与「历次报告」；若结论影响日程，同步 [Routine `INDEX.md`](../../../../../.edges/routines/grokbot-langfuse-export/INDEX.md)。
 5. CSV 留在本机或 box，不提交仓库。
 
 ## 当前结论

@@ -2,7 +2,7 @@
 
 ## 范围
 
-2026-10-05 00:00 至 2026-10-11 24:00（Asia/Shanghai）。仓库看了 `origin/main` 的提交、这周的 PR 与 Actions，以及 `.harness/tasks`。对话依据是各助手的时间窗摘录（下面的时间都是北京时间）；提炼只用来对照，不代替原话。
+2026-10-05 00:00 至 2026-10-11 24:00（Asia/Shanghai）。仓库看了 `origin/main` 的提交、这周的 PR 与 Actions，以及 `.edges/tasks`。对话依据是各助手的时间窗摘录（下面的时间都是北京时间）；提炼只用来对照，不代替原话。
 
 ## 本该怎样
 
@@ -62,7 +62,7 @@
 
 > 感觉好像有很多兼容问题，先搁置放到todo吧。
 
-仓库依据：搁置卡现位于 [`.harness/tasks/edges-extensions/todo/2026-10-11--搁置只让-CLI-的-PR-自动触发-Bugbot/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/todo/2026-10-11--%E6%90%81%E7%BD%AE%E5%8F%AA%E8%AE%A9-CLI-%E7%9A%84-PR-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91-Bugbot/INDEX.md)，状态 `todo`。简介写着「Bugbot 不能按目录自动跑；Action、PAT、云端 Agent 身份都不通，先记结论，另议方案。」摘录里开卡时写的是 `edges-cli-platform` 的 backlog，和现在的项目名、状态不一致，以仓库文件为准。
+仓库依据：搁置卡现位于 [`.edges/tasks/edges-extensions/todo/2026-10-11--搁置只让-CLI-的-PR-自动触发-Bugbot/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/todo/2026-10-11--%E6%90%81%E7%BD%AE%E5%8F%AA%E8%AE%A9-CLI-%E7%9A%84-PR-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91-Bugbot/INDEX.md)，状态 `todo`。简介写着「Bugbot 不能按目录自动跑；Action、PAT、云端 Agent 身份都不通，先记结论，另议方案。」摘录里开卡时写的是 `edges-cli-platform` 的 backlog，和现在的项目名、状态不一致，以仓库文件为准。
 
 软链接：Coding Agent 专家，2026-10-11 18:02 至 18:23。用户问移动节点时软链接该怎么处理。助手建议移动时不动它，断链交给 doctor 报。18:10 用户让分开派人修。#208 修好「移动时不要把软链接登记当成节点」之后，助手主动说出 doctor 仍然报不出断链，并问要不要开 backlog 卡。下一条用户消息是 18:40 的「一起改吧」，对的是路径大小写的同类修复，不是这张卡。摘录里没有用户答应开卡的原话。仓内也没有这张卡。
 
@@ -80,7 +80,7 @@
 
 ### 看板：有的卡对齐了，有的没有
 
-[#217](https://github.com/VirusPC/edges/pull/217) 把 Harness 流转卡放进 backlog。任务记录员，2026-10-11 22:36 至 22:59。用户先要求记任务，草稿被写成「谁触发谁」。22:57 用户纠正。助手改标题后再问，22:59 用户说开 PR。卡现在在 [`.harness/tasks/edges-extensions/backlog/2026-10-11--厘清-Harness-模块在知识流转中的位置/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-11--%E5%8E%98%E6%B8%85-Harness-%E6%A8%A1%E5%9D%97%E5%9C%A8%E7%9F%A5%E8%AF%86%E6%B5%81%E8%BD%AC%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE/INDEX.md)，状态 `backlog`。摘录里建议的项目名是 `edges-cli-platform`，现档是 `edges-extensions`。
+[#217](https://github.com/VirusPC/edges/pull/217) 把 Harness 流转卡放进 backlog。任务记录员，2026-10-11 22:36 至 22:59。用户先要求记任务，草稿被写成「谁触发谁」。22:57 用户纠正。助手改标题后再问，22:59 用户说开 PR。卡现在在 [`.edges/tasks/edges-extensions/backlog/2026-10-11--厘清-Harness-模块在知识流转中的位置/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/backlog/2026-10-11--%E5%8E%98%E6%B8%85-Harness-%E6%A8%A1%E5%9D%97%E5%9C%A8%E7%9F%A5%E8%AF%86%E6%B5%81%E8%BD%AC%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE/INDEX.md)，状态 `backlog`。摘录里建议的项目名是 `edges-cli-platform`，现档是 `edges-extensions`。
 
 > 记录任务。随着Harness 里面模块越来越多，需要仔细设计它们之间的流转关系。
 
@@ -88,13 +88,13 @@
 
 > 开pr吧
 
-[#174](https://github.com/VirusPC/edges/pull/174) 的补齐卡仍在 backlog。Coding Agent 专家，2026-10-07 22:25。用户先要求在 CLI 和根 `.harness` 里补上四块目录，紧接着改口先记任务。22:28 确认草稿。助手报告 #174 已合，并说要开 grill 或先修 `tasks create` 再动手。摘录里没有后续实现。卡仍在 [`.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-与根-harness-补齐-notes-edges-projects-archive/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)，完成标准仍是「待 grill 后再补」。
+[#174](https://github.com/VirusPC/edges/pull/174) 的补齐卡仍在 backlog。Coding Agent 专家，2026-10-07 22:25。用户先要求在 CLI 和根 `.edges` 里补上四块目录，紧接着改口先记任务。22:28 确认草稿。助手报告 #174 已合，并说要开 grill 或先修 `tasks create` 再动手。摘录里没有后续实现。卡仍在 [`.edges/tasks/edges-extensions/backlog/2026-10-07--CLI-与根-harness-补齐-notes-edges-projects-archive/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)，完成标准仍是「待 grill 后再补」。
 
-> notes/edges/projects/archive，都帮忙在cli和根目录.harness里补充上吧
+> notes/edges/projects/archive，都帮忙在cli和根目录.edges里补充上吧
 
 > 记录一个task先
 
-[#187](https://github.com/VirusPC/edges/pull/187) 已合并。对应任务卡仍是 `in_progress`：[`.harness/tasks/edges-extensions/in_progress/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md)。卡的背景写着用户要求消灭旁路。对话里没有「#187 合并后把这张卡标完成」的原话。
+[#187](https://github.com/VirusPC/edges/pull/187) 已合并。对应任务卡仍是 `in_progress`：[`.edges/tasks/edges-extensions/in_progress/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md)。卡的背景写着用户要求消灭旁路。对话里没有「#187 合并后把这张卡标完成」的原话。
 
 ### CLI 测试
 
@@ -114,9 +114,9 @@
 
 ## 下次做什么
 
-1. 把 NodeService 硬约束写进 `AGENTS.md`，并把 [#187](https://github.com/VirusPC/edges/pull/187) 对应的任务卡状态改对。完成标准：硬约束正文写明写盘走 NodeService；[这张卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md) 不再停在 `in_progress`。来源：上面「NodeService 的卡没有跟着合并改状态」，以及清单第一条。
-2. 给 doctor 报不出断掉的软链接开一张任务卡。完成标准：`.harness/tasks` 里有这张卡。来源：上面「代码审查、断掉的软链接」里 18:23 的提议；用户没有答应，仓内也没有卡。对应清单第二条。
-3. 补齐 [#174](https://github.com/VirusPC/edges/pull/174)。完成标准：`notes`、`edges`、`projects`、`archive` 在 CLI 与根 `.harness` 材料登记上可发现、可操作，命名跟文件夹一致；[这张卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md) 离开 backlog。来源：上面看板一节里 22:25 的原要求，以及清单第三条。卡自己的完成标准还写着「待 grill 后再补」，补齐前要先补上这一栏。
+1. 把 NodeService 硬约束写进 `AGENTS.md`，并把 [#187](https://github.com/VirusPC/edges/pull/187) 对应的任务卡状态改对。完成标准：硬约束正文写明写盘走 NodeService；[这张卡](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md) 不再停在 `in_progress`。来源：上面「NodeService 的卡没有跟着合并改状态」，以及清单第一条。
+2. 给 doctor 报不出断掉的软链接开一张任务卡。完成标准：`.edges/tasks` 里有这张卡。来源：上面「代码审查、断掉的软链接」里 18:23 的提议；用户没有答应，仓内也没有卡。对应清单第二条。
+3. 补齐 [#174](https://github.com/VirusPC/edges/pull/174)。完成标准：`notes`、`edges`、`projects`、`archive` 在 CLI 与根 `.edges` 材料登记上可发现、可操作，命名跟文件夹一致；[这张卡](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md) 离开 backlog。来源：上面看板一节里 22:25 的原要求，以及清单第三条。卡自己的完成标准还写着「待 grill 后再补」，补齐前要先补上这一栏。
 
 ## 建议补充内容清单
 
@@ -130,7 +130,7 @@
 
 ### doctor 报不出断掉的软链接，没有卡
 
-建议去处：`.harness/tasks`。处理结果：已列入下次做什么。
+建议去处：`.edges/tasks`。处理结果：已列入下次做什么。
 
 为什么值得补：18:10 已经定了「移动时不动软链接，断链交给 doctor」。#208 只做了前半句。18:23 助手问过要不要开卡，摘录里没有答复。
 
@@ -138,7 +138,7 @@
 
 ### #174 只落了卡，补齐还没做
 
-建议去处：[backlog 卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)。处理结果：已列入下次做什么。
+建议去处：[backlog 卡](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)。处理结果：已列入下次做什么。
 
 为什么值得补：22:25 的原要求是四块目录在 CLI 和根材料登记里补上。用户改口「记录一个task先」，助手也说合卡之后要 grill 再做。卡还在 backlog，完成标准空着。
 
@@ -162,7 +162,7 @@
 
 ### 任务名要保留中文，这条规则没写进硬约束
 
-建议去处：根 `AGENTS.md` 或 `.harness/memory`。处理结果：待用户确认。
+建议去处：根 `AGENTS.md` 或 `.edges/memory`。处理结果：待用户确认。
 
 原始诉求和分歧：行为已经改了，规则正文没有。18:03 助手把「中文被去掉、只剩 `memory_agent`」说成不影响使用的小瑕疵。用户不接受，认为不该去掉。助手改口说这是 bug：目录名保留中文，`name` 却只留小写英文和数字，大概照搬了 Skill 的规矩。用户的决定是修生成规则，并改已中招的旧卡，不是维持 ASCII。#210、#214 合入后，`directoryStem` 会保留 Unicode 字母。对话中未找到「再写进硬约束」的原文。还没定的是：只靠代码，还是要把「`name` 保留中文」写成硬约束，避免以后再抄回只留 ASCII 的规则。
 
@@ -186,7 +186,7 @@
 
 ### Harness 在知识流转里的位置
 
-建议去处：任务看板。处理结果：已完成。卡在 backlog：[这张卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-11--%E5%8E%98%E6%B8%85-Harness-%E6%A8%A1%E5%9D%97%E5%9C%A8%E7%9F%A5%E8%AF%86%E6%B5%81%E8%BD%AC%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE/INDEX.md)（[#217](https://github.com/VirusPC/edges/pull/217)）。
+建议去处：任务看板。处理结果：已完成。卡在 backlog：[这张卡](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/backlog/2026-10-11--%E5%8E%98%E6%B8%85-Harness-%E6%A8%A1%E5%9D%97%E5%9C%A8%E7%9F%A5%E8%AF%86%E6%B5%81%E8%BD%AC%E4%B8%AD%E7%9A%84%E4%BD%8D%E7%BD%AE/INDEX.md)（[#217](https://github.com/VirusPC/edges/pull/217)）。
 
 为什么值得补：22:57 用户纠正了「谁触发谁」。不记下来，下一张模块卡还会按命令链来设计。
 
@@ -194,7 +194,7 @@
 
 ### 自动点名 Bugbot 与不用个人访问令牌的理由
 
-建议去处：任务卡。处理结果：已完成。理由在 [搁置卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/todo/2026-10-11--%E6%90%81%E7%BD%AE%E5%8F%AA%E8%AE%A9-CLI-%E7%9A%84-PR-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91-Bugbot/INDEX.md)（[#213](https://github.com/VirusPC/edges/pull/213)）。
+建议去处：任务卡。处理结果：已完成。理由在 [搁置卡](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/todo/2026-10-11--%E6%90%81%E7%BD%AE%E5%8F%AA%E8%AE%A9-CLI-%E7%9A%84-PR-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91-Bugbot/INDEX.md)（[#213](https://github.com/VirusPC/edges/pull/213)）。
 
 为什么值得补：18:40 到 19:01 试过 Action、个人凭据、记忆加硬约束，三条都不接受。不写下来，下次还会从「往仓库放凭据」再走一遍。
 

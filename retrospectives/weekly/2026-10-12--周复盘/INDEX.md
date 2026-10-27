@@ -2,7 +2,7 @@
 
 ## 范围
 
-2026-10-12 00:00 至 2026-10-18 23:59（Asia/Shanghai，下文时间都是北京时间）。仓库层看了 `main` 上的 104 个提交、窗口内合入的 62 个 PR 和关闭的 9 个 PR、两块看板（`.harness/tasks` 与领域 `tasks/`）在窗口首尾的目录差异、Actions 运行记录，以及窗口内合入的日复盘。对话层逐个读了 peng cheng 名下全部助手在窗口内的对话，其中 15 个有内容；与 edges 相关的主要是 Agent Memory 专家、Grok Bot、任务记录员、全栈开发专家、日复盘、AI 硬件专家、通用、Coding Agent 专家、IT资产管理。角色扮演类助手（三体人物等）这周没有产生规则或决定，不收。
+2026-10-12 00:00 至 2026-10-18 23:59（Asia/Shanghai，下文时间都是北京时间）。仓库层看了 `main` 上的 104 个提交、窗口内合入的 62 个 PR 和关闭的 9 个 PR、两块看板（`.edges/tasks` 与领域 `tasks/`）在窗口首尾的目录差异、Actions 运行记录，以及窗口内合入的日复盘。对话层逐个读了 peng cheng 名下全部助手在窗口内的对话，其中 15 个有内容；与 edges 相关的主要是 Agent Memory 专家、Grok Bot、任务记录员、全栈开发专家、日复盘、AI 硬件专家、通用、Coding Agent 专家、IT资产管理。角色扮演类助手（三体人物等）这周没有产生规则或决定，不收。
 
 ## 本该怎样
 
@@ -10,15 +10,15 @@
 
 1. 把 NodeService 硬约束写进 `AGENTS.md`，并把 [#187](https://github.com/VirusPC/edges/pull/187) 对应的任务卡状态改对。
 2. 给 doctor 报不出断掉的软链接开一张任务卡。
-3. 补齐 [#174](https://github.com/VirusPC/edges/pull/174)（`notes`、`edges`、`projects`、`archive` 在 CLI 与根 `.harness` 可发现、可操作），卡离开 backlog。
+3. 补齐 [#174](https://github.com/VirusPC/edges/pull/174)（`notes`、`edges`、`projects`、`archive` 在 CLI 与根 `.edges` 可发现、可操作），卡离开 backlog。
 
 ## 实际怎样
 
 ### 上期行动
 
-1. 没做成。根 [`AGENTS.md`](../../../AGENTS.md)、[`extensions/AGENTS.md`](https://github.com/VirusPC/edges/blob/main/extensions/AGENTS.md)、`extensions/cli/AGENTS.md` 里都搜不到 `NodeService`。那张卡仍在 [`.harness/tasks/edges-extensions/in_progress/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md)。窗口内它只随 [#221](https://github.com/VirusPC/edges/pull/221) 从 `edges-cli-platform` 改名搬到 `edges-extensions`，状态没变。
+1. 没做成。根 [`AGENTS.md`](../../../AGENTS.md)、[`extensions/AGENTS.md`](https://github.com/VirusPC/edges/blob/main/extensions/AGENTS.md)、`extensions/cli/AGENTS.md` 里都搜不到 `NodeService`。那张卡仍在 [`.edges/tasks/edges-extensions/in_progress/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService/INDEX.md`](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/done/2026-10-07--notesskills-%E7%9A%84-creategetupdatedelete-%E6%94%B6%E5%8F%A3%E5%88%B0-NodeService/INDEX.md)。窗口内它只随 [#221](https://github.com/VirusPC/edges/pull/221) 从 `edges-cli-platform` 改名搬到 `edges-extensions`，状态没变。
 2. 没做成。窗口末的两块看板里没有 doctor 或软链接相关的卡。窗口外的 [#289](https://github.com/VirusPC/edges/pull/289)（10-19 03:14 开）正文写着：「`edges memory doctor` 的 `dead-entry` 仍然不会报告这类断链。#208 当时就没做这个诊断，这次也没有补。」
-3. 没做成。卡仍在 [`backlog`](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)，窗口内同样只随 #221 改了项目名。没有找到补齐四块目录的 PR。
+3. 没做成。卡仍在 [`backlog`](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)，窗口内同样只随 #221 改了项目名。没有找到补齐四块目录的 PR。
 
 ### 上期的一处事实写错了：#208、#211 没有进 main
 
@@ -36,7 +36,7 @@
   - 0.2.0 为什么没发，对话依据（全栈开发专家，10-18 晚）：#278 合入后 0.2.0 已经 `npm stage publish` 成功，助手说明还要用户在 npm 的 Staging 页用两步验证批准才算正式发布。用户约 23:23 回「你先继续搞GitHub actions去」，转去做发包 Actions 的 grill，窗口内再没有批准这一步。也就是说 0.2.0 不是被决定不发，而是停在了等批准，然后被 Actions 发的 0.2.1 跳过。
   - 0.1.0 的发布方式是用户当场纠正出来的（Grok Bot，10-18 19:24）：「现在应该是 stage only吧，不能直接publish」。这条做法后来进了 ADR 0037 的方向，但窗口内没有写进仓库。
 - Compose：[#265](https://github.com/VirusPC/edges/pull/265)（clone / pull / push）、[#270](https://github.com/VirusPC/edges/pull/270)（方案）、[#272](https://github.com/VirusPC/edges/pull/272)（`ComposeNode` 与 `--with-composed`）。
-- 结构：[#262](https://github.com/VirusPC/edges/pull/262)（[ADR 0035](https://github.com/VirusPC/edges/blob/main/docs/adr/0035-harness-readme-as-layer-material-index.md)，本层材料索引落在 `.harness/README.md`），[#267](https://github.com/VirusPC/edges/pull/267)、[#268](https://github.com/VirusPC/edges/pull/268)、[#269](https://github.com/VirusPC/edges/pull/269)、[#271](https://github.com/VirusPC/edges/pull/271) 四次重构，[#223](https://github.com/VirusPC/edges/pull/223) 让中文标题的笔记和项目目录保留汉字。
+- 结构：[#262](https://github.com/VirusPC/edges/pull/262)（[ADR 0035](https://github.com/VirusPC/edges/blob/main/docs/adr/0035-harness-readme-as-layer-material-index.md)，本层材料索引落在 `.edges/README.md`），[#267](https://github.com/VirusPC/edges/pull/267)、[#268](https://github.com/VirusPC/edges/pull/268)、[#269](https://github.com/VirusPC/edges/pull/269)、[#271](https://github.com/VirusPC/edges/pull/271) 四次重构，[#223](https://github.com/VirusPC/edges/pull/223) 让中文标题的笔记和项目目录保留汉字。
 - 评测：[#279](https://github.com/VirusPC/edges/pull/279) 加了检索评测冒烟。
 
 ### 部署挂了约 7 小时
@@ -59,7 +59,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### 看板
 
-窗口首尾对比：`.harness/tasks` 从 121 张到 128 张，领域 `tasks/` 从 5 张到 6 张。
+窗口首尾对比：`.edges/tasks` 从 121 张到 128 张，领域 `tasks/` 从 5 张到 6 张。
 
 - 新卡 8 张：「探索新的 CR 方式」（[#226](https://github.com/VirusPC/edges/pull/226)）、「Routines 模块 Skill 与调度文件分离」、「memory init/remember 支持 --super」（[#245](https://github.com/VirusPC/edges/pull/245)）、「Agent 取外部内容优先走 RSS」、「入库类 skill 增加无工作区降级模式」、「评估是否需要 edges context」、「安装 edges 后自动装好 skills」（[#273](https://github.com/VirusPC/edges/pull/273)），以及领域板的「edges connector 自建远程 MCP」（#244）。全部在 backlog。
 - 进 done 的 2 张：「edges CLI 发布成 package」（#273）、「待读 harness playbook」（#242）。
@@ -114,7 +114,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 1. 先合 [#288](https://github.com/VirusPC/edges/pull/288)、[#289](https://github.com/VirusPC/edges/pull/289)，再发 1.5.0，并改正上期复盘里「#208、#211 随 #204 合入」那句。完成标准：`main` 上能找到两处修复的提交，早于 `v1.5.0` tag；[2026-10-05 周复盘](../2026-10-05--周复盘/INDEX.md) 那句已改。来源：上面「#208、#211 没有进 main」。
 2. 给 PR 加一道和 Deploy 同样的安装检查。完成标准：`.github/workflows/` 里有一个 `pull_request` 触发的工作流，至少跑 `pnpm install --frozen-lockfile`（最好连 CLI 测试一起）；一个故意改坏 `pnpmfileChecksum` 的 PR 会在合入前变红。来源：上面「部署挂了约 7 小时」。
-3. 把上期没动的 NodeService 硬约束写进 `AGENTS.md`，把 #187 的卡改出 `in_progress`，同时给 doctor 断链开卡。完成标准：根 `AGENTS.md` 硬约束里有写盘走 NodeService 的一句；那张卡不再在 `in_progress`；`.harness/tasks` 里有 doctor 报断链的卡。来源：上期行动 1、2，连续两周没做。这次三条行动都直接开成看板卡，不再只留在复盘里。
+3. 把上期没动的 NodeService 硬约束写进 `AGENTS.md`，把 #187 的卡改出 `in_progress`，同时给 doctor 断链开卡。完成标准：根 `AGENTS.md` 硬约束里有写盘走 NodeService 的一句；那张卡不再在 `in_progress`；`.edges/tasks` 里有 doctor 报断链的卡。来源：上期行动 1、2，连续两周没做。这次三条行动都直接开成看板卡，不再只留在复盘里。
 4. 把「先给简单方案、不加额外抽象」写进云端代理开工必读的地方。完成标准：根 `AGENTS.md`（或 `extensions/AGENTS.md`）硬约束里有一句对应用户「Keep it Simple」「薄封装」的原则。来源：上面「返工多」。
 
 ## 建议补充内容清单
@@ -129,7 +129,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### doctor 报不出断掉的软链接（上期延续）
 
-建议去处：`.harness/tasks/edges-extensions/backlog`。处理结果：已列入下次做什么第 3 条。
+建议去处：`.edges/tasks/edges-extensions/backlog`。处理结果：已列入下次做什么第 3 条。
 
 为什么值得补：#289 一旦合入，移动节点后软链接会如约「保留原文、可能断开」，这正是需要 doctor 兜底的时刻；#289 自己也写明 doctor 没补。
 
@@ -137,7 +137,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### #174 四块目录补齐（上期延续）
 
-建议去处：现有 [backlog 卡](https://github.com/VirusPC/edges/blob/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)。处理结果：留待触发条件。这周 Compose 和 ADR 0035 都动了目录与材料登记，建议等 1.5.0 发完、下一轮动 CLI 目录结构时一并做，先把卡的完成标准从「待 grill 后再补」补上。
+建议去处：现有 [backlog 卡](https://github.com/VirusPC/edges/blob/main/.edges/tasks/edges-extensions/backlog/2026-10-07--CLI-%E4%B8%8E%E6%A0%B9-harness-%E8%A1%A5%E9%BD%90-notes-edges-projects-archive/INDEX.md)。处理结果：留待触发条件。这周 Compose 和 ADR 0035 都动了目录与材料登记，建议等 1.5.0 发完、下一轮动 CLI 目录结构时一并做，先把卡的完成标准从「待 grill 后再补」补上。
 
 为什么值得补：卡的完成标准仍然空着，别人无法判断做没做完。
 
@@ -153,7 +153,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### 核对「已合入」要看 main，不看 PR 状态
 
-建议去处：`.harness/memory/feedbacks` 或周复盘例程的 skill（`projects/routines/weekly-retrospective/SKILL.md`）。处理结果：待用户确认。
+建议去处：`.edges/memory/feedbacks` 或周复盘例程的 skill（`projects/routines/weekly-retrospective/SKILL.md`）。处理结果：待用户确认。
 
 为什么值得补：叠层 PR 显示「Merged」不等于进了 `main`，这次就是这样错的。写进复盘 skill 或反馈记忆，后面的复盘和发版检查都能用上。
 
@@ -161,7 +161,7 @@ Deploy 窗口内 62 次：成功 52、失败 10。其中 9 次连续失败，从
 
 ### 笔记和文档写入不强制走云端代理（10-13 日复盘遗留）
 
-建议去处：`.harness/memory/feedbacks`，并同步共享 skill `edges-publish`。处理结果：待用户确认。[2026-10-13 日复盘](../../daily/2026-10-13--日复盘/INDEX.md) 记的是「留待用户确认」，截至窗口结束 `.harness/memory/feedbacks` 里没有这条。
+建议去处：`.edges/memory/feedbacks`，并同步共享 skill `edges-publish`。处理结果：待用户确认。[2026-10-13 日复盘](../../daily/2026-10-13--日复盘/INDEX.md) 记的是「留待用户确认」，截至窗口结束 `.edges/memory/feedbacks` 里没有这条。
 
 为什么值得补：规则已经变了（代码改动仍要云端代理，笔记文档不再强制），但仓库里的反馈记忆和 skill 都还是旧说法。
 

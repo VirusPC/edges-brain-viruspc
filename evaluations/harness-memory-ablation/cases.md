@@ -2,7 +2,7 @@
 
 状态：**已导入 Langfuse Dataset** `harness-memory-ablation/v1`（30 题）。本题库替换原先改编草稿；尚未跑模型，不要把本文当成实测结果。
 
-挑选口径：用户真实提问或纠正改写为可独立重放的单轮题；判对要点以 `origin/main` 的 `.harness/memory`、根 `AGENTS.md` 与相关 skill/目录说明为准。密钥与私人信息已排除。
+挑选口径：用户真实提问或纠正改写为可独立重放的单轮题；判对要点以 `origin/main` 的 `.edges/memory`、根 `AGENTS.md` 与相关 skill/目录说明为准。密钥与私人信息已排除。
 
 | 类别 | 题数 | case_id |
 |---|---:|---|
@@ -21,13 +21,13 @@
 - **问题**：要把一篇对话整理成笔记并开 PR，默认应该从哪个仓库入口开始？正文应写进哪里？
 - **判对要点**：
   - 以 VirusPC/edges-workspace-viruspc（Compose 工作区根）为入口，先读其根 AGENTS.md
-  - 正文写进 .harness/compose/ 下的子仓（默认公开脑 edges-brain-viruspc；敏感进 private）
+  - 正文写进 .edges/compose/ 下的子仓（默认公开脑 edges-brain-viruspc；敏感进 private）
   - 不在工作区根堆正文；在工作区根直接 edges notes create 会落在工作区自己的 notes/，不会自动进子仓
 - **违反项**：
   - 把正文写在工作区根 notes/
   - 跳过工作区入口直接当单一仓处理且不说明 Compose 去向
 - **来源**：Grok Bot，2026-10-21
-- **真源文件**：`.harness/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
 - **原话摘要**：你现在默认不都是记在这里吗？把这个地方当做入口。
 
 ### M02
@@ -41,7 +41,7 @@
   - 只合子仓 PR 不 bump 工作区指针
   - 指针钉在未合入 main 的分支 tip
 - **来源**：Grok Bot，2026-10-21
-- **真源文件**：`.harness/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
 - **原话摘要**：你现在默认不都是记在这里吗？把这个地方当做入口。
 
 ### M03
@@ -55,7 +55,7 @@
   - 把 CLI 改动开在 edges-brain-viruspc
   - 把个人笔记默认写进框架仓 VirusPC/edges
 - **来源**：全栈开发专家，2026-10-20
-- **真源文件**：`.harness/memory/projects/project_personal_repo_is_trunk/INDEX.md`, `AGENTS.md`
+- **真源文件**：`.edges/memory/projects/project_personal_repo_is_trunk/INDEX.md`, `AGENTS.md`
 - **原话摘要**：我是说，是否archive，再拆2个仓更合适
 
 ### M04
@@ -68,7 +68,7 @@
 - **违反项**：
   - 仍用 VirusPC/edges/pull/165 并当作能打开旧个人 PR
 - **来源**：Task/拆仓相关会话，2026-10-20
-- **真源文件**：`.harness/memory/projects/project_personal_repo_is_trunk/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_personal_repo_is_trunk/INDEX.md`
 - **原话摘要**：旧仓改名为 VirusPC/edges-brain-viruspc（个人主干，保留） 新建公开框架仓 VirusPC/edges
 
 ### M05
@@ -82,7 +82,7 @@
   - 在提示里写明该写进哪个仓或该用哪个 --scope
   - 只有一句「按约定写」导致需求过模糊
 - **来源**：Grok Bot，2026-10-21
-- **真源文件**：`.harness/memory/projects/project_cloud_agent_blind_verification/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_cloud_agent_blind_verification/INDEX.md`
 - **原话摘要**：避免作弊 / 你这个需求太模糊了。
 
 ### M06
@@ -98,7 +98,7 @@
   - 凭记忆断言 npm 有没有发版而不查 registry
   - 未告知用户就用源码现编 CLI
 - **来源**：全栈开发专家，2026-10-21
-- **真源文件**：`.harness/memory/projects/project_use_latest_edges_cli_on_machines/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_use_latest_edges_cli_on_machines/INDEX.md`
 - **原话摘要**：卧槽，应该用最新命令吧 / npm 发包了么
 
 ### M07
@@ -113,7 +113,7 @@
   - 只当一次性调研堆链接
   - 另开独立 GitHub 仓专门追热点而不先定义问题
 - **来源**：Grok Bot，2026-10-23
-- **真源文件**：`.harness/memory/projects/project_enduring_ai_problems_timed_tracking/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_enduring_ai_problems_timed_tracking/INDEX.md`
 - **原话摘要**：AI时代，有些关键问题是始终存在但解决方案在不断演进的。比如记忆管理、自进化、长程任务、云端沙箱、多agent 协作、安全、human in the loop、可观测、评估等等。是不是应该不断地定义这种问题，然后用ai定时去追踪问题相关最新进展。
 
 ### M08
@@ -185,7 +185,7 @@
   - AI 擅自改 posts/
   - 把仅对内速记默认写进 posts/
 - **来源**：约定来源 AGENTS + memory（posts 硬约束常见于维护会话），2026-10-20
-- **真源文件**：`AGENTS.md`, `.harness/memory/projects/project_posts_public_astro_blog/INDEX.md`
+- **真源文件**：`AGENTS.md`, `.edges/memory/projects/project_posts_public_astro_blog/INDEX.md`
 
 ## memory-irrelevant（与约定无关）
 
@@ -306,7 +306,7 @@
 - **违反项**：
   - 答成 VirusPC/edges 且当作个人主干
 - **来源**：全栈开发专家，2026-10-20
-- **真源文件**：`.harness/memory/projects/project_personal_repo_is_trunk/INDEX.md`, `AGENTS.md`
+- **真源文件**：`.edges/memory/projects/project_personal_repo_is_trunk/INDEX.md`, `AGENTS.md`
 - **过时陷阱**：仍以为个人仓叫 VirusPC/edges
 - **原话摘要**：我是说，是否archive，再拆2个仓更合适
 
@@ -334,7 +334,7 @@
 - **违反项**：
   - 仍断言 Compose 子仓一律只读不可写
 - **来源**：Grok Bot，2026-10-21
-- **真源文件**：`.harness/memory/projects/project_workspace_is_deposit_entry/INDEX.md`, `notes/2026-10-21--compose-子仓可写/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_workspace_is_deposit_entry/INDEX.md`, `notes/2026-10-21--compose-子仓可写/INDEX.md`
 - **过时陷阱**：Compose 只读特例已删除前的旧认知
 - **原话摘要**：现在被compose 进来的仓库是不允许写的吗
 
@@ -348,7 +348,7 @@
 - **违反项**：
   - 仍说只从单一脑仓根入口、无视 workspace
 - **来源**：周复盘，2026-10-24
-- **真源文件**：`.harness/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
 - **过时陷阱**：入口改动前的单仓习惯
 - **原话摘要**：周复盘有改成从edges workspace仓库为入口做复盘么
 
@@ -362,7 +362,7 @@
 - **违反项**：
   - 沿用 VirusPC/edges/pull/N 并声称能打开历史个人 PR
 - **来源**：Task/拆仓相关会话，2026-10-20
-- **真源文件**：`.harness/memory/projects/project_personal_repo_is_trunk/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_personal_repo_is_trunk/INDEX.md`
 - **过时陷阱**：改名后仍用旧仓名拼 PR URL
 - **原话摘要**：旧仓改名为 VirusPC/edges-brain-viruspc（个人主干，保留） 新建公开框架仓 VirusPC/edges
 
@@ -401,11 +401,11 @@
 - **问题**：沉淀笔记时，能不能因为「工作区根也有 notes/」就默认写在 edges-workspace-viruspc 根目录？
 - **判对要点**：
   - 不能：工作区根的 notes/ 不是子仓正文落点；正文写 composed 子仓
-  - 要写进哪个脑，--scope 指到 .harness/compose/<name> 或直接在子仓 clone 操作
+  - 要写进哪个脑，--scope 指到 .edges/compose/<name> 或直接在子仓 clone 操作
 - **违反项**：
   - 默认写工作区根 notes/ 并开在工作区根的 PR
 - **来源**：Grok Bot，2026-10-21
-- **真源文件**：`.harness/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
+- **真源文件**：`.edges/memory/projects/project_workspace_is_deposit_entry/INDEX.md`
 - **过时陷阱**：把「入口」误当成「正文落点」
 - **原话摘要**：你现在默认不都是记在这里吗？把这个地方当做入口。
 

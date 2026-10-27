@@ -221,7 +221,7 @@ Refuse a path that is the current project, inside the current project, or inside
 
 - 记忆仓库内部可以分子目录。Devin 随意组织，用 `[[链接]]` 串起来；Letta 的子目录可以有自己的 `MEMORY.md`，按需读，深度限 2 层。但这是按主题分，不跟代码目录对应。
 - 跟着代码子目录走的上下文，靠代码仓库里嵌套的 AGENTS.md。Letta 明确说 AGENTS.md 和 `.agents` 属于环境，记忆属于 Agent。
-- edges 在这点上更细：`.harness/` 可以按任意目录（`--scope`）初始化，子目录有自己的记忆，召回时逐层合并。
+- edges 在这点上更细：`.edges/` 可以按任意目录（`--scope`）初始化，子目录有自己的记忆，召回时逐层合并。
 
 ### 4. Devin 的 composable 体现在哪
 
@@ -250,10 +250,10 @@ Refuse a path that is the current project, inside the current project, or inside
 在项目里放一份挂载清单：
 
 ```yaml
-# .harness/memory-sources.yaml
+# .edges/memory-sources.yaml
 sources:
-  - name: project            # 本项目 .harness，可写，优先级最高
-    path: .harness
+  - name: project            # 本项目 .edges，可写，优先级最高
+    path: .edges
     write: direct
   - name: fe-conventions
     repo: org/memory-fe-conventions
@@ -283,7 +283,7 @@ Devin 规范推荐的条目元数据，写在每条记忆行末：
 
 **工作空间是另一个代码仓库**
 - 读：在对方仓库 AGENTS.md 放指针（「通用经验去 edges 查，用 `edges ask` / `memory search`」），按需检索，不复制内容。
-- 写：可复用经验通过 skill 或会话结束钩子调用 CLI 回流 edges；只属于该仓库的知识留在它自己的 `.harness/`。
+- 写：可复用经验通过 skill 或会话结束钩子调用 CLI 回流 edges；只属于该仓库的知识留在它自己的 `.edges/`。
 - 挂载：本机装 CLI 用 `--scope` 指向 edges；或把 CLI 包成 MCP server（`search`、`remember`）供 Cursor、Claude Code、Codex 调用。
 
 **工作空间是 ChatGPT 这类对话框**
@@ -293,7 +293,7 @@ Devin 规范推荐的条目元数据，写在每条记忆行末：
 
 **写入口原则**
 - 每个仓库只有 CLI 一个写入口，负责校验格式、判断作用域、更新索引。
-- 审核力度跟着作用域走：项目自己的 `.harness/` 直接写、随正常提交被审；团队库和 edges 走 PR；只读领域库不在当前工作区写。
+- 审核力度跟着作用域走：项目自己的 `.edges/` 直接写、随正常提交被审；团队库和 edges 走 PR；只读领域库不在当前工作区写。
 - 高频小沉淀可先攒在 inbox 分支，定期批量合成一个 PR。
 - 对照：Devin 和 Letta 都是 LLM 直接写、后台整理兜底，没有人工 PR。
 
@@ -337,7 +337,7 @@ Devin 规范推荐的条目元数据，写在每条记忆行末：
 - 固定位置：edges 放在本机固定目录（如 `~/edges`），用环境变量（如 `EDGES_HOME`）告知 Agent，不复制进项目。对应 Letta 的 `$MEMORY_DIR`、Devin 的 `~/agent-memory`。
 - 自动注入而非靠 skill：用宿主会话启动钩子（Claude Code SessionStart、Cursor rules 等）开局注入 edges INDEX 摘要；退路是在项目 AGENTS.md 写硬指令先读 edges 索引。
 - 按需检索：`edges ask` / `search` / grep。
-- 写回：跨项目经验经 CLI 写回 edges 走 PR；项目知识留在项目 `.harness/`。
+- 写回：跨项目经验经 CLI 写回 edges 走 PR；项目知识留在项目 `.edges/`。
 - 多库组合：项目里的挂载清单声明 edges、规范库、组件库等，CLI 跨库读、按作用域写。
 
 **接 ChatGPT 这类对话框：学 MemHub，走服务接口**
@@ -381,13 +381,13 @@ flowchart LR
 grill（2026-10-17）结论已写成 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md)，要点如下（均未实现）。第 2–6、9、10 条等已被下文第二至十一轮 grill 修订改写，以 ADR 0034 与最新一轮修订为准（dream 以「第八轮修订」为准，`edges context` 与开场注入以「第九轮修订」为准，Compose 的 Domain/Service/CLI 与 clone/pull/push/traverse 以「第十一轮修订」为准，其余以「第六轮修订」为准）：
 
 1. **范围与术语**：大脑、团队库、规范库、组件库用同一套机制，统一叫「组合（compose）」，对应 Devin 文章的 composable。不再说「外部记忆」「挂载」。工作空间 = 自身就地 harness + 若干被组合的 harness 仓库。
-2. **组合清单可放任意目录（JSON）**（已被第三轮取代）：用户级 `~/.harness/compose.json`（如大脑，跟人走，不强加给同事）；任意目录都可以有 `.harness/compose.json`（随代码提交，协作者一致），和「harness 任何目录」一致。生效时从工作目录向上逐层收集，再加用户级；同名仓库离工作目录越近越优先，用户级最低。每项写名字、git 地址、可选分支。（grill 初稿是项目根 + 用户级两层 YAML，同日改成现在这样。）取代第 5 节设想的 `memory-sources.yaml`。
-3. **拉到本地**（已被第二轮修订改写；第六轮又回到「一律 clone 到本地」，但不再有 MCP、服务端 clone）：CLI 统一 clone 到 `~/.edges/repos/<name>`（是否改到 `~/.harness/` 下另议），代码 Agent 按普通文件读写。ChatGPT 这类无 shell 宿主走远程 MCP，服务端同样持有 clone，MCP 子进程调 CLI，用服务端默认清单。否决 git submodule、手动 clone 写路径、主路径直接调中心化远程服务。
+2. **组合清单可放任意目录（JSON）**（已被第三轮取代）：用户级 `~/.edges/compose.json`（如大脑，跟人走，不强加给同事）；任意目录都可以有 `.edges/compose.json`（随代码提交，协作者一致），和「harness 任何目录」一致。生效时从工作目录向上逐层收集，再加用户级；同名仓库离工作目录越近越优先，用户级最低。每项写名字、git 地址、可选分支。（grill 初稿是项目根 + 用户级两层 YAML，同日改成现在这样。）取代第 5 节设想的 `memory-sources.yaml`。
+3. **拉到本地**（已被第二轮修订改写；第六轮又回到「一律 clone 到本地」，但不再有 MCP、服务端 clone）：CLI 统一 clone 到 `~/.edges/repos/<name>`（是否改到 `~/.edges/` 下另议），代码 Agent 按普通文件读写。ChatGPT 这类无 shell 宿主走远程 MCP，服务端同样持有 clone，MCP 子进程调 CLI，用服务端默认清单。否决 git submodule、手动 clone 写路径、主路径直接调中心化远程服务。
 4. **`edges context`**（已被第二轮修订改写；第九轮起整体暂缓）：从工作目录向上收集各级清单再加用户级，合并 → 没有就 clone、有就带超时 pull（失败沿用旧版本并告警）→ 对项目自身和每个组合仓库，用 traverse 的 `localOnly` 取根 `AGENTS.md` 的「本层硬约束」和本层索引 → 按「项目自身 harness、由近到远的各级目录组合、用户级组合」拼 Markdown，标来源，有字数上限，超限先截索引 → 输出到 stdout。MCP `context` 工具调用同一条命令。`--super` 的 `harness-materials.json` 不能当组合清单用。
 5. **注入从简**（第九轮起不再要求开场配置指令，靠 Agent 原生读 `AGENTS.md`）：不做 hook，只在用户级配置或 ChatGPT 自定义指令里写一句「开场先运行 / 调用 `edges context`」。对话框宿主只能尽力而为。
 6. **写回**（已被第二轮修订改写）：默认写进项目自身 harness；用户明确要求写进某个组合仓库时按普通文件改，但走分支加 PR，不直推主分支。
 7. **团队库写入**：Agent 只写自己的 harness；提升到团队库或大脑交给后续的 dream，批量出 PR，由维护者审。
-8. **分支记忆**：不做标记。分支记忆留在分支自己的 `.harness/`，丢弃分支就没了；合入主分支时和代码一起被审；分支零碎经验到不了团队库。中心化方案只能靠事后打标签隔离。
+8. **分支记忆**：不做标记。分支记忆留在分支自己的 `.edges/`，丢弃分支就没了；合入主分支时和代码一起被审；分支零碎经验到不了团队库。中心化方案只能靠事后打标签隔离。
 9. **检索借 PageIndex 思路**（已被第二轮修订改写；第六轮起 PageIndex 式索引与 `edges search` 整体取消）：全库一棵树，就是 Edges 的目录层级加各层 `README.md` / `AGENTS.md` 组成登记里的 name / description（可选再加各目录汇总摘要）。索引留在同一个记忆仓库、随 PR 审核，不另设产物或向量库；离线建，由 dream 维护，检索时只读。每层子节点控制在几十个以内，过多就拆目录；摘要要帮模型判断分支。`edges context` 只注入根层硬约束和一级索引；新增 `edges search`（从根层读索引 → 模型选分支 → 逐层往下 → 读原文），MCP `search` 复用它。否决在线现建索引、直接用 PageIndex 开源代码；向量加 BM25、索引作为 CI 产物另存的方案暂不采用，留作以后补充召回的方向。
 10. **dream 触发**（已被第二轮修订改写；第六轮起不维护索引；第七轮起 dream = 整棵组合树自下而上整理，不再「只做提升」；第八轮明确入口 = 工作空间 `AGENTS.md` / Compose block，不是大脑）：每 24 小时检查一次，代码库主分支自上次运行后有新提交才运行，没有变化就跳过，省成本、把一天的变化攒成一批。职责是从工作空间 `AGENTS.md`（Compose block）入口自下而上整理整棵组合树：合并/删除记忆、清理目录、刷新 name / description、经 PR 提升可复用内容到大脑或团队库（上层节点，非入口）。产出一律走 PR。
 11. **dream 在哪运行另议**：GitHub Actions 定时任务或自建机器上的 cron 都可以。
@@ -415,11 +415,11 @@ grill（2026-10-17）结论已写成 [ADR 0034](https://github.com/VirusPC/edges
 
 修订后的结论：
 
-1. **两类记忆**（已被第六轮取代：不再有远程记忆仓库、MCP、PageIndex 式索引）：本地记忆是项目内就地的 `.harness/`，跟代码走、规模小，AI 顺着目录读，不建索引。远程记忆仓库是团队库、规范库和大脑，服务端持有并用 PageIndex 思路离线维护树状索引（索引仍是仓库里的入口文件和摘要，随 PR 审核），通过 MCP 暴露读一层索引、读原文、`search` 等工具；客户端不再拉到本地，代码 Agent 和 ChatGPT 走同一套远程工具。`search` 改为远程 MCP 工具，服务端仍用 CLI 实现。推翻第 3 条「一律 clone 到本地读写」和第 9 条「`edges search` 是本地命令」。
+1. **两类记忆**（已被第六轮取代：不再有远程记忆仓库、MCP、PageIndex 式索引）：本地记忆是项目内就地的 `.edges/`，跟代码走、规模小，AI 顺着目录读，不建索引。远程记忆仓库是团队库、规范库和大脑，服务端持有并用 PageIndex 思路离线维护树状索引（索引仍是仓库里的入口文件和摘要，随 PR 审核），通过 MCP 暴露读一层索引、读原文、`search` 等工具；客户端不再拉到本地，代码 Agent 和 ChatGPT 走同一套远程工具。`search` 改为远程 MCP 工具，服务端仍用 CLI 实现。推翻第 3 条「一律 clone 到本地读写」和第 9 条「`edges search` 是本地命令」。
 2. **`edges context` 保留**（第三轮改为顺组成登记 traverse，不再读 compose.json；第六轮改为只在本地顺树走，不调 MCP）：读本地 harness 的硬约束和一级索引，对组合清单里的远程仓库调用其 MCP 取根层硬约束和一级索引，拼在一起输出，不再负责 clone 远程仓库。改写第 4 条。
-3. **远程仓库只有 dream 一个写入口**（已被第六轮取代：不再有远程仓库这一类）：产出一律走 PR；个人和 Agent 只写自己项目的 `.harness/`，由 dream 挑选提升。推翻第 6 条。
+3. **远程仓库只有 dream 一个写入口**（已被第六轮取代：不再有远程仓库这一类）：产出一律走 PR；个人和 Agent 只写自己项目的 `.edges/`，由 dream 挑选提升。推翻第 6 条。
 4. **`remember` 只进收件箱**（已被第六轮取代：`remember` 与收件箱暂不提供）：dream 的输入因此是项目 harness 主分支的变化加收件箱。触发仍是每 24 小时检查一次，有变化才运行；收件箱非空也算有变化（这一点是整理时补充的）。改写第 10 条。
-5. **组合清单每项写 `repo` 和 `mcp`**（已被第三轮取代）：如 `{ "name": "team-kb", "repo": "<git url>", "mcp": "<https url>" }`。只填 `repo` 的按本地仓库处理，clone 到 `~/.edges/repos/<name>` 后顺目录读（是否改到 `~/.harness/` 下另议）。逐层收集、越近越优先的规则不变。
+5. **组合清单每项写 `repo` 和 `mcp`**（已被第三轮取代）：如 `{ "name": "team-kb", "repo": "<git url>", "mcp": "<https url>" }`。只填 `repo` 的按本地仓库处理，clone 到 `~/.edges/repos/<name>` 后顺目录读（是否改到 `~/.edges/` 下另议）。逐层收集、越近越优先的规则不变。
 6. **分支记忆更站得住**（结论保留，第六轮起改说「被组合的仓库」）：远程仓库只经 dream 写入，dream 只看主分支，分支上的零碎经验更到不了远程仓库。
 
 **第三轮 grill 修订（2026-10-17）**
@@ -430,7 +430,7 @@ grill（2026-10-17）结论已写成 [ADR 0034](https://github.com/VirusPC/edges
 
 - **还需要 `compose.json` 吗？** 不需要。在当前作用域的 `AGENTS.md`（或组织清单）里登记一个指向记忆仓库入口的节点即可，traverse 顺着这条边走，和读本仓子目录一样。第二轮的「组合清单 / `repo`+`mcp` 字段 / 逐层收集」被本轮取代。
 - **本地和远程怎么统一？**（已被第六轮取代：只有本地入口） 入口可以是本地目录（clone 下来的路径），也可以是远程目录（MCP 暴露的目录根）。模型里是同一种子节点，只是解析方式不同：本地读文件，远程用固定工具（读一层索引、读原文、`search`），不靠动态加载 tools。
-- **一个模型还是两套？**（已被第六轮取代：远程 MCP、服务端 clone、收件箱都去掉） 一个模型，两种部署。每份记忆都是带 harness 的 git 仓库；读 = 顺树，写 = PR。MCP 服务 = 服务端 clone + 同一 CLI；dream = 定时 Agent，用同一 CLI，产出 PR。收件箱 = 仓库内 `.harness/inbox/`，`remember` 往里写文件并开 PR。
+- **一个模型还是两套？**（已被第六轮取代：远程 MCP、服务端 clone、收件箱都去掉） 一个模型，两种部署。每份记忆都是带 harness 的 git 仓库；读 = 顺树，写 = PR。MCP 服务 = 服务端 clone + 同一 CLI；dream = 定时 Agent，用同一 CLI，产出 PR。收件箱 = 仓库内 `.edges/inbox/`，`remember` 往里写文件并开 PR。
 - **大脑必须走服务端吗？**（第六轮起一律本地 clone） 不必。默认可本地（clone 后登记本地路径），也可选远程（登记 MCP 入口）。
 - **还保留什么？**（第六轮起 PageIndex 索引、收件箱、远程写入规则都去掉）PageIndex 思路维护远程大库的树状索引；远程写入以 dream 为主 + 收件箱；dream 每 24 小时检查、主分支或收件箱有变化才跑；dream 在哪运行另议；分支记忆优势。
 
@@ -441,7 +441,7 @@ grill（2026-10-17）结论已写成 [ADR 0034](https://github.com/VirusPC/edges
 用户进一步澄清两处（并补充权限方向）：
 
 1. **Compose block**：用户说「AgentsMD里面可能需要加一个Compose相关的block」。外部记忆仓库登记不是把现有组成登记列表原样多挂一个节点，而是在 `AGENTS.md` 里增加专用的 **Compose 相关 block**，在其中登记外部记忆仓库。仍不另造 `compose.json`。每个入口条目的字段形态另议；结构落点已明确。第三轮「在组成登记里登记」的含糊说法以本轮为准。
-2. **本地可直接写**：用户说「简单点，可以直接写，是不是逻辑一致些。或者说后面加个读写权限控制」。本地登记的记忆仓库（clone 在本机、入口是本地路径）**允许直接写**，与就地 `.harness/` 一致——本地入口读本地文件，写也直接落盘。远程记忆仓库仍 dream + PR，不变（第六轮起不再有远程记忆仓库）。此前 ADR 里「本地写另议 / 默认仍建议走 PR」已取代；「本地也强制走 dream/PR」否决。
+2. **本地可直接写**：用户说「简单点，可以直接写，是不是逻辑一致些。或者说后面加个读写权限控制」。本地登记的记忆仓库（clone 在本机、入口是本地路径）**允许直接写**，与就地 `.edges/` 一致——本地入口读本地文件，写也直接落盘。远程记忆仓库仍 dream + PR，不变（第六轮起不再有远程记忆仓库）。此前 ADR 里「本地写另议 / 默认仍建议走 PR」已取代；「本地也强制走 dream/PR」否决。
 3. **权限以后再加，且要和 Git 关联**：读写权限控制可以以后再加，且要和底层 Git 仓库权限关联（谁能读/写该仓），不另造独立 ACL；本轮不定方案。现行规则仍是本地直接写、远程 dream-only（第六轮起只剩本地直接写；dream 整理/提升仍走 PR，见第七轮）。
 
 见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #2、#8 与 Consequences。
@@ -458,8 +458,8 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 
 修订后的结论（取代前几轮里关于远程、MCP、PageIndex、收件箱的内容）：
 
-1. **edges 只管 git 仓库和本地目录树**：工作空间 = 就地 `.harness/` + 若干被组合的 harness 仓库；被组合的仓库一律 clone 到本机，在 `AGENTS.md` 的 Compose block 里登记本地入口，挂到树上。Compose block 仍算本层，仍不要 `compose.json`。
-2. **读写**：读 = 顺着目录走；本地组合进来的仓库和 `.harness/` 一样可直接写。读写权限以后再加，和 Git 仓库权限关联（不变）。
+1. **edges 只管 git 仓库和本地目录树**：工作空间 = 就地 `.edges/` + 若干被组合的 harness 仓库；被组合的仓库一律 clone 到本机，在 `AGENTS.md` 的 Compose block 里登记本地入口，挂到树上。Compose block 仍算本层，仍不要 `compose.json`。
+2. **读写**：读 = 顺着目录走；本地组合进来的仓库和 `.edges/` 一样可直接写。读写权限以后再加，和 Git 仓库权限关联（不变）。
 3. **去掉**：远程入口、远程 MCP 服务、服务端 clone、PageIndex 式远程索引、大规模检索、`edges search` 远程工具。需要远程大规模知识管理的，自己选用什么系统都行，edges 不管也不集成。
 4. **暂不提供**：MCP `remember` 和收件箱。它们只为 ChatGPT 这类没有本地 harness 的宿主准备，这类宿主不在范围内。（与本地的 `$project-memory-remember` skill 无关。）
 5. **dream 收窄**（已被第七轮改写：dream = 整棵树整理，不再「只做提升」）：只把项目 harness 主分支里可复用的内容提升到大脑或团队库，走 PR；每 24 小时检查，主分支有变化才跑；在哪跑另议。顺带可在目标仓库里按维护要求整理目录树（拆目录、更新 name / description），不是独立职责（这一点是整理时补充的）。不消化收件箱，不维护索引。
@@ -486,7 +486,7 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 
 修订后的结论（澄清第七轮「整棵组合树」的入口）：
 
-1. **dream 入口 = 工作空间的 `AGENTS.md`（其 Compose block）**：从该入口出发，自下而上走完整棵组合树（就地 `.harness/` + Compose block 挂上的本地仓库）。
+1. **dream 入口 = 工作空间的 `AGENTS.md`（其 Compose block）**：从该入口出发，自下而上走完整棵组合树（就地 `.edges/` + Compose block 挂上的本地仓库）。
 2. **大脑 / 团队库是树上的上层节点，不是入口**：提升仍可经 PR 落到这些上层仓库，但不把 dream 直接指到大脑。
 3. **其余不变**：整理内容（合并/删除、目录清理、刷新 name / description、经 PR 提升）、24h 检查 + 主分支有变化才跑、在哪运行另议。
 
@@ -502,7 +502,7 @@ Compose block 与 edges 里「本层硬约束」「本层系统维护信息」�
 
 1. **`AGENTS.md` 本身就是入口**：不提供 `edges context` 命令，也不要求在客户端配置里写「开场先运行 `edges context`」。Agent 开场读 `AGENTS.md`，看到 Compose block 后顺着路径往下走。
 2. **暂缓，不是否决**：出现以下情况再回头看：组合树很深，硬约束要手动展开才看得到；或者 Agent 实际不顺着 Compose block 的路径走。
-3. **未核实**：Agent 是否会可靠地顺着 Compose block 的路径走，还没验证。跟进见任务卡 [评估是否需要 `edges context`](<https://github.com/VirusPC/edges/blob/main/.harness/tasks/project-memory/backlog/2026-10-17--%E8%AF%84%E4%BC%B0%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81-edges-context/INDEX.md>)。
+3. **未核实**：Agent 是否会可靠地顺着 Compose block 的路径走，还没验证。跟进见任务卡 [评估是否需要 `edges context`](<https://github.com/VirusPC/edges/blob/main/.edges/tasks/project-memory/backlog/2026-10-17--%E8%AF%84%E4%BC%B0%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81-edges-context/INDEX.md>)。
 4. **ADR 编号变化**：ADR 0034 的 Decision 重新编号——原 #6（`edges context`）和 #7（开场注入）合并为新 #6（`AGENTS.md` 本身就是入口）；dream 由 #8 改为 #7，分支记忆 #9 改为 #8，`remember` 与收件箱 #10 改为 #9。上文各轮里的「Decision #N」是当轮编号。
 
 见 [ADR 0034](https://github.com/VirusPC/edges/blob/main/docs/adr/0034-compose-harness-repos-into-workspace.md) Decision #6 与 Considered Options。

@@ -67,7 +67,7 @@
 
 ## 建议补充内容清单
 
-- 记忆（project，根作用域）：长期 AI 问题先写成稳定定义，再用 Routines 定时追踪解法演进。来自 Grok Bot 2026-10-23「始终存在但解决方案在不断演进」「不断地定义这种问题，然后用 ai 定时去追踪」。写入：`.harness/memory/projects/project_enduring_ai_problems_timed_tracking/INDEX.md`（`edges memory remember`，`.harness/memory/projects/README.md` 已登记）。
+- 记忆（project，根作用域）：长期 AI 问题先写成稳定定义，再用 Routines 定时追踪解法演进。来自 Grok Bot 2026-10-23「始终存在但解决方案在不断演进」「不断地定义这种问题，然后用 ai 定时去追踪」。写入：`.edges/memory/projects/project_enduring_ai_problems_timed_tracking/INDEX.md`（`edges memory remember`，`.edges/memory/projects/README.md` 已登记）。
 - 不做：npm 503 发版故障笔记（用户：出问题时现场排查即可，不沉淀）。
 - 不做：#349 已合的四条（工作区入口、npm 最新版、云端盲测、Trusted Publisher 404）——已在仓内。
 - 不做：notes 叶子改挂 `notes/README`——#350 已合。

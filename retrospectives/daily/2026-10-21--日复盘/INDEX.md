@@ -35,9 +35,9 @@
 - **Compose 改成 git submodule（Coding Agent 专家 → 全栈开发专家）**：
   - 用户问 compose 拉取失败会不会整体失败，于是有了 #13（逐条跳过并汇总、stderr 打 warning）。
   - 接着发现 AGENTS.md 里写的是本机绝对路径，讨论后改成 git submodule，命令收成 add / list / update（个人仓卡 #338，框架 #14，ADR 0042，取代 ADR 0039 里「不用 submodule」的结论）。
-  - 新建私有根仓 `edges-workspace-viruspc`，用新 Compose 挂两个大脑。用户发现 Compose 区块挂在 AGENTS.md 上和其他模块不一致，几轮 grill 后定为：Compose 入口融合进 `.harness/compose/README.md`（继承 README 节点，不另造虚拟节点），并加通用的 `--exclude <模块>` 过滤（#15、#19，ADR 0043）。
+  - 新建私有根仓 `edges-workspace-viruspc`，用新 Compose 挂两个大脑。用户发现 Compose 区块挂在 AGENTS.md 上和其他模块不一致，几轮 grill 后定为：Compose 入口融合进 `.edges/compose/README.md`（继承 README 节点，不另造虚拟节点），并加通用的 `--exclude <模块>` 过滤（#15、#19，ADR 0043）。
   - 「模块形态一致、方便插件化」作为目标写进框架仓 CLI 的 project memory（#18），插件化开卡进 backlog（#17）。
-- **CLI 报错排查（全栈开发专家）**：Coding Agent 专家用 0.2.3 跑 tasks 时报 `Missing referenced node: teaching/.harness/memory/users/README.md`。复现后确认框架仓 main 已修，只是 npm 上还是 0.2.3。
+- **CLI 报错排查（全栈开发专家）**：Coding Agent 专家用 0.2.3 跑 tasks 时报 `Missing referenced node: teaching/.edges/memory/users/README.md`。复现后确认框架仓 main 已修，只是 npm 上还是 0.2.3。
 - **卡片流程**：用户问任务结束时卡会不会补结果，提出状态流转时由 CLI 自动追加进展段（框架 #16 卡）；又提出出任务卡和技术方案都给 html 页审阅（个人仓 #340，开着）。
 - **Grok Bot 例行**：「合并后自动重编译」「skill 合入即同步」两条 routine 跟着框架仓每次合入重编译 CLI、同步本机 skill；用户要求把 box 和两台 Mac 上的 edges 目录全部按新布局重置。其余是问答：个人项目与公司项目重叠时怎么处理、要不要开源；vercel skills 与跨工具 plugin；sql2hive；模型 Flash 版。
 - **其他**：通用-辅助-2 帮用户在 Mac 上装 iOS 模拟器运行时、往模拟器装测试包；通用答了一个闲聊问题；记录员收到一条误发的拆仓进度，没动看板。
@@ -48,7 +48,7 @@
 - 个人仓保持公开、继续脱敏，但 commit 历史不刻意脱敏；`posts/`、site-and-content、teaching 部署在个人仓，`/tasks/` 和 artifacts 预览由框架仓部署。
 - 框架仓代码目录收进 `packages/` workspace，旧路径硬切，用对照表说明（ADR 0040、0041）。
 - 私仓定位为「一个大脑两个仓」里的私密一半，默认写公开仓，敏感的才写私仓，两仓不互相 Compose 登记；另建私有根仓 `edges-workspace-viruspc` 挂两个大脑。
-- Compose 底层用 git submodule，只留 add / list / update，路径只允许相对；入口是 `.harness/compose/README.md`，用 `--exclude` 过滤模块（ADR 0042、0043）。
+- Compose 底层用 git submodule，只留 add / list / update，路径只允许相对；入口是 `.edges/compose/README.md`，用 `--exclude` 过滤模块（ADR 0042、0043）。
 - 任务卡开卡从简：先写背景、目标和已定前提，细节 grill 后补（用户「开卡不用想这么多」）。
 - 框架仓新版本暂不发 npm，先用源码跑（用户 00:10）。
 
@@ -78,8 +78,8 @@
 ## 注意事项
 
 - **旧链接失效**：`VirusPC/edges` 这个名字被新框架仓占用后，GitHub 不再把旧仓的链接重定向到 edges-brain-viruspc。往期日复盘（包括 10-20 那篇）里写成 `github.com/VirusPC/edges/pull/<N>` 的链接，N 大于 20 的现在打开是 404（实测 #290、#321）；N 在 1–20 之间的会打开框架仓里不相干的 PR。按 `projects/routines/README.md`「带日期的历史记录保留旧名，不回改」的约定，本篇不回改往期，只提醒：查拆仓前的 PR 时把仓库名换成 `edges-brain-viruspc`。私仓旧名没有被占用，重定向仍有效。
-- **根目录记忆被一起移走**：#332 删个人仓系统副本时，把根 `.harness/memory/feedbacks/` 整个删了，根 `projects/` 只剩一条。10-20 PR（#321）入库的三条反馈记忆和「个人仓是长期主干」那条，现在只在框架仓 `VirusPC/edges` 里。本 PR 只补回「个人仓是长期主干」（用户当时明确说记在个人仓）。`feedback_retro_comments_in_separate_file` 管的是复盘目录，而复盘只在个人仓；是否迁回由用户定。
-- **框架仓里那条主干记忆的措辞**：框架仓 `.harness/memory/projects/project_personal_repo_is_trunk` 正文里的「本仓」指个人仓，在框架仓里读会误解；卡片路径也还写着 `in_progress`。这条记忆归框架仓管，本 PR 不改，建议在框架仓删掉或改写。
+- **根目录记忆被一起移走**：#332 删个人仓系统副本时，把根 `.edges/memory/feedbacks/` 整个删了，根 `projects/` 只剩一条。10-20 PR（#321）入库的三条反馈记忆和「个人仓是长期主干」那条，现在只在框架仓 `VirusPC/edges` 里。本 PR 只补回「个人仓是长期主干」（用户当时明确说记在个人仓）。`feedback_retro_comments_in_separate_file` 管的是复盘目录，而复盘只在个人仓；是否迁回由用户定。
+- **框架仓里那条主干记忆的措辞**：框架仓 `.edges/memory/projects/project_personal_repo_is_trunk` 正文里的「本仓」指个人仓，在框架仓里读会误解；卡片路径也还写着 `in_progress`。这条记忆归框架仓管，本 PR 不改，建议在框架仓删掉或改写。
 - **放错仓的卡**：「Compose 底层改用 git submodule」卡（edges-brain-viruspc#338）讲的是框架 CLI，却开在个人仓的 `edges-extensions` 项目里；实现走的是框架仓 #14。任务记录员也发现框架仓里还有一份 in_progress 的拆仓卡副本，应以个人仓 done 的那张为准。这两处都属于看板整理，本 PR 不动。
 - **SKILL 里的现行说法过时**：`shared-extensions/AGENTS.md` 还写着「接入或操作 Edges 的能力……去 `extensions/`」，个人仓现在已经没有 `extensions/`。周复盘 Skill 还写着「回顾 VirusPC/edges」（见下一条）。
 - **routine 里的旧仓名**：日复盘的 `SKILL.md`、`schedule.md` 已经用新名 `VirusPC/edges-brain-viruspc` / `edges-brain-viruspc-private`，没有旧名残留。`weekly-retrospective/SKILL.md` 第 3、12 行仍写「VirusPC/edges 上一个自然周」，现在会被理解成新框架仓；`projects/routines/README.md` 的改名对照只写了私仓那条，没写 edges → edges-brain-viruspc。按要求只报告，没改。
@@ -88,14 +88,14 @@
 
 ## 建议补充内容清单
 
-- 记忆（project，根作用域）：个人仓是长期主干、不归档，系统只往外拆成新仓；补了「旧 PR 链接要换成新仓名」。来自全栈开发专家拆仓 R6，用户说「值得记一个 memory？for 个人仓」。写入：`.harness/memory/projects/project_personal_repo_is_trunk/INDEX.md`（`edges memory remember`，`.harness/memory/projects/README.md` 已登记）。
-- 记忆（feedback，`shared-extensions` 作用域，html-plan skill 所在层）：给用户的 html-plan 审阅页整页用中文，让子代理生成时在 prompt 里明说。来自 00:59「网页里为啥还是说英语？说中文」，以及 13:56 英文卡片后用户回「中文」。写入：`shared-extensions/.harness/memory/feedbacks/feedback_html_plan_pages_in_chinese/INDEX.md`（同上，已登记；只改 `.harness/memory/`，按本层约定不升版本）。
+- 记忆（project，根作用域）：个人仓是长期主干、不归档，系统只往外拆成新仓；补了「旧 PR 链接要换成新仓名」。来自全栈开发专家拆仓 R6，用户说「值得记一个 memory？for 个人仓」。写入：`.edges/memory/projects/project_personal_repo_is_trunk/INDEX.md`（`edges memory remember`，`.edges/memory/projects/README.md` 已登记）。
+- 记忆（feedback，`shared-extensions` 作用域，html-plan skill 所在层）：给用户的 html-plan 审阅页整页用中文，让子代理生成时在 prompt 里明说。来自 00:59「网页里为啥还是说英语？说中文」，以及 13:56 英文卡片后用户回「中文」。写入：`shared-extensions/.edges/memory/feedbacks/feedback_html_plan_pages_in_chinese/INDEX.md`（同上，已登记；只改 `.edges/memory/`，按本层约定不升版本）。
 - 笔记：跨工具 skill 与 plugin 的「一处编写，多处安装」——vercel skills 装 GitLab 源、主副本加软链接、plugin 和 hooks 为什么没法通用、社区方案及当时的流行度。来自 Grok Bot 17:19–18:07 的问答。写入：`notes/2026-10-21--跨工具-skill-与-plugin-的一处编写多处安装/INDEX.md`（`edges notes create`，`notes/AGENTS.md` 已登记）。
 - 不做（属于框架仓 `VirusPC/edges`，只在这里记）：「开卡从简——先写背景、目标和已定前提，细节 grill 后补」的反馈。依据是 17:15「开卡不用想这么多」，以及 10:40、01:27 两次同样的做法。任务卡写法由框架仓的 conversation-to-tasks skill 统一维护（框架仓 `project_task_separate_facts_from_idea` 明确不在别处另存模板），应在框架仓改 skill 或记忆，本 PR 不往框架仓开。
 - 不做（框架仓）：ADR 0039 改号、框架仓那条主干记忆的措辞、框架仓里的拆仓卡副本。理由见上文。
 - 不做：拆仓 R1–R6 的决策过程、私仓改名、平铺、packages 化、Compose submodule 与 README 入口。已由个人仓 #323–#339、框架仓 #1–#19 的任务卡和 ADR 0040–0043 记下。
 - 不做：「任务卡改在 box 本地用 CLI 落库，不再起云端 Agent」（10:34 用户对任务记录员说）。这是任务记录员自己的操作方式，它已经存进自己的记忆；放进仓库的话属于框架仓的看板约定，用户没有说要推广到所有助手。
-- 不做：状态流转自动追加进展段、任务卡用 html 审阅、`.harness` 模块插件化。已分别开卡（框架 #16、个人仓 #340、框架 #17），模块一致性原则已写进框架仓 project memory（#18）。
+- 不做：状态流转自动追加进展段、任务卡用 html 审阅、`.edges` 模块插件化。已分别开卡（框架 #16、个人仓 #340、框架 #17），模块一致性原则已写进框架仓 project memory（#18）。
 - 不做：git submodule 的行为问答（只拉一层、`--recursive` 不防循环、浅克隆、`update --remote` 后要提交指针）。结论已经体现在 ADR 0042 和 Compose 实现里，其余是通用 git 知识。
 - 不做：框架仓目录对照 openai/codex 的讨论。用户最后没改结构，也没要求记。
 - 不做：`Missing referenced node` 排查。原因是 0.2.3 早于修复，main 已修，只等发版，已写进「卡住了什么」。

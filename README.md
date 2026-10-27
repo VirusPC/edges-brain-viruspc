@@ -17,9 +17,9 @@
 | 怎么用 | 直接在本仓写个人内容 | `npm install -g @viruspc/edges`，或克隆框架仓开发 |
 | ECS | `/teaching/`：检出 `/home/cheng-dev/projects/edges`，本仓 Deploy 只更新这份检出 | `/tasks/` 与 `/artifacts`：检出 `/home/cheng-dev/projects/edges-framework`，由框架仓部署 |
 
-公开仓库之间不互相 Compose。本仓不挂 [`VirusPC/edges`](https://github.com/VirusPC/edges)，框架仓也不挂本仓。Compose 挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`：那边已经把两个大脑装成 `.harness/compose/` 下的 git submodule。
+公开仓库之间不互相 Compose。本仓不挂 [`VirusPC/edges`](https://github.com/VirusPC/edges)，框架仓也不挂本仓。Compose 挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`：那边已经把两个大脑装成 `.edges/compose/` 下的 git submodule。
 
-要用 Compose，日常命令是 `edges compose add`、`edges compose list`、`edges compose update`。没有 `clone`。挂载目录是仓内 `.harness/compose/<name>`，底层是 git submodule。这些挂载不写在本仓。
+要用 Compose，日常命令是 `edges compose add`、`edges compose list`、`edges compose update`。没有 `clone`。挂载目录是仓内 `.edges/compose/<name>`，底层是 git submodule。这些挂载不写在本仓。
 
 查 CLI、extensions、skills、ADR 时直接看框架仓；要改框架，去那边开 PR。个人知识写本仓。
 
@@ -47,11 +47,11 @@
 | [`notes/`](notes/README.md)、[`projects/`](projects/)、[`memory/`](memory/README.md)、[`teaching/`](teaching/README.md) | 知识生产：低成本捕获、专项工作区、调研备忘、教学工作区 |
 | [`retrospectives/`](retrospectives/README.md) | 阶段性回看：周复盘与日复盘 |
 | [`edges/`](edges/README.md) | 提炼出来、可以反复使用的判断 |
-| [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护。博客成稿和「站点与内容」维护项目（[`.harness/tasks/site-and-content/`](.harness/tasks/site-and-content/README.md)）只在本仓，框架仓不再保留 |
-| [`tasks/`](tasks/README.md)、[`.harness/tasks/`](.harness/tasks/README.md) | 领域任务，以及仍留在本仓的个人维护任务（技术阅读、客户端体验、站点与内容、拆仓卡） |
+| [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护。博客成稿和「站点与内容」维护项目（[`.edges/tasks/site-and-content/`](.edges/tasks/site-and-content/README.md)）只在本仓，框架仓不再保留 |
+| [`tasks/`](tasks/README.md)、[`.edges/tasks/`](.edges/tasks/README.md) | 领域任务，以及仍留在本仓的个人维护任务（技术阅读、客户端体验、站点与内容、拆仓卡） |
 | [`archive/`](archive/README.md) | 退出活跃区域的内容 |
 | [`shared-extensions/`](shared-extensions/README.md) | 不依赖 Edges、跨机器跨 Agent 共用的能力。通用 skill 在 [`shared-extensions/skills/`](shared-extensions/skills/README.md)，不打进 `@viruspc/edges` |
-| [`.harness/`](.harness/README.md) | 本仓自己的项目叶子、个人 skill、个人任务 |
+| [`.edges/`](.edges/README.md) | 本仓自己的项目叶子、个人 skill、个人任务 |
 
 对外可以看：[教学站](https://edges.viruspc.tech/teaching/)。任务看板 [https://edges.viruspc.tech/tasks/](https://edges.viruspc.tech/tasks/) 和 artifacts 预览由框架仓部署，不在本仓的 Deploy 里构建。
 

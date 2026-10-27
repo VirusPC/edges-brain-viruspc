@@ -2,7 +2,7 @@
 
 ## 范围
 
-2026-10-19 00:00 至 2026-10-25 23:59（Asia/Shanghai，下文时间都是北京时间）。仓库层看了 Compose 工作区挂载的三仓：框架仓 [VirusPC/edges](https://github.com/VirusPC/edges)（窗内合入 47 个 PR、main 58 个提交）、公开脑 [VirusPC/edges-brain-viruspc](https://github.com/VirusPC/edges-brain-viruspc)（102 个 PR、113 个提交）、私密脑 [VirusPC/edges-brain-viruspc-private](https://github.com/VirusPC/edges-brain-viruspc-private)（可读，5 个 PR；公开正文不写私人内容）。对照了两仓 `.harness/tasks` 窗末状态、Deploy / Frozen install / Publish 运行记录，以及公开脑 `retrospectives/daily/`。
+2026-10-19 00:00 至 2026-10-25 23:59（Asia/Shanghai，下文时间都是北京时间）。仓库层看了 Compose 工作区挂载的三仓：框架仓 [VirusPC/edges](https://github.com/VirusPC/edges)（窗内合入 47 个 PR、main 58 个提交）、公开脑 [VirusPC/edges-brain-viruspc](https://github.com/VirusPC/edges-brain-viruspc)（102 个 PR、113 个提交）、私密脑 [VirusPC/edges-brain-viruspc-private](https://github.com/VirusPC/edges-brain-viruspc-private)（可读，5 个 PR；公开正文不写私人内容）。对照了两仓 `.edges/tasks` 窗末状态、Deploy / Frozen install / Publish 运行记录，以及公开脑 `retrospectives/daily/`。
 
 对话层主要依据本周日复盘正文（10-19/20/21/22/24/25）与 `daily-scan` 摘要 jsonl；周复盘例程本身未直读各助手转写。10-23 无独立日复盘与 scan 目录，由 10-24 篇加长窗（10-22 05:09～10-24 05:09）补扫覆盖。
 
@@ -23,7 +23,7 @@
 
 1. **做成。** [#289](https://github.com/VirusPC/edges-brain-viruspc/pull/289) 于 10-19 09:32 合入，早于 [#287](https://github.com/VirusPC/edges-brain-viruspc/pull/287) / [v1.5.0](https://github.com/VirusPC/edges-brain-viruspc/releases/tag/v1.5.0)（约 09:33–09:34）；[#288](https://github.com/VirusPC/edges-brain-viruspc/pull/288) 跟踪卡 09:36 合入。更正写在 [2026-10-05 周复盘 COMMENTS.md](https://github.com/VirusPC/edges-brain-viruspc/blob/main/retrospectives/weekly/2026-10-05--周复盘/COMMENTS.md)。对话补充：打版前用户要求先修回 #208/#211（「先把问题都修了再打版」，全栈 10-19 02:56）；合入曾因助手把「CI 还在跑」和「可以合」弄混而停过一夜。
 2. **做成。** 公开脑 [#309](https://github.com/VirusPC/edges-brain-viruspc/pull/309) 落地后，拆仓迁到框架 [`.github/workflows/frozen-install.yml`](https://github.com/VirusPC/edges/blob/main/.github/workflows/frozen-install.yml)（`pull_request` → `pnpm install --frozen-lockfile`）。窗内 Frozen install：框架 73 次成功 0 失败；公开脑拆仓前 27 次成功 0 失败。
-3. **做成（NodeService）；doctor 按用户决定不做。** [#308](https://github.com/VirusPC/edges-brain-viruspc/pull/308) 写入硬约束；现见框架 [AGENTS.md](https://github.com/VirusPC/edges/blob/main/AGENTS.md)。对应卡已在 [`edges-extensions/done/…NodeService`](https://github.com/VirusPC/edges/tree/main/.harness/tasks/edges-extensions/done/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService)。两仓看板无 doctor 断链卡，与 COMMENTS「不开卡」一致。
+3. **做成（NodeService）；doctor 按用户决定不做。** [#308](https://github.com/VirusPC/edges-brain-viruspc/pull/308) 写入硬约束；现见框架 [AGENTS.md](https://github.com/VirusPC/edges/blob/main/AGENTS.md)。对应卡已在 [`edges-extensions/done/…NodeService`](https://github.com/VirusPC/edges/tree/main/.edges/tasks/edges-extensions/done/2026-10-07--notesskills-的-creategetupdatedelete-收口到-NodeService)。两仓看板无 doctor 断链卡，与 COMMENTS「不开卡」一致。
 4. **按用户决定不做。** 框架与公开脑 `AGENTS.md` 均无「Keep it Simple / 薄封装」句。
 
 同日用户定下复盘约定：正文定稿不改，评论写同目录 `COMMENTS.md`（周复盘助手 10-19 21:41：「我觉得不应该改，应该找地方额外写我的评论」→ [#307](https://github.com/VirusPC/edges-brain-viruspc/pull/307)）。
@@ -31,10 +31,10 @@
 ### 拆仓与 Compose 成为本周主线
 
 - 口头定案（R6，10-20 12:09～12:12，全栈）：曾短暂走 archive 方案，用户改口「个人知识库会不断产生新的项目，总不能每次都archive」「后续还会不断拆系统」「我觉得个人仓是不是做为主干」，并问「值得记一个memory？」。公开脑侧改名与 Deploy 钉仓、删系统副本、私仓改名等见 [#323](https://github.com/VirusPC/edges-brain-viruspc/pull/323)～[#337](https://github.com/VirusPC/edges-brain-viruspc/pull/337)；Compose / submodule 相关 [#316](https://github.com/VirusPC/edges-brain-viruspc/pull/316)、[#338](https://github.com/VirusPC/edges-brain-viruspc/pull/338)、[#342](https://github.com/VirusPC/edges-brain-viruspc/pull/342) 等。
-- 框架仓从零起：post-split fixups [#1](https://github.com/VirusPC/edges/pull/1)、CI [#2](https://github.com/VirusPC/edges/pull/2)、extensions 平铺 [#7](https://github.com/VirusPC/edges/pull/7)（[ADR 0040](https://github.com/VirusPC/edges/blob/main/docs/adr/0040-flatten-extensions-posts-to-personal-repo.md)）、packages workspace [#10](https://github.com/VirusPC/edges/pull/10)（[ADR 0041](https://github.com/VirusPC/edges/blob/main/docs/adr/0041-packages-workspace-layout.md)）、Compose 改 git submodule [#14](https://github.com/VirusPC/edges/pull/14)（[ADR 0042](https://github.com/VirusPC/edges/blob/main/docs/adr/0042-compose-on-git-submodule.md)）、入口改 `.harness/compose/README.md` [#19](https://github.com/VirusPC/edges/pull/19)（[ADR 0043](https://github.com/VirusPC/edges/blob/main/docs/adr/0043-compose-readme-entry.md)）、被组合仓可写 [#26](https://github.com/VirusPC/edges/pull/26)（[ADR 0045](https://github.com/VirusPC/edges/blob/main/docs/adr/0045-compose-checkout-writable.md)）。可写原则来自口头「核心是保持简单，不加额外机制」（Grok Bot 10-21 12:37）。
+- 框架仓从零起：post-split fixups [#1](https://github.com/VirusPC/edges/pull/1)、CI [#2](https://github.com/VirusPC/edges/pull/2)、extensions 平铺 [#7](https://github.com/VirusPC/edges/pull/7)（[ADR 0040](https://github.com/VirusPC/edges/blob/main/docs/adr/0040-flatten-extensions-posts-to-personal-repo.md)）、packages workspace [#10](https://github.com/VirusPC/edges/pull/10)（[ADR 0041](https://github.com/VirusPC/edges/blob/main/docs/adr/0041-packages-workspace-layout.md)）、Compose 改 git submodule [#14](https://github.com/VirusPC/edges/pull/14)（[ADR 0042](https://github.com/VirusPC/edges/blob/main/docs/adr/0042-compose-on-git-submodule.md)）、入口改 `.edges/compose/README.md` [#19](https://github.com/VirusPC/edges/pull/19)（[ADR 0043](https://github.com/VirusPC/edges/blob/main/docs/adr/0043-compose-readme-entry.md)）、被组合仓可写 [#26](https://github.com/VirusPC/edges/pull/26)（[ADR 0045](https://github.com/VirusPC/edges/blob/main/docs/adr/0045-compose-checkout-writable.md)）。可写原则来自口头「核心是保持简单，不加额外机制」（Grok Bot 10-21 12:37）。
 - 公开仓不互挂（「不用互挂，不是有一个根仓库放这俩吗」，任务记录员 10-21 09:55）→ [#345](https://github.com/VirusPC/edges-brain-viruspc/pull/345)。工作区根当作沉淀入口（「把这个地方当做入口」，Grok Bot 10-21 13:28）→ 记忆/日复盘 SKILL [#349](https://github.com/VirusPC/edges-brain-viruspc/pull/349)；周复盘例程入口 [#370](https://github.com/VirusPC/edges-brain-viruspc/pull/370) 于 10-25 16:16 合入；合入时 README/Skill 已写 COMMENTS 约定。
 - 私密脑：窗内 5 个 PR 收成 Edges 形；用户 10-22 01:16「快点做完吧，我感觉都不用Grill」，跳过 grill 按公开脑对齐。过程中纠正叶子登记触发框架 [#27](https://github.com/VirusPC/edges/pull/27)（ADR 0046：内容叶子只登记内容面 README，不回退 AGENTS.md）。私密脑还接入 Cursor Cloud→Langfuse 项目级 hooks（仅记元数据）。
-- 副作用：[#332](https://github.com/VirusPC/edges-brain-viruspc/pull/332) 删个人仓系统副本时，根 `.harness/memory/feedbacks/` 一并被移走；「主干」记忆已按用户意向补回公开脑，其余 feedback 是否迁回仍待定。
+- 副作用：[#332](https://github.com/VirusPC/edges-brain-viruspc/pull/332) 删个人仓系统副本时，根 `.edges/memory/feedbacks/` 一并被移走；「主干」记忆已按用户意向补回公开脑，其余 feedback 是否迁回仍待定。
 
 ### npm 发包与版本
 
@@ -59,7 +59,7 @@
 
 ### 看板摘记
 
-- #174 四块目录补齐：仍在框架 [backlog](https://github.com/VirusPC/edges/tree/main/.harness/tasks/edges-extensions/backlog/2026-10-07--CLI-与根-harness-补齐-notes-edges-projects-archive)；COMMENTS 写明可放 backlog、不用马上做。
+- #174 四块目录补齐：仍在框架 [backlog](https://github.com/VirusPC/edges/tree/main/.edges/tasks/edges-extensions/backlog/2026-10-07--CLI-与根-harness-补齐-notes-edges-projects-archive)；COMMENTS 写明可放 backlog、不用马上做。
 - 框架侧「把个人大脑从 VirusPC/edges 系统仓拆出去」卡仍标 in_progress；公开脑侧对应拆仓卡已在 done（与口头 R6 / 公开脑 done 不一致）。
 - [#347](https://github.com/VirusPC/edges-brain-viruspc/pull/347)（跨机保险柜）、[#348](https://github.com/VirusPC/edges-brain-viruspc/pull/348)（私密脑改造挪 done）已于 10-24 18:52 前后合入。
 - 上期清单里用户已关掉的项（doctor、#251/#255、笔记不强制云端代理进 feedbacks、architecture.md 的 RAG/PageIndex、「核对已合入看 main」进 skill、补 10-14 日复盘）本周不再追。
@@ -95,7 +95,7 @@
 
 ## 下次做什么
 
-1. **收口框架侧「拆仓」in_progress 卡，并核对公开脑 done / 口头 R6 的对应关系；顺带裁定 #332 后根反馈记忆是否迁回公开脑。** 完成标准：框架 `.harness/tasks` 里 `2026-10-20--把个人大脑从-VirusPCedges-系统仓拆出去` 不再停在 in_progress（或卡上写明与公开脑 done 的对应）；`feedback_retro_comments_in_separate_file` 等复盘向反馈在公开脑可读，或 COMMENTS 写明故意只留框架仓。来源：看板窗末状态 + 对话层 #332 错仓。
+1. **收口框架侧「拆仓」in_progress 卡，并核对公开脑 done / 口头 R6 的对应关系；顺带裁定 #332 后根反馈记忆是否迁回公开脑。** 完成标准：框架 `.edges/tasks` 里 `2026-10-20--把个人大脑从-VirusPCedges-系统仓拆出去` 不再停在 in_progress（或卡上写明与公开脑 done 的对应）；`feedback_retro_comments_in_separate_file` 等复盘向反馈在公开脑可读，或 COMMENTS 写明故意只留框架仓。来源：看板窗末状态 + 对话层 #332 错仓。
 2. **查清公开脑 Deploy 窗后段零星失败是否还在发生，该修 workflow 还是该停内容仓的无用 Deploy。** 完成标准：最近一周公开脑 Deploy 失败有归因（配置 / 路径 / 误触发），并有对应 PR 或「故意保留」的书面说明。来源：窗内公开脑 Deploy 20 失败 vs 框架 0 失败；#370 已于窗内合入，不再占这条。
 3. **评测 / Langfuse / routines 新 backlog 补完成标准；插件化五问先裁定与 ADR 0046 的关系再答。** 完成标准：框架「框架附带可接入评测能力」及其子卡、公开脑 `_default/backlog` 里 10-23～10-25 新开的 Langfuse/routines/#376 旁路等卡，每张至少有可验收的完成标准一句；插件化 grill 第 5 题书面以 ADR 0046（仓根 README 清单）为准或显式改 ADR。来源：本周后半评测簇合入快、新 backlog 多；上期 #174 空完成标准教训；对话层插件化停摆。
 
@@ -113,7 +113,7 @@
 
 ### 框架「拆仓」卡状态与事实不一致
 
-建议去处：框架 `.harness/tasks` 该卡。处理结果：已列入下次做什么第 1 条。
+建议去处：框架 `.edges/tasks` 该卡。处理结果：已列入下次做什么第 1 条。
 
 为什么值得补：公开脑侧拆仓已 done，框架侧仍 in_progress，看板进度是错的。
 
@@ -121,7 +121,7 @@
 
 ### #332 后根反馈记忆是否迁回公开脑
 
-建议去处：公开脑 `.harness/memory/feedbacks/`；框架仓歧义条目删或改写。
+建议去处：公开脑 `.edges/memory/feedbacks/`；框架仓歧义条目删或改写。
 
 为什么值得补：复盘只在公开脑，「正文不改 / COMMENTS」等规则错仓则助手读不到；已解释 #370 文案冲突的一部分。
 

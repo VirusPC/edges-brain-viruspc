@@ -62,4 +62,4 @@
 
 ## 这些优点对应的代价
 
-便宜来自「白拿 harness、白拿目录、白拿 Git」，脆点也在同一批假设上：子树 `AGENTS.md` 的加载是 harness 行为，不是本仓库能保证的；下层索引缺独立事实源，所以要 doctor；常驻入口没有硬上限；结构正确不等于 description 能选路、内容仍然对。这些不是附录里的免责声明，是这套优点的另一面——展开见 [memory-filesystem-tree.md](memory-filesystem-tree.md) 的「当前边界」，以及 skill 层 [承重点与最脆三处](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/.harness/memory/projects/project_architecture/INDEX.md)。
+便宜来自「白拿 harness、白拿目录、白拿 Git」，脆点也在同一批假设上：子树 `AGENTS.md` 的加载是 harness 行为，不是本仓库能保证的；下层索引缺独立事实源，所以要 doctor；常驻入口没有硬上限；结构正确不等于 description 能选路、内容仍然对。这些不是附录里的免责声明，是这套优点的另一面——展开见 [memory-filesystem-tree.md](memory-filesystem-tree.md) 的「当前边界」，以及 skill 层 [承重点与最脆三处](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/.edges/memory/projects/project_architecture/INDEX.md)。

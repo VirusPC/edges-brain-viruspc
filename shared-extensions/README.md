@@ -51,7 +51,7 @@
 4. 对**同一个 commit** 打 annotated tag：`shared-extensions@<version>`，message 用该版本 changelog 正文
 5. `git push origin main --follow-tags`
 
-只改 `.harness/memory/` 或 `AGENTS.md` 索引，不升版本——记忆是本层维护笔记，不随 harness 装到各机器。
+只改 `.edges/memory/` 或 `AGENTS.md` 索引，不升版本——记忆是本层维护笔记，不随 harness 装到各机器。
 
 查找：
 
@@ -67,7 +67,7 @@ git tag -l 'shared-extensions@*'
 
 本目录是一层项目记忆。提问或改这里的约定前用 `$project-memory-ask`，沉淀用 `$project-memory-remember`，入口 [`AGENTS.md`](AGENTS.md)。
 
-`.harness/memory/` 只给在本仓库里维护 harness 的人/Agent 读，不是装到各机器的那份扩展。局部方案和决策写本层记忆，不因跨层复用而写入根层知识目录。
+`.edges/memory/` 只给在本仓库里维护 harness 的人/Agent 读，不是装到各机器的那份扩展。局部方案和决策写本层记忆，不因跨层复用而写入根层知识目录。
 
 ## 分发
 

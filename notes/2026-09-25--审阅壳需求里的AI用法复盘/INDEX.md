@@ -60,8 +60,8 @@ Render-only 是硬边界，要在卡和 ADR 里反复写。审阅壳只渲染页
 - [PR #126](https://github.com/VirusPC/edges/pull/126)：桌面三列审阅壳；合入后才暴露手机视口不可用。
 - [ADR 0023](https://github.com/VirusPC/edges/blob/main/docs/adr/0023-review-shell-narrow-vertical-layout.md)：2026-09-24 锁定的窄屏决策，含否决项与完成标准；该轮只锁决策，不改 React。
 - [ADR 0022](https://github.com/VirusPC/edges/blob/main/docs/adr/0022-review-shell-three-column-task-doc.md)：三列壳与 Task Doc 的决策；窄屏是对它的修订，桌面三栏仍留在这里。
-- [窄屏任务卡](../../.harness/tasks/agent-clients-ux/done/2026-09-24--Tasks-%E5%AE%A1%E9%98%85%E5%A3%B3%E6%89%8B%E6%9C%BA-%E7%AA%84%E5%B1%8F%E9%80%82%E9%85%8D/INDEX.md)：记录员落盘的窄屏卡，现位于 done，正文附有视口证据图。
-- [三列改造任务卡](../../.harness/tasks/agent-clients-ux/done/2026-09-21--review-page-%E6%94%B9%E9%80%A0%E4%B8%89%E5%88%97%E5%B8%83%E5%B1%80-%E9%A1%B6%E6%A0%8F-filter/INDEX.md)：桌面三列与顶栏筛选的任务卡，合入前的壳改造入口。
+- [窄屏任务卡](../../.edges/tasks/agent-clients-ux/done/2026-09-24--Tasks-%E5%AE%A1%E9%98%85%E5%A3%B3%E6%89%8B%E6%9C%BA-%E7%AA%84%E5%B1%8F%E9%80%82%E9%85%8D/INDEX.md)：记录员落盘的窄屏卡，现位于 done，正文附有视口证据图。
+- [三列改造任务卡](../../.edges/tasks/agent-clients-ux/done/2026-09-21--review-page-%E6%94%B9%E9%80%A0%E4%B8%89%E5%88%97%E5%B8%83%E5%B1%80-%E9%A1%B6%E6%A0%8F-filter/INDEX.md)：桌面三列与顶栏筛选的任务卡，合入前的壳改造入口。
 - [实现 #133 的云端 agent](https://cursor.com/agents/bc-60f6d192-c6ab-59f5-b255-32f3cb049480)：开 PR #133 并迭代窄屏实现的那条 Cloud Agent。
 
 若预览地址是裸 IP 预览链，代理环境下常常打不开。交接时改用可打开的预览页，不要把具体地址写进公开笔记。
