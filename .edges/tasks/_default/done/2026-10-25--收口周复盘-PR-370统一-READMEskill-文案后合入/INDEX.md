@@ -2,9 +2,9 @@
 metadata:
   edges-type: task
   edges-task-project: default
-  edges-updated-at: '2026-10-25T16:52:45.983Z'
+  edges-updated-at: '2026-10-25T21:24:09.537Z'
   edges-title: '收口周复盘 PR #370：统一 README/skill 文案后合入'
-  edges-tasks-status: backlog
+  edges-tasks-status: done
   edges-task-priority: medium
 name: 收口周复盘_pr_370统一_readmeskill_文案后合入
 description: '消除「补记改 INDEX」与「正文写定后不改、评论记 COMMENTS.md」矛盾，再合 #370。'
@@ -25,3 +25,7 @@ description: '消除「补记改 INDEX」与「正文写定后不改、评论记
 - #370 为 MERGED
 - README 与 skill 均不再出现与 COMMENTS.md 约定冲突的「补记改 INDEX」表述
 - 公开脑 main 可按新入口跑下周复盘
+
+## 进展
+
+- 2026-10-26 日复盘：核对窗口内 [#370](https://github.com/VirusPC/edges-brain-viruspc/pull/370) 已 MERGED；收口目标完成，本 PR 将本卡标为 done。
