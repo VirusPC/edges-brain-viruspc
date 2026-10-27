@@ -22,8 +22,8 @@
 
 ```bash
 git clone --depth 1 https://github.com/anthropics/claude-plugins-community /tmp/cpc
-rsync -a --delete --exclude UPSTREAM.md --exclude LICENSE /tmp/cpc/html-plan/skills/html-plan/ .edges/skills/managed/html-plan/
-cp /tmp/cpc/LICENSE .edges/skills/managed/html-plan/LICENSE
+rsync -a --delete --exclude UPSTREAM.md --exclude LICENSE /tmp/cpc/html-plan/skills/html-plan/ skills/managed/html-plan/
+cp /tmp/cpc/LICENSE skills/managed/html-plan/LICENSE
 ```
 
-同步后更新本文件的 commit。本 skill 跟脑仓 `.edges/skills/managed/` 走，不单独发版，也不再打 `shared-extensions@*`。
+同步后更新本文件的 commit。本 skill 在脑仓根 `skills/managed/`，不单独发版，也不再打 `shared-extensions@*`。
