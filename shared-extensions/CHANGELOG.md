@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 仓库级变更见根 [`CHANGELOG.md`](../CHANGELOG.md)（`vX.Y.Z`）。Edges 对外 skill 见框架仓 [`packages/skills/<name>/CHANGELOG.md`](https://github.com/VirusPC/edges/tree/main/packages/skills)。
 
-## [Unreleased]
+## [6.0.0] - 2026-10-27
 
-### Added
+### Deprecated
 
-- `new-server/`、`others/`：从框架仓 `extensions/new-server/`、`extensions/others/` 原样搬来的个人运维笔记和 X / Twitter 搜索查询。只是笔记，不装到各机器，不升版本。
+- 整个 `shared-extensions/` 隔间废止。这是该系列最后一版。七个通用 skill（`horizontal-vertical-research`、`html-plan`、`learn-repo`、`paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`）改归脑仓 `.edges/skills/managed/`。`new-server/` 迁到仓库顶层；`others/twitter-query.md` 迁到 dated note。之后不再打 `shared-extensions@*` tag，也不再升本目录 `VERSION`。跨机靠 Compose 挂本脑仓，不再做全局 `~/.agents` 安装。
 
 ## [5.0.0] - 2026-10-25
 
@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 整层一份 `VERSION`、本 changelog、tag `shared-extensions@<version>`。
 - 本层项目记忆（`AGENTS.md` + `.memory/`）。
 
-[Unreleased]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@5.0.0...HEAD
+[6.0.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@5.0.0...shared-extensions@6.0.0
 [5.0.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.5.0...shared-extensions@5.0.0
 [4.5.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.4.0...shared-extensions@4.5.0
 [4.4.0]: https://github.com/VirusPC/edges-brain-viruspc/compare/shared-extensions@4.3.0...shared-extensions@4.4.0
