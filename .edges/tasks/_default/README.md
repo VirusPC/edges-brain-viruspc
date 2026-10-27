@@ -13,4 +13,5 @@ Ungrouped tasks that have not been assigned a named Task Project.
 - [收口周复盘\_pr\_370统一\_readmeskill\_文案后合入](<done/2026-10-25--%E6%94%B6%E5%8F%A3%E5%91%A8%E5%A4%8D%E7%9B%98-PR-370%E7%BB%9F%E4%B8%80-READMEskill-%E6%96%87%E6%A1%88%E5%90%8E%E5%90%88%E5%85%A5/INDEX.md>) — 消除「补记改 INDEX」与「正文写定后不改、评论记 COMMENTS.md」矛盾，再合 \#370。
 - [验收并标\_doneevaluation\_迁移\_langfuse\_agent\_skills\_卡](<backlog/2026-10-26--%E9%AA%8C%E6%94%B6%E5%B9%B6%E6%A0%87-doneevaluation-%E8%BF%81%E7%A7%BB-Langfuse-Agent-skills-%E5%8D%A1/INDEX.md>) — edges\#45 / brain\#382 已落地，但 Skill 子卡仍 backlog；验收完成标准后标 done，并决定母卡状态。
 - [补齐或标明\_opencodepi\_的\_langfuse\_设备维度tags缺口](<backlog/2026-10-25--%E8%A1%A5%E9%BD%90%E6%88%96%E6%A0%87%E6%98%8E-OpenCodePi-%E7%9A%84-Langfuse-%E8%AE%BE%E5%A4%87%E7%BB%B4%E5%BA%A6tags%E7%BC%BA%E5%8F%A3/INDEX.md>) — OpenCode/Pi 当前无 tags 写入口，设备维度缺失；调研可写路径或在文档标明限制。
+- [harness\_memory\_ablation\_题库\_v1\_1与线上扩库流水线](<backlog/2026-10-27--harness-memory-ablation-%E9%A2%98%E5%BA%93-v1.1%E4%B8%8E%E7%BA%BF%E4%B8%8A%E6%89%A9%E5%BA%93%E6%B5%81%E6%B0%B4%E7%BA%BF/INDEX.md>) — 对齐 Compose→顶层 submodule 后的题库真源，补齐数据集说明，并落地「线上 trace→候选→人审→upsert」流水线，供后续正式消融使用。
 <!-- project-entries-local:end -->
