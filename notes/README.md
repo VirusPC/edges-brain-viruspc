@@ -29,4 +29,5 @@
 - [2026\-10\-24\-\-cursor\-cloud\-%E4%BC%9A%E8%AF%9D%E8%BF%BD%E8%B8%AA%E5%88%B0%E8%87%AA%E5%BB%BA\-langfuse/INDEX.md](<2026-10-24--cursor-cloud-%E4%BC%9A%E8%AF%9D%E8%BF%BD%E8%B8%AA%E5%88%B0%E8%87%AA%E5%BB%BA-langfuse/INDEX.md>)
 - [2026\-10\-25\-\-langfuse\-%E8%AF%84%E4%BC%B0%E4%BA%94%E4%BB%B6%E5%A5%97%E5%AF%B9%E6%AF%94%E4%B8%8E\-observation\-%E8%90%BD%E5%9C%B0/INDEX.md](<2026-10-25--langfuse-%E8%AF%84%E4%BC%B0%E4%BA%94%E4%BB%B6%E5%A5%97%E5%AF%B9%E6%AF%94%E4%B8%8E-observation-%E8%90%BD%E5%9C%B0/INDEX.md>)
 - [2026\-10\-25\-\-rokid\-glasses\-%E6%8E%A5%E6%9C%AC%E5%9C%B0\-codex/INDEX.md](<2026-10-25--rokid-glasses-%E6%8E%A5%E6%9C%AC%E5%9C%B0-codex/INDEX.md>)
+- [2026\-10\-27\-\-twitter\-ai\-query/INDEX.md](<2026-10-27--twitter-ai-query/INDEX.md>)
 <!-- project-entries-local:end -->
