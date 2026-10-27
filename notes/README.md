@@ -30,4 +30,5 @@
 - [2026\-10\-25\-\-langfuse\-%E8%AF%84%E4%BC%B0%E4%BA%94%E4%BB%B6%E5%A5%97%E5%AF%B9%E6%AF%94%E4%B8%8E\-observation\-%E8%90%BD%E5%9C%B0/INDEX.md](<2026-10-25--langfuse-%E8%AF%84%E4%BC%B0%E4%BA%94%E4%BB%B6%E5%A5%97%E5%AF%B9%E6%AF%94%E4%B8%8E-observation-%E8%90%BD%E5%9C%B0/INDEX.md>)
 - [2026\-10\-25\-\-rokid\-glasses\-%E6%8E%A5%E6%9C%AC%E5%9C%B0\-codex/INDEX.md](<2026-10-25--rokid-glasses-%E6%8E%A5%E6%9C%AC%E5%9C%B0-codex/INDEX.md>)
 - [2026\-10\-27\-\-twitter\-ai\-query/INDEX.md](<2026-10-27--twitter-ai-query/INDEX.md>)
+- [2026\-10\-25\-\-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E6%94%AF%E6%8C%81%E5%BA%A6/INDEX.md](<2026-10-25--%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E6%94%AF%E6%8C%81%E5%BA%A6/INDEX.md>)
 <!-- project-entries-local:end -->
