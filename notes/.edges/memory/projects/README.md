@@ -1,10 +1,10 @@
-<!-- project-memory-type:start -->
+<!-- edges-memory-type:start -->
 name: project
 module: memory
 writable: true
 gitignore: false
 format: ordinary
-<!-- project-memory-type:end -->
+<!-- edges-memory-type:end -->
 
 # PROJECT — 项目上下文
 
@@ -13,8 +13,8 @@ format: ordinary
 > 怎么写：正文先一句结论，再跟 `**Why:**`（为什么，便于以后判断边界情况）和 `**How to apply:**`（具体怎么做）。相对日期换成绝对日期。
 > 本文件只是索引，条目区块由脚本重算，正文写在 `projects/project_<slug>/index.md` 里。
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
-- [对话笔记：主题难点、过程结果、取舍补充、遗留转任务](project_conversation_notes_plain_rich_human_review/INDEX.md) — 写 knowledge/notes：2.3.2 结构；结果遗留逐点问清后交 conversation-to-tasks（一次1～2条）。
-<!-- project-entries-local:end -->
+- [对话笔记：主题难点、过程结果、取舍补充、遗留转任务](project_conversation_notes_plain_rich_human_review/INDEX.md) — 写笔记用背景到补充说明七节；结果遗留逐点问清后交 edges-conversation-to-tasks（一次1～2条）。
+<!-- edges-entries-local:end -->

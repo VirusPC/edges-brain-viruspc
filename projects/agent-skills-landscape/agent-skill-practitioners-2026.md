@@ -12,7 +12,7 @@
 
 第四，Skill 的最新共识不是“装得越多越强”，而是“少而准、按需加载、贴合本地环境、经过评测”。Anthropic 的标准把 Skill 定义为带 `SKILL.md` 的目录，可附带脚本、参考资料和资产，并通过名称与描述先发现、命中后再加载正文。[^1] 这使 Skill 更像 Agent 的可版本化作业程序，而不是传统插件或静态知识库。
 
-对 Edges，最值得补的不是整套 gstack 或 Compound Engineering，而是三个缺口：完成前证据验证、困难问题的系统调试、Skill 自身的行为评测。`project-memory-*`、`research`、`domain-modeling`、`grilling` 已经覆盖了记忆、研究和需求澄清，不应再装功能重叠的大包。
+对 Edges，最值得补的不是整套 gstack 或 Compound Engineering，而是三个缺口：完成前证据验证、困难问题的系统调试、Skill 自身的行为评测。`edges-memory-*`、`research`、`domain-modeling`、`grilling` 已经覆盖了记忆、研究和需求澄清，不应再装功能重叠的大包。
 
 ## 范围与证据标准
 
@@ -215,7 +215,7 @@ Peter 的 `agent-transcript`、`session-viewer`、`handoff`，Matt 和 Compound 
 
 ## 对 Edges 的具体建议
 
-Edges 当前已经有三条很强的主线：`project-memory-*` 负责分层项目记忆，`research` / 文章与论文 Skills 负责信息提炼，`domain-modeling` / `grilling` 负责澄清概念和决策。它与 Compound Engineering 的“经验回流”理念相近，但更强调知识资产，而不是只围绕代码交付。
+Edges 当前已经有三条很强的主线：`edges-memory-*` 负责分层项目记忆，`research` / 文章与论文 Skills 负责信息提炼，`domain-modeling` / `grilling` 负责澄清概念和决策。它与 Compound Engineering 的“经验回流”理念相近，但更强调知识资产，而不是只围绕代码交付。
 
 因此不建议直接安装 gstack、Superpowers 或 Compound Engineering 的完整生命周期包。它们会和现有的记忆入口、研究流程、TDD、规划方式和 Git 约束重叠，并可能产生多个路由器争夺同一任务。
 
@@ -231,7 +231,7 @@ Edges 当前已经有三条很强的主线：`project-memory-*` 负责分层项�
 | P2 | 浏览器真实验证 | gstack、Peter、Every | 只有出现稳定网页工作流时再加，不先装重型浏览器栈 |
 | P2 | 发布与 PR babysit | Peter、Every | 等 Edges 形成更频繁的发布节奏后再引入 |
 
-最小可行组合不是 30 个 Skills，而是 5 个：`research`、`grilling/domain-modeling`、`systematic-debugging`、`verification-before-completion`、`project-memory-remember`。它们分别负责找证据、澄清问题、定位原因、证明结果、沉淀经验，已经构成一个完整闭环。
+最小可行组合不是 30 个 Skills，而是 5 个：`research`、`grilling/domain-modeling`、`systematic-debugging`、`verification-before-completion`、`edges-memory-remember`。它们分别负责找证据、澄清问题、定位原因、证明结果、沉淀经验，已经构成一个完整闭环。
 
 ## 风险与边界
 

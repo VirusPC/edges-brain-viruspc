@@ -1,6 +1,6 @@
 # 本层 harness 材料索引
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - [.edges/memory/projects/README.md](<memory/projects/README.md>) — 进行中的工作、关键时间点，无法从代码或 git 历史推导的决策，以及项目内的规范。兜底：对不上更具体类型时走这里。
@@ -9,4 +9,4 @@
 - [.edges/projects/README.md](<projects/README.md>) — 项目内容叶子的组织清单。
 - [.edges/notes/README.md](<notes/README.md>) — 笔记模块的 harness 条目。叶子登记在 scope 的 notes/README.md。
 - [Routines](<routines/README.md>) — 例行任务定义；执行与调度由外部平台负责。
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->

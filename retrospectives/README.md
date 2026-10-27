@@ -24,9 +24,9 @@
 - 本仓公开。复盘遵守根 [`README.md`](../README.md) 的「隐私与脱敏」。
 - 写入就是编辑 `INDEX.md`。
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - [周复盘](weekly/README.md) — 按周起始日（周一）成篇的回看。
 - [日复盘](daily/README.md) — 按日历日成篇；必写范围与建议补充内容清单。
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->

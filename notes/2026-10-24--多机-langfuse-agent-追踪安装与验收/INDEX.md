@@ -10,7 +10,7 @@ tags: [langfuse, agent-tracing, codex, claude-code, cursor, opencode, multi-devi
 
 要把家里几台开发机上的编码 Agent（Codex、Claude Code、Cursor、OpenCode）会话，统一打到自建 Langfuse（`https://langfuse.viruspc.tech`，项目 Edges），方便按设备和 Agent 类型对照排查。此前单机已接过一部分；这次目标是四台设备、四类 Agent 一次装齐并做 API 验收。
 
-设备短名约定（与 MagicDNS / `device:` 标签一致）：`macbookpro-w`、`macmini`、`minigtr-ubuntu`、`4070ts-win11`。安装与排查现跟框架仓 [`langfuse-local-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-local-agent-tracing/SKILL.md)（主入口 [`langfuse-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-agent-tracing/SKILL.md)，随 `@viruspc/edges` 从 `packages/skills/` 分发）；密钥只落本机配置文件（权限多为 `600`），不进仓库、不进对话明文。
+设备短名约定（与 MagicDNS / `device:` 标签一致）：`macbookpro-w`、`macmini`、`minigtr-ubuntu`、`4070ts-win11`。安装与排查现跟框架仓 [`edges-langfuse-local-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-langfuse-local-agent-tracing/SKILL.md)（主入口 [`edges-langfuse-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-langfuse-agent-tracing/SKILL.md)，随 `@viruspc/edges` 从 `packages/skills/` 分发）；密钥只落本机配置文件（权限多为 `600`），不进仓库、不进对话明文。
 
 ## 主题
 
@@ -286,5 +286,5 @@ enabled = true
 
 - 项目：自建 Langfuse **Edges**（若误指到其他项目，换对应项目的公钥/私钥并更新本机 json）。
 - 主机：`https://langfuse.viruspc.tech`。
-- 相关 skill：框架仓 [`langfuse-local-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-local-agent-tracing/SKILL.md)，主入口 [`langfuse-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-agent-tracing/SKILL.md)，随 `@viruspc/edges` 从 `packages/skills/` 分发（安装步骤以 skill / 官方集成文档为准；本文记的是本轮实操与验收差异）。
+- 相关 skill：框架仓 [`edges-langfuse-local-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-langfuse-local-agent-tracing/SKILL.md)，主入口 [`edges-langfuse-agent-tracing`](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-langfuse-agent-tracing/SKILL.md)，随 `@viruspc/edges` 从 `packages/skills/` 分发（安装步骤以 skill / 官方集成文档为准；本文记的是本轮实操与验收差异）。
 - 会话导出缺口：约 17:00–20:15 的逐命令细节若未出现在 transcript，表中已用「未记录」/「❓」，不编造命令行。

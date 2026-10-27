@@ -35,7 +35,7 @@
 
 看板分组单位是 Task Project：directory-first，路径 `<project-slug>/<edges-tasks-status>/`，并与 frontmatter `metadata.edges-task-project` 双写。未分组用保留目录 `_default`（字段为 `default` 或不写）。与 `edges-tasks-status`、`edges-task-priority` 正交。`status` 只在同一 project 内搬家；跨 project 用 `update --project`。详见框架仓 [ADR 0009](https://github.com/VirusPC/edges/blob/main/docs/adr/0009-edges-task-project-grouping.md)。
 
-每个 Task Project（含 `_default`）有一份 `README.md` 组织清单（标题 + 描述，可选 Pointers，`project-entries-local` 列出 Task），不是对该目录做完整 project-memory-init。看板 `README.md` 的 `project-entries-local` 是 CLI 维护的 Task Project 列表；看板 `AGENTS.md` 只登记系统维护材料与用户 init 过的 `<project>/AGENTS.md`。读写走 `edges tasks project list|get|create|update`。跨 project 搬家仍用 `update --project`，不得改 status 或 priority。能力面是 CLI + Skill + MCP。
+每个 Task Project（含 `_default`）有一份 `README.md` 组织清单（标题 + 描述，可选 Pointers，`edges-entries-local` 列出 Task），不是对该目录做完整 edges-memory-init。看板 `README.md` 的 `edges-entries-local` 是 CLI 维护的 Task Project 列表；看板 `AGENTS.md` 只登记系统维护材料与用户 init 过的 `<project>/AGENTS.md`。读写走 `edges tasks project list|get|create|update`。跨 project 搬家仍用 `update --project`，不得改 status 或 priority。能力面是 CLI + Skill + MCP。
 
 ## Issue 层优先级
 
@@ -50,7 +50,7 @@
 - Run 只追加到 `.{stem}.log.md`（点文件 sidecar），不改历史行、不塞进 frontmatter。
 - Task 记录员只追加 / 改状态时直接推 `main`，不提 PR。
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - [Agent Clients UX](<agent-clients-ux/README.md>) — 客户端/插件/外设与本地 UX 实验。
@@ -59,4 +59,4 @@
 - [技术阅读](<tech-reading/README.md>) — 记录所有技术阅读相关进展（论文、长文、官方文档、源码精读等）。看板管阅读工作项与进度；可读笔记仍可落 notes。
 - [deepseek-harness](<deepseek-harness/README.md>) — 围绕 DeepSeek Harness / recipe 的学习与实践看板。
 - [Default](<_default/README.md>) — Ungrouped tasks that have not been assigned a named Task Project.
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->

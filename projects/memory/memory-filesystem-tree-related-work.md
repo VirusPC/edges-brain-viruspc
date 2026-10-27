@@ -22,7 +22,7 @@
 
 依据前文已经确认的设计，本文采用以下比较基线：Memory 节点附着于实际目录，覆盖该目录子树；父节点 AGENTS.md 显式索引最近的子 Memory 节点；节点内部通过类型索引访问独立记忆文件；下层补充上层，而不是覆盖上层；记忆优先记录不能简单从代码或 Git 重建的经验、原因和约束。
 
-协议参考：[edges PROTOCOL.md](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/references/PROTOCOL.md)、[ask](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-ask/SKILL.md)、[remember](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-remember/SKILL.md)。这些链接指向可变的 main；本文不声称本次重新审计了所有实现。
+协议参考：[edges PROTOCOL.md](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-init/references/PROTOCOL.md)、[ask](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-ask/SKILL.md)、[remember](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-remember/SKILL.md)。这些链接指向可变的 main；本文不声称本次重新审计了所有实现。
 
 关键是区分五种“树”：
 

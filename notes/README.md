@@ -2,7 +2,7 @@
 
 低成本捕获与在研想法。笔记叶子的组织清单在这里：`edges notes` 在 `notes/` 写下 `YYYY-MM-DD--slug/INDEX.md`，并登记在下面。
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - [2026\-10\-07\-\-osmo\-maldives\-ingest\-and\-highlight\-preview/INDEX.md](<2026-10-07--osmo-maldives-ingest-and-highlight-preview/INDEX.md>)
@@ -31,4 +31,4 @@
 - [2026\-10\-25\-\-rokid\-glasses\-%E6%8E%A5%E6%9C%AC%E5%9C%B0\-codex/INDEX.md](<2026-10-25--rokid-glasses-%E6%8E%A5%E6%9C%AC%E5%9C%B0-codex/INDEX.md>)
 - [2026\-10\-27\-\-twitter\-ai\-query/INDEX.md](<2026-10-27--twitter-ai-query/INDEX.md>)
 - [2026\-10\-25\-\-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E6%94%AF%E6%8C%81%E5%BA%A6/INDEX.md](<2026-10-25--%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA%E6%94%AF%E6%8C%81%E5%BA%A6/INDEX.md>)
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->

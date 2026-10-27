@@ -43,7 +43,7 @@ npm run -s export -- --source staging --dry-run --dump-spans   # 不发网络、
 
 `export` 参数：`--source staging|daily-scan`、`--staging-dir`、`--daily-scan`、`--agents-dir`、`--cursor-file`、`--host`、`--backfill-hours 24`、`--batch-size 20`、`--max-turns N`、`--bot <id|名>`（可重复）、`--dry-run`、`--dump-spans`、`--force-reexport`。有失败时退出码为 1。
 
-Langfuse `environment`：读 `LANGFUSE_TRACING_ENVIRONMENT`，未设或空白时回退 `grok-bot`（避免 Langfuse 静默落成 environment=`default`）。stdout summary 含 `environment` 字段。设备筛选用 tag `device:grokbot`，不进 environment。本机各 Agent 用 `*-local`、云端用 `*-cloud`。这些 skill 现随 `@viruspc/edges` 从框架仓 `packages/skills/` 分发：主入口 [langfuse-agent-tracing](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-agent-tracing/SKILL.md)，本机步骤在 [langfuse-local-agent-tracing](https://github.com/VirusPC/edges/blob/main/packages/skills/langfuse-local-agent-tracing/SKILL.md)。
+Langfuse `environment`：读 `LANGFUSE_TRACING_ENVIRONMENT`，未设或空白时回退 `grok-bot`（避免 Langfuse 静默落成 environment=`default`）。stdout summary 含 `environment` 字段。设备筛选用 tag `device:grokbot`，不进 environment。本机各 Agent 用 `*-local`、云端用 `*-cloud`。这些 skill 现随 `@viruspc/edges` 从框架仓 `packages/skills/` 分发：主入口 [edges-langfuse-agent-tracing](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-langfuse-agent-tracing/SKILL.md)，本机步骤在 [edges-langfuse-local-agent-tracing](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-langfuse-local-agent-tracing/SKILL.md)。
 
 Langfuse generation `model` / `providedModelName`：adapter（`to-plugin-turn.mjs`）在 turn 无真实模型名时写字面量 `default`，有则写真实名；勿留空（看板 n/a）。这与上面的 environment 回退无关。
 

@@ -83,7 +83,7 @@ edges --help
 
 框架仓 [`VirusPC/edges`](https://github.com/VirusPC/edges/blob/main/LICENSE) 使用 MIT。本仓不再附带那份许可证副本。
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - [领域任务](tasks/README.md) — 根作用域领域工作项看板（系统入口见同目录 AGENTS.md）。
@@ -93,4 +93,4 @@ edges --help
 - [教学](teaching/README.md) — 有状态的教学工作区与主题课页。
 - [认知优势](edges/README.md) — 已提炼、可复用的判断资产。
 - [对外成稿](posts/README.md) — 准备公开发表的博客成稿（人维护）。
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->

@@ -1,6 +1,6 @@
 ---
 name: summarize-ai-article-ultra
-description: 当用户想把一篇文章 / 页面内容整理成可归档的中文结构化笔记时使用此技能。按 Facts - Insights - Actions 组织，输出文件名为 YYYY-MM-DD--主题简述.md 的完整笔记，含讨论主题、主要内容、认知更新、行动指南、补充说明五段。适合要落盘进知识库的场景。如果只是想快速扫一眼要点、不落盘，改用 summarize-ai-article；如果整理的是对话记录而非文章，改用 conversation-to-notes。
+description: 当用户想把一篇文章 / 页面内容整理成可归档的中文结构化笔记时使用此技能。按 Facts - Insights - Actions 组织，输出文件名为 YYYY-MM-DD--主题简述.md 的完整笔记，含讨论主题、主要内容、认知更新、行动指南、补充说明五段。适合要落盘进知识库的场景。如果只是想快速扫一眼要点、不落盘，改用 summarize-ai-article；如果整理的是对话记录而非文章，改用 edges-conversation-to-notes。
 ---
 
 将原始页面内容整理为结构清晰的中文笔记摘要。遵循 **Facts - Insights - Actions** 逻辑组织核心内容。

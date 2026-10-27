@@ -18,6 +18,6 @@ description: 把用 HTML plan 做审阅与评论纳入任务卡与技术方案�
 **用户已定的前提：**
 1. 用户已定方向「tasks 应该这样」。
 2. 技术方案也参考 HTML plan。
-3. 细节（何时生成、挂在哪、和现有 conversation-to-tasks / grill 怎么衔接）grill 后补。
+3. 细节（何时生成、挂在哪、和现有 edges-conversation-to-tasks / grill 怎么衔接）grill 后补。
 
 细节 grill 后补。

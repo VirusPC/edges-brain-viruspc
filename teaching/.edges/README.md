@@ -1,6 +1,6 @@
 # 本层 harness 材料索引
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - [.edges/memory/feedbacks/README.md](<memory/feedbacks/README.md>) — 用户的纠正、确认过的做法与必须遵守的禁止模式。
@@ -9,4 +9,4 @@
 - [.edges/skills/managed/README.md](<skills/managed/README.md>) — 从会话里沉淀出来的可复用流程，动手前先看本层有没有现成的。
 - [.edges/skills/referenced/README.md](<skills/referenced/README.md>) — 本层 .agents/skills/ 下人写或装入的标准技能，工具只索引不改写。
 - [.edges/memory/users/README.md](<memory/users/README.md>) — 绑定本仓库、不宜公开的个人材料（个人偏好、凭据与密钥）。本机文件，不进 git。
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->

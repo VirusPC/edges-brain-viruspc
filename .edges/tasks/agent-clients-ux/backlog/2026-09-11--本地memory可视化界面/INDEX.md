@@ -20,6 +20,6 @@ project memory / `.memory` 条目以 markdown + 索引存在，人眼扫目录�
 
 **How to apply:**
 - 与「数据与视图分离 + 本地 HTML」对齐：memory 文件为数据，可视化为视图层。
-- 评估：`project-memory-init`（或同级 init）是否生成本地 HTML/静态看板脚手架、打开说明、与 `.gitignore` 的关系。
+- 评估：`edges-memory-init`（或同级 init）是否生成本地 HTML/静态看板脚手架、打开说明、与 `.gitignore` 的关系。
 - 细聊范围：只读浏览 vs 可编辑；覆盖 project memory、tasks、user memory（若本地化）哪些层。
 - 选型：本地 HTML / 小服务 / Obsidian 插件等；默认不把私密 memory 推上公开仓。
