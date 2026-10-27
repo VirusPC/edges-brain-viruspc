@@ -61,10 +61,10 @@
 
 ## 建议补充内容清单
 
-- 记忆（project）：Langfuse 历史 trace 不可改 environment/model，脏数据保留。来自 Grok Bot 2026-10-25「已有的 langfuse 数据还能清洗下吗」及查证结论。写入：`.harness/memory/projects/project_langfuse_traces_immutable_keep_dirty/INDEX.md`。
-- 记忆（project）：Grok Bot box 上 Tailscale 重建后可能静默丢失，按台账重装。来自 Grok Bot → IT 2026-10-25 断连重装闭环。写入：`.harness/memory/projects/project_grok_bot_box_tailscale_silent_loss/INDEX.md`。
-- 任务（backlog）：收口周复盘 PR #370 文案后合入。来自周复盘 00:48「merge了吗」及文案矛盾讨论。写入：`.harness/tasks/_default/backlog/2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入/INDEX.md`。
-- 任务（backlog）：补齐或标明 OpenCode/Pi 的 Langfuse 设备维度（tags）缺口。来自 Grok Bot 命名落地时明确的上游缺口。写入：`.harness/tasks/_default/backlog/2026-10-25--补齐或标明-OpenCodePi-的-Langfuse-设备维度tags缺口/INDEX.md`。
+- 记忆（project）：Langfuse 历史 trace 不可改 environment/model，脏数据保留。来自 Grok Bot 2026-10-25「已有的 langfuse 数据还能清洗下吗」及查证结论。写入：`.edges/memory/projects/project_langfuse_traces_immutable_keep_dirty/INDEX.md`。
+- 记忆（project）：Grok Bot box 上 Tailscale 重建后可能静默丢失，按台账重装。来自 Grok Bot → IT 2026-10-25 断连重装闭环。写入：`.edges/memory/projects/project_grok_bot_box_tailscale_silent_loss/INDEX.md`。
+- 任务（backlog）：收口周复盘 PR #370 文案后合入。来自周复盘 00:48「merge了吗」及文案矛盾讨论。写入：`.edges/tasks/_default/backlog/2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入/INDEX.md`。
+- 任务（backlog）：补齐或标明 OpenCode/Pi 的 Langfuse 设备维度（tags）缺口。来自 Grok Bot 命名落地时明确的上游缺口。写入：`.edges/tasks/_default/backlog/2026-10-25--补齐或标明-OpenCodePi-的-Langfuse-设备维度tags缺口/INDEX.md`。
 - 不做：#376 旁路卡——已合入看板；本窗无新的完成标准共识，不代写 grill。
 - 不做：environment / model 命名正文——#375 等已合；本篇只沉淀「脏数据保留」。
 - 不做：Cursor/Codex Cloud Langfuse 安装与验收笔记——10-24 已有多篇 notes，窗口内合入的是执行与修坑，无新稳定判断需另开笔记。

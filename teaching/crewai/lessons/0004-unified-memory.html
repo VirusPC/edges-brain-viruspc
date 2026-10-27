@@ -181,7 +181,7 @@ memory.recall("API design", scope="/project/beta")</code></pre>
 </div>
 
 <h3>5.1 edges 是怎么做的（回顾）</h3>
-<p>可写记忆放在<strong>代码目录树</strong>里，每层一个 <code>.memory/</code>（或 <code>.harness/memory/</code>）；<strong>读</strong>时从当前目录<strong>向上</strong>取所有祖先层的并集（ancestor union）；<strong>写</strong>时由 skill 挑<strong>最近</strong>的一层（nearest layer）。</p>
+<p>可写记忆放在<strong>代码目录树</strong>里，每层一个 <code>.memory/</code>（或 <code>.edges/memory/</code>）；<strong>读</strong>时从当前目录<strong>向上</strong>取所有祖先层的并集（ancestor union）；<strong>写</strong>时由 skill 挑<strong>最近</strong>的一层（nearest layer）。</p>
 
 <figure>
 <svg viewBox="0 0 640 210" role="img" aria-labelledby="c-title c-desc" xmlns="http://www.w3.org/2000/svg">

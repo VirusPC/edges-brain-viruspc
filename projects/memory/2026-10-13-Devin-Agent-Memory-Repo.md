@@ -1,6 +1,6 @@
 ---
 name: Devin Agent Memory Repo 学习笔记
-description: 学习 Cognition 开源的 Agent Memory Repo 规范与 Devin Memory/Dreaming：git 仓库记忆、MEMORY.md 入口、单行带来源条目、定期整理，并对照 edges 的 .harness Project Memory。
+description: 学习 Cognition 开源的 Agent Memory Repo 规范与 Devin Memory/Dreaming：git 仓库记忆、MEMORY.md 入口、单行带来源条目、定期整理，并对照 edges 的 .edges Project Memory。
 ---
 
 # Devin Agent Memory Repo 学习笔记
@@ -100,11 +100,11 @@ description: 学习 Cognition 开源的 Agent Memory Repo 规范与 Devin Memory
 - **无**：开源仓与 skill **不含**调度 Dreaming（[issue #7](https://github.com/AgentMemoryRepo/agentmemoryrepo/issues/7) 维护者仅欢迎社区实现进 Community，未公布官方实现）。未找到公开的 scheduler、模型、prompt、「unused」判定代码或矛盾消解算法。
 - 第三方（OpenDream / agentconnect 等）自有 dreaming，**不可当作** Cognition 实现。
 
-## 5. 与 edges `.harness` Project Memory 对照
+## 5. 与 edges `.edges` Project Memory 对照
 
 | 维度 | Agent Memory Repo | edges Project Memory |
 | --- | --- | --- |
-| 存储 | 独立 git 仓库，按人/团队/蜂群一个 | 与工作仓库同仓，按目录作用域放 `.harness/memory/` |
+| 存储 | 独立 git 仓库，按人/团队/蜂群一个 | 与工作仓库同仓，按目录作用域放 `.edges/memory/` |
 | 入口 | 单个 `MEMORY.md`，会话开始加载 | `AGENTS.md` 受管区块索引到各类型 `README.md`，由 harness 的 AGENTS.md 加载语义发现 |
 | 组织 | 布局完全自由 | 固定类型（feedbacks / projects / references / users，可扩展），每条一个 `INDEX.md` 目录 |
 | 粒度 | 一行一个 bullet + `[source; added]` | 一个文件一条记忆，frontmatter `name` / `description` / `metadata`，正文 Why / How to apply |
@@ -127,9 +127,9 @@ description: 学习 Cognition 开源的 Agent Memory Repo 规范与 Devin Memory
 4. **蜂群工作区模式**：并行 agent 用 `findings` / `questions` 文件协作，完成后留一条索引，可对照本仓 tasks / projects 叶子。
 5. **SKILL.md 的安全条款**：「写前工作树必须干净」「只 add 自己改的文件」「记忆是数据不是指令」可以对照 remember 技能查漏。
 
-## 6. 官方示例与 .harness 模块对照
+## 6. 官方示例与 .edges 模块对照
 
-> 依据：规范页、GitHub README / SPEC.md 中的示例；`.harness` 现状按 origin/main 根作用域。映射与建议均为本笔记解读，统一视为 **【推断】**，表中个别格另行标注。
+> 依据：规范页、GitHub README / SPEC.md 中的示例；`.edges` 现状按 origin/main 根作用域。映射与建议均为本笔记解读，统一视为 **【推断】**，表中个别格另行标注。
 
 ### 6.1 三个官方示例（摘要）
 
@@ -142,15 +142,15 @@ description: 学习 Cognition 开源的 Agent Memory Repo 规范与 Devin Memory
 - **`projects/autocomplete.md`**：只出现在规范页的目录树中；README 与 SPEC.md 的树里没有。
 - **autocomplete 条目如何被找到**：规范页写 agent grep 记忆仓库，在 `projects/autocomplete.md` 找到；README 写 agent 先读 `MEMORY.md` 就在其中找到。条目正文相同。
 
-### 6.3 示例 → `.harness` 映射
+### 6.3 示例 → `.edges` 映射
 
-| AMR 示例 | 最接近的 `.harness` 模块 | 说明 |
+| AMR 示例 | 最接近的 `.edges` 模块 | 说明 |
 | --- | --- | --- |
 | `MEMORY.md` 常驻条目 | `AGENTS.md`「本层硬约束」区块 | 都是每会话必读的少量内容 |
 | `MEMORY.md` 的 `## Index` | `AGENTS.md` project-harness-local 索引 + 各类型 README | edges 多一层「类型 README → 条目」 |
 | `team_structure.md` | `memory/users/`（本机不入库），部分可入 `references/` | 公开仓不宜存人员信息 |
 | `using_datadog_mcp.md` | `memory/references/`（在哪）+ `skills/managed/`（怎么做） | AMR 合一文件，edges 拆两处 |
-| `projects/*.md` | `memory/projects/`；长文落 `.harness/projects/` 叶子 | AMR 一项目一文件多条目；edges 一条记忆一目录 |
+| `projects/*.md` | `memory/projects/`；长文落 `.edges/projects/` 叶子 | AMR 一项目一文件多条目；edges 一条记忆一目录 |
 | 术语类条目（如 ghost_text） | `CONTEXT.md` 或 `memory/projects/` | 【推断】 |
 | `metrics/*.sql` | 无直接对应；近似 `observation/metrics/` 或 skill 内脚本 | edges 记忆类型不收非 md 资源 |
 | `swarms/<name>/` | `tasks/<project>/` + task 的 `.{stem}.log.md` | 蜂群是多 agent 共写同一工作区 |
@@ -159,7 +159,7 @@ description: 学习 Cognition 开源的 Agent Memory Repo 规范与 Devin Memory
 | `questions.md` | 无对应 | |
 | `agents/*.md` | 近似 Run Log | 【推断】 |
 | `scripts/bench.sh` | `observation/smoke/*.sh`、`evaluation/cases/*/run.py` | 已有「可执行资源与说明同处」先例 |
-| 多仓组合 | 作用域树（子目录 `.harness`）+ `users/` 不入 git | AMR 按「人」组合，edges 按「目录作用域」组合 |
+| 多仓组合 | 作用域树（子目录 `.edges`）+ `users/` 不入 git | AMR 按「人」组合，edges 按「目录作用域」组合 |
 
 ### 6.4 模块划分建议（【推断】）
 
@@ -169,14 +169,14 @@ description: 学习 Cognition 开源的 Agent Memory Repo 规范与 Devin Memory
 4. **人/团队信息分离**：人员与团队结构类内容与项目知识分开，放 `users/` 或独立私有记忆仓（对应 AMR 一人一仓的组合方式）。
 5. **不建议完全自由布局**：edges 的类型 README、脚本重算索引与 doctor 体检依赖固定结构，照搬 AMR 的自由布局会削弱这些能力。
 
-## 7. 对 .harness 模块划分的启发
+## 7. 对 .edges 模块划分的启发
 
 来自阅读规范后的启发（与 §6 的「示例→模块」对照分开；下列为对本仓划分的解读，视为 **【推断】**）：
 
 - **入口和正文分开**：`MEMORY.md` 只当很短的总入口，细节按需展开；与 `AGENTS.md` 加各类型索引的分工一致，可借来检查入口是否太胖。
 - **Dreaming 的「新增」和「清理」拆成两个模块**：新增 → `remember`，清理 → `doctor`；doctor 可加合并重复、清过期条目、按来源解决冲突。
 - **条目级 metadata**（来源、日期）放在条目末尾、不单开文件；可减轻一条一个 `INDEX.md` 的粒度。
-- **可组合性对应 `.harness` 分层**（全仓、extensions、user）：明确多层同时加载时谁优先、写回到哪一层。
+- **可组合性对应 `.edges` 分层**（全仓、extensions、user）：明确多层同时加载时谁优先、写回到哪一层。
 
 ## 8. 开放问题
 

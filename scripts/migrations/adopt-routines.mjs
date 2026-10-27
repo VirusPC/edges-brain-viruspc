@@ -82,7 +82,7 @@ const descriptions = {
 };
 const routineBodies = new Map();
 const skills = new Map();
-const paths = (name) => ({ old: `projects/routines/${name}`, next: `.harness/routines/${name}` });
+const paths = (name) => ({ old: `projects/routines/${name}`, next: `.edges/routines/${name}` });
 for (const name of names) {
   const { old, next } = paths(name);
   let body = original(`${old}/schedule.md`);
@@ -130,43 +130,43 @@ for (const name of names) {
 let researchReadme = original('projects/routines/README.md');
 researchReadme = replace(researchReadme,
   'Routine 专项工作区：跨平台 routine 的形态调研，以及 skill 与日程怎么放。不定义跨厂商的统一类型。\n\n默认把日程和内容分开。打进同一份文件不再是首选。两种放法：一个目录里放极简日程文件，内容来自 Skill（日程引用 Skill）；或者一份 Skill 和它的日程文件放在同一目录。四种形态是业界分类，见调研笔记。定义不放进 `notes/`。',
-  'Routine 调研与实现材料。现行例程定义统一登记在根 [.harness/routines/README.md](../../.harness/routines/README.md)，每条以 `INDEX.md` 记录日程并引用 Skill；外部平台每次运行重新读取定义与 Skill。平台日程字段保留各自表达，不定义跨厂商的统一日程类型。\n\n本目录保留跨平台调研，以及带代码、npm 依赖和 git submodule 的 Grok Bot 导出实现。日复盘、周复盘的 Skill 与定义已迁入 `.harness/routines/`。');
+  'Routine 调研与实现材料。现行例程定义统一登记在根 [.edges/routines/README.md](../../.edges/routines/README.md)，每条以 `INDEX.md` 记录日程并引用 Skill；外部平台每次运行重新读取定义与 Skill。平台日程字段保留各自表达，不定义跨厂商的统一日程类型。\n\n本目录保留跨平台调研，以及带代码、npm 依赖和 git submodule 的 Grok Bot 导出实现。日复盘、周复盘的 Skill 与定义已迁入 `.edges/routines/`。');
 researchReadme = replace(researchReadme, '## 示例', '## 现行例程');
 const examplesStart = researchReadme.indexOf('- [daily-conversation-deposit/');
 const examplesEnd = researchReadme.indexOf('\n## 改名对照');
 researchReadme = researchReadme.slice(0, examplesStart)
-  + '- [日复盘](../../.harness/routines/daily-conversation-deposit/INDEX.md) — 每日沉淀扫描；定义引用同目录 Skill，产出经 PR 写入对应子仓。\n'
-  + '- [周复盘](../../.harness/routines/weekly-retrospective/INDEX.md) — 回顾上一个自然周；结果写入 [`retrospectives/weekly/`](../../retrospectives/weekly/README.md)。\n'
-  + '- [Grok Bot → Langfuse 导出](../../.harness/routines/grokbot-langfuse-export/INDEX.md) — 每小时导出全部助手会话；[Skill](grokbot-langfuse-export/SKILL.md) 与 [代码说明](grokbot-langfuse-export/README.md) 保留在现有实现目录。\n'
+  + '- [日复盘](../../.edges/routines/daily-conversation-deposit/INDEX.md) — 每日沉淀扫描；定义引用同目录 Skill，产出经 PR 写入对应子仓。\n'
+  + '- [周复盘](../../.edges/routines/weekly-retrospective/INDEX.md) — 回顾上一个自然周；结果写入 [`retrospectives/weekly/`](../../retrospectives/weekly/README.md)。\n'
+  + '- [Grok Bot → Langfuse 导出](../../.edges/routines/grokbot-langfuse-export/INDEX.md) — 每小时导出全部助手会话；[Skill](grokbot-langfuse-export/SKILL.md) 与 [代码说明](grokbot-langfuse-export/README.md) 保留在现有实现目录。\n'
   + researchReadme.slice(examplesEnd);
 plan('projects/routines/README.md', researchReadme);
 for (const [period, name] of [['daily', ordinary[0]], ['weekly', ordinary[1]]]) {
   const relative = `retrospectives/${period}/README.md`;
-  plan(relative, replace(original(relative), `../../projects/routines/${name}/SKILL.md`, `../../.harness/routines/${name}/INDEX.md`));
+  plan(relative, replace(original(relative), `../../projects/routines/${name}/SKILL.md`, `../../.edges/routines/${name}/INDEX.md`));
 }
 for (const filename of ['SKILL.md', 'README.md']) {
   const relative = `projects/routines/grokbot-langfuse-export/${filename}`;
-  let desired = replace(original(relative), '[schedule.md](schedule.md)', '[Routine INDEX.md](../../../.harness/routines/grokbot-langfuse-export/INDEX.md)');
-  if (filename === 'SKILL.md') desired = replace(desired, '运行频率见 schedule.md。', '运行频率见 .harness/routines/grokbot-langfuse-export/INDEX.md。');
+  let desired = replace(original(relative), '[schedule.md](schedule.md)', '[Routine INDEX.md](../../../.edges/routines/grokbot-langfuse-export/INDEX.md)');
+  if (filename === 'SKILL.md') desired = replace(desired, '运行频率见 schedule.md。', '运行频率见 .edges/routines/grokbot-langfuse-export/INDEX.md。');
   plan(relative, desired, filename === 'SKILL.md' ? 'skill' : 'document');
 }
 const evaluationGuide = 'projects/routines/grokbot-langfuse-export/evaluations/frequency-usage/README.md';
 plan(evaluationGuide, replace(original(evaluationGuide), '[`schedule.md`](../../schedule.md)',
-  '[Routine `INDEX.md`](../../../../../.harness/routines/grokbot-langfuse-export/INDEX.md)'));
-const memory = '.harness/memory/projects/project_workspace_is_deposit_entry/INDEX.md';
+  '[Routine `INDEX.md`](../../../../../.edges/routines/grokbot-langfuse-export/INDEX.md)'));
+const memory = '.edges/memory/projects/project_workspace_is_deposit_entry/INDEX.md';
 let memoryText = original(memory);
-for (const name of ordinary) memoryText = replace(memoryText, `projects/routines/${name}/SKILL.md`, `.harness/routines/${name}/SKILL.md`);
+for (const name of ordinary) memoryText = replace(memoryText, `projects/routines/${name}/SKILL.md`, `.edges/routines/${name}/SKILL.md`);
 plan(memory, memoryText, 'memory');
 const taskChanges = [
-  ['2026-10-24--Grok-Bot-会话每小时写入-Langfuse', '`schedule.md`', '`.harness/routines/grokbot-langfuse-export/INDEX.md`'],
-  ['2026-10-25--日复盘旁路接入-LangfuseCodexCursorGrok-主源仍用-ReadTranscript', 'projects/routines/daily-conversation-deposit/', '.harness/routines/daily-conversation-deposit/'],
-  ['2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入', 'projects/routines/weekly-retrospective/SKILL.md', '.harness/routines/weekly-retrospective/SKILL.md'],
+  ['2026-10-24--Grok-Bot-会话每小时写入-Langfuse', '`schedule.md`', '`.edges/routines/grokbot-langfuse-export/INDEX.md`'],
+  ['2026-10-25--日复盘旁路接入-LangfuseCodexCursorGrok-主源仍用-ReadTranscript', 'projects/routines/daily-conversation-deposit/', '.edges/routines/daily-conversation-deposit/'],
+  ['2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入', 'projects/routines/weekly-retrospective/SKILL.md', '.edges/routines/weekly-retrospective/SKILL.md'],
 ];
 for (const [stem, before, after] of taskChanges) {
-  const relative = `.harness/tasks/_default/backlog/${stem}/INDEX.md`;
+  const relative = `.edges/tasks/_default/backlog/${stem}/INDEX.md`;
   plan(relative, replace(original(relative), before, after), 'task');
 }
-if (read('.harness/routines/README.md') === undefined) changes.unshift('initialize routines module and register .harness/routines/README.md');
+if (read('.edges/routines/README.md') === undefined) changes.unshift('initialize routines module and register .edges/routines/README.md');
 if (conflicts.length) { console.error(JSON.stringify({ mode: apply ? 'apply' : 'preview', conflicts }, null, 2)); process.exit(1); }
 console.log(JSON.stringify({ mode: apply ? 'apply' : 'preview', base: BASE, scope, changes, platformsChanged: false }, null, 2));
 if (!apply || changes.length === 0) process.exit(0);
@@ -175,16 +175,16 @@ function cli(...argv) {
   const output = execFileSync(process.execPath, ['--import', loader, path.join(framework, 'packages/cli/src/index.ts'), '--scope', scope, ...argv], { cwd: framework, encoding: 'utf8', env: process.env });
   console.log(output.trim());
 }
-if (read('.harness/routines/README.md') === undefined) cli('routines', 'init');
+if (read('.edges/routines/README.md') === undefined) cli('routines', 'init');
 for (const name of ordinary) {
   const { old, next } = paths(name);
   if (read(`${next}/SKILL.md`) === undefined) {
     // Bound discovery to the destination module so importing does not rewrite historical links.
-    const service = new NodeService({ managedRoot: absolute('.harness/routines') });
+    const service = new NodeService({ managedRoot: absolute('.edges/routines') });
     await service.import(absolute(`${old}/SKILL.md`), absolute(`${next}/SKILL.md`));
   }
   if (read(`${next}/SKILL.md`) !== skills.get(name)) {
-    const service = new NodeService({ managedRoot: absolute('.harness/routines') });
+    const service = new NodeService({ managedRoot: absolute('.edges/routines') });
     const skill = await service.get(absolute(`${next}/SKILL.md`), SkillNode);
     await service.update(skill, { body: parseDocument(skills.get(name)).body });
   }
@@ -201,8 +201,8 @@ for (const name of names) {
 }
 // Skills remain resources of their routine, not parallel entries in the routine index.
 {
-  const service = new NodeService({ managedRoot: absolute('.harness/routines') });
-  const board = await service.get(absolute('.harness/routines/README.md'), ReadmeNode);
+  const service = new NodeService({ managedRoot: absolute('.edges/routines') });
+  const board = await service.get(absolute('.edges/routines/README.md'), ReadmeNode);
   const importedSkills = new Set(ordinary.map((name) => absolute(`${paths(name).next}/SKILL.md`)));
   const children = board.localChildren.filter((child) => !importedSkills.has(child.id));
   if (children.length !== board.localChildren.length) await service.update(board, { localChildren: children });

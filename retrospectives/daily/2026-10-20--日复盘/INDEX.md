@@ -26,7 +26,7 @@
 - **1.5.0 收尾（全栈开发专家 → 任务记录员）**：早上全栈开发专家发现自己在 CodeRabbit 过完后一直停着没合，09:32–09:36 依次合入 #289、#287，打 `v1.5.0`、发 Release；任务记录员合入 #288，并把「重合 #208/#211」卡挪到 done。用户追问原因，助手的解释是把「CI 还在跑」和「已经可以合」弄混了。
 - **检索评测与可观测（Agent Memory 专家 → 任务记录员 → 全栈开发专家）**：
   - #291：`codex exec --json` 事件流落盘，并经 OTLP 上传 Langfuse。踩到的问题依次修掉了：Cloudflare 拦默认 UA；按「配置 + 时间戳 + 短随机串」补 session；打开 reasoning summary。
-  - grill（中途按用户要求改用 html-plan 出审阅页）后做了 #293：上报抽到 `.harness/observation/langfuse_sink/`，接口叫 `TraceExporter`，ADR 0038；顺手关掉 Codex 的 stdin。
+  - grill（中途按用户要求改用 html-plan 出审阅页）后做了 #293：上报抽到 `.edges/observation/langfuse_sink/`，接口叫 `TraceExporter`，ADR 0038；顺手关掉 Codex 的 stdin。
   - #294：接入 pi client（MiniMax-M3），修了缓存 token 重复计入 total 的问题。
   - 真机冒烟时发现 pi 没有沙箱，会跑出被测副本 → #295 开卡，#296 改成 in_progress。
   - 全栈开发专家 grill 后按用户「最通用、最简单」的要求，用默认工具加 `pi-sandbox`。经三轮独立验证，补了 `denyRead: ["/"]`、`allowWrite` 为空，在 `/bin`、`/lib` 为软链的发行版上自己展开根目录，并加 bash 自检 → [#297](https://github.com/VirusPC/edges/pull/297)，**仍开放**。
@@ -91,14 +91,14 @@
 
 ## 建议补充内容清单
 
-- 记忆（feedback，extensions 作用域）：CLI 读到不合约定的数据（如必需文件缺失）时报错并写明路径，不自动补文件掩盖问题；只有显式 create 才新建。来自 #302 的讨论。写入：`extensions/.harness/memory/feedbacks/feedback_cli_fail_on_missing_required_files/INDEX.md`（`edges memory remember`，`extensions/.harness/memory/feedbacks/README.md` 已登记）。
-- 记忆（feedback，根作用域）：复盘正文定稿后不改，用户后续评论写同目录 `COMMENTS.md`，更正往期也在往期目录加 `COMMENTS.md`。来自 #307 审阅。写入：`.harness/memory/feedbacks/feedback_retro_comments_in_separate_file/INDEX.md`（同上，已登记）。用户当时只就周复盘说过，日复盘是否照做留给审阅确认。
-- 记忆（feedback，根作用域）：用户要行业方案或主流做法调研时，先并列多种方案、按用户约束逐条评估，不擅自收敛；说「常见」「主流」前要有依据。来自 Grok Bot 多仓挂载那段讨论（「你别擅自收敛」「你确定是常见的做法？」）。写入：`.harness/memory/feedbacks/feedback_survey_options_before_converging/INDEX.md`（同上，已登记）。
+- 记忆（feedback，extensions 作用域）：CLI 读到不合约定的数据（如必需文件缺失）时报错并写明路径，不自动补文件掩盖问题；只有显式 create 才新建。来自 #302 的讨论。写入：`extensions/.edges/memory/feedbacks/feedback_cli_fail_on_missing_required_files/INDEX.md`（`edges memory remember`，`extensions/.edges/memory/feedbacks/README.md` 已登记）。
+- 记忆（feedback，根作用域）：复盘正文定稿后不改，用户后续评论写同目录 `COMMENTS.md`，更正往期也在往期目录加 `COMMENTS.md`。来自 #307 审阅。写入：`.edges/memory/feedbacks/feedback_retro_comments_in_separate_file/INDEX.md`（同上，已登记）。用户当时只就周复盘说过，日复盘是否照做留给审阅确认。
+- 记忆（feedback，根作用域）：用户要行业方案或主流做法调研时，先并列多种方案、按用户约束逐条评估，不擅自收敛；说「常见」「主流」前要有依据。来自 Grok Bot 多仓挂载那段讨论（「你别擅自收敛」「你确定是常见的做法？」）。写入：`.edges/memory/feedbacks/feedback_survey_options_before_converging/INDEX.md`（同上，已登记）。
 - 不做：多仓整仓挂载行业方案笔记、ADR 0039、compose sync 任务卡。已由 #316 合入。
 - 不做：pi 生态、云端沙箱内核、OpenCode 生态、Vercel 模板、工业界沙箱 SDK 调研。已由 #300、#311 合入。
 - 不做：云端 coding agent 架构课程与学习笔记。已由 #310 合入 `teaching/cloud-coding-agent/`。
 - 不做：Agent 记忆写入与读取触发机制调研。已由 #299 合入。
-- 不做：Langfuse 接入的坑（Cloudflare 拦默认 UA、v4 events_only 按 trace 查 404、缓存 token 重复计入）、pi 走 `minimax-cn`、鉴权失败退出码仍为 0、Codex stdin。已分别写进 ADR 0038、`.harness/observation/smoke/README.md`、`.harness/evaluation/README.md` 和代码。
+- 不做：Langfuse 接入的坑（Cloudflare 拦默认 UA、v4 events_only 按 trace 查 404、缓存 token 重复计入）、pi 走 `minimax-cn`、鉴权失败退出码仍为 0、Codex stdin。已分别写进 ADR 0038、`.edges/observation/smoke/README.md`、`.edges/evaluation/README.md` 和代码。
 - 不做：pi-sandbox 的黑名单读权限、软链目录挂载失败、`allowWrite` 默认放行 `/tmp` 可改配置绕过等结论。都在开放中的 #297（ADR、README、任务卡）里，等它合入。
 - 不做：Github Artifacts Preview 的托管调研（GitHub 私有托管的限制、Cloudflare Pages 免费额度、box 在 NAT 后）。已写进 #318 的卡片。
 - 不做：Project 改为分组轴、artifacts 服务随 npm 包发布、评测接云沙箱、pi 越界卡。已由 #314、#298、#319、#295/#296 开卡合入。

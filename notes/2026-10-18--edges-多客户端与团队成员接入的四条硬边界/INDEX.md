@@ -29,11 +29,11 @@ Edges 正在从「一个人用的外脑」变成「多个客户端都能接进�
 
 ## 相关已有任务
 
-- `.harness/tasks/edges-extensions/backlog/2026-09-09--CLI与MCP需加鉴权`
-- `.harness/tasks/edges-tasks/backlog/2026-09-11--tasks随仓多人协作与作者区分`
-- `.harness/tasks/agent-clients-ux/backlog/2026-09-25--跨Agent客户端通信层`
-- `.harness/tasks/agent-clients-ux/backlog/2026-09-21--edges-衍生站点统一鉴权`
-- `.harness/tasks/edges-extensions/backlog/2026-09-14--edges-CLI发布成package`
+- `.edges/tasks/edges-extensions/backlog/2026-09-09--CLI与MCP需加鉴权`
+- `.edges/tasks/edges-tasks/backlog/2026-09-11--tasks随仓多人协作与作者区分`
+- `.edges/tasks/agent-clients-ux/backlog/2026-09-25--跨Agent客户端通信层`
+- `.edges/tasks/agent-clients-ux/backlog/2026-09-21--edges-衍生站点统一鉴权`
+- `.edges/tasks/edges-extensions/backlog/2026-09-14--edges-CLI发布成package`
 
 ## 待定
 

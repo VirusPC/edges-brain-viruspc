@@ -2,7 +2,7 @@
 
 > 附属层要「整仓源码挂进工作区、不抢主系统包管理」时，行业常见方案多数绕回清单 + clone；与现有 edges compose + Node Tree / AGENTS.md 契约最贴。
 
-> **后来的决定盖过这篇的行动指南。** 当天稍后 Compose 改成 git submodule，日常命令是 `edges compose add`、`list`、`update`，挂载在 `.harness/compose/<name>`。2026-10-21 又拍板：公开仓库不互相挂载，挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`。下面是这场对话当时的记录，不要按「git clone 到约定路径、不做 submodule」操作。
+> **后来的决定盖过这篇的行动指南。** 当天稍后 Compose 改成 git submodule，日常命令是 `edges compose add`、`list`、`update`，挂载在 `.edges/compose/<name>`。2026-10-21 又拍板：公开仓库不互相挂载，挂载在私有工作空间根 `VirusPC/edges-workspace-viruspc`。下面是这场对话当时的记录，不要按「git clone 到约定路径、不做 submodule」操作。
 
 ## 背景
 

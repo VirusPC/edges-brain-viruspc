@@ -4,6 +4,6 @@
   "showUnsupportedFiles": true,
   "userIgnoreFilters": [
     "teaching/*/repos/",
-    ".harness/evaluation/third_party/"
+    ".edges/evaluation/third_party/"
   ]
 }

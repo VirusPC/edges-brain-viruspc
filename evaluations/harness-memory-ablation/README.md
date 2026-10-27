@@ -1,10 +1,10 @@
 # Harness Memory 消融评估
 
-比较在控制模型、Agent、仓库版本的前提下，注入 `.harness/memory`（及 `AGENTS.md` / `.harness` 索引对其的发现路径）相对不注入，能否在回答质量上正向，同时输入 token 增量与端到端耗时增量落在可接受阈值内。
+比较在控制模型、Agent、仓库版本的前提下，注入 `.edges/memory`（及 `AGENTS.md` / `.edges` 索引对其的发现路径）相对不注入，能否在回答质量上正向，同时输入 token 增量与端到端耗时增量落在可接受阈值内。
 
 ## 评估目的
 
-回答用户问题：`.harness` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录存方法、口径、题库（已对齐 Dataset `harness-memory-ablation/v1`）与按日期命名的实测报告。
+回答用户问题：`.edges` 里的 memory 部分，是否在 token 消耗增多不大且耗时增加不大的前提下，对模型回答结果产生正向帮助。本目录存方法、口径、题库（已对齐 Dataset `harness-memory-ablation/v1`）与按日期命名的实测报告。
 
 ## 假设
 
@@ -19,14 +19,14 @@
 
 | 组 | 定义 | 本轮 |
 |---|---|---|
-| A | 无 memory。独立 worktree 基于同一 commit；去掉 `.harness/memory` 目录，并去掉 `AGENTS.md` 与 `.harness/README.md` 中指向 memory 的索引行；其余文件与硬约束保持不变 | 首轮必跑 |
-| B | 完整 memory。与生产一致的现状检出（含 `.harness/memory` 与索引） | 首轮必跑 |
+| A | 无 memory。独立 worktree 基于同一 commit；去掉 `.edges/memory` 目录，并去掉 `AGENTS.md` 与 `.edges/README.md` 中指向 memory 的索引行；其余文件与硬约束保持不变 | 首轮必跑 |
+| B | 完整 memory。与生产一致的现状检出（含 `.edges/memory` 与索引） | 首轮必跑 |
 | C | 仅索引、不加载正文，或按需检索（例如只暴露类型 README，不预加载条目正文） | 可选第二阶段；首轮标为后续 |
 
 准备 A 时注意：
 
 1. 只改发现路径与 memory 正文是否存在，不改模型、系统提示、工具集、温度。
-2. 根 `AGENTS.md` 硬约束区块（worktree、`Co-authored-by`、`posts/` 禁改等）在 A/B 中都保留。因此「仅靠硬约束即可答对」的题不能用来证明 memory 有增益；memory-dependent 题应优先选**主真源在 `.harness/memory` 正文**的约定。
+2. 根 `AGENTS.md` 硬约束区块（worktree、`Co-authored-by`、`posts/` 禁改等）在 A/B 中都保留。因此「仅靠硬约束即可答对」的题不能用来证明 memory 有增益；memory-dependent 题应优先选**主真源在 `.edges/memory` 正文**的约定。
 3. A 的改动只存在于该实验 worktree，禁止 push 到生产分支，禁止改生产 memory。
 
 ## 固定变量
@@ -52,7 +52,7 @@
 
 三类：
 
-1. **memory-dependent**：答对依赖项目约定，主真源在 `.harness/memory` 或根 `AGENTS.md` / 相关 skill（Compose 沉淀入口、brain 改名与旧 PR 引用、云端盲测、CLI 对齐 npm latest、长期 AI 问题追踪、Langfuse tags 与 metadata 分工、evaluations 落点、worktree、禁止直推 main、`posts/` 禁改等）。
+1. **memory-dependent**：答对依赖项目约定，主真源在 `.edges/memory` 或根 `AGENTS.md` / 相关 skill（Compose 沉淀入口、brain 改名与旧 PR 引用、云端盲测、CLI 对齐 npm latest、长期 AI 问题追踪、Langfuse tags 与 metadata 分工、evaluations 落点、worktree、禁止直推 main、`posts/` 禁改等）。
 2. **memory-irrelevant**：真实会话里的产品/工程问答（多为 Langfuse 概念与上报方案），与 harness 约定无关，用来测是否帮倒忙。
 3. **conflict-stale**：约定确实变过的场景（`VirusPC/edges`→`edges-brain-viruspc`、`knowledge/`→`notes/`、Compose 可写、沉淀入口改到 workspace、公开仓不互挂等）。B 侧若另注入冲突 memory，只进实验 worktree，跑完丢弃。
 
@@ -129,8 +129,8 @@ git worktree add .worktrees/eval-memory-A -b eval/memory-A "$SHA"
 
 # 仅在 A worktree：删除 memory 正文，并去掉索引行
 cd .worktrees/eval-memory-A
-rm -rf .harness/memory
-# 编辑 AGENTS.md / .harness/README.md：删除指向 .harness/memory 的索引行
+rm -rf .edges/memory
+# 编辑 AGENTS.md / .edges/README.md：删除指向 .edges/memory 的索引行
 # 不要改硬约束区块；不要 commit/push 这些实验用改动
 ```
 

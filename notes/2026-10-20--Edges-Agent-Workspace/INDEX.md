@@ -39,7 +39,7 @@ Agent Workspace 是**产品定位**；Harness any directory 是**设计哲学**�
 
 `任务 → 查找适用的 Memory / Skill → 执行 → 记录结果与反馈 → 经人审演化资产 → 后续任务复用`
 
-**重要边界：** 写这篇时（2026-10-20）Compose 还是登记、列出、取消登记、检出、拉取和推送，并用根级开关把外部仓库一层入口纳入查询；默认查询不跨 Compose，写命令不跨组合边。它不等于已实现跨仓库任务自动编排。这些子命令后来已删除。现行日常命令是 `edges compose add`、`list`、`update`，挂载是 `.harness/compose/<name>` 的 git submodule。Tasks 的生命周期管理也不等于独立 Agent Runtime。
+**重要边界：** 写这篇时（2026-10-20）Compose 还是登记、列出、取消登记、检出、拉取和推送，并用根级开关把外部仓库一层入口纳入查询；默认查询不跨 Compose，写命令不跨组合边。它不等于已实现跨仓库任务自动编排。这些子命令后来已删除。现行日常命令是 `edges compose add`、`list`、`update`，挂载是 `.edges/compose/<name>` 的 git submodule。Tasks 的生命周期管理也不等于独立 Agent Runtime。
 
 ## 与其他工具的差异化假设
 

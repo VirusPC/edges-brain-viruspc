@@ -6,4 +6,4 @@ Routine 专属评估仍挂在对应 routine 下（例如 [`projects/routines/gro
 
 | 评估 | 说明 |
 |---|---|
-| [harness-memory-ablation/](harness-memory-ablation/) | `.harness/memory` 消融：质量、输入 token、端到端耗时；当前结论：尚未跑数据 |
+| [harness-memory-ablation/](harness-memory-ablation/) | `.edges/memory` 消融：质量、输入 token、端到端耗时；当前结论：尚未跑数据 |

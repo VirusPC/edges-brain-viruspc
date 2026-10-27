@@ -35,9 +35,9 @@
   - 用户觉得挂进来的仓不能写「很难受」，而且 submodule 本来也拦不住谁去写，要求「核心是保持简单，不加额外机制」。
   - 框架仓 #26 删掉了只读特例，写进 ADR 0045。用户追问代码以后，「父索引停在最内层检出」和「空检出写入报错」两处多余的防护也删了。
   - 随后派云端 Agent 盲测：从工作区入口写一条笔记，看会不会写进子仓。结果写进了公开脑（#346、工作区 #1）。不过落点是 Agent 读规则自己判断的，CLI 不会自动路由。
-- **.harness 模块插件化（Grok Bot）**
+- **.edges 模块插件化（Grok Bot）**
   - 第一轮，助手和 Grok 4.7 xhigh 云端 Agent 都建议先别做插件系统。
-  - 用户纠正了方向：框架和模块实现分离，方便扩展和定制；「hooks 是普通函数而已」；要「plugin + 生命周期函数」，插件只从 `.harness/plugins/` 加载。
+  - 用户纠正了方向：框架和模块实现分离，方便扩展和定制；「hooks 是普通函数而已」；要「plugin + 生命周期函数」，插件只从 `.edges/plugins/` 加载。
   - 设计稿已经发到 Artifacts 预览，10-28 到期。里面有五个 grill 问题等用户回答。
 - **工作电脑上的项目初始化（全栈开发专家）**：在一个空的工作仓里跑 `edges init`。一开始用了本机旧的 0.2.3，装进的 compose skill 还是旧命令，用户指出「应该用最新命令吧」。升到 0.2.4 重装以后推上远端，旧的半成品 clone 按用户要求删掉了。
 - **工作区与 Mac mini（全栈开发专家、IT资产管理）**
@@ -48,8 +48,8 @@
 - **跨机保险柜（全栈开发专家 → 任务记录员）**：用户想到可以开一个私有仓专门在各机器之间传配置和密钥，「比备忘录和你通用」，并定下挂在工作区的 Compose 下。卡已经开好（#347），还没合。
 - **私密脑改造（全栈开发专家）**
   - 用户发现私密脑还是旧样子（有 `knowlege/`），问「我记得不是说把这个改造一下吗」。助手承认之前被别的事打断，没做完。
-  - 用户说「快点做完吧，我感觉都不用 Grill」，之后连续合了私密脑 #1–#4：套上 `.harness/`，平铺目录，按公开脑对齐索引，notes 和 projects 收成日期叶子，入口改到仓根 `notes/README.md` 和 `projects/README.md`。
-  - 过程中助手先后说错了两次：一次说 `AGENTS.md` 本层要挂 README，一次说叶子清单放在 `.harness/notes`。用户提醒「格式要求很严格的」「参考公开仓库改」，才改对。
+  - 用户说「快点做完吧，我感觉都不用 Grill」，之后连续合了私密脑 #1–#4：套上 `.edges/`，平铺目录，按公开脑对齐索引，notes 和 projects 收成日期叶子，入口改到仓根 `notes/README.md` 和 `projects/README.md`。
+  - 过程中助手先后说错了两次：一次说 `AGENTS.md` 本层要挂 README，一次说叶子清单放在 `.edges/notes`。用户提醒「格式要求很严格的」「参考公开仓库改」，才改对。
   - 由此查到 CLI 本身的问题：`init` 和 `create` 登记在不同的文件里，没有清单时还会退回去挂到 `AGENTS.md`。用户说「这完全不符合数据模型」「其他模块如有类似问题也一块儿改掉」，框架仓 #27 修了这个问题（ADR 0046），02:45 合入。
 - **其他**：X 书签定时任务的写入目标改成了公开脑；tasks-review-app 构建路径那条是误报。
 
@@ -61,13 +61,13 @@
 - 内容叶子（notes、projects、tasks）只登记在内容面的 README 组织清单。清单不存在就先建出来，不回退到 `AGENTS.md`（ADR 0046）。
 - ADR 编号：0039 留给 Compose worktree，pi 沙箱那份改成 0044。
 - 0.2.4 按 patch 发布，尽管里面有不兼容改动。这次合 PR、打 tag、批发布都授权助手自己做。
-- 插件化方向是「plugin + 生命周期函数（普通函数）」，只从 `.harness/plugins/` 加载。细节还要 grill。
+- 插件化方向是「plugin + 生命周期函数（普通函数）」，只从 `.edges/plugins/` 加载。细节还要 grill。
 - 跨机保险柜单独开一个私有仓，不混进私密脑，挂在工作区的 Compose 下。聊天和 Artifacts 预览里都不贴明文 token（#347 的前提）。
 - 私密脑改造跳过 grill，按已定的默认直接做，结构以公开脑为准。
 
 ## 卡住了什么
 
-- **插件化设计的五个 grill 问题还没回答**。另外第 5 题和 #27 冲突：第 5 题倾向 A，把 notes、projects 的叶子挪到 `.harness/notes`；但 #27 和 ADR 0046 已经定成写在仓根 `notes/README.md`。回答 grill 时要先说清楚以哪个为准。
+- **插件化设计的五个 grill 问题还没回答**。另外第 5 题和 #27 冲突：第 5 题倾向 A，把 notes、projects 的叶子挪到 `.edges/notes`；但 #27 和 ADR 0046 已经定成写在仓根 `notes/README.md`。回答 grill 时要先说清楚以哪个为准。
 - **npm 还是 0.2.4**，不含 #26（子仓可写）和 #27（叶子登记）。要不要发 0.2.5 等用户定。工作区里框架仓的指针还停在 `801460d`。
 - **公开脑的老笔记还登记在 `notes/AGENTS.md`**，要迁到 `notes/README.md`。全栈开发专家说下一步就做，窗口内还没开 PR。
 - #347（跨机保险柜卡）和 #348（私密脑改造卡挪 done）等用户说合。
@@ -94,16 +94,16 @@
 - 本 PR 的笔记是用带 #27 的 CLI 建的，所以登记进了公开脑 `notes/README.md` 新加的 `project-entries-local` 区块，老笔记还在 `notes/AGENTS.md`。全栈开发专家做迁移时要把这一条也算上，并处理 `notes/README.md` 里过时的「待处理想法」说明，避免两边冲突。
 - 工作区根 `AGENTS.md` 开头还写着「挂载公开脑与私密脑」，但 10-22 起也挂了框架仓 `edges`，说明落后了。工作区根不归本 PR 写，只报告。
 - box 上的 `edges` 链接到 `/workspace/edges/packages/cli/dist/index.js`。02:45 那次自动重编译以后，这个文件丢了可执行权限，直接跑 `edges` 会报 Permission denied。本次改用 `node …/dist/index.js` 执行，没有改文件权限。
-- 任务记录员每次在公开脑用 `edges tasks create/status`，都会产生同样的副作用：改写根 `AGENTS.md` 的索引行和 `.harness/tasks/README.md`，新建 `_default/`，还会因为缺 `teaching/.harness/memory/users/README.md` 报错。窗口内至少 5 次，每次都是手动撤掉。#27 合入后有没有变还没核实，像是框架 CLI 的 bug，没有开卡。
+- 任务记录员每次在公开脑用 `edges tasks create/status`，都会产生同样的副作用：改写根 `AGENTS.md` 的索引行和 `.edges/tasks/README.md`，新建 `_default/`，还会因为缺 `teaching/.edges/memory/users/README.md` 报错。窗口内至少 5 次，每次都是手动撤掉。#27 合入后有没有变还没核实，像是框架 CLI 的 bug，没有开卡。
 - Artifacts 的发布配置现在除了在各机配置文件里，还有一份在 Mac mini 的备忘录里。跨机保险柜建好以后，建议把备忘录里那条删掉。
 - 日复盘 SKILL 第 1 步还写着用 ReadTranscript 抓取、用云端 Agent 开 PR；这次输入是已经落盘的 jsonl，PR 用 `gh` 开。
 
 ## 建议补充内容清单
 
-- 记忆（project，根作用域）：沉淀以 Compose 工作区根为入口，先读它的 `AGENTS.md`，正文写进挂进来的子仓。来自 Grok Bot 13:28 用户的「把这个地方当做入口」，以及日复盘 10-21 的确认。写入：`.harness/memory/projects/project_workspace_is_deposit_entry/INDEX.md`（`edges memory remember`，`.harness/memory/projects/README.md` 已登记）。
+- 记忆（project，根作用域）：沉淀以 Compose 工作区根为入口，先读它的 `AGENTS.md`，正文写进挂进来的子仓。来自 Grok Bot 13:28 用户的「把这个地方当做入口」，以及日复盘 10-21 的确认。写入：`.edges/memory/projects/project_workspace_is_deposit_entry/INDEX.md`（`edges memory remember`，`.edges/memory/projects/README.md` 已登记）。
 - Skill（日复盘 routine）：在 `projects/routines/daily-conversation-deposit/SKILL.md` 开头补一段「入口是工作区根，PR 开到子仓」。这是上一条在日复盘流程里的落点。5:00 定时任务的交接文案已经改了，但 SKILL 正文还没写。
-- 记忆（project，根作用域）：在用户机器上操作 edges 前，先对齐 npm 上的最新版；main 上还没发版的改动，先说明再让用户选。来自全栈开发专家 17:11「应该用最新命令吧」「npm 发包了么」。写入：`.harness/memory/projects/project_use_latest_edges_cli_on_machines/INDEX.md`（同上，已登记）。
-- 记忆（project，根作用域）：派云端 Agent 做验证时，验收标准写具体，但不提示答案。来自 Grok Bot 14:03「比你自己去写靠谱」「避免作弊」「你这个需求太模糊了」。写入：`.harness/memory/projects/project_cloud_agent_blind_verification/INDEX.md`（同上，已登记）。根作用域现在没有 feedback 类型（10-21 已经记过），为了不新建类型，记成 project 类型（README 里写明 project 也收项目内的规范）。
+- 记忆（project，根作用域）：在用户机器上操作 edges 前，先对齐 npm 上的最新版；main 上还没发版的改动，先说明再让用户选。来自全栈开发专家 17:11「应该用最新命令吧」「npm 发包了么」。写入：`.edges/memory/projects/project_use_latest_edges_cli_on_machines/INDEX.md`（同上，已登记）。
+- 记忆（project，根作用域）：派云端 Agent 做验证时，验收标准写具体，但不提示答案。来自 Grok Bot 14:03「比你自己去写靠谱」「避免作弊」「你这个需求太模糊了」。写入：`.edges/memory/projects/project_cloud_agent_blind_verification/INDEX.md`（同上，已登记）。根作用域现在没有 feedback 类型（10-21 已经记过），为了不新建类型，记成 project 类型（README 里写明 project 也收项目内的规范）。
 - 笔记：拆仓后 npm 可信发布 404 的原因和处理（看仓库身份，不看名字；删掉重加，再重跑失败的 job），顺带记新包下载量虚高的原因。来自 Grok Bot 11:36–12:20。写入：`notes/2026-10-22--拆仓后-npm-可信发布-404按仓库身份认删掉重加/INDEX.md`（`edges notes create`，`notes/README.md` 已登记）。
 - 不做：「保持简单，不加额外机制」，以及 Compose 可写的设计。已经写进框架仓 ADR 0045 和 `project_compose_checkout_writable`。
 - 不做：叶子登记的数据模型（不回退到 AGENTS，缺清单就建 README）。已经写进框架仓 ADR 0046 和 #27。

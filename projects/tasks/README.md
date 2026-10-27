@@ -8,7 +8,7 @@
 | --- | --- |
 | 本目录 `knowledge/projects/tasks/` | Task 模块的研究、方案对照、长文调研 |
 | [`../task-board-lifecycle/`](../task-board-lifecycle) | 早期看板状态机 / Multica 对照结论 |
-| [`../../tasks/`](../../.harness/tasks) | 工作项看板本身（Issue 状态夹 + Run log） |
+| [`../../tasks/`](../../.edges/tasks) | 工作项看板本身（Issue 状态夹 + Run log） |
 
 ## 文档
 
