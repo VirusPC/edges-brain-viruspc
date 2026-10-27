@@ -1,10 +1,10 @@
-<!-- project-memory-type:start -->
+<!-- edges-memory-type:start -->
 name: managed
 module: skills
 writable: true
 gitignore: false
 format: skills
-<!-- project-memory-type:end -->
+<!-- edges-memory-type:end -->
 
 # SKILLS — 自动沉淀的流程
 
@@ -13,8 +13,8 @@ format: skills
 > 怎么写：产物是一个合法的 Agent Skills 目录 `managed/<name>/SKILL.md`，`<name>` 用 kebab-case 且等于 `name` 字段。正文写步骤、输入输出、边界情况。出处与审计放 `metadata:`，不要放顶层。
 > 本文件只是索引，条目区块由脚本重算，正文写在 `managed/<name>/SKILL.md` 里。
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - 暂无条目。
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->

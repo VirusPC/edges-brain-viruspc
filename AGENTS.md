@@ -13,7 +13,7 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 <!-- edges-constraints:start -->
 ## 本层硬约束
 
-- 本目录有项目记忆。提问或动手前用 `$project-memory-ask`；该沉淀用 `$project-memory-remember`。本轮查过不重复。
+- 本目录有项目记忆。提问或动手前用 `$edges-memory-ask`；该沉淀用 `$edges-memory-remember`。本轮查过不重复。
 - 本层硬约束直接写在这个区块里，不要通过记忆正文链接代替本区块的硬约束。
 - 重复批量操作先写可重复执行的脚本，再用脚本执行；迁移与批量修改须可预览、检查冲突并安全重复运行，不逐文件手工重复操作。
 - 本仓公开（`github.com/VirusPC/edges-brain-viruspc`）。凭据、个人信息、未公开 IP、办公文档不入库；内部信息脱敏后再写；截图按「能不能上公开博客」判断。细则见 README 的「隐私与脱敏」。

@@ -2,7 +2,7 @@
 
 ## 核心判断
 
-这套 project-memory-init / ask / remember / doctor / reshape / add-type 系列，不只是“把 Memory 存进文件夹”。
+这套 edges-memory-init / ask / remember / add-type 系列，不只是“把 Memory 存进文件夹”。现行捆绑技能是这四项。下文生命周期表里的 doctor、reshape 两行保留 2026-10-27 删除前的职责，包里已经没有对应 skill。
 
 它更准确的定位是：
 
@@ -151,7 +151,7 @@ AGENTS.md 是共享文件，可以同时包含人写正文、其他工具区块�
 
 其核心原则是：
 
-> 有事实源的内容就全量重算；缺少事实源、必须扫描全树才能判断的问题才交给 Doctor。
+> 有事实源的内容就全量重算。缺少事实源、必须扫描全树才能判断的问题，在 2026-10-27 之前由 doctor 承担；该 skill 已删除，没有替代。
 
 ### 9. 完整的 Memory 生命周期
 
@@ -164,7 +164,7 @@ AGENTS.md 是共享文件，可以同时包含人写正文、其他工具区块�
 | reshape | 将已有 AGENTS.md 拆分成硬约束、索引和 Memory |
 | add-type | 为某一层增加新的 Memory Type |
 
-这些职责主要按“操作需要多大视野”划分：单节点操作保持局部，只有 Doctor 扫描全树。
+这些职责主要按“操作需要多大视野”划分：单节点操作保持局部，全树扫描曾经只由 doctor 承担。现行 skill 是 `edges-memory-init`、`edges-memory-ask`、`edges-memory-remember`、`edges-memory-add-type`。doctor 与 reshape 两行只保留删除前的职责。
 
 ### 10. 主动抵抗 Memory 膨胀
 
@@ -439,11 +439,9 @@ Memory + 文件系统 + 树的价值不只是简单、透明或不依赖向量�
 
 ## 参考实现
 
-- [Project Memory Protocol](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/references/PROTOCOL.md)
-- [Project Memory Layout](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/references/LAYOUT.md)
-- [project-memory-init](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-init/SKILL.md)
-- [project-memory-ask](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-ask/SKILL.md)
-- [project-memory-remember](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-remember/SKILL.md)
-- [project-memory-doctor](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-doctor/SKILL.md)
-- [project-memory-reshape](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-reshape/SKILL.md)
-- [project-memory-add-type](https://github.com/VirusPC/edges/blob/main/extensions/skills/project-memory-add-type/SKILL.md)
+- [Project Memory Protocol](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-init/references/PROTOCOL.md)
+- [Project Memory Layout](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-init/references/LAYOUT.md)
+- [edges-memory-init](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-init/SKILL.md)
+- [edges-memory-ask](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-ask/SKILL.md)
+- [edges-memory-remember](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-remember/SKILL.md)
+- [edges-memory-add-type](https://github.com/VirusPC/edges/blob/main/packages/skills/edges-memory-add-type/SKILL.md)

@@ -128,7 +128,7 @@
   - 把筛选维度只放进 metadata
   - 把设备名默认塞进 environment 且已有 tags 口
 - **来源**：Grok Bot，2026-10-24
-- **真源文件**：框架仓 `packages/skills/langfuse-local-agent-tracing/SKILL.md`（主入口 `langfuse-agent-tracing`；随 `@viruspc/edges` 分发。2026-10-25 前在本仓 `shared-extensions/skills/langfuse-agent-tracing/SKILL.md`）
+- **真源文件**：框架仓 `packages/skills/edges-langfuse-local-agent-tracing/SKILL.md`（主入口 `edges-langfuse-agent-tracing`；随 `@viruspc/edges` 分发。2026-10-25 前在本仓 `shared-extensions/skills/`，当时目录名尚未加 `edges-` 前缀）
 - **原话摘要**：tags是Langfuse的概念吗？ / meta data对我有什么用？ / 我觉得你需要在skills里面写清楚tags和metadata的配置。
 
 ### M09

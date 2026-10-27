@@ -16,6 +16,6 @@ peng cheng 定：临时 artifacts 后端本轮只做静态托管（TS；上传�
 
 **How to apply:**
 - 细聊：回传通道（webhook / deep link / client API）、鉴权与会话绑定、与现有 Copy JSON 导出格式兼容、失败回退仍可贴聊天。
-- **勿并卡：** `agent-clients-ux` in_progress「自建云服务器临时托管 artifacts」（静态托管 only）；`project-tasks-classify` / review-page（只渲 HTML）。
+- **勿并卡：** `agent-clients-ux` in_progress「自建云服务器临时托管 artifacts」（静态托管 only）；`edges-tasks-classify` / review-page（只渲 HTML）。
 - 交叉：评估 Agent Plugins 客户端支持（若相关）。
 - 未指派；派发默认 grill-with-docs。

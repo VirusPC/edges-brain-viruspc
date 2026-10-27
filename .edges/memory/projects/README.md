@@ -1,10 +1,10 @@
-<!-- project-memory-type:start -->
+<!-- edges-memory-type:start -->
 name: project
 module: memory
 writable: true
 gitignore: false
 format: ordinary
-<!-- project-memory-type:end -->
+<!-- edges-memory-type:end -->
 
 # PROJECT — 项目上下文
 
@@ -13,7 +13,7 @@ format: ordinary
 > 怎么写：正文先一句结论，再跟 `**Why:**`（为什么，便于以后判断边界情况）和 `**How to apply:**`（具体怎么做）。相对日期换成绝对日期。
 > 本文件只是索引，条目区块由脚本重算，正文写在 `projects/project_<slug>/index.md` 里。
 
-<!-- project-entries-local:start -->
+<!-- edges-entries-local:start -->
 ## 本层内容
 
 - [posts 对外展示，Astro 博客 + Actions CI](project_posts_public_astro_blog/INDEX.md) — posts 面向对外展示；后续以 posts 为数据用 Astro 搭博客，并用 GitHub Actions 在服务器做 CI
@@ -29,4 +29,4 @@ format: ordinary
 - [harness memory 消融不必日更全量](<project_harness_memory_ablation_cadence/INDEX.md>) — 规划 harness\-memory\-ablation 跑批时打开：题库与 memory 未大变时不要日更全量；大改/发版前跑正式 A/B，全量可周更或按里程碑
 - [Pi 沙箱不等于文件系统隔离](<project_pi_sandbox_not_fs_isolation/INDEX.md>) — 在 Pi 或本机 Agent 上跑实验/消融前打开：Pi 自带沙箱主要是本地执行权限，文件系统未真正隔离；要 FS 隔离再套 Docker/干净 worktree 或自托管 E2B
 - [minigtr 公网入口优先 Cloudflare Tunnel](<project_prefer_cloudflare_tunnel_over_nginx_minigtr/INDEX.md>) — 给 minigtr 上自托管 HTTP 服务做公网入口时打开：长期维护优先 Cloudflare Tunnel，不优先单独上 nginx 扛公网
-<!-- project-entries-local:end -->
+<!-- edges-entries-local:end -->
