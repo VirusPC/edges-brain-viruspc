@@ -15,7 +15,6 @@
 
 <!-- edges-local:start -->
 ## 本层系统维护信息
-- [技术阅读](<tech-reading/AGENTS.md>) — 记录所有技术阅读相关进展（论文、长文、官方文档、源码精读等）。看板管阅读工作项与进度；可读笔记仍可落 notes。
 - 框架任务系统的 memory 与 skills 在 [VirusPC/edges 的 `.edges/tasks/.edges`](https://github.com/VirusPC/edges/tree/main/.edges/tasks/.edges)。本目录不再保留那份副本。
 
 <!-- edges-local:end -->
