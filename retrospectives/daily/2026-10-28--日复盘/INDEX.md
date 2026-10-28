@@ -34,15 +34,14 @@
 
 ## 卡住了什么
 
-- 框架 README 新人安装改 `npx skills`：谈清了下一步，窗口内无卡无 PR（本篇补开跟踪卡）。
+- 框架 README 新人安装改 `npx skills`：窗口内谈过、代理取消后未落卡。审 #401 时用户否掉补开的跟踪卡——让 AI 安装 skill 即可，不把框架 README 改成以 `npx skills` 为主路径这件事单独跟踪，不保留该 backlog。
 - 「规范 skill」专卡：看板无同名卡；意图已被总入口收敛取代，不另开。推广主卡下旧子卡「按模块拆 skill（一模块一个）」仍 backlog，与「默认一个 edges 总入口」决定冲突——本篇仍不另开取消卡（与上条一致；看板清理可随审 #401 / 框架仓另议）。
 - minigtr UPS：已识别型号，正式 inventory 登记不在公开脑。
 - Langfuse 补扫：相对本 PR **无新漏记公开候选**；私人内容仍 0。
 
 ## 下次做什么
 
-- 审本 PR：三条 project 记忆、一张 README/`npx skills` 跟踪卡、本篇日复盘。
-- 框架仓落地 README 安装路径（本卡完成标准）。
+- 审本 PR：三条 project 记忆、本篇日复盘。README/`npx skills` 跟踪卡已按审阅删除，不在待合内容里。
 - 继续遵守：开 PR 不自动合；grill 前 ask、动手前 plan。
 
 ## 建议补充内容清单
@@ -50,7 +49,7 @@
 - 记忆（project）：随包 skill 默认一个 edges 总入口，特殊才拆。来自全栈 2026-10-27 grill / [#80](https://github.com/VirusPC/edges/pull/80)。写入：`.edges/memory/projects/project_edges_skill_default_one_entry/INDEX.md`。
 - 记忆（project）：合 PR 须经用户审，Agent 不自行 merge。来自全栈 2026-10-27「每次合并怎么都不让我审了」。写入：`.edges/memory/projects/project_pr_merge_needs_user_review/INDEX.md`。
 - 记忆（project）：grill 前先 memory ask，动手前先 html-plan。来自全栈 2026-10-27 连续纠正。写入：`.edges/memory/projects/project_grill_memory_ask_then_html_plan/INDEX.md`。
-- 任务（backlog，**漏记补开**）：框架 README 新人安装改为 npx skills。来自 Grok Bot 2026-10-28；窗口内代理取消后未落卡。写入：`.edges/tasks/_default/backlog/2026-10-28--框架-README-新人安装改为-npx-skills/INDEX.md`。
+- 不做：框架 README 新人安装改为 npx skills 的 backlog。审 #401 时用户否掉：让 AI 安装 skill 即可，不单独跟踪、也不改框架 README 主路径。原目录 `.edges/tasks/_default/backlog/2026-10-28--框架-README-新人安装改为-npx-skills/` 已删。
 - 不做：.harness→.edges / shared-extensions / edges-\* 硬切 / 0.4.x 发版 / workspace pin——对应 PR 已合。
 - 不做：agents/teams 模块——edges [#69](https://github.com/VirusPC/edges/pull/69) 已开卡。
 - 不做：「规范 skill」新卡——无独立需求正文；被总入口约定取代。
