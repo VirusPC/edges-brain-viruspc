@@ -35,6 +35,20 @@ python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/
 3. 对每一篇新文章写不超过 200 字的一段话摘要。和 AI Coding 相关时，再加一句话，写对研发的落地点或值得研究的方向。
 4. 用全部摘要写「本周风向」，放在文章最前。播客不是逐期来源；只有用户要求，或这一窗口有和 AI / Agent 强相关的一期时，在风向里点名一句并附链接。不要把播客 feed 加进 OPML，也不要为播客跑这个脚本。
 5. 按下面的模版保存 markdown。发布日倒序（新的在前）。链接必须是 feed、列表页、sitemap 或文章页里真实出现的地址；对不上就修，修不了就去掉。
+6. 非博客数据单独成节，放在「本周风向」之后、「文章总结列表」之前。没跑或被跳过的小节不要留空标题。
+
+## 非博客数据
+
+博客 OPML 仍是阅读器要导入的订阅真源。下面三项不是博客文章，不要写进「文章总结列表」。
+
+1. **GitHub Trending** 已在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，`feedOrigin` 为 `third-party-scrape-rss`）。条目没有发布日，脚本用 channel 的 `pubDate` 当快照日期，并且不按博客窗口裁掉。周报里单独写「GitHub Trending」，注明是第三方抓取、不是 GitHub 官方 RSS。
+2. **Artificial Analysis** 不是 RSS。跑 `python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`。密钥放在环境变量 `AA_API_KEY` 或 `ARTIFICIAL_ANALYSIS_API_KEY`，不要写进命令行或仓库。没有密钥时脚本退出码 0 并写出 `skipped`。展示数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。可选 MCP：`https://mcp.artificialanalysis.ai/mcp`。
+3. **LLM Arena** 没有公开 REST。跑 `python3 scripts/fetch_llm_arena.py --out /tmp/llm-arena.json`。它读 Hugging Face 数据集 `lmarena-ai/leaderboard-dataset`（默认 `text_style_control` / `latest` / `overall`），不是 OPML，不需要密钥。先 `pip install -r scripts/requirements-leaderboard.txt`。
+
+```bash
+python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json
+python3 scripts/fetch_llm_arena.py --out /tmp/llm-arena.json
+```
 
 ## 输出内容模版
 
@@ -47,6 +61,16 @@ python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/
 
 ## 本周风向：{{yyyy-MM-DD}}～{{yyyy-MM-DD}}
 {{本周风向}}
+
+## GitHub Trending（快照 {{yyyy-MM-DD}}）
+来源：mshibanami/GitHubTrendingRSS（第三方抓取 GitHub Trending，不是官方 RSS）。
+
+## 模型榜
+### Artificial Analysis
+数据来自 [Artificial Analysis](https://artificialanalysis.ai/)。
+
+### LLM Arena
+来源：Hugging Face 数据集 `lmarena-ai/leaderboard-dataset`（不是 RSS）。
 
 ## 文章总结列表
 {{ 文章总结1 }}

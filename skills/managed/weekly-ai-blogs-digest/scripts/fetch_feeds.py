@@ -247,19 +247,29 @@ def entry_link(entry: dict) -> str:
     return ""
 
 
-def parse_feed_bytes(payload: bytes) -> tuple[list[dict], str | None]:
+def _struct_date(parsed) -> str | None:
+    if not parsed:
+        return None
+    return f"{parsed.tm_year:04d}-{parsed.tm_mon:02d}-{parsed.tm_mday:02d}"
+
+
+def parse_feed_bytes(payload: bytes, *, fill_channel_date: bool = False) -> tuple[list[dict], str | None]:
     try:
         import feedparser
     except ImportError:
         raise SystemExit("缺少 feedparser。先执行: pip install -r scripts/requirements.txt")
     parsed = feedparser.parse(payload)
     title = ""
+    channel_date = None
     if getattr(parsed, "feed", None):
         title = plain_text(parsed.feed.get("title") or "")
+        channel_date = _struct_date(parsed.feed.get("published_parsed")) or _struct_date(parsed.feed.get("updated_parsed"))
     entries = []
     for entry in parsed.entries:
         link = entry_link(entry)
         day = entry_date(entry)
+        if not day and fill_channel_date:
+            day = channel_date
         if not link or not day:
             continue
         body = entry_body(entry)
@@ -301,12 +311,13 @@ def feed_report(feed: dict, meta_by_url: dict, timeout: int) -> dict:
         "oldest": None,
         "truncated": False,
         "stale": False,
+        "snapshot": source.get("dateMode") == "snapshot",
         "entries": [],
     }
     if error or not payload:
         return report
     try:
-        entries, feed_title = parse_feed_bytes(payload)
+        entries, feed_title = parse_feed_bytes(payload, fill_channel_date=report["snapshot"])
     except SystemExit:
         raise
     except Exception as exc:  # noqa: BLE001
@@ -324,6 +335,12 @@ def feed_report(feed: dict, meta_by_url: dict, timeout: int) -> dict:
 
 
 def mark_window(report: dict, since: str, until: str) -> None:
+    if report.get("snapshot"):
+        # 当日榜单没有文章发布日。保留整份快照，不按博客窗口裁掉。
+        report["entries_in_window"] = len(report.get("entries") or [])
+        report["stale"] = False
+        report["truncated"] = False
+        return
     newest = report.get("newest")
     oldest = report.get("oldest")
     if newest and newest < since:
@@ -479,6 +496,7 @@ def build_payload(reports: list[dict], meta: dict, since: str, until: str, elaps
                 "oldest": report["oldest"],
                 "truncated": report["truncated"],
                 "stale": report["stale"],
+                "snapshot": bool(report.get("snapshot")),
             }
         )
     items = dedupe_items(items)
@@ -591,6 +609,15 @@ def self_test() -> int:
     )
     undated_entries, _title = parse_feed_bytes(undated)
     assert undated_entries[0]["date"] == "2026-10-29", undated_entries
+    snapshot_feed = b"""<?xml version="1.0"?>
+    <rss version="2.0"><channel>
+      <title>Trending</title>
+      <pubDate>Sat, 31 Oct 2026 06:28:41 GMT</pubDate>
+      <item><title>owner/repo</title><link>https://github.com/owner/repo</link><description>a repo</description></item>
+    </channel></rss>"""
+    snap_entries, _title = parse_feed_bytes(snapshot_feed, fill_channel_date=True)
+    assert snap_entries[0]["date"] == "2026-10-31", snap_entries
+    assert parse_feed_bytes(snapshot_feed)[0] == []
     assert normalize_link("https://mp.weixin.qq.com/s?__biz=a&mid=1") != normalize_link("https://mp.weixin.qq.com/s?__biz=b&mid=2")
     assert normalize_link("https://example.com/a?utm_source=rss") == "example.com/a"
     assert "Hello world" in by_link["example.com/a"]["summary"]

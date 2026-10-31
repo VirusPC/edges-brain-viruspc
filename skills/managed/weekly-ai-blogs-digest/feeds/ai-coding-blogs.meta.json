@@ -747,6 +747,63 @@
         "note": "BestBlogs Wechat2RSS，对应用户给出的阿里技术。"
       },
       "notes": "2026-10-31 按用户截图加入。BestBlogs Wechat2RSS。"
+    },
+    {
+      "id": "github-trending-daily-all",
+      "title": "GitHub Trending（每日 / 全部）",
+      "group": "GitHub Trending",
+      "listUrls": [
+        "https://github.com/trending"
+      ],
+      "htmlUrl": "https://github.com/trending",
+      "xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "dateMode": "snapshot",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "不是博客，不适用 BestBlogs。"
+      },
+      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 页面生成，不是 GitHub 官方 RSS。2026-10-31 核对 channel pubDate 为当天。条目没有 pubDate，脚本用 channel 日期并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+    },
+    {
+      "id": "github-trending-daily-python",
+      "title": "GitHub Trending（每日 / Python）",
+      "group": "GitHub Trending",
+      "listUrls": [
+        "https://github.com/trending/python?since=daily"
+      ],
+      "htmlUrl": "https://github.com/trending/python?since=daily",
+      "xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/daily/python.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "dateMode": "snapshot",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "不是博客，不适用 BestBlogs。"
+      },
+      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 页面生成，不是 GitHub 官方 RSS。2026-10-31 核对 channel pubDate 为当天。条目没有 pubDate，脚本用 channel 日期并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+    },
+    {
+      "id": "github-trending-daily-typescript",
+      "title": "GitHub Trending（每日 / TypeScript）",
+      "group": "GitHub Trending",
+      "listUrls": [
+        "https://github.com/trending/typescript?since=daily"
+      ],
+      "htmlUrl": "https://github.com/trending/typescript?since=daily",
+      "xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/daily/typescript.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "dateMode": "snapshot",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "不是博客，不适用 BestBlogs。"
+      },
+      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 页面生成，不是 GitHub 官方 RSS。2026-10-31 核对 channel pubDate 为当天。条目没有 pubDate，脚本用 channel 日期并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
     }
   ]
 }

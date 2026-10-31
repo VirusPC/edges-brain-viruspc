@@ -2,7 +2,7 @@
 metadata:
   edges-type: task
   edges-task-project: default
-  edges-updated-at: '2026-10-31T17:30:00.000Z'
+  edges-updated-at: '2026-10-31T17:40:00.000Z'
   edges-title: AI资讯工作流改为 RSS 并优化数据格式与 token 对比
   edges-tasks-status: in_progress
   edges-task-priority: high
@@ -24,6 +24,7 @@ description: AI 资讯周报改为以自维护 OPML 的 RSS 为先，列表页�
 - `scripts/fetch_feeds.py` 读 OPML 与 meta，拉 feed，按日期过滤、去重，输出精简 JSON。
 - Skill 改为：跑脚本 → 正文太短或 feed 被截断再抓页面 → 按原模版写 `ai-news/`。播客仍只在风向里点名。
 - 用 2026-10-30 那期的窗口做一次对比，短记放在本目录 [`ab-2026-10-30.md`](ab-2026-10-30.md)。
+- OPML 增加「GitHub Trending」。Artificial Analysis 与 LLM Arena 不进 OPML，用 skill 目录里的两个脚本，周报单独成节。
 
 **完成标准：**
 - [x] OPML + meta 覆盖原列表里的博客。有 feed 的进 OPML，其余标明退路。

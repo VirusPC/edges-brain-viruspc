@@ -45,5 +45,10 @@
       <outline text="腾讯技术工程" title="腾讯技术工程" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml"/>
       <outline text="阿里技术" title="阿里技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml"/>
     </outline>
+    <outline text="GitHub Trending" title="GitHub Trending">
+      <outline text="GitHub Trending（每日 / 全部）" title="GitHub Trending（每日 / 全部）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml" htmlUrl="https://github.com/trending"/>
+      <outline text="GitHub Trending（每日 / Python）" title="GitHub Trending（每日 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/python.xml" htmlUrl="https://github.com/trending/python?since=daily"/>
+      <outline text="GitHub Trending（每日 / TypeScript）" title="GitHub Trending（每日 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=daily"/>
+    </outline>
   </body>
 </opml>

@@ -1,0 +1,2 @@
+# 17.x 能配 NumPy 1.26。pyarrow 26 需要 NumPy 2。
+pyarrow==17.0.0
