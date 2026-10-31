@@ -1,0 +1,2 @@
+-r inspect/requirements.txt
+-r harbor/requirements.txt

@@ -1,0 +1,17 @@
+{
+  "dataset": "memory-ablation/pipeline-smoke",
+  "items": [
+    {
+      "id": "M01", "case_id": "M01",
+      "input": {"question": "项目的发布分支是什么？"},
+      "expectedOutput": {"criteria": ["release/personal"], "violations": []},
+      "metadata": {"category": "memory-dependent"}
+    },
+    {
+      "id": "G01", "case_id": "G01",
+      "input": {"question": "2 + 2 等于多少？"},
+      "expectedOutput": {"criteria": ["4"], "violations": []},
+      "metadata": {"category": "memory-irrelevant"}
+    }
+  ]
+}

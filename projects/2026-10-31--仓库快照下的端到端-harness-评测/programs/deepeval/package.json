@@ -1,0 +1,8 @@
+{
+  "name": "edges-memory-ablation-deepeval",
+  "private": true,
+  "description": "Codex CLI for the independent DeepEval memory ablation example",
+  "dependencies": {
+    "@openai/codex": "0.156.1"
+  }
+}

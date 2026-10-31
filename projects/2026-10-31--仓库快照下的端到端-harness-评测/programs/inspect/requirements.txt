@@ -1,0 +1,2 @@
+inspect-ai==0.3.286
+inspect-swe==0.2.67
