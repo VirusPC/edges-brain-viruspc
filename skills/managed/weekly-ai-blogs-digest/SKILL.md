@@ -27,7 +27,8 @@ python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/
    - `thin` 为 true：feed 正文太短（纯文本短于 280 字）。再抓该 `link` 的文章页，只为补这一篇。
    - `sources` 里 `truncated` 为 true：feed 最旧一篇仍落在窗口内，早于它的文章可能被 feed 截掉。用该站列表页把窗口早段补上。
    - `sources` 里 `error` 非空：这一站的 feed 失败，改走 meta 里的退路。
-   - `fallbacks`：这些站没有可订 feed。按 notes 抓列表页；列表页只有壳、或打不开时，再看 sitemap 枚举链接（不要把「整站同一次生成」的 lastmod 当成发布日）；浏览器是最后一步。
+   - `feedOrigin` 以 `bestblogs-` 开头：这是 BestBlogs 的转换源（RSSHub、XGo.ing 或 Wechat2RSS），不是官网博客。先收 feed 里的条目。官网文章没出现在 JSON 里时，仍按该站 `fallback`（列表页）补。
+   - `fallbacks` 里 `role` 为 `only`：这些站没有可订 feed。按 notes 抓列表页；列表页只有壳、或打不开时，再看 sitemap 枚举链接（不要把「整站同一次生成」的 lastmod 当成发布日）；浏览器是最后一步。`role` 为 `backup` 的站已经有 feed，列表页只补 feed 没覆盖到的官网文章。
    - meta 的 notes 若写了「feed 会漏文」（目前是 Hugging Face），用该站列表页对标题，只补 JSON 里没有的链接。
 3. 对每一篇新文章写不超过 200 字的一段话摘要。和 AI Coding 相关时，再加一句话，写对研发的落地点或值得研究的方向。
 4. 用全部摘要写「本周风向」，放在文章最前。播客不是逐期来源；只有用户要求，或这一窗口有和 AI / Agent 强相关的一期时，在风向里点名一句并附链接。不要把播客 feed 加进 OPML，也不要为播客跑这个脚本。
@@ -74,7 +75,7 @@ python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/
 1. 网站链接必须真实有效。失效链接须修复或排除。
 2. 文章总结按发布日倒序。
 3. 优先用 feed 正文做摘要。只有 `thin`、feed 失败、feed 被截断，或该站在 `fallbacks` 里时，才抓列表页或文章页。
-4. 不把 RSSHub、Wechat2RSS、XGo.ing 或其他第三方转换源写进 OPML 当默认订阅。
+4. 没有原生 feed、但 BestBlogs 对上了转换源时，把该 `xmlUrl` 写进 OPML，`feedOrigin` 标成 `bestblogs-rsshub`、`bestblogs-xgo` 或 `bestblogs-wechat2rss`，并保留列表页退路。没有 BestBlogs 命中的站继续只走列表页。
 
 ## 参考播客列表（可选信源）
 

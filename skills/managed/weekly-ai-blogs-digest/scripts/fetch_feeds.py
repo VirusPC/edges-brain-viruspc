@@ -31,7 +31,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlencode, urlsplit
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -97,13 +97,37 @@ def host_of(url: str) -> str:
     return host
 
 
+_TRACKING_KEYS = {
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_term",
+    "utm_content",
+    "utm_id",
+    "fbclid",
+    "gclid",
+    "mc_cid",
+    "mc_eid",
+    "ref",
+    "ref_src",
+}
+
+
 def normalize_link(url: str) -> str:
     parts = urlsplit(url.strip())
     host = parts.netloc.lower()
     if host.startswith("www."):
         host = host[4:]
     path = parts.path.rstrip("/")
-    return host + path
+    query = [
+        (key, value)
+        for key, value in parse_qsl(parts.query, keep_blank_values=True)
+        if key.lower() not in _TRACKING_KEYS and not key.lower().startswith("utm_")
+    ]
+    query.sort()
+    encoded = urlencode(query)
+    base = host + path
+    return base + ("?" + encoded if encoded else "")
 
 
 def load_opml(path: Path) -> list[dict]:
@@ -339,14 +363,16 @@ def dedupe_items(items: list[dict]) -> list[dict]:
 def fallback_rows(meta: dict) -> list[dict]:
     rows = []
     for source in meta["sources"]:
-        if source.get("xmlUrl"):
+        fallback = source.get("fallback")
+        if not fallback:
             continue
         rows.append(
             {
                 "id": source["id"],
                 "title": source.get("title") or source["id"],
                 "listUrls": source.get("listUrls") or [],
-                "fallback": source.get("fallback"),
+                "fallback": fallback,
+                "role": "backup" if source.get("xmlUrl") else "only",
                 "notes": source.get("notes") or "",
             }
         )
@@ -425,16 +451,20 @@ def build_payload(reports: list[dict], meta: dict, since: str, until: str, elaps
     sources = []
     feed_bytes = 0
     errors = 0
+    meta_by_id = {source["id"]: source for source in meta["sources"]}
     for report in reports:
         feed_bytes += report["bytes"]
         if report["error"]:
             errors += 1
         for entry in report["entries"]:
             items.append(to_item(entry, report["id"]))
+        meta_source = meta_by_id.get(report["id"], {})
         sources.append(
             {
                 "id": report["id"],
                 "xmlUrl": report["xmlUrl"],
+                "feedOrigin": meta_source.get("feedOrigin"),
+                "fallback": meta_source.get("fallback"),
                 "bytes": report["bytes"],
                 "elapsed_ms": report["elapsed_ms"],
                 "error": report["error"],
@@ -547,6 +577,8 @@ def self_test() -> int:
     by_link = {normalize_link(item["link"]): item for item in items}
     assert by_link["example.com/a"]["thin"] is False
     assert by_link["example.com/thin"]["thin"] is True
+    assert normalize_link("https://mp.weixin.qq.com/s?__biz=a&mid=1") != normalize_link("https://mp.weixin.qq.com/s?__biz=b&mid=2")
+    assert normalize_link("https://example.com/a?utm_source=rss") == "example.com/a"
     assert "Hello world" in by_link["example.com/a"]["summary"]
     assert "<b>" not in by_link["example.com/a"]["summary"]
 

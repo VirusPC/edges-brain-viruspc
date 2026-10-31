@@ -1,7 +1,7 @@
 {
   "version": 1,
   "checkedAt": "2026-10-31",
-  "policy": "OPML 只收录阅读器能导入的真实 feed。没有可用 feed、或 feed 已过期的站点只写在本文件并标明 fallback。RSSHub、Wechat2RSS、XGo.ing 以及其他第三方转换不做默认订阅。",
+  "policy": "OPML 收录阅读器能导入的 feed。优先用站点原生 RSS/Atom。没有原生 feed 时，订 BestBlogs 对上的转换源（RSSHub、XGo.ing、Wechat2RSS），并保留列表页退路。BestBlogs 没有命中的站只写在本文件，fallback 为 list-page。",
   "bestblogsLookup": {
     "repo": "https://github.com/ginobefun/BestBlogs",
     "files": [
@@ -18,20 +18,20 @@
   "sources": [
     {
       "id": "claude-articles",
-      "title": "Claude articles",
+      "title": "Anthropic News",
       "listUrls": [
         "https://claude.com/blog"
       ],
       "htmlUrl": "https://claude.com/resources/articles",
-      "xmlUrl": null,
-      "feedOrigin": "none",
+      "xmlUrl": "https://rsshub.bestblogs.dev/anthropic/news",
+      "feedOrigin": "bestblogs-rsshub",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://rsshub.bestblogs.dev/anthropic/news",
-        "adopted": false,
-        "note": "命中的是 RSSHub 转换源，不作为默认。"
+        "adopted": true,
+        "note": "BestBlogs RSSHub 转换源 rsshub.bestblogs.dev/anthropic/news。2026-10-31 用户确认订入。不是 claude.com 官网文章，列表页仍是退路。"
       },
-      "notes": "claude.com/blog 会跳到 /resources/articles。站点 sitemap 有文章 URL，但没有 lastmod，不能用来卡日期。退路是抓列表页；列表若只有壳再用浏览器。"
+      "notes": "无原生 feed。订的是 BestBlogs 的 RSSHub Anthropic News，不是 claude.com/resources/articles。官网文章没出现在 feed 里时，仍抓列表页；列表若只有壳再用浏览器。"
     },
     {
       "id": "anthropic-engineering",
@@ -86,59 +86,59 @@
     },
     {
       "id": "manus",
-      "title": "Manus Blog",
+      "title": "ManusAI",
       "listUrls": [
         "https://manus.im/blog"
       ],
       "htmlUrl": "https://manus.im/blog",
-      "xmlUrl": null,
-      "feedOrigin": "none",
+      "xmlUrl": "https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab",
+      "feedOrigin": "bestblogs-xgo",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab",
-        "adopted": false,
-        "note": "只有 XGo.ing 的推特转换，不是博客，不订。"
+        "adopted": true,
+        "note": "BestBlogs 的 XGo.ing 推特转换（ManusAI）。2026-10-31 用户确认订入。不是 manus.im 博客，列表页仍是退路。"
       },
-      "notes": "无原生 feed。sitemap 没有 lastmod。退路是列表页。"
+      "notes": "无原生博客 feed。订的是 XGo.ing 推特。官网博客文章用列表页补。sitemap 没有 lastmod。"
     },
     {
       "id": "cursor",
-      "title": "Cursor Blog",
+      "title": "Cursor",
       "listUrls": [
         "https://cursor.com/cn/blog",
         "https://cursor.com/blog"
       ],
       "htmlUrl": "https://cursor.com/blog",
-      "xmlUrl": null,
-      "feedOrigin": "native-stale",
+      "xmlUrl": "https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960",
+      "feedOrigin": "bestblogs-xgo",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960",
-        "adopted": false,
-        "note": "只有 XGo.ing 的推特转换，不是博客，不订。"
+        "adopted": true,
+        "note": "BestBlogs 的 XGo.ing 推特转换（Cursor）。2026-10-31 用户确认订入。不是 cursor.com/blog，列表页仍是退路。"
       },
-      "notes": "存在 https://cursor.com/atom.xml，但最新一条停在 2024-11-11，不能代表现在的博客，所以不写入 OPML。sitemap 的 lastmod 是同一次生成时间，不能当发布日。退路是列表页。"
+      "notes": "https://cursor.com/atom.xml 最新一条停在 2024-11-11，不订那份。改订 XGo.ing 推特。官网博客仍走列表页。sitemap 的 lastmod 不是发布日。"
     },
     {
       "id": "cognition",
-      "title": "Cognition Blog",
+      "title": "Cognition",
       "listUrls": [
         "https://cognition.ai/blog/1"
       ],
       "htmlUrl": "https://cognition.com/blog",
-      "xmlUrl": null,
+      "xmlUrl": "https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7",
       "articleHosts": [
         "cognition.com",
         "cognition.ai"
       ],
-      "feedOrigin": "none",
+      "feedOrigin": "bestblogs-xgo",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7",
-        "adopted": false,
-        "note": "只有 XGo.ing 的推特转换，不是博客，不订。"
+        "adopted": true,
+        "note": "BestBlogs 的 XGo.ing 推特转换（Cognition）。2026-10-31 用户确认订入。不是 cognition.com/blog，列表页仍是退路。"
       },
-      "notes": "cognition.ai/blog/1 会跳到 cognition.com/blog。无原生 feed。sitemap 的 lastmod 挤在少数几天，不像发布日。退路是列表页。"
+      "notes": "cognition.ai/blog/1 会跳到 cognition.com/blog，无原生 feed。订的是 XGo.ing 推特。官网博客文章用列表页补。"
     },
     {
       "id": "langchain",
@@ -210,20 +210,20 @@
     },
     {
       "id": "qwen-research",
-      "title": "Qwen Research",
+      "title": "Qwen",
       "listUrls": [
         "https://qwen.ai/research"
       ],
       "htmlUrl": "https://qwen.ai/research",
-      "xmlUrl": null,
-      "feedOrigin": "none",
+      "xmlUrl": "https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d",
+      "feedOrigin": "bestblogs-xgo",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d",
-        "adopted": false,
-        "note": "只有 XGo.ing 的推特转换，不是研究博客，不订。"
+        "adopted": true,
+        "note": "BestBlogs 的 XGo.ing 推特转换（Qwen）。2026-10-31 用户确认订入。不是 qwen.ai/research，列表页仍是退路。"
       },
-      "notes": "研究页是前端渲染，/rss.xml 仍是 HTML。退路是列表页，只有壳再用浏览器。"
+      "notes": "研究页没有原生 feed。订的是 XGo.ing 推特。官网研究列表仍走列表页；页面是前端渲染，只有壳再用浏览器。"
     },
     {
       "id": "huggingface",
@@ -464,23 +464,23 @@
     },
     {
       "id": "kimi",
-      "title": "Kimi Blog",
+      "title": "月之暗面 Kimi",
       "listUrls": [
         "https://www.kimi.com/blog/"
       ],
       "htmlUrl": "https://www.kimi.com/en/blog/",
-      "xmlUrl": null,
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml",
       "articleHosts": [
         "kimi.com"
       ],
-      "feedOrigin": "none",
+      "feedOrigin": "bestblogs-wechat2rss",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml",
-        "adopted": false,
-        "note": "命中的是微信公众号转换源，不是 kimi.com 研究博客，不订。"
+        "adopted": true,
+        "note": "BestBlogs 的 Wechat2RSS 公众号转换。2026-10-31 用户确认订入。不是 kimi.com 研究博客，列表页仍是退路。"
       },
-      "notes": "kimi.com/blog 与 /en/blog 都没有 alternate。sitemap 只列了产品页。退路是英文博客列表页。"
+      "notes": "kimi.com/blog 没有 alternate。订的是微信公众号转换。英文研究博客仍走 https://www.kimi.com/en/blog/ 。"
     },
     {
       "id": "fsck",
@@ -590,25 +590,25 @@
     },
     {
       "id": "minimax",
-      "title": "MiniMax Blog",
+      "title": "MiniMax 稀宇科技",
       "listUrls": [
         "https://minimaxi.com/blog"
       ],
       "htmlUrl": "https://www.minimax.io/blog",
-      "xmlUrl": null,
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml",
       "articleHosts": [
         "minimaxi.com",
         "minimax.cn",
         "minimax.io"
       ],
-      "feedOrigin": "none",
+      "feedOrigin": "bestblogs-wechat2rss",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml",
-        "adopted": false,
-        "note": "命中的是微信公众号转换源，不是官网博客，不订。"
+        "adopted": true,
+        "note": "BestBlogs 的 Wechat2RSS 公众号转换。2026-10-31 用户确认订入。不是 minimax 官网博客，列表页仍是退路。"
       },
-      "notes": "minimaxi.com/blog 会跳到 minimax.cn/blog，英文站在 minimax.io/blog。都没有 feed。sitemap 只有 /blog 索引、没有文章。退路是列表页。"
+      "notes": "minimaxi.com/blog 会跳到 minimax.cn/blog，无原生 feed。订的是微信公众号转换。官网博客仍走列表页。"
     }
   ]
 }

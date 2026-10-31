@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### weekly-ai-blogs-digest
 
-- **资讯改为 RSS 优先：** 博客订阅改到 `skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`（阅读器可导入）。没有可用 feed 的站只写在 `ai-coding-blogs.meta.json`，标明列表页退路；RSSHub 等转换源不进 OPML。`scripts/fetch_feeds.py` 按日期过滤并输出精简 JSON。`ai-news/` 的模版不变。2026-10-30 窗口的覆盖和体积对比记在对应任务卡。
+- **资讯改为 RSS 优先：** 博客订阅改到 `skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`（阅读器可导入）。原生 feed 优先。没有原生 feed 时，BestBlogs 对上的 RSSHub、XGo.ing、Wechat2RSS 也写入 OPML，并在 meta 里留列表页退路。BestBlogs 没有命中的站只写在 `ai-coding-blogs.meta.json`。`scripts/fetch_feeds.py` 按日期过滤并输出精简 JSON。`ai-news/` 的模版不变。2026-10-30 窗口的覆盖和体积对比记在对应任务卡。
 
 ### 个人仓
 
