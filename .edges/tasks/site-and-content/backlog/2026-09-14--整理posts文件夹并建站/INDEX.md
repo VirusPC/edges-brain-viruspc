@@ -9,8 +9,9 @@ metadata:
   edges-agent-client: cursor
   edges-username: 任务记录员
   edges-email: grok-bot@users.noreply.github.com
-  edges-updated-at: "2026-09-17T14:09:12.356Z"
+  edges-updated-at: '2026-10-31T07:29:48.545Z'
   edges-task-project: site-and-content
+  edges-task-priority: high
 ---
 
 整理 `knowledge/posts` 文件夹，并据此建站。
@@ -22,3 +23,5 @@ posts 要对外展示，但目录和成稿还没整理到能喂站点。已有 b
 - 先整理 posts：哪些能公开、命名/frontmatter、和 notes 的边界（AI 不得自动改 posts 的硬约束仍在仓根 AGENTS.md）。
 - 建站执行与 `2026-09-10--posts用Astro搭博客与CI.md` 合并或先后：Astro 吃整理后的 posts。
 - 未指派。派发时默认先 grill-with-docs。
+
+2026-10-31 用户高优要求 edges/notes/posts 对外博客展示；本卡抬高优，范围 grill 时扩到 notes/edges。
