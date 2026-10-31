@@ -12,4 +12,4 @@
 - [paper-10-questions](paper-10-questions/SKILL.md) — 当用户想要系统性地阅读、分析、审阅、总结或批判一篇学术论文时使用。应用沈向洋的「论文十问」做结构化分析。
 - [summarize-ai-article](summarize-ai-article/SKILL.md) — 当用户想要快速理解一篇 AI 技术文章的核心时使用：问题、解法、效果，加上后续行动建议和与最新进展的关联。要落盘的完整笔记改用 summarize-ai-article-ultra。
 - [summarize-ai-article-ultra](summarize-ai-article-ultra/SKILL.md) — 当用户想把一篇文章或页面整理成可归档的中文结构化笔记时使用。按 Facts、Insights、Actions 组织，输出 `YYYY-MM-DD--主题简述.md`。
-- [weekly-ai-blogs-digest](weekly-ai-blogs-digest/SKILL.md) — 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域各大博客的新文章时使用：逐站收集、逐篇 200 字内摘要、总结技术风向，并按固定模版输出 markdown。
+- [weekly-ai-blogs-digest](weekly-ai-blogs-digest/SKILL.md) — 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域各大博客的新文章时使用。订阅真源是可导入阅读器的 OPML，脚本先拉 RSS/Atom，再做 200 字内摘要并按固定模版输出 markdown。

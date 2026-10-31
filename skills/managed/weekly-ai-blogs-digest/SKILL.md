@@ -1,15 +1,41 @@
 ---
 name: weekly-ai-blogs-digest
-description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域各大博客的新文章时使用此技能。会逐站收集新发布链接、逐篇做 200 字内摘要、总结整体技术风向，并按固定模版输出为 markdown 文件。在以下短语触发："本周 AI 资讯"、"汇总一下 AI 博客"、"weekly AI digest"、"看看这周 AI Coding 有什么新东西"。不要为单篇文章总结（用 summarize-ai-article）或非博客类信源触发。
+description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域各大博客的新文章时使用此技能。先读 OPML 订阅并用脚本拉 RSS/Atom，再对条目做 200 字内摘要、总结技术风向，并按固定模版输出为 markdown。在以下短语触发："本周 AI 资讯"、"汇总一下 AI 博客"、"weekly AI digest"、"看看这周 AI Coding 有什么新东西"。不要为单篇文章总结（用 summarize-ai-article）或非博客类信源触发。
 ---
 
+## 订阅从哪来
+
+博客订阅的真源是 [`feeds/ai-coding-blogs.opml`](feeds/ai-coding-blogs.opml)，阅读器可以直接导入。Agent 用的退路、BestBlogs 对照和备注在 [`feeds/ai-coding-blogs.meta.json`](feeds/ai-coding-blogs.meta.json)。维护规则见 [`feeds/README.md`](feeds/README.md)。
+
+不要再按一份写死的首页 URL 列表逐站爬。OPML 里没有的站，以 meta 的 `fallback` 为准。
+
 ## 任务执行流程
-1. 对于给定的每个blog网站，收集过去一段时间（时间范围默认取过去一周，不含当天）新发布的文章链接。
-2. 对每一篇新发布的文章，分别进行不超过200字、突出重点的摘要汇总。. 如果和AI Coding相关，则增加一句话总结对于研发的落地点或值得研究的方向
-3. 对所有文章的摘要汇总，总结这段时间的技术风向，插到文章最前。
-4. 讲结果按格式要求保存到markdown文件里
+
+生成日记为 D。覆盖窗口是 D-7 到 D-1（含两端，不含 D）。用户指定了别的日期就用用户的。
+
+1. 拉 feed。在本 skill 目录执行：
+
+```bash
+pip install -r scripts/requirements.txt
+python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/ai-coding-feeds.json
+```
+
+日期显式传入，不要依赖跑脚本那台机器的时区。脚本读 OPML 和 meta，下载 feed，按发布日过滤、按链接去重，写出紧凑 JSON。每条只有 `title`、`date`、`link`、`summary`、`source`、`thin`。
+
+2. 读 JSON，不要把原始 feed 再塞进上下文。
+   - `summary` 够写摘要且 `thin` 为 false：直接用 feed 正文，不要再抓文章页。
+   - `thin` 为 true：feed 正文太短（纯文本短于 280 字）。再抓该 `link` 的文章页，只为补这一篇。
+   - `sources` 里 `truncated` 为 true：feed 最旧一篇仍落在窗口内，早于它的文章可能被 feed 截掉。用该站列表页把窗口早段补上。
+   - `sources` 里 `error` 非空：这一站的 feed 失败，改走 meta 里的退路。
+   - `fallbacks`：这些站没有可订 feed。按 notes 抓列表页；列表页只有壳、或打不开时，再看 sitemap 枚举链接（不要把「整站同一次生成」的 lastmod 当成发布日）；浏览器是最后一步。
+   - meta 的 notes 若写了「feed 会漏文」（目前是 Hugging Face），用该站列表页对标题，只补 JSON 里没有的链接。
+3. 对每一篇新文章写不超过 200 字的一段话摘要。和 AI Coding 相关时，再加一句话，写对研发的落地点或值得研究的方向。
+4. 用全部摘要写「本周风向」，放在文章最前。播客不是逐期来源；只有用户要求，或这一窗口有和 AI / Agent 强相关的一期时，在风向里点名一句并附链接。不要把播客 feed 加进 OPML，也不要为播客跑这个脚本。
+5. 按下面的模版保存 markdown。发布日倒序（新的在前）。链接必须是 feed、列表页、sitemap 或文章页里真实出现的地址；对不上就修，修不了就去掉。
 
 ## 输出内容模版
+
+文件名：`ai-news/YYYY-MM-DD-ai-coding-news.md`（日期是生成日 D）。写完后更新 [`ai-news/README.md`](../../../ai-news/README.md) 的索引。
 
 ### 文章整体框架
 
@@ -28,6 +54,7 @@ description: 当用户想要汇总一段时间内（默认过去一周）AI / AI
 ```
 
 ### 单篇文章总结模版
+
 ```md
 ### {{标题}} - {{yyyy-MM-DD}}
 
@@ -35,54 +62,19 @@ description: 当用户想要汇总一段时间内（默认过去一周）AI / AI
 
 > 原始链接：{{}}
 ```
+
 内容总结要求：
-1. 200字以内
+
+1. 200 字以内
 2. 一段话内讲完
-3. 如果和AI Coding相关，则增加一句话总结对于研发的落地点或值得研究的方向。 
+3. 如果和 AI Coding 相关，则增加一句话总结对于研发的落地点或值得研究的方向。
 
 ## 强制要求
 
-1. 网站链接**必须**确保真实有效。如果不存在，请尝试修复。
-2. 文章总结按时间排序 
-
-## 参考博客网址列表
-```md
-https://claude.com/blog
-https://www.anthropic.com/engineering
-https://openai.com/zh-Hans-CN/news/
-https://blog.google/technology/ai/
-https://manus.im/blog
-https://cursor.com/cn/blog
-https://cognition.ai/blog/1
-https://blog.langchain.com/
-https://www.trae.ai/blog
-https://qoder.com/blog
-https://www.codebuddy.ai/blog
-https://qwen.ai/research
-https://huggingface.co/blog
-https://aws.amazon.com/cn/blogs/machine-learning/
-https://sankalp.bearblog.dev/
-https://www.datacamp.com/blog/category/ai
-https://ampcode.com/chronicle
-https://latitude.so/blog
-https://lovable.dev/blog
-https://kiro.dev/blog/
-https://www.philschmid.de/
-https://goose-docs.ai/blog/
-https://zed.dev/blog
-https://roocode.com/blog
-https://www.coderabbit.ai/blog
-https://www.warp.dev/blog
-https://www.kimi.com/blog/
-https://blog.fsck.com/
-https://www.trychroma.com/research
-https://baoyu.io/translations/2026-05-10/akshay-pachaar-2041146899319971922
-https://antigravity.google/blog
-https://jxnl.co/writing/#business-and-product
-https://baoyu.io/
-https://lucumr.pocoo.org/
-https://minimaxi.com/blog
-```
+1. 网站链接必须真实有效。失效链接须修复或排除。
+2. 文章总结按发布日倒序。
+3. 优先用 feed 正文做摘要。只有 `thin`、feed 失败、feed 被截断，或该站在 `fallbacks` 里时，才抓列表页或文章页。
+4. 不把 RSSHub、Wechat2RSS、XGo.ing 或其他第三方转换源写进 OPML 当默认订阅。
 
 ## 参考播客列表（可选信源）
 

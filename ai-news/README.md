@@ -2,6 +2,8 @@
 
 每期周报以「周报生成日」命名，保存为 `YYYY-MM-DD-ai-coding-news.md`；正文覆盖此前一周、**不含生成当天**的官方博客文章，按发布日期倒序排列。
 
+订阅真源是 [`skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml)，阅读器可直接导入。没有可用 feed 的站写在同目录的 [`ai-coding-blogs.meta.json`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.meta.json)。拉 feed 用 [`scripts/fetch_feeds.py`](../skills/managed/weekly-ai-blogs-digest/scripts/fetch_feeds.py)。
+
 ## 已归档周报
 - [2026-10-30 AI Coding 资讯](2026-10-30-ai-coding-news.md) — 覆盖 2026-10-23～2026-10-29，收录 66 篇文章。
 - [2026-10-23 AI Coding 资讯](2026-10-23-ai-coding-news.md) — 覆盖 2026-10-16～2026-10-22，收录 76 篇文章。
@@ -22,6 +24,6 @@
 ## 维护约定
 
 1. 周报生成后直接提交到本目录，并更新本索引。
-2. 文章仅收录日期与链接均在官方具体页面、RSS 或 sitemap 中确认的内容；失效链接须修复或排除。
-3. 每篇摘要不超过 200 字；AI Coding 相关条目附带大前端研发落点。
-4. 当前参考博客列表与执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。
+2. 文章优先来自 OPML 里的 feed。feed 正文够写摘要就不要再抓原文。feed 太短、失败、被截断，或该站没有 feed 时，再用列表页、sitemap 或文章页核对日期和链接。失效链接须修复或排除。
+3. 每篇摘要不超过 200 字；AI Coding 相关条目附带研发落点。
+4. 执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。播客不进 OPML，只在风向里按需点名。

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### weekly-ai-blogs-digest
+
+- **资讯改为 RSS 优先：** 博客订阅改到 `skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`（阅读器可导入）。没有可用 feed 的站只写在 `ai-coding-blogs.meta.json`，标明列表页退路；RSSHub 等转换源不进 OPML。`scripts/fetch_feeds.py` 按日期过滤并输出精简 JSON。`ai-news/` 的模版不变。2026-10-30 窗口的覆盖和体积对比记在对应任务卡。
+
 ### 个人仓
 
 - **活标记与技能名对齐 edges-*：** 框架仓硬切后，本仓活索引里的 `project-entries-*` 改为 `edges-entries-*`，`project-memory-type` 改为 `edges-memory-type`。仍在用的技能引用改为 `edges-memory-*`、`edges-conversation-to-*`、`edges-tasks-classify`、`edges-langfuse-*-tracing`。本仓 `skills/managed/` 没有这些 skill 的副本。doctor 与 reshape 没有替代。日期笔记、日复盘和本文件更早条目里的历史技能名保留。

@@ -1,0 +1,614 @@
+{
+  "version": 1,
+  "checkedAt": "2026-10-31",
+  "policy": "OPML 只收录阅读器能导入的真实 feed。没有可用 feed、或 feed 已过期的站点只写在本文件并标明 fallback。RSSHub、Wechat2RSS、XGo.ing 以及其他第三方转换不做默认订阅。",
+  "bestblogsLookup": {
+    "repo": "https://github.com/ginobefun/BestBlogs",
+    "files": [
+      "BestBlogs_RSS_Articles.opml",
+      "BestBlogs_RSS_ALL.opml"
+    ],
+    "checkedAt": "2026-10-31"
+  },
+  "summary": {
+    "thinChars": 280,
+    "maxChars": 1200,
+    "note": "纯文本短于 thinChars 时 item.thin 为 true，摘要阶段再抓原文。更长的正文裁到 maxChars。"
+  },
+  "sources": [
+    {
+      "id": "claude-articles",
+      "title": "Claude articles",
+      "listUrls": [
+        "https://claude.com/blog"
+      ],
+      "htmlUrl": "https://claude.com/resources/articles",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://rsshub.bestblogs.dev/anthropic/news",
+        "adopted": false,
+        "note": "命中的是 RSSHub 转换源，不作为默认。"
+      },
+      "notes": "claude.com/blog 会跳到 /resources/articles。站点 sitemap 有文章 URL，但没有 lastmod，不能用来卡日期。退路是抓列表页；列表若只有壳再用浏览器。"
+    },
+    {
+      "id": "anthropic-engineering",
+      "title": "Anthropic Engineering",
+      "listUrls": [
+        "https://www.anthropic.com/engineering"
+      ],
+      "htmlUrl": "https://www.anthropic.com/engineering",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "工程博客没有 alternate feed，常见 /rss.xml 为 404。退路是列表页。"
+    },
+    {
+      "id": "openai-news",
+      "title": "OpenAI News",
+      "listUrls": [
+        "https://openai.com/zh-Hans-CN/news/"
+      ],
+      "htmlUrl": "https://openai.com/news/",
+      "xmlUrl": "https://openai.com/news/rss.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://openai.com/news/rss.xml",
+        "adopted": true,
+        "note": "与原生 feed 相同。"
+      },
+      "notes": "列表页是中文 news，feed 是英文 news RSS。周报里的 openai.com/index/ 链接来自这份 feed。全文历史都在 feed 里，脚本会按日期裁剪后再送给模型。"
+    },
+    {
+      "id": "google-ai",
+      "title": "Google AI Blog",
+      "listUrls": [
+        "https://blog.google/technology/ai/"
+      ],
+      "htmlUrl": "https://blog.google/innovation-and-ai/technology/ai/",
+      "xmlUrl": "https://blog.google/innovation-and-ai/technology/ai/rss/",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://blog.google/rss/",
+        "adopted": false,
+        "note": "BestBlogs 订的是整个 The Keyword。这里改用 AI 分类 feed，避免把非 AI 文章灌进周报。"
+      },
+      "notes": "分类页 /technology/ai/rss/ 会跳到这条分类 feed。research.google 是另一份博客，不在原列表里，不订。"
+    },
+    {
+      "id": "manus",
+      "title": "Manus Blog",
+      "listUrls": [
+        "https://manus.im/blog"
+      ],
+      "htmlUrl": "https://manus.im/blog",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab",
+        "adopted": false,
+        "note": "只有 XGo.ing 的推特转换，不是博客，不订。"
+      },
+      "notes": "无原生 feed。sitemap 没有 lastmod。退路是列表页。"
+    },
+    {
+      "id": "cursor",
+      "title": "Cursor Blog",
+      "listUrls": [
+        "https://cursor.com/cn/blog",
+        "https://cursor.com/blog"
+      ],
+      "htmlUrl": "https://cursor.com/blog",
+      "xmlUrl": null,
+      "feedOrigin": "native-stale",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960",
+        "adopted": false,
+        "note": "只有 XGo.ing 的推特转换，不是博客，不订。"
+      },
+      "notes": "存在 https://cursor.com/atom.xml，但最新一条停在 2024-11-11，不能代表现在的博客，所以不写入 OPML。sitemap 的 lastmod 是同一次生成时间，不能当发布日。退路是列表页。"
+    },
+    {
+      "id": "cognition",
+      "title": "Cognition Blog",
+      "listUrls": [
+        "https://cognition.ai/blog/1"
+      ],
+      "htmlUrl": "https://cognition.com/blog",
+      "xmlUrl": null,
+      "articleHosts": [
+        "cognition.com",
+        "cognition.ai"
+      ],
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7",
+        "adopted": false,
+        "note": "只有 XGo.ing 的推特转换，不是博客，不订。"
+      },
+      "notes": "cognition.ai/blog/1 会跳到 cognition.com/blog。无原生 feed。sitemap 的 lastmod 挤在少数几天，不像发布日。退路是列表页。"
+    },
+    {
+      "id": "langchain",
+      "title": "LangChain Blog",
+      "listUrls": [
+        "https://blog.langchain.com/"
+      ],
+      "htmlUrl": "https://www.langchain.com/blog",
+      "xmlUrl": "https://www.langchain.com/blog/rss.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://blog.langchain.dev/rss/",
+        "adopted": false,
+        "note": "2026-10-31 这份旧地址解析不到条目。现用 www.langchain.com/blog/rss.xml。"
+      },
+      "notes": "blog.langchain.com 会跳到 www.langchain.com/blog。"
+    },
+    {
+      "id": "trae",
+      "title": "TRAE Blog",
+      "listUrls": [
+        "https://www.trae.ai/blog"
+      ],
+      "htmlUrl": "https://www.trae.ai/blog",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "页面上的 /rss.xml、/atom.xml、/rss.json 都返回 HTML 壳，不是 feed。sitemap lastmod 是同一次生成时间。退路是列表页，壳页面再交给浏览器。"
+    },
+    {
+      "id": "qoder",
+      "title": "Qoder Blog",
+      "listUrls": [
+        "https://qoder.com/blog"
+      ],
+      "htmlUrl": "https://qoder.com/blog",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "无原生 feed。sitemap 里有 /en/blog 与 /zh/blog 文章且 lastmod 天数较散，但未核对是否等于发布日，不自动当 feed 用。退路是列表页。"
+    },
+    {
+      "id": "codebuddy",
+      "title": "CodeBuddy Blog",
+      "listUrls": [
+        "https://www.codebuddy.ai/blog"
+      ],
+      "htmlUrl": "https://www.codebuddy.ai/blog",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "2026-10-31 /blog/rss.xml 返回 HTML；站点多次超时。退路是列表页，打不开再用浏览器。"
+    },
+    {
+      "id": "qwen-research",
+      "title": "Qwen Research",
+      "listUrls": [
+        "https://qwen.ai/research"
+      ],
+      "htmlUrl": "https://qwen.ai/research",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d",
+        "adopted": false,
+        "note": "只有 XGo.ing 的推特转换，不是研究博客，不订。"
+      },
+      "notes": "研究页是前端渲染，/rss.xml 仍是 HTML。退路是列表页，只有壳再用浏览器。"
+    },
+    {
+      "id": "huggingface",
+      "title": "Hugging Face Blog",
+      "listUrls": [
+        "https://huggingface.co/blog"
+      ],
+      "htmlUrl": "https://huggingface.co/blog",
+      "xmlUrl": "https://huggingface.co/blog/feed.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://huggingface.co/blog/feed.xml",
+        "adopted": true,
+        "note": "与原生 feed 相同。"
+      },
+      "notes": "页面 alternate 即这份 feed，但条目只有标题和链接，没有正文，摘要要抓文章页。feed 也不是博客全量：2026-10-23～29 周报里的 litpivot 与 nemotron-transcribe-granary 不在 feed.xml。这一站用列表页对标题，只补 feed 里没有的链接。"
+    },
+    {
+      "id": "aws-ml",
+      "title": "AWS Machine Learning Blog",
+      "listUrls": [
+        "https://aws.amazon.com/cn/blogs/machine-learning/"
+      ],
+      "htmlUrl": "https://aws.amazon.com/blogs/machine-learning/",
+      "xmlUrl": "https://aws.amazon.com/blogs/machine-learning/feed/",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://aws.amazon.com/blogs/amazon-ai/feed/",
+        "adopted": true,
+        "note": "BestBlogs 的 amazon-ai/feed/ 会 302 到这条 machine-learning feed。"
+      },
+      "notes": "中文列表与英文博客是同一份 WordPress feed，大约只保留最近 20 篇。脚本若标 truncated，用列表页补窗口里更早的文章。"
+    },
+    {
+      "id": "sankalp",
+      "title": "sankalp's blog",
+      "listUrls": [
+        "https://sankalp.bearblog.dev/"
+      ],
+      "htmlUrl": "https://sankalp.bearblog.dev/",
+      "xmlUrl": "https://sankalp.bearblog.dev/feed/",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "Bear 博客的 Atom feed。另有 /feed/?type=rss，内容相同。"
+    },
+    {
+      "id": "datacamp",
+      "title": "DataCamp AI Blog",
+      "listUrls": [
+        "https://www.datacamp.com/blog/category/ai"
+      ],
+      "htmlUrl": "https://www.datacamp.com/blog/category/ai",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "分类页没有 alternate。常见 /feed/ 在 2026-10-31 返回 403，不把未验证地址写进 OPML。退路是列表页，403 时再用浏览器。"
+    },
+    {
+      "id": "amp-news",
+      "title": "Amp News",
+      "listUrls": [
+        "https://ampcode.com/chronicle"
+      ],
+      "htmlUrl": "https://ampcode.com/chronicle",
+      "xmlUrl": "https://ampcode.com/news.rss",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "chronicle 页声明 /news.rss。同页还有 /notes.rss 与 /podcast.rss；播客不订，notes 不在原列表范围。"
+    },
+    {
+      "id": "latitude",
+      "title": "Latitude Blog",
+      "listUrls": [
+        "https://latitude.so/blog"
+      ],
+      "htmlUrl": "https://latitude.so/blog",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "无原生 feed。robots 指向的 sitemap 为 404。退路是列表页，页内有文章链接。"
+    },
+    {
+      "id": "lovable",
+      "title": "Lovable Blog",
+      "listUrls": [
+        "https://lovable.dev/blog"
+      ],
+      "htmlUrl": "https://lovable.dev/blog",
+      "xmlUrl": "https://lovable.dev/blog/rss.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/639cd13d44284e10ac89fbd1c5399767",
+        "adopted": false,
+        "note": "只有 XGo.ing 的推特转换。博客用站点自己的 rss.xml。"
+      }
+    },
+    {
+      "id": "kiro",
+      "title": "Kiro Blog",
+      "listUrls": [
+        "https://kiro.dev/blog/"
+      ],
+      "htmlUrl": "https://kiro.dev/blog/",
+      "xmlUrl": "https://kiro.dev/blog/feed.rss",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "页面 alternate 为 feed.rss / feed.atom。订阅 RSS。"
+    },
+    {
+      "id": "philschmid",
+      "title": "philschmid.de",
+      "listUrls": [
+        "https://www.philschmid.de/"
+      ],
+      "htmlUrl": "https://www.philschmid.de/",
+      "xmlUrl": "https://www.philschmid.de/rss",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/ce352bbf72e44033985bc756db2ee0e2",
+        "adopted": false,
+        "note": "只有 XGo.ing 的推特转换。博客用站点自己的 /rss（Atom）。"
+      }
+    },
+    {
+      "id": "goose",
+      "title": "goose Blog",
+      "listUrls": [
+        "https://goose-docs.ai/blog/"
+      ],
+      "htmlUrl": "https://goose-docs.ai/blog/",
+      "xmlUrl": "https://goose-docs.ai/blog/rss.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      }
+    },
+    {
+      "id": "zed",
+      "title": "Zed Blog",
+      "listUrls": [
+        "https://zed.dev/blog"
+      ],
+      "htmlUrl": "https://zed.dev/blog",
+      "xmlUrl": "https://zed.dev/blog.rss",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "另有 stable-releases.rss，那是发行说明，不订。"
+    },
+    {
+      "id": "roocode",
+      "title": "Roo Code / Roomote",
+      "listUrls": [
+        "https://roocode.com/blog"
+      ],
+      "htmlUrl": "https://roomote.dev/",
+      "xmlUrl": null,
+      "articleHosts": [
+        "roocode.com",
+        "roomote.dev"
+      ],
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "roocode.com/blog 会跳到 roomote.dev 产品首页，/blog 为 404。没有可订 feed。退路是打开首页看是否还有博客入口。"
+    },
+    {
+      "id": "coderabbit",
+      "title": "CodeRabbit Blog",
+      "listUrls": [
+        "https://www.coderabbit.ai/blog"
+      ],
+      "htmlUrl": "https://www.coderabbit.ai/blog",
+      "xmlUrl": "https://www.coderabbit.ai/feed",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      }
+    },
+    {
+      "id": "warp",
+      "title": "Warp Blog",
+      "listUrls": [
+        "https://www.warp.dev/blog"
+      ],
+      "htmlUrl": "https://www.warp.dev/blog",
+      "xmlUrl": "https://www.warp.dev/blog/feed.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      }
+    },
+    {
+      "id": "kimi",
+      "title": "Kimi Blog",
+      "listUrls": [
+        "https://www.kimi.com/blog/"
+      ],
+      "htmlUrl": "https://www.kimi.com/en/blog/",
+      "xmlUrl": null,
+      "articleHosts": [
+        "kimi.com"
+      ],
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml",
+        "adopted": false,
+        "note": "命中的是微信公众号转换源，不是 kimi.com 研究博客，不订。"
+      },
+      "notes": "kimi.com/blog 与 /en/blog 都没有 alternate。sitemap 只列了产品页。退路是英文博客列表页。"
+    },
+    {
+      "id": "fsck",
+      "title": "Massively Parallel Procrastination",
+      "listUrls": [
+        "https://blog.fsck.com/"
+      ],
+      "htmlUrl": "https://blog.fsck.com/",
+      "xmlUrl": "https://blog.fsck.com/feed/rss.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "页面 alternate 还有 Atom /feed/feed.xml。订阅 RSS。"
+    },
+    {
+      "id": "chroma-research",
+      "title": "Chroma Research",
+      "listUrls": [
+        "https://www.trychroma.com/research"
+      ],
+      "htmlUrl": "https://www.trychroma.com/research",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "/rss.xml 会转到登录页。sitemap lastmod 是同一次生成时间。退路是研究列表页。"
+    },
+    {
+      "id": "baoyu",
+      "title": "宝玉的分享",
+      "listUrls": [
+        "https://baoyu.io/",
+        "https://baoyu.io/translations/2026-05-10/akshay-pachaar-2041146899319971922"
+      ],
+      "htmlUrl": "https://baoyu.io/",
+      "xmlUrl": "https://baoyu.io/feed.xml",
+      "articleHosts": [
+        "baoyu.io",
+        "s.baoyu.io"
+      ],
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://baoyu.io/feed.xml",
+        "adopted": true,
+        "note": "与原生 feed 相同；请求会转到 s.baoyu.io/feed.xml。"
+      },
+      "notes": "原列表里的单篇译文和首页是同一站点，只订一份 feed。"
+    },
+    {
+      "id": "antigravity",
+      "title": "Google Antigravity Blog",
+      "listUrls": [
+        "https://antigravity.google/blog"
+      ],
+      "htmlUrl": "https://antigravity.google/blog",
+      "xmlUrl": "https://antigravity.google/blog/rss.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      }
+    },
+    {
+      "id": "jxnl",
+      "title": "Jason Liu",
+      "listUrls": [
+        "https://jxnl.co/writing/"
+      ],
+      "htmlUrl": "https://jxnl.co/writing/",
+      "xmlUrl": "https://jxnl.co/feed_rss_created.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "写作页还有 feed_rss_updated.xml。周报按发布时间，订 created。"
+    },
+    {
+      "id": "lucumr",
+      "title": "Armin Ronacher's Thoughts and Writings",
+      "listUrls": [
+        "https://lucumr.pocoo.org/"
+      ],
+      "htmlUrl": "https://lucumr.pocoo.org/",
+      "xmlUrl": "https://lucumr.pocoo.org/feed.atom",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+      },
+      "notes": "Atom 大约只保留最近 10 篇。脚本若标 truncated，再用列表页补窗口早段。另有 /feed.xml。"
+    },
+    {
+      "id": "minimax",
+      "title": "MiniMax Blog",
+      "listUrls": [
+        "https://minimaxi.com/blog"
+      ],
+      "htmlUrl": "https://www.minimax.io/blog",
+      "xmlUrl": null,
+      "articleHosts": [
+        "minimaxi.com",
+        "minimax.cn",
+        "minimax.io"
+      ],
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml",
+        "adopted": false,
+        "note": "命中的是微信公众号转换源，不是官网博客，不订。"
+      },
+      "notes": "minimaxi.com/blog 会跳到 minimax.cn/blog，英文站在 minimax.io/blog。都没有 feed。sitemap 只有 /blog 索引、没有文章。退路是列表页。"
+    }
+  ]
+}
