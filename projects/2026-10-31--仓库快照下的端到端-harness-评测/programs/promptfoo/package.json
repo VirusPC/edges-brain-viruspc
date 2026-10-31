@@ -1,0 +1,16 @@
+{
+  "name": "memory-ablation-promptfoo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Native Codex memory ablation using Promptfoo",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "dependencies": {
+    "@openai/codex-sdk": "0.156.1",
+    "promptfoo": "0.125.1"
+  },
+  "scripts": {
+    "view": "promptfoo view"
+  }
+}
