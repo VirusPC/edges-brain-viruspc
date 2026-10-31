@@ -808,11 +808,11 @@
     {
       "id": "linux-do-welfare",
       "title": "linux.do 福利羊毛",
-      "group": "薅羊毛 / linux.do",
+      "group": "薅羊毛",
       "listUrls": [
-        "https://linux.do/c/welfare"
+        "https://linux.do/c/welfare/36"
       ],
-      "htmlUrl": "https://linux.do/c/welfare",
+      "htmlUrl": "https://linux.do/c/welfare/36",
       "xmlUrl": "https://linux.do/c/welfare.rss",
       "feedOrigin": "linux-do-welfare-rss",
       "fallback": null,

@@ -1,8 +1,8 @@
 # AI Coding 订阅源
 
-阅读器要导入的是 [`ai-coding-blogs.opml`](ai-coding-blogs.opml)。里面是 feed（`type="rss"` + `xmlUrl`），Folo 或其他 OPML 阅读器可以直接导入。英文博客在「AI Coding Blogs」，国内团队在「国内技术团队」，GitHub Trending 在「GitHub Trending」，linux.do 福利羊毛在「薅羊毛 / linux.do」。脚本这些分组都拉。
+阅读器要导入的是 [`ai-coding-blogs.opml`](ai-coding-blogs.opml)。里面是 feed（`type="rss"` + `xmlUrl`），Folo 或其他 OPML 阅读器可以直接导入。英文博客在「AI Coding Blogs」，国内团队在「国内技术团队」，GitHub Trending 在「GitHub Trending」，linux.do 福利羊毛在「薅羊毛」。脚本这些分组都拉。
 
-「薅羊毛 / linux.do」是 `https://linux.do/c/welfare.rss`（会跳到 `/c/welfare/36.rss`），`feedOrigin` 为 `linux-do-welfare-rss`。周报「〇、薅羊毛」用它，并加上其它博客里和 AI / Coding 有关的优惠；日常消费类不写。
+「薅羊毛」订 `https://linux.do/c/welfare.rss`（页面 `https://linux.do/c/welfare/36`），`feedOrigin` 为 `linux-do-welfare-rss`。周报「〇、薅羊毛」用它，并加上其它博客里和 AI / Coding 有关的优惠；日常消费类不写。
 
 GitHub Trending 用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的每日榜（全部、Python、TypeScript）。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，快照日期用 channel 的 `pubDate`。
 

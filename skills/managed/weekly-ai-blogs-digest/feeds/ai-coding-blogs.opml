@@ -50,8 +50,8 @@
       <outline text="GitHub Trending（每日 / Python）" title="GitHub Trending（每日 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/python.xml" htmlUrl="https://github.com/trending/python?since=daily"/>
       <outline text="GitHub Trending（每日 / TypeScript）" title="GitHub Trending（每日 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=daily"/>
     </outline>
-    <outline text="薅羊毛 / linux.do" title="薅羊毛 / linux.do">
-      <outline text="linux.do 福利羊毛" title="linux.do 福利羊毛" type="rss" xmlUrl="https://linux.do/c/welfare.rss" htmlUrl="https://linux.do/c/welfare"/>
+    <outline text="薅羊毛" title="薅羊毛">
+      <outline text="linux.do 福利羊毛" title="linux.do 福利羊毛" type="rss" xmlUrl="https://linux.do/c/welfare.rss" htmlUrl="https://linux.do/c/welfare/36"/>
     </outline>
   </body>
 </opml>

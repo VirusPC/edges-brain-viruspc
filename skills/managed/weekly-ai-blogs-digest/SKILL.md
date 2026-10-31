@@ -44,7 +44,7 @@ python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/
 1. **GitHub Trending** 已在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，`feedOrigin` 为 `third-party-scrape-rss`）。条目没有发布日，脚本用 channel 的 `pubDate` 当快照日期，并且不按博客窗口裁掉。周报里单独写「GitHub Trending」，注明是第三方抓取、不是 GitHub 官方 RSS。
 2. **Artificial Analysis** 不是 RSS。跑 `python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`。密钥放在环境变量 `AA_API_KEY` 或 `ARTIFICIAL_ANALYSIS_API_KEY`，不要写进命令行或仓库。没有密钥时脚本退出码 0 并写出 `skipped`。展示数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。可选 MCP：`https://mcp.artificialanalysis.ai/mcp`。
 3. **LLM Arena** 没有公开 REST。跑 `python3 scripts/fetch_llm_arena.py --out /tmp/llm-arena.json`。它读 Hugging Face 数据集 `lmarena-ai/leaderboard-dataset`（默认 `text_style_control` / `latest` / `overall`），不是 OPML，不需要密钥。先 `pip install -r scripts/requirements-leaderboard.txt`。
-4. **〇、薅羊毛** 用 OPML 分组「薅羊毛 / linux.do」的 `https://linux.do/c/welfare.rss`（`feedOrigin` 为 `linux-do-welfare-rss`），再加上其它博客 feed 里明显是优惠、额度、白嫖的帖子。只保留和 AI / Coding 相关的（模型额度、API、IDE、开发者订阅、给开发者的云主机等）。银行立减金、电商价保、会员日这类日常消费不写。写过的帖子不要再出现在「文章总结列表」。
+4. **〇、薅羊毛** 用 OPML 分组「薅羊毛」里的 `https://linux.do/c/welfare.rss`（`feedOrigin` 为 `linux-do-welfare-rss`），再加上其它博客 feed 里明显是优惠、额度、白嫖的帖子。只保留和 AI / Coding 相关的（模型额度、API、IDE、开发者订阅、给开发者的云主机等）。银行立减金、电商价保、会员日这类日常消费不写。写过的帖子不要再出现在「文章总结列表」。
 
 ```bash
 python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json
