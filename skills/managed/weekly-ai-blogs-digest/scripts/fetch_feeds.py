@@ -23,6 +23,7 @@ import argparse
 import html
 import json
 import re
+import subprocess
 import sys
 import time
 import urllib.error
@@ -285,11 +286,35 @@ def parse_feed_bytes(payload: bytes, *, fill_channel_date: bool = False) -> tupl
     return entries, title or None
 
 
+def download_curl(url: str, timeout: int) -> tuple[bytes, str | None]:
+    try:
+        proc = subprocess.run(
+            ["curl", "-fsSL", "--max-time", str(timeout), "-A", USER_AGENT, url],
+            capture_output=True,
+            timeout=timeout + 5,
+            check=False,
+        )
+    except Exception as exc:  # noqa: BLE001
+        return b"", f"curl: {type(exc).__name__}: {exc}"
+    if proc.returncode != 0 or not proc.stdout:
+        err = proc.stderr.decode("utf-8", "replace").strip()[:200]
+        return b"", f"curl exit {proc.returncode}: {err}"
+    return proc.stdout, None
+
+
 def download(url: str, timeout: int) -> tuple[bytes, str | None]:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as response:
             return response.read(), None
+    except urllib.error.HTTPError as exc:
+        # linux.do 的 Discourse RSS 对 urllib 返回 403，curl 可以拿到 200。
+        if exc.code == 403:
+            body, curl_err = download_curl(url, timeout)
+            if body:
+                return body, None
+            return b"", f"HTTPError: {exc}; curl fallback: {curl_err}"
+        return b"", f"HTTPError: {exc}"
     except Exception as exc:  # noqa: BLE001 - surface any fetch failure to the report
         return b"", f"{type(exc).__name__}: {exc}"
 

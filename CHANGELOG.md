@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **资讯改为 RSS 优先：** 博客订阅改到 `skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`（阅读器可导入）。原生 feed 优先。没有原生 feed 时，BestBlogs 对上的 RSSHub、XGo.ing、Wechat2RSS 也写入 OPML，并在 meta 里留列表页退路。BestBlogs 没有命中的站只写在 `ai-coding-blogs.meta.json`。`scripts/fetch_feeds.py` 按日期过滤并输出精简 JSON。`ai-news/` 的模版不变。2026-10-30 窗口的覆盖和体积对比记在对应任务卡。
 - **国内技术团队：** 同一份 OPML 增加分组「国内技术团队」：字节、百度 Geek 说、大淘宝、快手、支付宝体验科技、腾讯技术工程、阿里技术，以及映射到通义实验室的千问 AI 平台，都是 BestBlogs Wechat2RSS。美团技术团队用 `https://tech.meituan.com/feed/`。周报脚本会一起拉。
 - **GitHub Trending 与模型榜：** OPML 增加分组「GitHub Trending」（mshibanami 每日 all / Python / TypeScript）。Artificial Analysis 与 LLM Arena 不进 OPML，分别由 `fetch_artificial_analysis.py`（`AA_API_KEY`）和 `fetch_llm_arena.py`（Hugging Face 数据集）拉取，周报里单独成节。
+- **薅羊毛：** OPML 增加分组「薅羊毛 / linux.do」，订阅 `https://linux.do/c/welfare.rss`。周报「〇、薅羊毛」用这份 feed，并收其它博客里和 AI / Coding 有关的优惠；日常消费类不写。
 
 ### 个人仓
 

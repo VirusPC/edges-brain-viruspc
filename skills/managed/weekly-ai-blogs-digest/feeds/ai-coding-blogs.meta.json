@@ -804,6 +804,24 @@
         "note": "不是博客，不适用 BestBlogs。"
       },
       "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 页面生成，不是 GitHub 官方 RSS。2026-10-31 核对 channel pubDate 为当天。条目没有 pubDate，脚本用 channel 日期并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+    },
+    {
+      "id": "linux-do-welfare",
+      "title": "linux.do 福利羊毛",
+      "group": "薅羊毛 / linux.do",
+      "listUrls": [
+        "https://linux.do/c/welfare"
+      ],
+      "htmlUrl": "https://linux.do/c/welfare",
+      "xmlUrl": "https://linux.do/c/welfare.rss",
+      "feedOrigin": "linux-do-welfare-rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "站点自己的 Discourse 分类 RSS，不是 BestBlogs。"
+      },
+      "notes": "短地址 https://linux.do/c/welfare.rss 会 301 到 https://linux.do/c/welfare/36.rss。周报「〇、薅羊毛」用这份 feed，并加上其它博客里和 AI/Coding 有关的优惠。银行立减金、电商价保等日常消费不写。2026-10-31 拉取 200，25 条。urllib 会被 Cloudflare 403，脚本改用 curl 回退。"
     }
   ]
 }
