@@ -2,10 +2,10 @@
 metadata:
   edges-type: task
   edges-task-project: site-and-content
-  edges-updated-at: '2026-10-07T14:41:15.571Z'
+  edges-updated-at: '2026-10-31T07:29:36.408Z'
   edges-title: 除 posts 外支持更丰富的内容输出形态
   edges-tasks-status: backlog
-  edges-task-priority: none
+  edges-task-priority: high
 name: richer-content-outputs
 description: >-
   在 posts 之外扩展 videos、朋友圈、flashcards、ppt 等输出；对标 Google NotebookLM
@@ -17,6 +17,8 @@ description: >-
 - 预期收益：同一套知识材料可按场景产出短视频、社交片段、记忆卡片、演示稿等，而不只是文章站点。
 - 非目标：本卡不实现具体生成管线；不规定必须自研还是接入第三方；不改 posts 硬约束（AI 不得自动改 posts）的现行约定。
 - 关联：对话（任务记录员 2026-10-07）；兄弟卡 `.edges/tasks/site-and-content/backlog/2026-09-10--posts用Astro搭博客与CI/`、`.edges/tasks/site-and-content/backlog/2026-09-14--整理posts文件夹并建站/`；对标产品 Google NotebookLM
+
+2026-10-31 用户高优要求 edges/notes/posts 对外博客展示；本卡抬高优，范围 grill 时扩到 notes/edges。
 
 **目标：**
 Edges 内容出口从「主要 posts」扩展到可枚举的多形态输出（至少覆盖视频、朋友圈、闪卡、演示稿等方向），并有清晰的产品边界与后续拆卡依据。

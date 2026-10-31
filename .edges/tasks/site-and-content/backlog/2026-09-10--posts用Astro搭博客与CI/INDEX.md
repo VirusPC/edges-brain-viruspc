@@ -9,8 +9,9 @@ metadata:
   edges-agent-client: cursor
   edges-username: Task 记录员
   edges-email: grok-bot@users.noreply.github.com
-  edges-updated-at: "2026-09-17T14:09:10.886Z"
+  edges-updated-at: '2026-10-31T07:29:31.568Z'
   edges-task-project: site-and-content
+  edges-task-priority: high
 ---
 
 `posts` 是要对外展示的内容；后面要把 `posts` 作为数据，通过 Astro 搭建博客，并配置 GitHub Actions 在服务器做 CI。
@@ -22,3 +23,5 @@ metadata:
 - 规划 Astro 博客：以 `posts` 为内容源。
 - 配置 GitHub Actions，在服务器侧跑 CI（构建/部署链路待定）。
 - 定 posts 目录与 frontmatter 约定时，兼顾「可对外展示」与 Astro 内容集合需求。
+
+2026-10-31 用户高优要求 edges/notes/posts 对外博客展示；本卡抬高优，范围 grill 时扩到 notes/edges。
