@@ -25,6 +25,7 @@ description: AI 资讯周报改为以自维护 OPML 的 RSS 为先，列表页�
 - Skill 改为：跑脚本 → 正文太短或 feed 被截断再抓页面 → 按原模版写 `ai-news/`。播客仍只在风向里点名。
 - 用 2026-10-30 那期的窗口做一次对比，短记放在本目录 [`ab-2026-10-30.md`](ab-2026-10-30.md)。
 - OPML 增加「GitHub Trending」。Artificial Analysis 与 LLM Arena 不进 OPML，用 skill 目录里的两个脚本，周报单独成节。
+- OPML 增加「薅羊毛 / linux.do」。周报「〇、薅羊毛」用这份 feed，并收其它博客里和 AI / Coding 有关的优惠；日常消费类不写。
 
 **完成标准：**
 - [x] OPML + meta 覆盖原列表里的博客。有 feed 的进 OPML，其余标明退路。
