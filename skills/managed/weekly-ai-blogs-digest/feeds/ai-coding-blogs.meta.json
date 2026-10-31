@@ -609,6 +609,144 @@
         "note": "BestBlogs 的 Wechat2RSS 公众号转换。2026-10-31 用户确认订入。不是 minimax 官网博客，列表页仍是退路。"
       },
       "notes": "minimaxi.com/blog 会跳到 minimax.cn/blog，无原生 feed。订的是微信公众号转换。官网博客仍走列表页。"
+    },
+    {
+      "id": "bytedance-tech",
+      "title": "字节跳动技术团队",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，对应用户给出的字节跳动技术团队。"
+      },
+      "notes": "2026-10-31 按用户截图加入国内技术团队。BestBlogs Wechat2RSS。"
+    },
+    {
+      "id": "baidu-geek",
+      "title": "百度Geek说",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，对应用户给出的百度Geek说。"
+      },
+      "notes": "2026-10-31 按用户截图加入。BestBlogs Wechat2RSS。"
+    },
+    {
+      "id": "taobao-tech",
+      "title": "大淘宝技术",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，对应用户给出的大淘宝技术。"
+      },
+      "notes": "2026-10-31 按用户截图加入。BestBlogs Wechat2RSS。"
+    },
+    {
+      "id": "kuaishou-tech",
+      "title": "快手技术",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，对应用户给出的快手技术。"
+      },
+      "notes": "2026-10-31 按用户截图加入。BestBlogs Wechat2RSS。"
+    },
+    {
+      "id": "alipay-ux",
+      "title": "支付宝体验科技",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS。展示名可能带「今天看啥」，xmlUrl 即用户给出的地址。"
+      },
+      "notes": "2026-10-31 按用户截图加入。阅读器里有时显示为「支付宝体验科技 - 今天看啥」，订的是同一份 Wechat2RSS。"
+    },
+    {
+      "id": "meituan-tech",
+      "title": "美团技术团队",
+      "group": "国内技术团队",
+      "listUrls": [
+        "https://tech.meituan.com/"
+      ],
+      "htmlUrl": "https://tech.meituan.com/",
+      "xmlUrl": "https://tech.meituan.com/feed/",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "用站点原生 https://tech.meituan.com/feed/，不改去订微信转换。"
+      },
+      "notes": "2026-10-31 按用户截图加入。截图名是「美团 · 技术团队」，订阅标题用「美团技术团队」。item 没有 pubDate，脚本从链接路径里的 /YYYY/MM/DD/ 取发布日。"
+    },
+    {
+      "id": "qwen-ai-platform",
+      "title": "千问 AI 平台",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml",
+        "adopted": true,
+        "note": "无同名条目。用户指定映射到通义实验室 https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml 。"
+      },
+      "notes": "截图上的「千问 AI 平台」在 BestBlogs 没有同名源。订的是「通义实验室」这份 Wechat2RSS。"
+    },
+    {
+      "id": "tencent-engineering",
+      "title": "腾讯技术工程",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，对应用户给出的腾讯技术工程。"
+      },
+      "notes": "2026-10-31 按用户截图加入。BestBlogs Wechat2RSS。"
+    },
+    {
+      "id": "alibaba-tech",
+      "title": "阿里技术",
+      "group": "国内技术团队",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，对应用户给出的阿里技术。"
+      },
+      "notes": "2026-10-31 按用户截图加入。BestBlogs Wechat2RSS。"
     }
   ]
 }

@@ -215,6 +215,11 @@ def entry_date(entry: dict) -> str | None:
         parsed = entry.get(key)
         if parsed:
             return f"{parsed.tm_year:04d}-{parsed.tm_mon:02d}-{parsed.tm_mday:02d}"
+    # 美团技术博客的 item 没有 pubDate，日期写在链接路径里。
+    link = entry_link(entry)
+    match = re.search(r"/(20\d{2})/(\d{2})/(\d{2})(?:/|$)", link)
+    if match:
+        return f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
     return None
 
 
@@ -577,6 +582,15 @@ def self_test() -> int:
     by_link = {normalize_link(item["link"]): item for item in items}
     assert by_link["example.com/a"]["thin"] is False
     assert by_link["example.com/thin"]["thin"] is True
+    undated = (
+        b"""<?xml version="1.0"?><rss version="2.0"><channel><item>
+        <title>No pubDate</title>
+        <link>https://tech.example.com/2026/10/29/post.html</link>
+        <description>body</description>
+        </item></channel></rss>"""
+    )
+    undated_entries, _title = parse_feed_bytes(undated)
+    assert undated_entries[0]["date"] == "2026-10-29", undated_entries
     assert normalize_link("https://mp.weixin.qq.com/s?__biz=a&mid=1") != normalize_link("https://mp.weixin.qq.com/s?__biz=b&mid=2")
     assert normalize_link("https://example.com/a?utm_source=rss") == "example.com/a"
     assert "Hello world" in by_link["example.com/a"]["summary"]
