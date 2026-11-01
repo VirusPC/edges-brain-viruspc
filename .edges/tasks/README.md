@@ -59,4 +59,5 @@
 - [deepseek-harness](<deepseek-harness/README.md>) — 围绕 DeepSeek Harness / recipe 的学习与实践看板。
 - [Default](<_default/README.md>) — Ungrouped tasks that have not been assigned a named Task Project.
 - [学习](<learning/README.md>) — 学习区：阅读、课程、源码精读与对照实践等学习工作项。看板管进度；可读笔记仍可落 notes。
+- [Agent产品评测](<agent-product-eval/README.md>) — Agent / AI 产品评测素材与对照（原 edges/\_eval\_\*）。文件系统落点：projects/2026\-06\-21\-\-Agent产品评测/。
 <!-- edges-entries-local:end -->
