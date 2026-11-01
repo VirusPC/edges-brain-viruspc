@@ -253,8 +253,7 @@ export function notesLoader(): Loader {
         for (const folder of listDatedNoteDirs(notesRoot)) {
           const abs = path.join(notesRoot, folder, 'INDEX.md');
           const parsed = readMarkdown(abs);
-          const title =
-            stringField(parsed.data, 'title') || titleForNote(parsed.content, folder);
+          const title = titleForNote(parsed.content, folder, stringField(parsed.data, 'title'));
           const date = noteDateFromName(folder);
           if (!date) continue;
           entries.push({
