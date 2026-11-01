@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>AI Coding Blogs</title>
+    <dateCreated>Sat, 31 Oct 2026 00:00:00 GMT</dateCreated>
+    <docs>http://opml.org/spec2.opml</docs>
+  </head>
+  <body>
+    <outline text="AI Coding Blogs" title="AI Coding Blogs">
+      <outline text="Anthropic News" title="Anthropic News" type="rss" xmlUrl="https://rsshub.bestblogs.dev/anthropic/news" htmlUrl="https://claude.com/resources/articles"/>
+      <outline text="OpenAI News" title="OpenAI News" type="rss" xmlUrl="https://openai.com/news/rss.xml" htmlUrl="https://openai.com/news/"/>
+      <outline text="Google AI Blog" title="Google AI Blog" type="rss" xmlUrl="https://blog.google/innovation-and-ai/technology/ai/rss/" htmlUrl="https://blog.google/innovation-and-ai/technology/ai/"/>
+      <outline text="ManusAI" title="ManusAI" type="rss" xmlUrl="https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab" htmlUrl="https://manus.im/blog"/>
+      <outline text="Cursor" title="Cursor" type="rss" xmlUrl="https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960" htmlUrl="https://cursor.com/blog"/>
+      <outline text="Cognition" title="Cognition" type="rss" xmlUrl="https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7" htmlUrl="https://cognition.com/blog"/>
+      <outline text="LangChain Blog" title="LangChain Blog" type="rss" xmlUrl="https://www.langchain.com/blog/rss.xml" htmlUrl="https://www.langchain.com/blog"/>
+      <outline text="Qwen" title="Qwen" type="rss" xmlUrl="https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d" htmlUrl="https://qwen.ai/research"/>
+      <outline text="Hugging Face Blog" title="Hugging Face Blog" type="rss" xmlUrl="https://huggingface.co/blog/feed.xml" htmlUrl="https://huggingface.co/blog"/>
+      <outline text="AWS Machine Learning Blog" title="AWS Machine Learning Blog" type="rss" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/" htmlUrl="https://aws.amazon.com/blogs/machine-learning/"/>
+      <outline text="sankalp's blog" title="sankalp's blog" type="rss" xmlUrl="https://sankalp.bearblog.dev/feed/" htmlUrl="https://sankalp.bearblog.dev/"/>
+      <outline text="Amp News" title="Amp News" type="rss" xmlUrl="https://ampcode.com/news.rss" htmlUrl="https://ampcode.com/chronicle"/>
+      <outline text="Lovable Blog" title="Lovable Blog" type="rss" xmlUrl="https://lovable.dev/blog/rss.xml" htmlUrl="https://lovable.dev/blog"/>
+      <outline text="Kiro Blog" title="Kiro Blog" type="rss" xmlUrl="https://kiro.dev/blog/feed.rss" htmlUrl="https://kiro.dev/blog/"/>
+      <outline text="philschmid.de" title="philschmid.de" type="rss" xmlUrl="https://www.philschmid.de/rss" htmlUrl="https://www.philschmid.de/"/>
+      <outline text="goose Blog" title="goose Blog" type="rss" xmlUrl="https://goose-docs.ai/blog/rss.xml" htmlUrl="https://goose-docs.ai/blog/"/>
+      <outline text="Zed Blog" title="Zed Blog" type="rss" xmlUrl="https://zed.dev/blog.rss" htmlUrl="https://zed.dev/blog"/>
+      <outline text="CodeRabbit Blog" title="CodeRabbit Blog" type="rss" xmlUrl="https://www.coderabbit.ai/feed" htmlUrl="https://www.coderabbit.ai/blog"/>
+      <outline text="Warp Blog" title="Warp Blog" type="rss" xmlUrl="https://www.warp.dev/blog/feed.xml" htmlUrl="https://www.warp.dev/blog"/>
+      <outline text="月之暗面 Kimi" title="月之暗面 Kimi" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml" htmlUrl="https://www.kimi.com/en/blog/"/>
+      <outline text="Massively Parallel Procrastination" title="Massively Parallel Procrastination" type="rss" xmlUrl="https://blog.fsck.com/feed/rss.xml" htmlUrl="https://blog.fsck.com/"/>
+      <outline text="宝玉的分享" title="宝玉的分享" type="rss" xmlUrl="https://baoyu.io/feed.xml" htmlUrl="https://baoyu.io/"/>
+      <outline text="Google Antigravity Blog" title="Google Antigravity Blog" type="rss" xmlUrl="https://antigravity.google/blog/rss.xml" htmlUrl="https://antigravity.google/blog"/>
+      <outline text="Jason Liu" title="Jason Liu" type="rss" xmlUrl="https://jxnl.co/feed_rss_created.xml" htmlUrl="https://jxnl.co/writing/"/>
+      <outline text="Armin Ronacher's Thoughts and Writings" title="Armin Ronacher's Thoughts and Writings" type="rss" xmlUrl="https://lucumr.pocoo.org/feed.atom" htmlUrl="https://lucumr.pocoo.org/"/>
+      <outline text="MiniMax 稀宇科技" title="MiniMax 稀宇科技" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml" htmlUrl="https://www.minimax.io/blog"/>
+    </outline>
+    <outline text="国内技术团队" title="国内技术团队">
+      <outline text="字节跳动技术团队" title="字节跳动技术团队" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml"/>
+      <outline text="百度Geek说" title="百度Geek说" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml"/>
+      <outline text="大淘宝技术" title="大淘宝技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml"/>
+      <outline text="快手技术" title="快手技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml"/>
+      <outline text="支付宝体验科技" title="支付宝体验科技" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml"/>
+      <outline text="美团技术团队" title="美团技术团队" type="rss" xmlUrl="https://tech.meituan.com/feed/" htmlUrl="https://tech.meituan.com/"/>
+      <outline text="千问 AI 平台" title="千问 AI 平台" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml"/>
+      <outline text="腾讯技术工程" title="腾讯技术工程" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml"/>
+      <outline text="阿里技术" title="阿里技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml"/>
+    </outline>
+    <outline text="GitHub Trending" title="GitHub Trending">
+      <outline text="GitHub Trending（每日 / 全部）" title="GitHub Trending（每日 / 全部）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml" htmlUrl="https://github.com/trending"/>
+      <outline text="GitHub Trending（每日 / Python）" title="GitHub Trending（每日 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/python.xml" htmlUrl="https://github.com/trending/python?since=daily"/>
+      <outline text="GitHub Trending（每日 / TypeScript）" title="GitHub Trending（每日 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=daily"/>
+    </outline>
+    <outline text="薅羊毛" title="薅羊毛">
+      <outline text="linux.do 福利羊毛" title="linux.do 福利羊毛" type="rss" xmlUrl="https://linux.do/c/welfare.rss" htmlUrl="https://linux.do/c/welfare/36"/>
+    </outline>
+  </body>
+</opml>
