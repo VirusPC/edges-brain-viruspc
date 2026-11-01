@@ -1,12 +1,40 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import ProjectList from '../../components/ProjectList.astro';
+import ListPage from '../../components/ListPage.astro';
 import { getProjects } from '../../lib/entries';
+import { githubBlob, siteUrl } from '../../lib/paths';
+import { listProjectFolders, projectsRoot, sortProjectDocuments, sortProjects, titleForProject } from '../../lib/projects.mjs';
 
-const projects = await getProjects();
+const docs = await getProjects();
+const byProject = new Map<string, typeof docs>();
+for (const doc of docs) {
+  const list = byProject.get(doc.data.projectId) ?? [];
+  list.push(doc);
+  byProject.set(doc.data.projectId, list);
+}
+
+const folders = listProjectFolders(projectsRoot());
+const groups = sortProjects(
+  folders.map((folder) => ({
+    id: folder.id,
+    title: byProject.get(folder.id)?.find((doc) => doc.data.isHub)?.data.projectTitle
+      ?? titleForProject(folder.id, '', ''),
+    date: folder.date,
+  })),
+).map((section) => ({
+  heading: section.title,
+  items: sortProjectDocuments(
+    (byProject.get(section.id) ?? []).map((doc) => ({
+      title: doc.data.title,
+      date: doc.data.date ?? null,
+      isHub: doc.data.isHub,
+      href: doc.data.hasPage ? siteUrl(`/projects/${doc.id}`) : githubBlob(doc.data.sourcePath),
+    })),
+  ).map(({ title, date, href }) => ({
+    title,
+    date: date ?? undefined,
+    href,
+  })),
+}));
 ---
 
-<BaseLayout title="Projects" description="Project workspaces.">
-  <h1>Projects</h1>
-  <ProjectList projects={projects} />
-</BaseLayout>
+<ListPage title="Projects" description="Project workspaces." groups={groups} />

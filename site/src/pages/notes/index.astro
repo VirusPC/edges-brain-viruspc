@@ -1,12 +1,21 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import NoteIndex from '../../components/NoteIndex.astro';
+import ListPage from '../../components/ListPage.astro';
 import { getNotes } from '../../lib/entries';
+import { groupNotesByMonth } from '../../lib/group-notes.mjs';
+import { siteUrl } from '../../lib/paths';
 
 const notes = await getNotes();
+const groups = groupNotesByMonth(notes).map((year) => ({
+  heading: year.year,
+  months: year.months.map((month) => ({
+    label: month.label,
+    items: month.notes.map((note) => ({
+      title: note.data.title,
+      href: siteUrl(`/notes/${note.id}`),
+      date: note.data.date,
+    })),
+  })),
+}));
 ---
 
-<BaseLayout title="Notes" description="Dated notes.">
-  <h1>Notes</h1>
-  <NoteIndex notes={notes} />
-</BaseLayout>
+<ListPage title="Notes" description="Dated notes." groups={groups} empty="还没有笔记。" />

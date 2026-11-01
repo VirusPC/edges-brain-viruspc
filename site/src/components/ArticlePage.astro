@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatISODate } from '../lib/select.mjs';
+
+interface Props {
+  title: string;
+  description?: string;
+  date?: Date;
+  source?: string;
+  wide?: boolean;
+}
+
+const { title, description, date, source, wide = false } = Astro.props;
+const iso = date ? formatISODate(date) : '';
+---
+
+<BaseLayout title={title} description={description} wide={wide}>
+  <article class="post">
+    <header class="post-head">
+      {iso ? <p class="post-kicker"><time datetime={iso}>{iso}</time></p> : null}
+      <h1>{title}</h1>
+    </header>
+    <div class="prose">
+      <slot />
+    </div>
+    {source ? <p class="source"><a href={source}>Source</a></p> : null}
+  </article>
+</BaseLayout>
