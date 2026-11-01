@@ -13,14 +13,8 @@
       <outline text="Claude Code Changelog" title="Claude Code Changelog" type="rss" xmlUrl="https://code.claude.com/docs/en/changelog/rss.xml" htmlUrl="https://code.claude.com/docs/en/changelog"/>
       <outline text="OpenAI News" title="OpenAI News" type="rss" xmlUrl="https://openai.com/news/rss.xml" htmlUrl="https://openai.com/news/"/>
       <outline text="Google AI Blog" title="Google AI Blog" type="rss" xmlUrl="https://blog.google/innovation-and-ai/technology/ai/rss/" htmlUrl="https://blog.google/innovation-and-ai/technology/ai/"/>
-      <outline text="Google DeepMind Blog" title="Google DeepMind Blog" type="rss" xmlUrl="https://deepmind.google/blog/rss.xml" htmlUrl="https://deepmind.google/blog/"/>
       <outline text="Meta AI Blog" title="Meta AI Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml" htmlUrl="https://ai.meta.com/blog/"/>
-      <outline text="Mistral AI News" title="Mistral AI News" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_mistral.xml" htmlUrl="https://mistral.ai/news"/>
-      <outline text="Cohere Blog" title="Cohere Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cohere.xml" htmlUrl="https://cohere.com/blog"/>
-      <outline text="Groq Blog" title="Groq Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_groq.xml" htmlUrl="https://groq.com/blog/"/>
-      <outline text="Ollama Blog" title="Ollama Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ollama.xml" htmlUrl="https://ollama.com/blog"/>
       <outline text="xAI News" title="xAI News" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml" htmlUrl="https://x.ai/news"/>
-      <outline text="Thinking Machines Lab" title="Thinking Machines Lab" type="rss" xmlUrl="https://thinkingmachines.ai/blog/index.xml" htmlUrl="https://thinkingmachines.ai/blog/"/>
       <outline text="ManusAI" title="ManusAI" type="rss" xmlUrl="https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab" htmlUrl="https://manus.im/blog"/>
       <outline text="Cursor Blog" title="Cursor Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml" htmlUrl="https://cursor.com/blog"/>
       <outline text="Devin Blog" title="Devin Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml" htmlUrl="https://devin.ai/blog"/>

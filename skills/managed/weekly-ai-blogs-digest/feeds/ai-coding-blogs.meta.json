@@ -136,25 +136,7 @@
         "adopted": false,
         "note": "BestBlogs 订的是整个 The Keyword。这里改用 AI 分类 feed，避免把非 AI 文章灌进周报。"
       },
-      "notes": "分类页 /technology/ai/rss/ 会跳到这条分类 feed。research.google 是另一份博客，不在原列表里，不订。不并入 Olshansk feed_google_ai.xml（那是 developers.googleblog.com 的 AI 分类）。DeepMind 博客另有官方 feed，单独订。"
-    },
-    {
-      "id": "deepmind",
-      "title": "Google DeepMind Blog",
-      "lane": "mixed",
-      "listUrls": [
-        "https://deepmind.google/blog/"
-      ],
-      "htmlUrl": "https://deepmind.google/blog/",
-      "xmlUrl": "https://deepmind.google/blog/rss.xml",
-      "feedOrigin": "native",
-      "fallback": null,
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "官方 feed。2026-11-01 未改去订 BestBlogs 或 Olshansk。"
-      },
-      "notes": "官方 RSS。2026-11-01 核对 200。channel 标题是 Google DeepMind News。和 Google AI Blog 不是同一份，两份都订。产品发布和研究成果会混在一起，按篇归类。"
+      "notes": "分类页 /technology/ai/rss/ 会跳到这条分类 feed。research.google 是另一份博客，不在原列表里，不订。不并入 Olshansk feed_google_ai.xml（那是 developers.googleblog.com 的 AI 分类）。DeepMind 博客不订。"
     },
     {
       "id": "meta-ai",
@@ -175,78 +157,6 @@
       "notes": "Olshansk/rss-feeds 的 feed_meta_ai.xml（selenium 抓取，不是官网 RSS）。2026-11-01 核对 200；当时最新一条是 2026-07-27，可能滞后，列表页仍要补。内容混有 Muse 等产品，以及 SAM / DINO 等视觉帖。按本次要求订入，接受 CV 噪声，写周报时按篇取舍。"
     },
     {
-      "id": "mistral",
-      "title": "Mistral AI News",
-      "lane": "product",
-      "listUrls": [
-        "https://mistral.ai/news"
-      ],
-      "htmlUrl": "https://mistral.ai/news",
-      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_mistral.xml",
-      "feedOrigin": "third-party-scrape-rss",
-      "fallback": "list-page",
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "2026-11-01 这条改订 Olshansk 抓取 RSS，不订 BestBlogs 转换源。"
-      },
-      "notes": "未找到可订的原生 news feed。Olshansk/rss-feeds 的 feed_mistral.xml。2026-11-01 核对 200，channel 指向 https://mistral.ai/news。"
-    },
-    {
-      "id": "cohere",
-      "title": "Cohere Blog",
-      "lane": "product",
-      "listUrls": [
-        "https://cohere.com/blog"
-      ],
-      "htmlUrl": "https://cohere.com/blog",
-      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cohere.xml",
-      "feedOrigin": "third-party-scrape-rss",
-      "fallback": "list-page",
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "2026-11-01 这条改订 Olshansk 抓取 RSS，不订 BestBlogs 转换源。"
-      },
-      "notes": "Olshansk/rss-feeds 的 feed_cohere.xml。2026-11-01 核对 200。产品与企业动态为主。"
-    },
-    {
-      "id": "groq",
-      "title": "Groq Blog",
-      "lane": "product",
-      "listUrls": [
-        "https://groq.com/blog/"
-      ],
-      "htmlUrl": "https://groq.com/blog/",
-      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_groq.xml",
-      "feedOrigin": "third-party-scrape-rss",
-      "fallback": "list-page",
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "2026-11-01 这条改订 Olshansk 抓取 RSS，不订 BestBlogs 转换源。"
-      },
-      "notes": "Olshansk/rss-feeds 的 feed_groq.xml。2026-11-01 核对 200。"
-    },
-    {
-      "id": "ollama",
-      "title": "Ollama Blog",
-      "lane": "product",
-      "listUrls": [
-        "https://ollama.com/blog"
-      ],
-      "htmlUrl": "https://ollama.com/blog",
-      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_ollama.xml",
-      "feedOrigin": "third-party-scrape-rss",
-      "fallback": "list-page",
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "2026-11-01 这条改订 Olshansk 抓取 RSS，不订 BestBlogs 转换源。"
-      },
-      "notes": "Olshansk/rss-feeds 的 feed_ollama.xml。2026-11-01 核对 200。"
-    },
-    {
       "id": "xai-news",
       "title": "xAI News",
       "lane": "product",
@@ -263,24 +173,6 @@
         "note": "暂停源，不改去订 BestBlogs。主源仍是 Olshansk 已发布的 feed_xainews.xml。"
       },
       "notes": "Olshansk registry 把 xainews 标成暂停更新（CI 里浏览器导航超时），已发布的 XML 仍在。2026-11-01 拉取 200，当时最新一条是 2026-09-28，可能过期。列表页 https://x.ai/news 对简单 HTTP 客户端可能 403；打不开时以 feed 为准，能开再补 feed 没有的条目。"
-    },
-    {
-      "id": "thinking-machines",
-      "title": "Thinking Machines Lab",
-      "lane": "mixed",
-      "listUrls": [
-        "https://thinkingmachines.ai/blog/"
-      ],
-      "htmlUrl": "https://thinkingmachines.ai/blog/",
-      "xmlUrl": "https://thinkingmachines.ai/blog/index.xml",
-      "feedOrigin": "native",
-      "fallback": null,
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "官方 feed。2026-11-01 未改去订 BestBlogs 或 Olshansk。"
-      },
-      "notes": "官方 RSS（channel 标题 Connectionism on Thinking Machines Lab）。2026-11-01 核对 200。更新稀疏，当时最新一条是 2026-07-31。产品和长文会混在一起，按篇归类。"
     },
     {
       "id": "manus",
