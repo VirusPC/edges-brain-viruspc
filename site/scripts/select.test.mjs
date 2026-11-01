@@ -12,6 +12,7 @@ import {
   listDatedNoteDirs,
   listPostFiles,
   noteDateFromName,
+  stripLeadingDatePrefix,
   stripMatchingFirstHeading,
   titleForNote,
   titleForPost,
@@ -33,12 +34,43 @@ test('titles prefer headings, then a readable slug', () => {
   assert.equal(titleForNote('', '2026-05-01-个人效率'), '个人效率');
   assert.equal(titleForPost('正文', 'my-essay.md', 'Front title'), 'Front title');
   assert.equal(titleForPost('# From heading', 'my-essay.md', ''), 'From heading');
+  assert.equal(titleForPost('# 2026-10-29--essay\n', '2026-10-29--essay.md', ''), '2026-10-29--essay');
+});
+
+test('note titles drop a leading date that the date column already shows', () => {
+  assert.equal(
+    titleForNote('# 2026-10-29--open-grokbot 全程坑点\n', '2026-10-29--open-grokbot-全程坑点'),
+    'open-grokbot 全程坑点',
+  );
+  assert.equal(titleForNote('# 2026-05-01-个人效率\n', '2026-05-01-个人效率'), '个人效率');
+  assert.equal(
+    titleForNote('# 2026-10-29 open-grokbot 全程坑点\n', '2026-10-29--open-grokbot-全程坑点'),
+    'open-grokbot 全程坑点',
+  );
+  assert.equal(
+    titleForNote('# 2026-03-01--2026-03-01--aiopus\n', '2026-03-01--2026-03-01--aiopus-codexmd'),
+    'aiopus',
+  );
+  assert.equal(
+    titleForNote('# 2026-10-29--open-grokbot 全程坑点\n', '2026-10-29--open-grokbot-全程坑点', '已经写好的标题'),
+    '已经写好的标题',
+  );
+  assert.equal(
+    titleForNote('# 正文\n', '2026-10-29--slug', '2026-10-29--still dated'),
+    'still dated',
+  );
+  assert.equal(titleForNote('# 复盘 2026-10-29 之后\n', '2026-10-29--slug'), '复盘 2026-10-29 之后');
+  assert.equal(titleForNote('# 2026-13-01--not a date\n', '2026-01-02--slug'), '2026-13-01--not a date');
+  assert.equal(stripLeadingDatePrefix('2026-10-29'), '2026-10-29');
 });
 
 test('first heading that matches the title is removed from the body', () => {
   const body = stripMatchingFirstHeading('# 标题\n\n后文', '标题');
   assert.match(body, /^后文/);
   assert.equal(stripMatchingFirstHeading('## 别的\n\n后文', '标题').includes('## 别的'), true);
+  const dated = stripMatchingFirstHeading('# 2026-10-29--open-grokbot 全程坑点\n\n后文', 'open-grokbot 全程坑点');
+  assert.match(dated, /^后文/);
+  assert.equal(dated.includes('2026-10-29'), false);
 });
 
 test('post dates prefer frontmatter, then a filename prefix', () => {

@@ -119,24 +119,50 @@ export function firstHeading(body) {
 }
 
 /**
- * @param {string} body
+ * Drop a leading calendar date from a display title.
+ * `YYYY-MM-DD--`, `YYYY-MM-DD-`, and `YYYY-MM-DD ` are redundant next to the date column.
+ * An invalid date, a date with nothing after it, or a date later in the title stays.
+ *
  * @param {string} title
  */
+export function stripLeadingDatePrefix(title) {
+  let text = title.trim();
+  for (let i = 0; i < 3; i += 1) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})(?:--|-\s*|\s+)(.+)$/.exec(text);
+    if (!match) return text;
+    const date = calendarDate(Number(match[1]), Number(match[2]), Number(match[3]));
+    if (!date) return text;
+    const rest = match[4].trim();
+    if (!rest) return text;
+    text = rest;
+  }
+  return text;
+}
+
 export function stripMatchingFirstHeading(body, title) {
   const heading = firstHeading(body);
   if (!heading) return body;
-  if (heading.text !== cleanHeading(title)) return body;
+  const display = cleanHeading(title);
+  const headingDisplay = stripLeadingDatePrefix(heading.text);
+  if (heading.text !== display && headingDisplay !== display) return body;
   const lines = body.replace(/^\uFEFF/, '').split(/\r?\n/);
   lines.splice(heading.index, 1);
   return lines.join('\n').replace(/^\n/, '');
 }
 
 /**
+ * Frontmatter title, else the first heading, else a readable folder slug.
+ * A leading date prefix is removed from the text the site shows. The folder slug stays the URL.
+ *
  * @param {string} body
  * @param {string} folderName
+ * @param {string} [fmTitle]
  */
-export function titleForNote(body, folderName) {
-  return firstHeading(body)?.text || humanizeSlug(slugFromFolder(folderName));
+export function titleForNote(body, folderName, fmTitle = '') {
+  const chosen = fmTitle.trim()
+    ? cleanHeading(fmTitle)
+    : firstHeading(body)?.text || humanizeSlug(slugFromFolder(folderName));
+  return stripLeadingDatePrefix(chosen);
 }
 
 /**

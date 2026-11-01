@@ -43,6 +43,7 @@ assert.match(home, /recent-posts/);
 assert.match(home, /recent-notes/);
 assert.match(home, /recent-projects/);
 assert.match(home, /class="post-list"/);
+assert.match(home, />open-grokbot 全程坑点</);
 assert.doesNotMatch(home, /class="dash"|entry-list|note-kicker/);
 assert.match(home, /Projects/);
 
@@ -51,6 +52,8 @@ assert.match(notesPage, /class="post-list"/);
 assert.match(notesPage, /class="archive-year"/);
 assert.match(notesPage, /class="list-month"/);
 assert.match(notesPage, /<time /);
+assert.match(notesPage, />open-grokbot 全程坑点</);
+assert.doesNotMatch(notesPage, />2026-\d{2}-\d{2}--/);
 assert.doesNotMatch(notesPage, /class="dash"|entry-list|note-kicker|NoteList/);
 
 const expectedNotes = listDatedNoteDirs(path.join(repoRoot, 'notes'));
@@ -73,6 +76,11 @@ assert.match(projectPage, /class="archive-year"/);
 assert.match(projectPage, /prompt-caching/);
 assert.match(projectPage, /github\.com\/VirusPC\/edges-brain-viruspc\/blob\/main\/projects\/memory\//);
 assert.doesNotMatch(projectPage, /class="dash"|entry-list|note-kicker/);
+
+const grokNote = path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/index.html');
+const grokHtml = fs.readFileSync(grokNote, 'utf8');
+assert.match(grokHtml, /<h1>\s*open-grokbot 全程坑点\s*<\/h1>/);
+assert.doesNotMatch(grokHtml, /<h1>[^<]*2026-10-29/);
 
 const sampleNote = noteDetails[0];
 assert.ok(sampleNote, 'expected at least one note detail');
