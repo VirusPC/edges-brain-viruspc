@@ -2,7 +2,7 @@
 """Read the AI Coding OPML subscription list and emit lean article JSON.
 
 OPML is the subscription source of truth. ``feeds/ai-coding-blogs.meta.json``
-holds agent-only notes (fallback policy, BestBlogs match, hosts). Sources
+holds agent-only notes (lane, fallback policy, BestBlogs match, hosts). Sources
 without a usable feed are not in the OPML; this script lists them under
 ``fallbacks`` and does not scrape their HTML.
 
@@ -183,6 +183,7 @@ def check_pair(feeds: list[dict], meta: dict) -> list[str]:
     if len(opml_urls) != len(set(opml_urls)):
         errors.append("OPML 里有重复的 xmlUrl")
     opml_set = set(opml_urls)
+    allowed_lanes = set((meta.get("lanes") or {"product": "", "tech": "", "mixed": "", "special": ""}).keys())
     ids: list[str] = []
     meta_urls: list[str] = []
     for source in meta["sources"]:
@@ -191,6 +192,9 @@ def check_pair(feeds: list[dict], meta: dict) -> list[str]:
             errors.append("meta source 缺少 id")
             continue
         ids.append(sid)
+        lane = source.get("lane")
+        if lane not in allowed_lanes:
+            errors.append(f"meta {sid} 的 lane 无效: {lane!r}")
         xml_url = source.get("xmlUrl") or ""
         if xml_url:
             meta_urls.append(xml_url)
@@ -381,10 +385,10 @@ def mark_window(report: dict, since: str, until: str) -> None:
     report["entries_in_window"] = len(kept)
 
 
-def to_item(entry: dict, source_id: str) -> dict:
+def to_item(entry: dict, source_id: str, lane: str | None = None) -> dict:
     body = entry["body"]
     thin = len(body) < THIN_CHARS
-    return {
+    item = {
         "title": entry["title"],
         "date": entry["date"],
         "link": entry["link"],
@@ -392,6 +396,9 @@ def to_item(entry: dict, source_id: str) -> dict:
         "source": source_id,
         "thin": thin,
     }
+    if lane:
+        item["lane"] = lane
+    return item
 
 
 def dedupe_items(items: list[dict]) -> list[dict]:
@@ -420,6 +427,7 @@ def fallback_rows(meta: dict) -> list[dict]:
                 "listUrls": source.get("listUrls") or [],
                 "fallback": fallback,
                 "role": "backup" if source.get("xmlUrl") else "only",
+                "lane": source.get("lane"),
                 "notes": source.get("notes") or "",
             }
         )
@@ -503,13 +511,15 @@ def build_payload(reports: list[dict], meta: dict, since: str, until: str, elaps
         feed_bytes += report["bytes"]
         if report["error"]:
             errors += 1
-        for entry in report["entries"]:
-            items.append(to_item(entry, report["id"]))
         meta_source = meta_by_id.get(report["id"], {})
+        lane = meta_source.get("lane") or None
+        for entry in report["entries"]:
+            items.append(to_item(entry, report["id"], lane))
         sources.append(
             {
                 "id": report["id"],
                 "xmlUrl": report["xmlUrl"],
+                "lane": meta_source.get("lane"),
                 "feedOrigin": meta_source.get("feedOrigin"),
                 "fallback": meta_source.get("fallback"),
                 "bytes": report["bytes"],
@@ -625,6 +635,7 @@ def self_test() -> int:
     by_link = {normalize_link(item["link"]): item for item in items}
     assert by_link["example.com/a"]["thin"] is False
     assert by_link["example.com/thin"]["thin"] is True
+    assert to_item(report["entries"][0], "example", "tech")["lane"] == "tech"
     undated = (
         b"""<?xml version="1.0"?><rss version="2.0"><channel><item>
         <title>No pubDate</title>

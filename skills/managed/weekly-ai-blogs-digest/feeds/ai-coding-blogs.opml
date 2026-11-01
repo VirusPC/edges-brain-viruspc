@@ -2,16 +2,23 @@
 <opml version="2.0">
   <head>
     <title>AI Coding Blogs</title>
-    <dateCreated>Sat, 31 Oct 2026 00:00:00 GMT</dateCreated>
+    <dateCreated>Sun, 01 Nov 2026 00:00:00 GMT</dateCreated>
     <docs>http://opml.org/spec2.opml</docs>
   </head>
   <body>
     <outline text="AI Coding Blogs" title="AI Coding Blogs">
-      <outline text="Anthropic News" title="Anthropic News" type="rss" xmlUrl="https://rsshub.bestblogs.dev/anthropic/news" htmlUrl="https://claude.com/resources/articles"/>
+      <outline text="Claude Articles" title="Claude Articles" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_claude.xml" htmlUrl="https://claude.com/resources/articles"/>
+      <outline text="Anthropic News" title="Anthropic News" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml" htmlUrl="https://www.anthropic.com/news"/>
+      <outline text="Anthropic Engineering" title="Anthropic Engineering" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml" htmlUrl="https://www.anthropic.com/engineering"/>
+      <outline text="Claude Code Changelog" title="Claude Code Changelog" type="rss" xmlUrl="https://code.claude.com/docs/en/changelog/rss.xml" htmlUrl="https://code.claude.com/docs/en/changelog"/>
       <outline text="OpenAI News" title="OpenAI News" type="rss" xmlUrl="https://openai.com/news/rss.xml" htmlUrl="https://openai.com/news/"/>
       <outline text="Google AI Blog" title="Google AI Blog" type="rss" xmlUrl="https://blog.google/innovation-and-ai/technology/ai/rss/" htmlUrl="https://blog.google/innovation-and-ai/technology/ai/"/>
+      <outline text="Meta AI Blog" title="Meta AI Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml" htmlUrl="https://ai.meta.com/blog/"/>
+      <outline text="xAI News" title="xAI News" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml" htmlUrl="https://x.ai/news"/>
       <outline text="ManusAI" title="ManusAI" type="rss" xmlUrl="https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab" htmlUrl="https://manus.im/blog"/>
-      <outline text="Cursor" title="Cursor" type="rss" xmlUrl="https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960" htmlUrl="https://cursor.com/blog"/>
+      <outline text="Cursor Blog" title="Cursor Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml" htmlUrl="https://cursor.com/blog"/>
+      <outline text="Devin Blog" title="Devin Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml" htmlUrl="https://devin.ai/blog"/>
+      <outline text="DeepSeek 深度求索" title="DeepSeek 深度求索" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml"/>
       <outline text="Cognition" title="Cognition" type="rss" xmlUrl="https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7" htmlUrl="https://cognition.com/blog"/>
       <outline text="LangChain Blog" title="LangChain Blog" type="rss" xmlUrl="https://www.langchain.com/blog/rss.xml" htmlUrl="https://www.langchain.com/blog"/>
       <outline text="Qwen" title="Qwen" type="rss" xmlUrl="https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d" htmlUrl="https://qwen.ai/research"/>
