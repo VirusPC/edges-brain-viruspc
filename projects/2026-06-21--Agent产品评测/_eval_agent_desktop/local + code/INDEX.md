@@ -12,15 +12,15 @@
 Codex：
 
 
-![[edges/_eval_agent_desktop/local + code/Pasted image 20260813153418.png]]
+![[projects/2026-06-21--Agent产品评测/_eval_agent_desktop/local + code/Pasted image 20260813153418.png]]
 Cursor Agents Window：
-![[edges/_eval_agent_desktop/local + code/Pasted image 20260813154434.png]]
+![[projects/2026-06-21--Agent产品评测/_eval_agent_desktop/local + code/Pasted image 20260813154434.png]]
 
 Claude
-![[edges/_eval_agent_desktop/local + code/Pasted image 20260813153810.png]]
+![[projects/2026-06-21--Agent产品评测/_eval_agent_desktop/local + code/Pasted image 20260813153810.png]]
 Minimax Code:
-![[edges/_eval_agent_desktop/local + code/Pasted image 20260813155433.png]]
+![[projects/2026-06-21--Agent产品评测/_eval_agent_desktop/local + code/Pasted image 20260813155433.png]]
 ZCode
-![[edges/_eval_agent_desktop/local + code/Pasted image 20260813155826.png]]
+![[projects/2026-06-21--Agent产品评测/_eval_agent_desktop/local + code/Pasted image 20260813155826.png]]
 Kimi Code
-![[edges/_eval_agent_desktop/local + code/Pasted image 20260813160020.png]]
+![[projects/2026-06-21--Agent产品评测/_eval_agent_desktop/local + code/Pasted image 20260813160020.png]]
