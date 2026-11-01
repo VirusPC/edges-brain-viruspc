@@ -17,7 +17,11 @@ import {
   titleForNote,
   titleForPost,
 } from '../lib/select.mjs';
-import { listProjectFolders, titleForProject } from '../lib/projects.mjs';
+import {
+  fallbackDocumentName,
+  listProjectDocuments,
+  titleForProject,
+} from '../lib/projects.mjs';
 
 type LoaderContext = Parameters<Loader['load']>[0];
 
@@ -29,7 +33,11 @@ interface Normalized {
   date?: string;
   description?: string;
   draft?: boolean;
-  hasHub?: boolean;
+  hasPage?: boolean;
+  isHub?: boolean;
+  projectId?: string;
+  projectTitle?: string;
+  projectDate?: string;
   skipRender?: boolean;
   body: string;
   raw: string;
@@ -81,7 +89,11 @@ async function storeEntries(context: LoaderContext, entries: Normalized[]) {
     if (entry.date) rawData.date = entry.date;
     if (entry.description) rawData.description = entry.description;
     if (entry.draft) rawData.draft = true;
-    if (entry.hasHub != null) rawData.hasHub = entry.hasHub;
+    if (entry.hasPage != null) rawData.hasPage = entry.hasPage;
+    if (entry.isHub != null) rawData.isHub = entry.isHub;
+    if (entry.projectId) rawData.projectId = entry.projectId;
+    if (entry.projectTitle) rawData.projectTitle = entry.projectTitle;
+    if (entry.projectDate) rawData.projectDate = entry.projectDate;
     const data = await parseData({
       id: entry.id,
       data: rawData,
@@ -277,25 +289,41 @@ export function projectsLoader(): Loader {
 
       const sync = async () => {
         const entries: Normalized[] = [];
-        for (const project of listProjectFolders(projectsRoot)) {
-          const hubPath = project.hub ? path.join(projectsRoot, project.id, project.hub) : '';
-          const parsed = hubPath ? readMarkdown(hubPath) : { data: {}, content: '', raw: project.id };
-          const title = titleForProject(project.id, parsed.content, stringField(parsed.data, 'title'));
-          const hasHub = project.hub != null;
+        for (const doc of listProjectDocuments(projectsRoot)) {
+          const abs = path.join(projectsRoot, doc.projectId, doc.relPosix);
+          const isPage = doc.kind === 'md';
+          const parsed = isPage ? readMarkdown(abs) : { data: {}, content: '', raw: doc.relPosix };
+          const title = titleForProject(
+            fallbackDocumentName(doc.projectId, doc.relPosix),
+            parsed.content,
+            stringField(parsed.data, 'title'),
+          );
           entries.push({
-            id: project.id,
-            abs: hasHub ? hubPath : path.join(projectsRoot, project.id),
-            sourcePath: hasHub ? `projects/${project.id}/${project.hub}` : `projects/${project.id}`,
+            id: doc.collectionId,
+            abs,
+            sourcePath: `projects/${doc.projectId}/${doc.relPosix}`,
             title,
-            date: project.date ? formatISODate(project.date) : undefined,
-            description: hasHub
+            date: doc.date ? formatISODate(doc.date) : undefined,
+            description: isPage
               ? stringField(parsed.data, 'description') || excerpt(parsed.content) || undefined
               : undefined,
-            hasHub,
-            skipRender: !hasHub,
-            body: hasHub ? stripMatchingFirstHeading(parsed.content, title) : '',
+            hasPage: isPage,
+            isHub: doc.isHub,
+            projectId: doc.projectId,
+            projectDate: doc.projectDate ? formatISODate(doc.projectDate) : undefined,
+            skipRender: !isPage,
+            body: isPage ? stripMatchingFirstHeading(parsed.content, title) : '',
             raw: parsed.raw,
           });
+        }
+        const hubTitle = new Map<string, string>();
+        for (const entry of entries) {
+          if (entry.isHub && entry.projectId) hubTitle.set(entry.projectId, entry.title);
+        }
+        for (const entry of entries) {
+          entry.projectTitle =
+            (entry.projectId && hubTitle.get(entry.projectId)) ||
+            titleForProject(entry.projectId ?? entry.title, '', '');
         }
         await storeEntries(context, entries);
       };

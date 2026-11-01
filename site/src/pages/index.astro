@@ -1,12 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EntryList from '../components/EntryList.astro';
-import { getNotes, getPosts, getProjects } from '../lib/entries';
+import { getNotes, getPosts, getProjectSummaries } from '../lib/entries';
 import { siteUrl } from '../lib/paths';
 
 const posts = (await getPosts()).slice(0, 5);
 const notes = (await getNotes()).slice(0, 8);
-const projects = (await getProjects()).slice(0, 12);
+const projects = (await getProjectSummaries()).slice(0, 12);
 ---
 
 <BaseLayout home>
@@ -40,9 +40,9 @@ const projects = (await getProjects()).slice(0, 12);
       <h2 id="recent-projects">Projects</h2>
       <EntryList
         items={projects.map((project) => ({
-          title: project.data.title,
-          href: project.data.hasHub ? siteUrl(`/projects/${project.id}`) : undefined,
-          date: project.data.date,
+          title: project.title,
+          href: project.hrefId ? siteUrl(`/projects/${project.hrefId}`) : undefined,
+          date: project.date,
         }))}
       />
       <a class="more" href={siteUrl('/projects')}>All projects</a>

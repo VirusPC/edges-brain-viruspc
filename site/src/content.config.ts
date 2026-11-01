@@ -23,7 +23,11 @@ export const collections = {
   projects: defineCollection({
     loader: projectsLoader(),
     schema: entry.extend({
-      hasHub: z.boolean(),
+      hasPage: z.boolean(),
+      isHub: z.boolean(),
+      projectId: z.string(),
+      projectTitle: z.string(),
+      projectDate: z.coerce.date().optional(),
     }),
   }),
 };

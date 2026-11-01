@@ -1,17 +1,40 @@
 ---
 import ListPage from '../../components/ListPage.astro';
 import { getProjects } from '../../lib/entries';
-import { siteUrl } from '../../lib/paths';
+import { githubBlob, siteUrl } from '../../lib/paths';
+import { listProjectFolders, projectsRoot, sortProjectDocuments, sortProjects, titleForProject } from '../../lib/projects.mjs';
 
-const projects = await getProjects();
+const docs = await getProjects();
+const byProject = new Map<string, typeof docs>();
+for (const doc of docs) {
+  const list = byProject.get(doc.data.projectId) ?? [];
+  list.push(doc);
+  byProject.set(doc.data.projectId, list);
+}
+
+const folders = listProjectFolders(projectsRoot());
+const groups = sortProjects(
+  folders.map((folder) => ({
+    id: folder.id,
+    title: byProject.get(folder.id)?.find((doc) => doc.data.isHub)?.data.projectTitle
+      ?? titleForProject(folder.id, '', ''),
+    date: folder.date,
+  })),
+).map((section) => ({
+  heading: section.title,
+  items: sortProjectDocuments(
+    (byProject.get(section.id) ?? []).map((doc) => ({
+      title: doc.data.title,
+      date: doc.data.date ?? null,
+      isHub: doc.data.isHub,
+      href: doc.data.hasPage ? siteUrl(`/projects/${doc.id}`) : githubBlob(doc.data.sourcePath),
+    })),
+  ).map(({ title, date, href }) => ({
+    title,
+    date: date ?? undefined,
+    href,
+  })),
+}));
 ---
 
-<ListPage
-  title="Projects"
-  description="Project workspaces."
-  items={projects.map((project) => ({
-    title: project.data.title,
-    href: project.data.hasHub ? siteUrl(`/projects/${project.id}`) : undefined,
-    date: project.data.date,
-  }))}
-/>
+<ListPage title="Projects" description="Project workspaces." groups={groups} />

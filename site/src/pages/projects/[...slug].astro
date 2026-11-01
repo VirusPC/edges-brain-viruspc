@@ -7,7 +7,7 @@ import { githubBlob } from '../../lib/paths';
 export async function getStaticPaths() {
   const projects = await getProjects();
   return projects
-    .filter((project) => project.data.hasHub)
+    .filter((project) => project.data.hasPage)
     .map((project) => ({
       params: { slug: project.id },
       props: { project },

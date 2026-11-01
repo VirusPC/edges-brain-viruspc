@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { listProjectFolders, projectsRoot, sortProjects, titleForProject } from './projects.mjs';
 
 export type PostEntry = CollectionEntry<'posts'>;
 export type NoteEntry = CollectionEntry<'notes'>;
@@ -20,17 +21,27 @@ export async function getNotes(): Promise<NoteEntry[]> {
   return notes.sort((a, b) => timeOf(b) - timeOf(a) || a.id.localeCompare(b.id, 'zh'));
 }
 
-/** Dated projects first (newest), then undated projects by title. */
+/** Every publishable project document (markdown pages and PDF list rows). */
 export async function getProjects(): Promise<ProjectEntry[]> {
-  const projects = await getCollection('projects');
-  return projects.sort((a, b) => {
-    const aTime = a.data.date?.getTime();
-    const bTime = b.data.date?.getTime();
-    const aDated = aTime != null;
-    const bDated = bTime != null;
-    if (aDated && bDated && aTime !== bTime) return bTime - aTime;
-    if (aDated && !bDated) return -1;
-    if (!aDated && bDated) return 1;
-    return a.data.title.localeCompare(b.data.title, 'zh');
+  return getCollection('projects');
+}
+
+/** One homepage row per top-level project folder. Links only when that folder has a hub page. */
+export async function getProjectSummaries(): Promise<
+  { title: string; hrefId?: string; date?: Date }[]
+> {
+  const docs = await getProjects();
+  const hubByProject = new Map<string, ProjectEntry>();
+  for (const doc of docs) {
+    if (doc.data.isHub && doc.data.hasPage) hubByProject.set(doc.data.projectId, doc);
+  }
+  const rows = listProjectFolders(projectsRoot()).map((folder) => {
+    const hub = hubByProject.get(folder.id);
+    return {
+      title: hub?.data.projectTitle ?? titleForProject(folder.id, '', ''),
+      hrefId: hub ? hub.id : undefined,
+      date: folder.date ?? undefined,
+    };
   });
+  return sortProjects(rows);
 }

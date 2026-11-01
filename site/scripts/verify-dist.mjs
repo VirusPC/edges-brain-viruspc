@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FIXTURE_ID, listDatedNoteDirs } from '../src/lib/select.mjs';
-import { listProjectFolders } from '../src/lib/projects.mjs';
+import { listProjectDocuments } from '../src/lib/projects.mjs';
 
 const siteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = path.resolve(siteRoot, '..');
@@ -63,14 +63,15 @@ assert.equal(
   `note pages ${noteDetails.length} != dated folders ${expectedNotes.length}`,
 );
 
-const projectFolders = listProjectFolders(path.join(repoRoot, 'projects'));
+const projectDocs = listProjectDocuments(path.join(repoRoot, 'projects'));
 const postsPage = fs.readFileSync(path.join(dist, 'posts/index.html'), 'utf8');
 assert.match(postsPage, /class="post-list"|class="empty"/);
 
 const projectPage = fs.readFileSync(path.join(dist, 'projects/index.html'), 'utf8');
 assert.match(projectPage, /class="post-list"/);
-assert.match(projectPage, /class="is-plain">memory</);
-assert.doesNotMatch(projectPage, /\/projects\/memory\//);
+assert.match(projectPage, /class="archive-year"/);
+assert.match(projectPage, /prompt-caching/);
+assert.match(projectPage, /github\.com\/VirusPC\/edges-brain-viruspc\/blob\/main\/projects\/memory\//);
 assert.doesNotMatch(projectPage, /class="dash"|entry-list|note-kicker/);
 
 const sampleNote = noteDetails[0];
@@ -83,12 +84,18 @@ assert.doesNotMatch(noteDetail, /note-kicker|is-post/);
 const projectDetails = rels.filter(
   (rel) => rel.startsWith('projects/') && rel.endsWith('/index.html') && rel !== 'projects/index.html',
 );
+const markdownDocs = projectDocs.filter((doc) => doc.kind === 'md');
 assert.equal(
   projectDetails.length,
-  projectFolders.filter((project) => project.hub).length,
-  'project detail pages should match folders that have a hub file',
+  markdownDocs.length,
+  `project pages ${projectDetails.length} != markdown documents ${markdownDocs.length}`,
 );
 assert.ok(projectDetails.some((rel) => rel.includes('agent-infra')));
+assert.equal(
+  rels.some((rel) => rel.endsWith('.pdf/index.html') || rel.endsWith('.pdf')),
+  false,
+  'pdf files stay on GitHub and do not become site pages',
+);
 
 assert.equal(
   rels.some((rel) => rel === 'posts/README/index.html' || rel === 'posts/readme/index.html'),
