@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectList from '../../components/ProjectList.astro';
+import { getProjects } from '../../lib/entries';
+
+const projects = await getProjects();
+---
+
+<BaseLayout title="Projects" description="Project workspaces." skin="notes">
+  <h1>Projects</h1>
+  <ProjectList projects={projects} />
+</BaseLayout>

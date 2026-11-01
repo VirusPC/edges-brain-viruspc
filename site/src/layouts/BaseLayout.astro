@@ -32,13 +32,16 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const links = [
   { href: siteUrl('/posts'), label: 'Posts', key: 'posts' },
   { href: siteUrl('/notes'), label: 'Notes', key: 'notes' },
+  { href: siteUrl('/projects'), label: 'Projects', key: 'projects' },
   { href: siteUrl('/archive'), label: 'Archive', key: 'archive' },
   { href: siteUrl('/about'), label: 'About', key: 'about' },
 ];
 
 function current(href: string, key: string) {
   const target = href.replace(/\/$/, '');
-  if (key === 'posts' || key === 'notes') return path === target || path.startsWith(`${target}/`);
+  if (key === 'posts' || key === 'notes' || key === 'projects') {
+    return path === target || path.startsWith(`${target}/`);
+  }
   return path === target;
 }
 ---

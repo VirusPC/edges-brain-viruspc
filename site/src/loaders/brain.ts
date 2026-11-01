@@ -17,6 +17,7 @@ import {
   titleForNote,
   titleForPost,
 } from '../lib/select.mjs';
+import { listProjectFolders, titleForProject } from '../lib/projects.mjs';
 
 type LoaderContext = Parameters<Loader['load']>[0];
 
@@ -28,6 +29,8 @@ interface Normalized {
   date?: string;
   description?: string;
   draft?: boolean;
+  hasHub?: boolean;
+  skipRender?: boolean;
   body: string;
   raw: string;
 }
@@ -78,11 +81,21 @@ async function storeEntries(context: LoaderContext, entries: Normalized[]) {
     if (entry.date) rawData.date = entry.date;
     if (entry.description) rawData.description = entry.description;
     if (entry.draft) rawData.draft = true;
+    if (entry.hasHub != null) rawData.hasHub = entry.hasHub;
     const data = await parseData({
       id: entry.id,
       data: rawData,
-      filePath: entry.abs,
+      filePath: entry.skipRender ? undefined : entry.abs,
     });
+    if (entry.skipRender) {
+      store.set({
+        id: entry.id,
+        data,
+        digest: generateDigest(entry.raw),
+        rendered: { html: '', metadata: { headings: [], imagePaths: [] } },
+      });
+      continue;
+    }
     let rendered;
     try {
       const result = await processor.render(entry.body, {
@@ -250,6 +263,45 @@ export function notesLoader(): Loader {
 
       await sync();
       bindWatcher(context.watcher, [notesRoot], sync, context.logger, state);
+    },
+  };
+}
+
+export function projectsLoader(): Loader {
+  const state = { bound: false };
+  return {
+    name: 'brain-projects',
+    load: async (context) => {
+      const root = repoRootFrom(context.config.root);
+      const projectsRoot = path.join(root, 'projects');
+
+      const sync = async () => {
+        const entries: Normalized[] = [];
+        for (const project of listProjectFolders(projectsRoot)) {
+          const hubPath = project.hub ? path.join(projectsRoot, project.id, project.hub) : '';
+          const parsed = hubPath ? readMarkdown(hubPath) : { data: {}, content: '', raw: project.id };
+          const title = titleForProject(project.id, parsed.content, stringField(parsed.data, 'title'));
+          const hasHub = project.hub != null;
+          entries.push({
+            id: project.id,
+            abs: hasHub ? hubPath : path.join(projectsRoot, project.id),
+            sourcePath: hasHub ? `projects/${project.id}/${project.hub}` : `projects/${project.id}`,
+            title,
+            date: project.date ? formatISODate(project.date) : undefined,
+            description: hasHub
+              ? stringField(parsed.data, 'description') || excerpt(parsed.content) || undefined
+              : undefined,
+            hasHub,
+            skipRender: !hasHub,
+            body: hasHub ? stripMatchingFirstHeading(parsed.content, title) : '',
+            raw: parsed.raw,
+          });
+        }
+        await storeEntries(context, entries);
+      };
+
+      await sync();
+      bindWatcher(context.watcher, [projectsRoot], sync, context.logger, state);
     },
   };
 }

@@ -1,5 +1,5 @@
 import { defineCollection, z } from 'astro:content';
-import { notesLoader, postsLoader } from './loaders/brain';
+import { notesLoader, postsLoader, projectsLoader } from './loaders/brain';
 
 const entry = z.object({
   title: z.string().min(1),
@@ -18,6 +18,12 @@ export const collections = {
     loader: notesLoader(),
     schema: entry.extend({
       date: z.coerce.date(),
+    }),
+  }),
+  projects: defineCollection({
+    loader: projectsLoader(),
+    schema: entry.extend({
+      hasHub: z.boolean(),
     }),
   }),
 };
