@@ -4,12 +4,12 @@ description: posts 对外展示，后续用 Astro + GitHub Actions 搭博客与 
 metadata:
   edges-type: task
   edges-title: posts 用 Astro 搭博客与 CI
-  edges-tasks-status: backlog
+  edges-tasks-status: todo
   edges-origin-session-id: d807a059-9774-4fd0-8fa7-d5fb69f9d031
   edges-agent-client: cursor
   edges-username: Task 记录员
   edges-email: grok-bot@users.noreply.github.com
-  edges-updated-at: '2026-10-31T07:29:31.568Z'
+  edges-updated-at: '2026-11-01T02:39:14.563Z'
   edges-task-project: site-and-content
   edges-task-priority: high
 ---
