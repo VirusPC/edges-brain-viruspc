@@ -6,7 +6,7 @@ import { getPosts } from '../../lib/entries';
 const posts = await getPosts();
 ---
 
-<BaseLayout title="Posts" description="Essays." skin="paper">
+<BaseLayout title="Posts" description="Essays.">
   <h1>Posts</h1>
   <PostList posts={posts} />
 </BaseLayout>

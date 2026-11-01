@@ -46,7 +46,8 @@ assert.match(home, /class="dash"/);
 assert.match(home, /Projects/);
 
 const notesPage = fs.readFileSync(path.join(dist, 'notes/index.html'), 'utf8');
-assert.match(notesPage, /skin-notes/);
+assert.doesNotMatch(notesPage, /skin-notes/);
+assert.match(notesPage, /note-year/);
 assert.match(notesPage, /class="dash"/);
 
 const expectedNotes = listDatedNoteDirs(path.join(repoRoot, 'notes'));
@@ -61,7 +62,7 @@ assert.equal(
 
 const projectFolders = listProjectFolders(path.join(repoRoot, 'projects'));
 const projectPage = fs.readFileSync(path.join(dist, 'projects/index.html'), 'utf8');
-assert.match(projectPage, /skin-notes/);
+assert.doesNotMatch(projectPage, /skin-notes/);
 assert.match(projectPage, /class="dash"/);
 assert.match(projectPage, /class="is-plain">memory</);
 assert.doesNotMatch(projectPage, /\/projects\/memory\//);
@@ -86,7 +87,7 @@ if (fixtureOn) {
   const html = fs.readFileSync(path.join(dist, sample), 'utf8');
   assert.match(html, /class="sidenote"/);
   assert.doesNotMatch(html, /data-footnotes|class="footnotes"/);
-  assert.match(html, /skin-paper/);
+  assert.doesNotMatch(html, /skin-notes/);
   assert.match(html, /is-post/);
 } else {
   assert.equal(sample, undefined);

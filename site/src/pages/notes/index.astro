@@ -6,7 +6,7 @@ import { getNotes } from '../../lib/entries';
 const notes = await getNotes();
 ---
 
-<BaseLayout title="Notes" description="Dated notes." skin="notes">
+<BaseLayout title="Notes" description="Dated notes.">
   <h1>Notes</h1>
   <NoteIndex notes={notes} />
 </BaseLayout>

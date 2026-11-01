@@ -18,7 +18,7 @@ const { Content } = await render(note);
 const iso = formatISODate(note.data.date);
 ---
 
-<BaseLayout title={note.data.title} description={note.data.description} skin="notes">
+<BaseLayout title={note.data.title} description={note.data.description}>
   <article>
     <p class="note-kicker"><time datetime={iso}>{iso}</time></p>
     <h1>{note.data.title}</h1>
