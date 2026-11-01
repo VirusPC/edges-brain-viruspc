@@ -1,0 +1,25 @@
+---
+import type { ProjectEntry } from '../lib/entries';
+import { siteUrl } from '../lib/paths';
+
+interface Props {
+  projects: ProjectEntry[];
+}
+
+const { projects } = Astro.props;
+---
+
+<ul class="note-list">
+  {
+    projects.map((project) => (
+      <li>
+        <span class="dash" aria-hidden="true">—</span>
+        {project.data.hasHub ? (
+          <a href={siteUrl(`/projects/${project.id}`)}>{project.data.title}</a>
+        ) : (
+          <span class="is-plain">{project.data.title}</span>
+        )}
+      </li>
+    ))
+  }
+</ul>

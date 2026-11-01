@@ -15,12 +15,14 @@ on:
       - site/**
       - posts/**
       - notes/**
+      - projects/**
       - .github/workflows/pages-site.yml
   pull_request:
     paths:
       - site/**
       - posts/**
       - notes/**
+      - projects/**
       - .github/workflows/pages-site.yml
   workflow_dispatch:
 

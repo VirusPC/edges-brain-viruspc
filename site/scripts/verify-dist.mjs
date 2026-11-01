@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FIXTURE_ID, listDatedNoteDirs } from '../src/lib/select.mjs';
+import { listProjectFolders } from '../src/lib/projects.mjs';
 
 const siteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = path.resolve(siteRoot, '..');
@@ -32,6 +33,7 @@ exists('404.html');
 exists('rss.xml');
 exists('posts/index.html');
 exists('notes/index.html');
+exists('projects/index.html');
 exists('archive/index.html');
 exists('about/index.html');
 exists('favicon.svg');
@@ -39,7 +41,9 @@ exists('favicon.svg');
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 assert.match(home, /recent-posts/);
 assert.match(home, /recent-notes/);
+assert.match(home, /recent-projects/);
 assert.match(home, /class="dash"/);
+assert.match(home, /Projects/);
 
 const notesPage = fs.readFileSync(path.join(dist, 'notes/index.html'), 'utf8');
 assert.match(notesPage, /skin-notes/);
@@ -54,6 +58,22 @@ assert.equal(
   expectedNotes.length,
   `note pages ${noteDetails.length} != dated folders ${expectedNotes.length}`,
 );
+
+const projectFolders = listProjectFolders(path.join(repoRoot, 'projects'));
+const projectPage = fs.readFileSync(path.join(dist, 'projects/index.html'), 'utf8');
+assert.match(projectPage, /skin-notes/);
+assert.match(projectPage, /class="dash"/);
+assert.match(projectPage, /class="is-plain">memory</);
+assert.doesNotMatch(projectPage, /\/projects\/memory\//);
+const projectDetails = rels.filter(
+  (rel) => rel.startsWith('projects/') && rel.endsWith('/index.html') && rel !== 'projects/index.html',
+);
+assert.equal(
+  projectDetails.length,
+  projectFolders.filter((project) => project.hub).length,
+  'project detail pages should match folders that have a hub file',
+);
+assert.ok(projectDetails.some((rel) => rel.includes('agent-infra')));
 
 assert.equal(
   rels.some((rel) => rel === 'posts/README/index.html' || rel === 'posts/readme/index.html'),

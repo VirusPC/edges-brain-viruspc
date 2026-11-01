@@ -60,8 +60,8 @@ a { color: inherit; }
   padding: 1.75rem 1.25rem 4.5rem;
 }
 
-/* Two recent lists need a wider shell than a single essay column. */
-body.skin-home .frame { width: min(68rem, 100%); }
+/* Home holds three columns, so the shell is wider than a single essay. */
+body.skin-home .frame { width: min(80rem, 100%); }
 
 /*
   Notes stay a narrow mono column (36rem / 576px). Center it with the rest
@@ -153,19 +153,22 @@ body.skin-notes h2 {
 
 .home-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 2.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
   align-items: start;
 }
 
-.home-notes {
+.home-notes,
+.home-projects {
   border-left: 1px solid var(--rule);
-  padding-left: 2rem;
+  padding-left: 1.25rem;
   font-family: var(--mono);
   font-size: 14px;
   line-height: 1.55;
   color: var(--cream-ink);
 }
+
+.note-list .is-plain { text-decoration: none; }
 
 .more {
   display: inline-block;
@@ -468,9 +471,10 @@ body.skin-notes .colophon {
 
 .colophon a { color: inherit; }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
   .home-grid { grid-template-columns: 1fr; gap: 1.8rem; }
-  .home-notes {
+  .home-notes,
+  .home-projects {
     border-left: 0;
     padding-left: 0;
     border-top: 1px solid var(--rule);

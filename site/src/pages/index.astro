@@ -2,16 +2,18 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoteList from '../components/NoteList.astro';
 import PostList from '../components/PostList.astro';
-import { getNotes, getPosts } from '../lib/entries';
+import ProjectList from '../components/ProjectList.astro';
+import { getNotes, getPosts, getProjects } from '../lib/entries';
 import { siteUrl } from '../lib/paths';
 
 const posts = (await getPosts()).slice(0, 5);
 const notes = (await getNotes()).slice(0, 8);
+const projects = (await getProjects()).slice(0, 12);
 ---
 
 <BaseLayout home>
-  <h1>成稿与笔记</h1>
-  <p class="dek">亲手写的成稿，以及按日期公开的笔记。</p>
+  <h1>成稿、笔记与项目</h1>
+  <p class="dek">亲手写的成稿、按日期公开的笔记，以及项目工作区。</p>
   <div class="home-grid">
     <section class="recent-posts" aria-labelledby="recent-posts">
       <h2 id="recent-posts">Posts</h2>
@@ -22,6 +24,11 @@ const notes = (await getNotes()).slice(0, 8);
       <h2 id="recent-notes">Notes</h2>
       <NoteList notes={notes} />
       <a class="more" href={siteUrl('/notes')}>All notes</a>
+    </section>
+    <section class="home-projects recent-projects" aria-labelledby="recent-projects">
+      <h2 id="recent-projects">Projects</h2>
+      <ProjectList projects={projects} />
+      <a class="more" href={siteUrl('/projects')}>All projects</a>
     </section>
   </div>
 </BaseLayout>
