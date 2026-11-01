@@ -48,6 +48,7 @@
 | [`retrospectives/`](retrospectives/README.md) | 阶段性回看：周复盘与日复盘 |
 | [`edges/`](edges/README.md) | 提炼出来、可以反复使用的判断 |
 | [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护。博客成稿和「站点与内容」维护项目（[`.edges/tasks/site-and-content/`](.edges/tasks/site-and-content/README.md)）只在本仓，框架仓不再保留 |
+| [`site/`](site/README.md) | 公开博客的 Astro 应用。构建时只读 `posts/` 与日期笔记，部署到 GitHub Pages |
 | [`tasks/`](tasks/README.md)、[`.edges/tasks/`](.edges/tasks/README.md) | 领域任务，以及仍留在本仓的个人维护任务（技术阅读、客户端体验、站点与内容、拆仓卡） |
 | [`archive/`](archive/README.md) | 退出活跃区域的内容 |
 | [`new-server/`](new-server/) | 新服务器开荒的个人运维笔记（建用户、DNS、Claude Code 切模型）。不是可安装扩展 |
@@ -55,6 +56,8 @@
 | [`.edges/`](.edges/README.md) | 本仓自己的项目叶子、维护向 skill、个人任务。`.edges/skills` 仍是本仓 materials；维护向 skill（如 `linux-nas-direct-link`）在 [`.edges/skills/managed/`](.edges/skills/managed/README.md) |
 
 对外可以看：[教学站](https://edges.viruspc.tech/teaching/)。任务看板 [https://edges.viruspc.tech/tasks/](https://edges.viruspc.tech/tasks/) 和 artifacts 预览由框架仓部署，不在本仓的 Deploy 里构建。
+
+公开博客在 [`site/`](site/README.md)：Astro 读取 `posts/` 与日期笔记 `notes/YYYY-MM-DD…/INDEX.md`，GitHub Actions 部署到 [https://viruspc.github.io/edges-brain-viruspc/](https://viruspc.github.io/edges-brain-viruspc/)。Pages 的 Source 需在仓库 Settings 里选一次 GitHub Actions。教学站的 ECS workflow 不构建这个站点。
 
 ## 要用 Edges CLI
 

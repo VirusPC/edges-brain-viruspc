@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NoteList from '../../components/NoteList.astro';
+import { getNotes } from '../../lib/entries';
+
+const notes = await getNotes();
+---
+
+<BaseLayout title="Notes" description="Dated notes." skin="notes">
+  <h1>Notes</h1>
+  <NoteList notes={notes} />
+</BaseLayout>

@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NoteList from '../components/NoteList.astro';
+import PostList from '../components/PostList.astro';
+import { getNotes, getPosts } from '../lib/entries';
+import { siteUrl } from '../lib/paths';
+
+const posts = (await getPosts()).slice(0, 5);
+const notes = (await getNotes()).slice(0, 8);
+---
+
+<BaseLayout skin="paper">
+  <h1>成稿与笔记</h1>
+  <p class="dek">亲手写的成稿，以及按日期公开的笔记。</p>
+  <div class="home-grid">
+    <section class="recent-posts" aria-labelledby="recent-posts">
+      <h2 id="recent-posts">Posts</h2>
+      <PostList posts={posts} />
+      <a class="more" href={siteUrl('/posts')}>All posts</a>
+    </section>
+    <section class="home-notes recent-notes" aria-labelledby="recent-notes">
+      <h2 id="recent-notes">Notes</h2>
+      <NoteList notes={notes} />
+      <a class="more" href={siteUrl('/notes')}>All notes</a>
+    </section>
+  </div>
+</BaseLayout>

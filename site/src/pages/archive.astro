@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPosts, type PostEntry } from '../lib/entries';
+import { siteUrl } from '../lib/paths';
+import { formatISODate } from '../lib/select.mjs';
+
+const posts = await getPosts();
+const groups = new Map<string, PostEntry[]>();
+for (const post of posts) {
+  const year = post.data.date ? String(post.data.date.getUTCFullYear()) : '未标日期';
+  const list = groups.get(year) ?? [];
+  list.push(post);
+  groups.set(year, list);
+}
+---
+
+<BaseLayout title="Archive" description="Essay archive." skin="paper">
+  <h1>Archive</h1>
+  {
+    posts.length === 0 ? (
+      <p class="empty">成稿还在写。</p>
+    ) : (
+      [...groups.entries()].map(([year, items]) => (
+        <section class="archive-year">
+          <h2>{year}</h2>
+          <ol class="archive-list">
+            {items.map((post) => {
+              const iso = post.data.date ? formatISODate(post.data.date) : '';
+              return (
+                <li>
+                  {iso ? <time datetime={iso}>{iso}</time> : <span class="undated" />}
+                  <a href={siteUrl(`/posts/${post.id}`)}>{post.data.title}</a>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ))
+    )
+  }
+</BaseLayout>
