@@ -55,21 +55,26 @@ a { color: inherit; }
 .skip:focus { transform: none; }
 
 .frame {
-  max-width: 42rem;
-  margin: 0 auto;
+  width: min(48rem, 100%);
+  margin-inline: auto;
   padding: 1.75rem 1.25rem 4.5rem;
 }
 
-body.skin-home .frame { max-width: 68rem; }
+/* Two recent lists need a wider shell than a single essay column. */
+body.skin-home .frame { width: min(68rem, 100%); }
 
+/*
+  Notes stay a narrow mono column (36rem / 576px). Center it with the rest
+  of the site. A left-flush column left a one-sided blank on wide desktops.
+*/
 body.skin-notes .frame {
-  max-width: 576px;
-  margin: 0;
+  width: min(36rem, 100%);
+  margin-inline: auto;
   padding: 1.75rem 1.5rem 5rem;
 }
 
 body.skin-paper.is-post .frame {
-  max-width: 980px;
+  width: min(980px, 100%);
   padding-right: 300px;
 }
 
@@ -451,7 +456,7 @@ body.skin-notes .colophon {
 
 @media (max-width: 960px) {
   body.skin-paper.is-post .frame {
-    max-width: 42rem;
+    width: min(48rem, 100%);
     padding-right: 1.25rem;
   }
 
