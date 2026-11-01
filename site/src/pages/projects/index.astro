@@ -1,12 +1,17 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import ProjectList from '../../components/ProjectList.astro';
+import ListPage from '../../components/ListPage.astro';
 import { getProjects } from '../../lib/entries';
+import { siteUrl } from '../../lib/paths';
 
 const projects = await getProjects();
 ---
 
-<BaseLayout title="Projects" description="Project workspaces.">
-  <h1>Projects</h1>
-  <ProjectList projects={projects} />
-</BaseLayout>
+<ListPage
+  title="Projects"
+  description="Project workspaces."
+  items={projects.map((project) => ({
+    title: project.data.title,
+    href: project.data.hasHub ? siteUrl(`/projects/${project.id}`) : undefined,
+    date: project.data.date,
+  }))}
+/>

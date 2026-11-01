@@ -1,9 +1,8 @@
 ---
 import { render } from 'astro:content';
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticlePage from '../../components/ArticlePage.astro';
 import { getProjects } from '../../lib/entries';
 import { githubBlob } from '../../lib/paths';
-import { formatISODate } from '../../lib/select.mjs';
 
 export async function getStaticPaths() {
   const projects = await getProjects();
@@ -17,16 +16,13 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
-const iso = project.data.date ? formatISODate(project.data.date) : '';
 ---
 
-<BaseLayout title={project.data.title} description={project.data.description}>
-  <article>
-    {iso ? <p class="note-kicker"><time datetime={iso}>{iso}</time></p> : null}
-    <h1>{project.data.title}</h1>
-    <div class="prose">
-      <Content />
-    </div>
-    <p class="source"><a href={githubBlob(project.data.sourcePath)}>Source</a></p>
-  </article>
-</BaseLayout>
+<ArticlePage
+  title={project.data.title}
+  description={project.data.description}
+  date={project.data.date}
+  source={githubBlob(project.data.sourcePath)}
+>
+  <Content />
+</ArticlePage>

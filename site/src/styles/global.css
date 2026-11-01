@@ -127,54 +127,39 @@ h2 {
 
 .empty { color: var(--muted); margin: 0; }
 
-.post-list, .archive-list, .entry-list {
+.post-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.post-list li, .archive-list li, .entry-list li {
-  padding: 0.65rem 0;
-  border-bottom: 1px solid var(--rule);
-}
-
-.post-list li, .archive-list li {
+.post-list li {
   display: grid;
   grid-template-columns: 7.2rem minmax(0, 1fr);
   gap: 0.8rem;
   align-items: baseline;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--rule);
 }
 
-.post-list time, .archive-list time, .undated {
+.post-list time, .undated {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   font-size: 0.92rem;
 }
 
-.post-list a, .archive-list a, .entry-list a {
-  text-decoration: none;
+.post-list a,
+.post-list .is-plain {
   font-size: 1.15rem;
 }
 
-.post-list a:hover,
-.archive-list a:hover,
-.entry-list a:hover { text-decoration: underline; text-underline-offset: 0.18em; }
+.post-list a { text-decoration: none; }
+.post-list a:hover { text-decoration: underline; text-underline-offset: 0.18em; }
 
-.entry-list .is-plain { color: var(--ink-soft); }
+.archive-year { margin-top: 2rem; }
+.archive-year:first-child { margin-top: 0; }
 
-.dash {
-  color: var(--muted);
-  margin-right: 0.35rem;
-}
-
-.archive-year,
-.note-year { margin-top: 2rem; }
-
-.archive-year:first-child,
-.note-year:first-child { margin-top: 0; }
-
-.archive-year > h2,
-.note-year > h2 {
+.archive-year > h2 {
   font-family: var(--serif);
   font-size: 1.4rem;
   letter-spacing: 0;
@@ -185,15 +170,16 @@ h2 {
   margin-bottom: 0.4rem;
 }
 
-.note-month > h3 {
-  font-size: 0.92rem;
+.list-month > h3 {
+  margin: 1.15rem 0 0.35rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin: 1.15rem 0 0.15rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
 }
 
-.note-kicker, .post-kicker {
+.post-kicker {
   margin: 0 0 0.35rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
@@ -394,5 +380,5 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
 }
 
 @media (max-width: 560px) {
-  .post-list li, .archive-list li { grid-template-columns: 1fr; gap: 0.15rem; }
+  .post-list li { grid-template-columns: 1fr; gap: 0.15rem; }
 }

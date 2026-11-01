@@ -1,12 +1,18 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostList from '../../components/PostList.astro';
+import ListPage from '../../components/ListPage.astro';
 import { getPosts } from '../../lib/entries';
+import { siteUrl } from '../../lib/paths';
 
 const posts = await getPosts();
 ---
 
-<BaseLayout title="Posts" description="Essays.">
-  <h1>Posts</h1>
-  <PostList posts={posts} />
-</BaseLayout>
+<ListPage
+  title="Posts"
+  description="Essays."
+  empty="成稿还在写。"
+  items={posts.map((post) => ({
+    title: post.data.title,
+    href: siteUrl(`/posts/${post.id}`),
+    date: post.data.date,
+  }))}
+/>

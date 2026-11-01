@@ -1,8 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import NoteList from '../components/NoteList.astro';
-import PostList from '../components/PostList.astro';
-import ProjectList from '../components/ProjectList.astro';
+import EntryList from '../components/EntryList.astro';
 import { getNotes, getPosts, getProjects } from '../lib/entries';
 import { siteUrl } from '../lib/paths';
 
@@ -17,17 +15,36 @@ const projects = (await getProjects()).slice(0, 12);
   <div class="home-grid">
     <section class="recent-posts" aria-labelledby="recent-posts">
       <h2 id="recent-posts">Posts</h2>
-      <PostList posts={posts} />
+      <EntryList
+        items={posts.map((post) => ({
+          title: post.data.title,
+          href: siteUrl(`/posts/${post.id}`),
+          date: post.data.date,
+        }))}
+        empty="成稿还在写。"
+      />
       <a class="more" href={siteUrl('/posts')}>All posts</a>
     </section>
     <section class="home-notes recent-notes" aria-labelledby="recent-notes">
       <h2 id="recent-notes">Notes</h2>
-      <NoteList notes={notes} />
+      <EntryList
+        items={notes.map((note) => ({
+          title: note.data.title,
+          href: siteUrl(`/notes/${note.id}`),
+          date: note.data.date,
+        }))}
+      />
       <a class="more" href={siteUrl('/notes')}>All notes</a>
     </section>
     <section class="home-projects recent-projects" aria-labelledby="recent-projects">
       <h2 id="recent-projects">Projects</h2>
-      <ProjectList projects={projects} />
+      <EntryList
+        items={projects.map((project) => ({
+          title: project.data.title,
+          href: project.data.hasHub ? siteUrl(`/projects/${project.id}`) : undefined,
+          date: project.data.date,
+        }))}
+      />
       <a class="more" href={siteUrl('/projects')}>All projects</a>
     </section>
   </div>

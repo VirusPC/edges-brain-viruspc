@@ -42,13 +42,16 @@ const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 assert.match(home, /recent-posts/);
 assert.match(home, /recent-notes/);
 assert.match(home, /recent-projects/);
-assert.match(home, /class="dash"/);
+assert.match(home, /class="post-list"/);
+assert.doesNotMatch(home, /class="dash"|entry-list|note-kicker/);
 assert.match(home, /Projects/);
 
 const notesPage = fs.readFileSync(path.join(dist, 'notes/index.html'), 'utf8');
-assert.doesNotMatch(notesPage, /skin-notes/);
-assert.match(notesPage, /note-year/);
-assert.match(notesPage, /class="dash"/);
+assert.match(notesPage, /class="post-list"/);
+assert.match(notesPage, /class="archive-year"/);
+assert.match(notesPage, /class="list-month"/);
+assert.match(notesPage, /<time /);
+assert.doesNotMatch(notesPage, /class="dash"|entry-list|note-kicker|NoteList/);
 
 const expectedNotes = listDatedNoteDirs(path.join(repoRoot, 'notes'));
 const noteDetails = rels.filter(
@@ -61,11 +64,22 @@ assert.equal(
 );
 
 const projectFolders = listProjectFolders(path.join(repoRoot, 'projects'));
+const postsPage = fs.readFileSync(path.join(dist, 'posts/index.html'), 'utf8');
+assert.match(postsPage, /class="post-list"|class="empty"/);
+
 const projectPage = fs.readFileSync(path.join(dist, 'projects/index.html'), 'utf8');
-assert.doesNotMatch(projectPage, /skin-notes/);
-assert.match(projectPage, /class="dash"/);
+assert.match(projectPage, /class="post-list"/);
 assert.match(projectPage, /class="is-plain">memory</);
 assert.doesNotMatch(projectPage, /\/projects\/memory\//);
+assert.doesNotMatch(projectPage, /class="dash"|entry-list|note-kicker/);
+
+const sampleNote = noteDetails[0];
+assert.ok(sampleNote, 'expected at least one note detail');
+const noteDetail = fs.readFileSync(path.join(dist, sampleNote), 'utf8');
+assert.match(noteDetail, /class="post-head"/);
+assert.match(noteDetail, /class="post-kicker"/);
+assert.match(noteDetail, /class="post"/);
+assert.doesNotMatch(noteDetail, /note-kicker|is-post/);
 const projectDetails = rels.filter(
   (rel) => rel.startsWith('projects/') && rel.endsWith('/index.html') && rel !== 'projects/index.html',
 );

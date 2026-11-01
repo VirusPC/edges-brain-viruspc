@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import EntryList from './EntryList.astro';
+
+interface Item {
+  title: string;
+  href?: string;
+  date?: Date;
+}
+
+interface MonthGroup {
+  label: string;
+  items: Item[];
+}
+
+interface YearGroup {
+  heading: string;
+  months?: MonthGroup[];
+  items?: Item[];
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  items?: Item[];
+  groups?: YearGroup[];
+  empty?: string;
+}
+
+const { title, description, items = [], groups = [], empty = '' } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <h1>{title}</h1>
+  {
+    groups.length > 0 ? (
+      groups.map((group) => (
+        <section class="archive-year">
+          <h2>{group.heading}</h2>
+          {group.months ? (
+            group.months.map((month) => (
+              <section class="list-month">
+                <h3>{month.label}</h3>
+                <EntryList items={month.items} />
+              </section>
+            ))
+          ) : (
+            <EntryList items={group.items ?? []} />
+          )}
+        </section>
+      ))
+    ) : (
+      <EntryList items={items} empty={empty} />
+    )
+  }
+</BaseLayout>
