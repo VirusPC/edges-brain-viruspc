@@ -230,6 +230,57 @@
       "notes": "站点现为 Devin（原 Windsurf）。Olshansk/rss-feeds 的 feed_windsurf_blog.xml，channel 指向 https://devin.ai/blog。2026-11-01 核对 200。未订 feed_windsurf_changelog.xml 与 feed_windsurf_next_changelog.xml：它们按桌面端补丁版本拆条（数天内可有多条小版本），灌进周报太吵。产品公告以这份博客为准。"
     },
     {
+      "id": "deepseek-wechat",
+      "title": "DeepSeek 深度求索",
+      "lane": "product",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS。匹配名 DeepSeek / 深度求索。2026-11-01 用户指定订入。"
+      },
+      "notes": "匹配名 DeepSeek / 深度求索。2026-11-01 核对 200，channel 标题是 DeepSeek，约 10 条。没有可抓的公众号列表页，所以不设 list-page 退路。不订 Olshansk（registry 里没有 DeepSeek）。@DeepSeekHarness 没有稳定 RSS，不订。"
+    },
+    {
+      "id": "deepseek-x",
+      "title": "DeepSeek(@deepseek_ai)",
+      "lane": "product",
+      "listUrls": [
+        "https://x.com/deepseek_ai"
+      ],
+      "htmlUrl": "https://x.com/deepseek_ai",
+      "xmlUrl": "https://api.xgo.ing/rss/user/68b610deb24b47ae9a236811563cda86",
+      "feedOrigin": "bestblogs-xgo",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/68b610deb24b47ae9a236811563cda86",
+        "adopted": true,
+        "note": "XGo.ing 转换的 @deepseek_ai。2026-11-01 用户指定订入。channel 标题即 DeepSeek(@deepseek_ai)。"
+      },
+      "notes": "订的是 XGo 上的 @deepseek_ai 时间线，不是官网博客，也不另抓 x.com。2026-11-01 核对 200。不订 Olshansk。@DeepSeekHarness 没有稳定 RSS，不订。"
+    },
+    {
+      "id": "deepseek-superagent-commits",
+      "title": "DeepSeek dsh-superagent-prototype (commits)",
+      "lane": "tech",
+      "listUrls": [
+        "https://github.com/deepseek-ai/dsh-superagent-prototype/commits/main"
+      ],
+      "htmlUrl": "https://github.com/deepseek-ai/dsh-superagent-prototype",
+      "xmlUrl": "https://github.com/deepseek-ai/dsh-superagent-prototype/commits/main.atom",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "GitHub 仓库自己的 commits Atom，不是 BestBlogs，也不是 Olshansk。"
+      },
+      "notes": "用来跟上 dsh-superagent-prototype。2026-11-01 核对 releases.atom 为 200 但 0 条，所以订 commits/main.atom，不订 releases.atom。当时唯一一条是 2026-10-31 的 feat: add the dsh-superagent research prototype。lane 用 tech。"
+    },
+    {
       "id": "cognition",
       "title": "Cognition",
       "lane": "mixed",

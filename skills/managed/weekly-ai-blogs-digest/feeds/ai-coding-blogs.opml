@@ -18,6 +18,9 @@
       <outline text="ManusAI" title="ManusAI" type="rss" xmlUrl="https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab" htmlUrl="https://manus.im/blog"/>
       <outline text="Cursor Blog" title="Cursor Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml" htmlUrl="https://cursor.com/blog"/>
       <outline text="Devin Blog" title="Devin Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml" htmlUrl="https://devin.ai/blog"/>
+      <outline text="DeepSeek 深度求索" title="DeepSeek 深度求索" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml"/>
+      <outline text="DeepSeek(@deepseek_ai)" title="DeepSeek(@deepseek_ai)" type="rss" xmlUrl="https://api.xgo.ing/rss/user/68b610deb24b47ae9a236811563cda86" htmlUrl="https://x.com/deepseek_ai"/>
+      <outline text="DeepSeek dsh-superagent-prototype (commits)" title="DeepSeek dsh-superagent-prototype (commits)" type="rss" xmlUrl="https://github.com/deepseek-ai/dsh-superagent-prototype/commits/main.atom" htmlUrl="https://github.com/deepseek-ai/dsh-superagent-prototype"/>
       <outline text="Cognition" title="Cognition" type="rss" xmlUrl="https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7" htmlUrl="https://cognition.com/blog"/>
       <outline text="LangChain Blog" title="LangChain Blog" type="rss" xmlUrl="https://www.langchain.com/blog/rss.xml" htmlUrl="https://www.langchain.com/blog"/>
       <outline text="Qwen" title="Qwen" type="rss" xmlUrl="https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d" htmlUrl="https://qwen.ai/research"/>
