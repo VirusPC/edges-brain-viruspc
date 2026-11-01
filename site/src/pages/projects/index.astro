@@ -6,7 +6,7 @@ import { getProjects } from '../../lib/entries';
 const projects = await getProjects();
 ---
 
-<BaseLayout title="Projects" description="Project workspaces." skin="notes">
+<BaseLayout title="Projects" description="Project workspaces.">
   <h1>Projects</h1>
   <ProjectList projects={projects} />
 </BaseLayout>

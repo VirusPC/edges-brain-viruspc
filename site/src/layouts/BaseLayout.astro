@@ -13,15 +13,13 @@ import { siteUrl } from '../lib/paths';
 interface Props {
   title?: string;
   description?: string;
-  skin?: 'paper' | 'notes';
   wide?: boolean;
   home?: boolean;
 }
 
 const {
   title,
-  description = 'Essays and dated notes by peng cheng.',
-  skin = 'paper',
+  description = 'Essays, notes, and projects by peng cheng.',
   wide = false,
   home = false,
 } = Astro.props;
@@ -57,7 +55,7 @@ function current(href: string, key: string) {
     <link rel="icon" href={siteUrl('/favicon.svg')} />
     <link rel="alternate" type="application/rss+xml" title="peng cheng" href={siteUrl('/rss.xml')} />
   </head>
-  <body class:list={['skin-paper', skin === 'notes' && 'skin-notes', wide && 'is-post', home && 'skin-home']}>
+  <body class:list={[wide && 'is-post', home && 'is-home']}>
     <a class="skip" href="#content">Skip to content</a>
     <div class="frame">
       <header class="top">

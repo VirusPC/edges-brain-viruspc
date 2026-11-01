@@ -24,8 +24,8 @@
 | --- | --- |
 | `/` | 近期 posts、notes，以及项目列表 |
 | `/posts`、`/posts/…` | 成稿列表与正文。衬线正文；Markdown 脚注 `[^1]` 在宽屏排到页边，窄屏点序号展开 |
-| `/notes`、`/notes/…` | 日期笔记。奶油底、等宽、窄栏，按年与月份分组 |
-| `/projects`、`/projects/…` | 顶层项目目录。列表与笔记同风。有 `INDEX.md` 或 `README.md` 才有详情页 |
+| `/notes`、`/notes/…` | 日期笔记，与成稿同一套纸面版式。列表按年与月份分组 |
+| `/projects`、`/projects/…` | 顶层项目目录，同一套版式。有 `INDEX.md` 或 `README.md` 才有详情页 |
 | `/archive` | 成稿按年归档 |
 | `/about` | 占位，作者以后在本目录改 |
 | `/rss.xml` | posts 与日期笔记 |

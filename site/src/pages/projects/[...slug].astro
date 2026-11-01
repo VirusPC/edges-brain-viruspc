@@ -20,7 +20,7 @@ const { Content } = await render(project);
 const iso = project.data.date ? formatISODate(project.data.date) : '';
 ---
 
-<BaseLayout title={project.data.title} description={project.data.description} skin="notes">
+<BaseLayout title={project.data.title} description={project.data.description}>
   <article>
     {iso ? <p class="note-kicker"><time datetime={iso}>{iso}</time></p> : null}
     <h1>{project.data.title}</h1>

@@ -18,7 +18,7 @@ const { Content } = await render(post);
 const iso = post.data.date ? formatISODate(post.data.date) : '';
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} skin="paper" wide>
+<BaseLayout title={post.data.title} description={post.data.description} wide>
   <article class="post">
     <header class="post-head">
       {iso ? <p class="post-kicker"><time datetime={iso}>{iso}</time></p> : null}
