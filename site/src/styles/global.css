@@ -220,6 +220,30 @@ body.skin-notes .more { text-decoration-color: rgba(42, 41, 38, 0.22); color: in
   padding-bottom: 0.2rem;
 }
 
+.note-year { margin: 1.75rem 0 0; }
+.note-year:first-child { margin-top: 0; }
+
+body.skin-notes .note-year > h2 {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: inherit;
+  margin: 0 0 0.35rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid rgba(42, 41, 38, 0.4);
+}
+
+body.skin-notes .note-month > h3 {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #6d6a62;
+  margin: 0.85rem 0 0.1rem;
+}
+
 .note-list {
   list-style: none;
   margin: 0;

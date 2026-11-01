@@ -1,0 +1,27 @@
+---
+import NoteList from './NoteList.astro';
+import type { NoteEntry } from '../lib/entries';
+import { groupNotesByMonth } from '../lib/group-notes.mjs';
+
+interface Props {
+  notes: NoteEntry[];
+}
+
+const years = groupNotesByMonth(Astro.props.notes);
+---
+
+<div class="note-index">
+  {
+    years.map((year) => (
+      <section class="note-year">
+        <h2>{year.year}</h2>
+        {year.months.map((month) => (
+          <section class="note-month">
+            <h3>{month.label}</h3>
+            <NoteList notes={month.notes} />
+          </section>
+        ))}
+      </section>
+    ))
+  }
+</div>
