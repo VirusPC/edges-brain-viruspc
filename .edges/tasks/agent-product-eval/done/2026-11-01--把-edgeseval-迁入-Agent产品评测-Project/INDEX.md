@@ -2,9 +2,9 @@
 metadata:
   edges-type: task
   edges-task-project: agent-product-eval
-  edges-updated-at: '2026-11-01T08:36:36.127Z'
+  edges-updated-at: '2026-11-01T08:45:12.211Z'
   edges-title: 把 edges/_eval_* 迁入 Agent产品评测 Project
-  edges-tasks-status: todo
+  edges-tasks-status: done
   edges-task-priority: medium
 name: 把_edges_eval_迁入_agent产品评测_project
 description: 新建 projects/2026-06-21--Agent产品评测，迁入五个 _eval_* 并更新引用
@@ -23,9 +23,10 @@ description: 新建 projects/2026-06-21--Agent产品评测，迁入五个 _eval_
 - 开 PR 合入 `VirusPC/edges-brain-viruspc` main
 
 **完成标准：**
-- [ ] `projects/2026-06-21--Agent产品评测/` 下可见五个 `_eval_*`（或等价整理后的结构）
-- [ ] `edges/` 顶层不再保留这五个 `_eval_*`
+- [x] `projects/2026-06-21--Agent产品评测/` 下可见五个 `_eval_*`（或等价整理后的结构）
+- [x] `edges/` 顶层不再保留这五个 `_eval_*`
 - [x] 仓内明显旧路径引用已更新；PR 已开
 
-**实现进度：**
-- 内容迁移 PR（未合）：https://github.com/VirusPC/edges-brain-viruspc/pull/426 — `git mv` 五目录入 `projects/2026-06-21--Agent产品评测/`；INDEX + `projects/README` 已登记；`edges/README` 与笔记 wiki 链已改；站点构建后 `/projects/` 可见「Agent产品评测」。未动 `evaluations/`、端到端 harness 评测、`posts/`、看板文件（本卡在 #425）。合入后勾前两项完成标准并可考虑标 done。
+**实现结果：**
+- 看板：https://github.com/VirusPC/edges-brain-viruspc/pull/425 → `9c6252f`
+- 内容迁移：https://github.com/VirusPC/edges-brain-viruspc/pull/426 → `0d49b94`（五目录入 `projects/2026-06-21--Agent产品评测/`；INDEX + `projects/README` 已登记；`edges/README` 与笔记 wiki 链已改）
