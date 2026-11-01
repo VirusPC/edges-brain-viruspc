@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteUrl } from '../lib/paths';
+---
+
+<BaseLayout title="Not found" description="This page is not here." skin="paper">
+  <h1>这一页不在架上</h1>
+  <p class="dek">The page is not here.</p>
+  <p>
+    <a class="more" href={siteUrl('/posts')}>Posts</a>
+    <a class="more" href={siteUrl('/notes')}>Notes</a>
+  </p>
+</BaseLayout>

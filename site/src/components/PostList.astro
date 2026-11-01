@@ -1,0 +1,30 @@
+---
+import type { PostEntry } from '../lib/entries';
+import { siteUrl } from '../lib/paths';
+import { formatISODate } from '../lib/select.mjs';
+
+interface Props {
+  posts: PostEntry[];
+  empty?: string;
+}
+
+const { posts, empty = '成稿还在写。' } = Astro.props;
+---
+
+{
+  posts.length === 0 ? (
+    <p class="empty">{empty}</p>
+  ) : (
+    <ol class="post-list">
+      {posts.map((post) => {
+        const iso = post.data.date ? formatISODate(post.data.date) : '';
+        return (
+          <li>
+            {iso ? <time datetime={iso}>{iso}</time> : <span class="undated" />}
+            <a href={siteUrl(`/posts/${post.id}`)}>{post.data.title}</a>
+          </li>
+        );
+      })}
+    </ol>
+  )
+}

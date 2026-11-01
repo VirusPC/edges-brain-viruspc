@@ -1,0 +1,74 @@
+---
+import '@fontsource/source-serif-4/latin-400.css';
+import '@fontsource/source-serif-4/latin-ext-400.css';
+import '@fontsource/source-serif-4/latin-600.css';
+import '@fontsource/source-serif-4/latin-ext-600.css';
+import '@fontsource/source-serif-4/latin-400-italic.css';
+import '@fontsource/source-serif-4/latin-ext-400-italic.css';
+import '@fontsource/caveat/latin-500.css';
+import '@fontsource/caveat/latin-ext-500.css';
+import '../styles/global.css';
+import { siteUrl } from '../lib/paths';
+
+interface Props {
+  title?: string;
+  description?: string;
+  skin?: 'paper' | 'notes';
+  wide?: boolean;
+}
+
+const { title, description = 'Essays and dated notes by peng cheng.', skin = 'paper', wide = false } = Astro.props;
+const fullTitle = title ? `${title} · peng cheng` : 'peng cheng';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const links = [
+  { href: siteUrl('/posts'), label: 'Posts', key: 'posts' },
+  { href: siteUrl('/notes'), label: 'Notes', key: 'notes' },
+  { href: siteUrl('/archive'), label: 'Archive', key: 'archive' },
+  { href: siteUrl('/about'), label: 'About', key: 'about' },
+];
+
+function current(href: string, key: string) {
+  const target = href.replace(/\/$/, '');
+  if (key === 'posts' || key === 'notes') return path === target || path.startsWith(`${target}/`);
+  return path === target;
+}
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    <link rel="icon" href={siteUrl('/favicon.svg')} />
+    <link rel="alternate" type="application/rss+xml" title="peng cheng" href={siteUrl('/rss.xml')} />
+  </head>
+  <body class:list={['skin-paper', skin === 'notes' && 'skin-notes', wide && 'is-post']}>
+    <a class="skip" href="#content">Skip to content</a>
+    <div class="frame">
+      <header class="top">
+        <a class="mark" href={siteUrl('/')}>peng cheng</a>
+        <nav class="nav" aria-label="Sections">
+          {
+            links.map((link) => (
+              <a href={link.href} aria-current={current(link.href, link.key) ? 'page' : undefined} class:list={{ 'is-current': current(link.href, link.key) }}>
+                {link.label}
+              </a>
+            ))
+          }
+        </nav>
+      </header>
+      <main id="content">
+        <slot />
+      </main>
+      <footer class="colophon">
+        <a href={siteUrl('/rss.xml')}>RSS</a>
+        <span>peng cheng</span>
+      </footer>
+    </div>
+  </body>
+</html>

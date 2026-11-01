@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 个人仓
 
+- **公开博客 `site/`：** 新增 Astro 应用，发布 `posts/` 成稿和 `notes/` 下带日期的 `INDEX.md`。成稿用衬线与页边脚注，笔记用程序列表风。GitHub Actions 工作流 `pages-site.yml` 构建并部署到 GitHub Pages（`https://viruspc.github.io/edges-brain-viruspc/`）。既有 Deploy 工作流仍只更新教学站检出。
 - **活标记与技能名对齐 edges-*：** 框架仓硬切后，本仓活索引里的 `project-entries-*` 改为 `edges-entries-*`，`project-memory-type` 改为 `edges-memory-type`。仍在用的技能引用改为 `edges-memory-*`、`edges-conversation-to-*`、`edges-tasks-classify`、`edges-langfuse-*-tracing`。本仓 `skills/managed/` 没有这些 skill 的副本。doctor 与 reshape 没有替代。日期笔记、日复盘和本文件更早条目里的历史技能名保留。
 - **材料目录硬切到 `.edges`：** 按框架仓 [ADR 0047](https://github.com/VirusPC/edges/blob/main/docs/adr/0047-rename-harness-directory-to-edges.md)，各层材料目录从 `.harness/` 改为 `.edges/`，`AGENTS.md` 层标记改为 `edges` / `edges-*`。不留旧路径别名。历史任务 slug 与旧规格文件名里的 `project-harness` 未改。
 - **废止 shared-extensions 隔间：** 删除整棵 `shared-extensions/`。最后 annotated tag 为 `shared-extensions@6.0.0`（deprecated），之后不再打 `shared-extensions@*`，也不再维护隔间级 `VERSION`。七个通用 skill 在根 [`skills/managed/`](skills/managed/README.md)：`horizontal-vertical-research`、`html-plan`、`learn-repo`、`paper-10-questions`、`summarize-ai-article`、`summarize-ai-article-ultra`、`weekly-ai-blogs-digest`。装机笔记迁到顶层 [`new-server/`](new-server/)。Twitter / X 查询迁到 [`notes/2026-10-27--twitter-ai-query/`](notes/2026-10-27--twitter-ai-query/INDEX.md)。跨机靠 Compose 挂本脑仓，不再做全局 `~/.agents` 安装。

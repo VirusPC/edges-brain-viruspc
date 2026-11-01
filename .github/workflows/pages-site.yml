@@ -1,0 +1,70 @@
+# Public blog on GitHub Pages.
+# The existing deploy.yml only fast-forwards the ECS checkout that serves /teaching/.
+# This workflow builds site/ and publishes GitHub Pages. It does not touch that checkout.
+#
+# One-time repo setting: Settings → Pages → Build and deployment → Source: GitHub Actions.
+# Until that is selected, the deploy job cannot create the Pages environment.
+# Expected project-pages URL: https://viruspc.github.io/edges-brain-viruspc/
+name: Pages site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - site/**
+      - posts/**
+      - notes/**
+      - .github/workflows/pages-site.yml
+  pull_request:
+    paths:
+      - site/**
+      - posts/**
+      - notes/**
+      - .github/workflows/pages-site.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-site
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install, test, and build
+        working-directory: site
+        env:
+          ASTRO_TELEMETRY_DISABLED: 1
+        run: npm ci && npm test && npm run build
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,21 @@
+---
+import type { NoteEntry } from '../lib/entries';
+import { siteUrl } from '../lib/paths';
+
+interface Props {
+  notes: NoteEntry[];
+}
+
+const { notes } = Astro.props;
+---
+
+<ul class="note-list">
+  {
+    notes.map((note) => (
+      <li>
+        <span class="dash" aria-hidden="true">—</span>
+        <a href={siteUrl(`/notes/${note.id}`)}>{note.data.title}</a>
+      </li>
+    ))
+  }
+</ul>

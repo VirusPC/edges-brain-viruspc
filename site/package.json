@@ -1,0 +1,22 @@
+{
+  "name": "edges-brain-site",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/verify-dist.mjs",
+    "preview": "astro preview --host 127.0.0.1",
+    "test": "node --test scripts/*.test.mjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^6.3.11",
+    "@astrojs/rss": "^4.0.14",
+    "@fontsource/caveat": "^5.2.8",
+    "@fontsource/source-serif-4": "^5.2.9",
+    "astro": "^5.16.0",
+    "gray-matter": "^4.0.3"
+  }
+}

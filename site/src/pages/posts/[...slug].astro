@@ -1,0 +1,32 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts } from '../../lib/entries';
+import { githubBlob } from '../../lib/paths';
+import { formatISODate } from '../../lib/select.mjs';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const iso = post.data.date ? formatISODate(post.data.date) : '';
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} skin="paper" wide>
+  <article class="post">
+    <header class="post-head">
+      {iso ? <p class="post-kicker"><time datetime={iso}>{iso}</time></p> : null}
+      <h1>{post.data.title}</h1>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+    <p class="source"><a href={githubBlob(post.data.sourcePath)}>Source</a></p>
+  </article>
+</BaseLayout>
