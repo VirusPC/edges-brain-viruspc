@@ -242,7 +242,7 @@
         "adopted": true,
         "note": "BestBlogs Wechat2RSS。匹配名 DeepSeek / 深度求索。2026-11-01 用户指定订入。"
       },
-      "notes": "匹配名 DeepSeek / 深度求索。2026-11-01 核对 200，channel 标题是 DeepSeek，约 10 条。没有可抓的公众号列表页，所以不设 list-page 退路。不订 Olshansk（registry 里没有 DeepSeek）。@DeepSeekHarness 没有稳定 RSS，不订。"
+      "notes": "匹配名 DeepSeek / 深度求索。2026-11-01 核对 200，channel 标题是 DeepSeek，约 10 条。没有可抓的公众号列表页，所以不设 list-page 退路。不订 Olshansk（registry 里没有 DeepSeek）。dsh-superagent-prototype 的 commits Atom 已从订阅去掉，提交对周报太吵；releases.atom 当时是空的，也不订。之后留意 Harness 公众号或 @DeepSeekHarness 的稳定 RSS，现在还没有。"
     },
     {
       "id": "deepseek-x",
@@ -260,25 +260,7 @@
         "adopted": true,
         "note": "XGo.ing 转换的 @deepseek_ai。2026-11-01 用户指定订入。channel 标题即 DeepSeek(@deepseek_ai)。"
       },
-      "notes": "订的是 XGo 上的 @deepseek_ai 时间线，不是官网博客，也不另抓 x.com。2026-11-01 核对 200。不订 Olshansk。@DeepSeekHarness 没有稳定 RSS，不订。"
-    },
-    {
-      "id": "deepseek-superagent-commits",
-      "title": "DeepSeek dsh-superagent-prototype (commits)",
-      "lane": "tech",
-      "listUrls": [
-        "https://github.com/deepseek-ai/dsh-superagent-prototype/commits/main"
-      ],
-      "htmlUrl": "https://github.com/deepseek-ai/dsh-superagent-prototype",
-      "xmlUrl": "https://github.com/deepseek-ai/dsh-superagent-prototype/commits/main.atom",
-      "feedOrigin": "native",
-      "fallback": null,
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "GitHub 仓库自己的 commits Atom，不是 BestBlogs，也不是 Olshansk。"
-      },
-      "notes": "用来跟上 dsh-superagent-prototype。2026-11-01 核对 releases.atom 为 200 但 0 条，所以订 commits/main.atom，不订 releases.atom。当时唯一一条是 2026-10-31 的 feat: add the dsh-superagent research prototype。lane 用 tech。"
+      "notes": "订的是 XGo 上的 @deepseek_ai 时间线，不是官网博客，也不另抓 x.com。2026-11-01 核对 200。不订 Olshansk。dsh-superagent-prototype 的 commits 已去掉（对周报太吵）。@DeepSeekHarness 还没有稳定 RSS，先不订。"
     },
     {
       "id": "cognition",
