@@ -1,7 +1,20 @@
 {
   "version": 1,
-  "checkedAt": "2026-10-31",
-  "policy": "OPML 收录阅读器能导入的 feed。优先用站点原生 RSS/Atom。没有原生 feed 时，订 BestBlogs 对上的转换源（RSSHub、XGo.ing、Wechat2RSS），并保留列表页退路。BestBlogs 没有命中的站只写在本文件，fallback 为 list-page。",
+  "checkedAt": "2026-11-01",
+  "policy": "OPML 收录阅读器能导入的 feed。优先站点原生 RSS/Atom（feedOrigin=native）。没有可用原生 feed 时，可以订 Olshansk/rss-feeds 发布在 GitHub raw 上的抓取 RSS（feedOrigin=third-party-scrape-rss，约每小时更新），或 BestBlogs 对上的转换源（RSSHub、XGo.ing、Wechat2RSS），并保留列表页退路。已经有可用原生 feed 的站不要再并一份抓取源（OpenAI News、Google AI Blog 保持原生，不并入 Olshansk 的 openai_main / google_ai）。研究向和红队源（Anthropic research/red、Goodfire、FAR.AI、Eleuther、Transluce、Timaeus 等）不订。每条 source 有 lane：product、tech、mixed 或 special。",
+  "lanes": {
+    "product": "发布、功能、定价、面向用户的产品博客和 changelog。",
+    "tech": "工程博客、实现、基础设施、深入的 how-to。",
+    "mixed": "同一份 feed 经常同时有产品和工程内容。周报按每一篇归入产品动态或技术与工程。",
+    "special": "GitHub Trending 与薅羊毛。不进入文章总结的产品/技术分栏，仍写各自专节。"
+  },
+  "olshansk": {
+    "repo": "https://github.com/Olshansk/rss-feeds",
+    "rawBase": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/",
+    "registry": "feeds.yaml",
+    "checkedAt": "2026-11-01",
+    "note": "第三方抓列表生成的 RSS。feed 文件名形如 feed_<id>.xml。registry 里 enabled:false 的源默认不订；xAI News 按本次要求例外保留，并在该条 notes 写明可能过期。未订 Windsurf changelog：补丁版本太碎。"
+  },
   "bestblogsLookup": {
     "repo": "https://github.com/ginobefun/BestBlogs",
     "files": [
@@ -18,41 +31,81 @@
   "sources": [
     {
       "id": "claude-articles",
-      "title": "Anthropic News",
+      "title": "Claude Articles",
+      "lane": "product",
       "listUrls": [
+        "https://claude.com/resources/articles",
         "https://claude.com/blog"
       ],
       "htmlUrl": "https://claude.com/resources/articles",
-      "xmlUrl": "https://rsshub.bestblogs.dev/anthropic/news",
-      "feedOrigin": "bestblogs-rsshub",
-      "fallback": "list-page",
-      "bestblogs": {
-        "matchedXmlUrl": "https://rsshub.bestblogs.dev/anthropic/news",
-        "adopted": true,
-        "note": "BestBlogs RSSHub 转换源 rsshub.bestblogs.dev/anthropic/news。2026-10-31 用户确认订入。不是 claude.com 官网文章，列表页仍是退路。"
-      },
-      "notes": "无原生 feed。订的是 BestBlogs 的 RSSHub Anthropic News，不是 claude.com/resources/articles。官网文章没出现在 feed 里时，仍抓列表页；列表若只有壳再用浏览器。"
-    },
-    {
-      "id": "anthropic-engineering",
-      "title": "Anthropic Engineering",
-      "listUrls": [
-        "https://www.anthropic.com/engineering"
-      ],
-      "htmlUrl": "https://www.anthropic.com/engineering",
-      "xmlUrl": null,
-      "feedOrigin": "none",
+      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_claude.xml",
+      "feedOrigin": "third-party-scrape-rss",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": null,
         "adopted": false,
-        "note": "2026-10-31 查过 BestBlogs_RSS_Articles.opml 与 BestBlogs_RSS_ALL.opml，没有可订的博客 feed。"
+        "note": "claude.com/resources/articles 对不上 BestBlogs 的 Anthropic News。2026-10-31 曾把 rsshub.bestblogs.dev/anthropic/news 误记在这个 id 上，2026-11-01 已拆到 anthropic-news。"
       },
-      "notes": "工程博客没有 alternate feed，常见 /rss.xml 为 404。退路是列表页。"
+      "notes": "无原生 feed。订 Olshansk/rss-feeds 的 feed_claude.xml（第三方按小时抓取，不是官网 RSS）。2026-11-01 核对 200，channel 指向 https://claude.com/resources/articles。官网文章没出现在 feed 里时，仍抓文章列表；列表若只有壳再用浏览器。blog 列表一并作为退路。"
+    },
+    {
+      "id": "anthropic-news",
+      "title": "Anthropic News",
+      "lane": "product",
+      "listUrls": [
+        "https://www.anthropic.com/news"
+      ],
+      "htmlUrl": "https://www.anthropic.com/news",
+      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://rsshub.bestblogs.dev/anthropic/news",
+        "adopted": false,
+        "note": "2026-10-31 曾把这条 RSSHub 当作主源。2026-11-01 改订 Olshansk feed_anthropic_news.xml。RSSHub 地址只留作备用，不再写入 OPML。"
+      },
+      "notes": "无原生 news RSS。主源是 Olshansk/rss-feeds 的 feed_anthropic_news.xml（第三方抓取）。2026-11-01 核对 200。备用且可能过期的旧地址：https://rsshub.bestblogs.dev/anthropic/news 。feed 没覆盖到的新闻室文章仍走列表页。"
+    },
+    {
+      "id": "anthropic-engineering",
+      "title": "Anthropic Engineering",
+      "lane": "tech",
+      "listUrls": [
+        "https://www.anthropic.com/engineering"
+      ],
+      "htmlUrl": "https://www.anthropic.com/engineering",
+      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-10-31 查过 BestBlogs，没有可订的工程博客 feed。2026-11-01 改订 Olshansk 抓取源。"
+      },
+      "notes": "没有可用的官网 RSS（常见 /rss.xml 为 404）。订 Olshansk/rss-feeds 的 feed_anthropic_engineering.xml。2026-11-01 核对 200；27 条里约 24 条链接落在 /research/ 而不是 /engineering/，仍比没有 feed 好，这些链接照收。列表页继续当退路，用来补 feed 没有的工程文。"
+    },
+    {
+      "id": "claude-code-changelog",
+      "title": "Claude Code Changelog",
+      "lane": "product",
+      "listUrls": [
+        "https://code.claude.com/docs/en/changelog"
+      ],
+      "htmlUrl": "https://code.claude.com/docs/en/changelog",
+      "xmlUrl": "https://code.claude.com/docs/en/changelog/rss.xml",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "官方 feed。2026-11-01 未改去订 BestBlogs 或 Olshansk。"
+      },
+      "notes": "官方 changelog RSS。2026-11-01 核对 200，application/rss+xml。面向 Claude Code 用户的版本说明，lane 用 product。条目按版本号拆开，周报里可合并叙述，不必每条版本单独成篇。"
     },
     {
       "id": "openai-news",
       "title": "OpenAI News",
+      "lane": "mixed",
       "listUrls": [
         "https://openai.com/zh-Hans-CN/news/"
       ],
@@ -65,11 +118,12 @@
         "adopted": true,
         "note": "与原生 feed 相同。"
       },
-      "notes": "列表页是中文 news，feed 是英文 news RSS。周报里的 openai.com/index/ 链接来自这份 feed。全文历史都在 feed 里，脚本会按日期裁剪后再送给模型。"
+      "notes": "列表页是中文 news，feed 是英文 news RSS。周报里的 openai.com/index/ 链接来自这份 feed。全文历史都在 feed 里，脚本会按日期裁剪后再送给模型。不并入 Olshansk feed_openai_main.xml：原生 RSS 已覆盖 openai.com/news。"
     },
     {
       "id": "google-ai",
       "title": "Google AI Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://blog.google/technology/ai/"
       ],
@@ -82,11 +136,48 @@
         "adopted": false,
         "note": "BestBlogs 订的是整个 The Keyword。这里改用 AI 分类 feed，避免把非 AI 文章灌进周报。"
       },
-      "notes": "分类页 /technology/ai/rss/ 会跳到这条分类 feed。research.google 是另一份博客，不在原列表里，不订。"
+      "notes": "分类页 /technology/ai/rss/ 会跳到这条分类 feed。research.google 是另一份博客，不在原列表里，不订。不并入 Olshansk feed_google_ai.xml（那是 developers.googleblog.com 的 AI 分类）。DeepMind 博客不订。"
+    },
+    {
+      "id": "meta-ai",
+      "title": "Meta AI Blog",
+      "lane": "mixed",
+      "listUrls": [
+        "https://ai.meta.com/blog/"
+      ],
+      "htmlUrl": "https://ai.meta.com/blog/",
+      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-11-01 这条改订 Olshansk 抓取 RSS，不订 BestBlogs 转换源。"
+      },
+      "notes": "Olshansk/rss-feeds 的 feed_meta_ai.xml（selenium 抓取，不是官网 RSS）。2026-11-01 核对 200；当时最新一条是 2026-07-27，可能滞后，列表页仍要补。内容混有 Muse 等产品，以及 SAM / DINO 等视觉帖。按本次要求订入，接受 CV 噪声，写周报时按篇取舍。"
+    },
+    {
+      "id": "xai-news",
+      "title": "xAI News",
+      "lane": "product",
+      "listUrls": [
+        "https://x.ai/news"
+      ],
+      "htmlUrl": "https://x.ai/news",
+      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "暂停源，不改去订 BestBlogs。主源仍是 Olshansk 已发布的 feed_xainews.xml。"
+      },
+      "notes": "Olshansk registry 把 xainews 标成暂停更新（CI 里浏览器导航超时），已发布的 XML 仍在。2026-11-01 拉取 200，当时最新一条是 2026-09-28，可能过期。列表页 https://x.ai/news 对简单 HTTP 客户端可能 403；打不开时以 feed 为准，能开再补 feed 没有的条目。"
     },
     {
       "id": "manus",
       "title": "ManusAI",
+      "lane": "product",
       "listUrls": [
         "https://manus.im/blog"
       ],
@@ -103,25 +194,60 @@
     },
     {
       "id": "cursor",
-      "title": "Cursor",
+      "title": "Cursor Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://cursor.com/cn/blog",
         "https://cursor.com/blog"
       ],
       "htmlUrl": "https://cursor.com/blog",
-      "xmlUrl": "https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960",
-      "feedOrigin": "bestblogs-xgo",
+      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml",
+      "feedOrigin": "third-party-scrape-rss",
       "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960",
-        "adopted": true,
-        "note": "BestBlogs 的 XGo.ing 推特转换（Cursor）。2026-10-31 用户确认订入。不是 cursor.com/blog，列表页仍是退路。"
+        "adopted": false,
+        "note": "XGo.ing 推特转换不再作为主源，也不再写入 OPML。2026-11-01 改订 Olshansk 的博客抓取。"
       },
-      "notes": "https://cursor.com/atom.xml 最新一条停在 2024-11-11，不订那份。改订 XGo.ing 推特。官网博客仍走列表页。sitemap 的 lastmod 不是发布日。"
+      "notes": "https://cursor.com/atom.xml 最新一条停在 2024-11-11，不订。主源是 Olshansk/rss-feeds 的 feed_cursor.xml，对应 https://cursor.com/blog，不是推特。未使用的旧 XGo 地址：https://api.xgo.ing/rss/user/5287b4e0e13a4ab7ab7b1d56f9d88960 。sitemap 的 lastmod 不是发布日。官网博客文章若没进 feed，仍走列表页。"
+    },
+    {
+      "id": "devin-blog",
+      "title": "Devin Blog",
+      "lane": "product",
+      "listUrls": [
+        "https://devin.ai/blog"
+      ],
+      "htmlUrl": "https://devin.ai/blog",
+      "xmlUrl": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "2026-11-01 这条改订 Olshansk 抓取 RSS，不订 BestBlogs 转换源。"
+      },
+      "notes": "站点现为 Devin（原 Windsurf）。Olshansk/rss-feeds 的 feed_windsurf_blog.xml，channel 指向 https://devin.ai/blog。2026-11-01 核对 200。未订 feed_windsurf_changelog.xml 与 feed_windsurf_next_changelog.xml：它们按桌面端补丁版本拆条（数天内可有多条小版本），灌进周报太吵。产品公告以这份博客为准。"
+    },
+    {
+      "id": "deepseek-wechat",
+      "title": "DeepSeek 深度求索",
+      "lane": "product",
+      "listUrls": [],
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml",
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS。匹配名 DeepSeek / 深度求索。2026-11-01 用户指定订入。"
+      },
+      "notes": "匹配名 DeepSeek / 深度求索。2026-11-01 核对 200，channel 标题是 DeepSeek，约 10 条。没有可抓的公众号列表页，所以不设 list-page 退路。这是唯一的 DeepSeek 品牌源：@deepseek_ai 的 XGo 时间线已去掉。不订 Olshansk（registry 里没有 DeepSeek）。dsh-superagent-prototype 的 commits Atom 已从订阅去掉，提交对周报太吵；releases.atom 当时是空的，也不订。之后留意 Harness 公众号或 @DeepSeekHarness 的稳定 RSS，现在还没有。"
     },
     {
       "id": "cognition",
       "title": "Cognition",
+      "lane": "mixed",
       "listUrls": [
         "https://cognition.ai/blog/1"
       ],
@@ -143,6 +269,7 @@
     {
       "id": "langchain",
       "title": "LangChain Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://blog.langchain.com/"
       ],
@@ -160,6 +287,7 @@
     {
       "id": "trae",
       "title": "TRAE Blog",
+      "lane": "product",
       "listUrls": [
         "https://www.trae.ai/blog"
       ],
@@ -177,6 +305,7 @@
     {
       "id": "qoder",
       "title": "Qoder Blog",
+      "lane": "product",
       "listUrls": [
         "https://qoder.com/blog"
       ],
@@ -194,6 +323,7 @@
     {
       "id": "codebuddy",
       "title": "CodeBuddy Blog",
+      "lane": "product",
       "listUrls": [
         "https://www.codebuddy.ai/blog"
       ],
@@ -211,6 +341,7 @@
     {
       "id": "qwen-research",
       "title": "Qwen",
+      "lane": "tech",
       "listUrls": [
         "https://qwen.ai/research"
       ],
@@ -228,6 +359,7 @@
     {
       "id": "huggingface",
       "title": "Hugging Face Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://huggingface.co/blog"
       ],
@@ -245,6 +377,7 @@
     {
       "id": "aws-ml",
       "title": "AWS Machine Learning Blog",
+      "lane": "tech",
       "listUrls": [
         "https://aws.amazon.com/cn/blogs/machine-learning/"
       ],
@@ -262,6 +395,7 @@
     {
       "id": "sankalp",
       "title": "sankalp's blog",
+      "lane": "tech",
       "listUrls": [
         "https://sankalp.bearblog.dev/"
       ],
@@ -279,6 +413,7 @@
     {
       "id": "datacamp",
       "title": "DataCamp AI Blog",
+      "lane": "tech",
       "listUrls": [
         "https://www.datacamp.com/blog/category/ai"
       ],
@@ -296,6 +431,7 @@
     {
       "id": "amp-news",
       "title": "Amp News",
+      "lane": "product",
       "listUrls": [
         "https://ampcode.com/chronicle"
       ],
@@ -313,6 +449,7 @@
     {
       "id": "latitude",
       "title": "Latitude Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://latitude.so/blog"
       ],
@@ -330,6 +467,7 @@
     {
       "id": "lovable",
       "title": "Lovable Blog",
+      "lane": "product",
       "listUrls": [
         "https://lovable.dev/blog"
       ],
@@ -346,6 +484,7 @@
     {
       "id": "kiro",
       "title": "Kiro Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://kiro.dev/blog/"
       ],
@@ -363,6 +502,7 @@
     {
       "id": "philschmid",
       "title": "philschmid.de",
+      "lane": "tech",
       "listUrls": [
         "https://www.philschmid.de/"
       ],
@@ -379,6 +519,7 @@
     {
       "id": "goose",
       "title": "goose Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://goose-docs.ai/blog/"
       ],
@@ -395,6 +536,7 @@
     {
       "id": "zed",
       "title": "Zed Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://zed.dev/blog"
       ],
@@ -412,6 +554,7 @@
     {
       "id": "roocode",
       "title": "Roo Code / Roomote",
+      "lane": "product",
       "listUrls": [
         "https://roocode.com/blog"
       ],
@@ -433,6 +576,7 @@
     {
       "id": "coderabbit",
       "title": "CodeRabbit Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://www.coderabbit.ai/blog"
       ],
@@ -449,6 +593,7 @@
     {
       "id": "warp",
       "title": "Warp Blog",
+      "lane": "mixed",
       "listUrls": [
         "https://www.warp.dev/blog"
       ],
@@ -465,6 +610,7 @@
     {
       "id": "kimi",
       "title": "月之暗面 Kimi",
+      "lane": "mixed",
       "listUrls": [
         "https://www.kimi.com/blog/"
       ],
@@ -485,6 +631,7 @@
     {
       "id": "fsck",
       "title": "Massively Parallel Procrastination",
+      "lane": "tech",
       "listUrls": [
         "https://blog.fsck.com/"
       ],
@@ -502,6 +649,7 @@
     {
       "id": "chroma-research",
       "title": "Chroma Research",
+      "lane": "tech",
       "listUrls": [
         "https://www.trychroma.com/research"
       ],
@@ -519,6 +667,7 @@
     {
       "id": "baoyu",
       "title": "宝玉的分享",
+      "lane": "mixed",
       "listUrls": [
         "https://baoyu.io/",
         "https://baoyu.io/translations/2026-05-10/akshay-pachaar-2041146899319971922"
@@ -541,6 +690,7 @@
     {
       "id": "antigravity",
       "title": "Google Antigravity Blog",
+      "lane": "product",
       "listUrls": [
         "https://antigravity.google/blog"
       ],
@@ -557,6 +707,7 @@
     {
       "id": "jxnl",
       "title": "Jason Liu",
+      "lane": "tech",
       "listUrls": [
         "https://jxnl.co/writing/"
       ],
@@ -574,6 +725,7 @@
     {
       "id": "lucumr",
       "title": "Armin Ronacher's Thoughts and Writings",
+      "lane": "tech",
       "listUrls": [
         "https://lucumr.pocoo.org/"
       ],
@@ -591,6 +743,7 @@
     {
       "id": "minimax",
       "title": "MiniMax 稀宇科技",
+      "lane": "mixed",
       "listUrls": [
         "https://minimaxi.com/blog"
       ],
@@ -613,6 +766,7 @@
     {
       "id": "bytedance-tech",
       "title": "字节跳动技术团队",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml",
@@ -628,6 +782,7 @@
     {
       "id": "baidu-geek",
       "title": "百度Geek说",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml",
@@ -643,6 +798,7 @@
     {
       "id": "taobao-tech",
       "title": "大淘宝技术",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml",
@@ -658,6 +814,7 @@
     {
       "id": "kuaishou-tech",
       "title": "快手技术",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml",
@@ -673,6 +830,7 @@
     {
       "id": "alipay-ux",
       "title": "支付宝体验科技",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml",
@@ -688,6 +846,7 @@
     {
       "id": "meituan-tech",
       "title": "美团技术团队",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [
         "https://tech.meituan.com/"
@@ -706,6 +865,7 @@
     {
       "id": "qwen-ai-platform",
       "title": "千问 AI 平台",
+      "lane": "mixed",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml",
@@ -716,11 +876,12 @@
         "adopted": true,
         "note": "无同名条目。用户指定映射到通义实验室 https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml 。"
       },
-      "notes": "截图上的「千问 AI 平台」在 BestBlogs 没有同名源。订的是「通义实验室」这份 Wechat2RSS。"
+      "notes": "截图上的「千问 AI 平台」在 BestBlogs 没有同名源。订的是「通义实验室」这份 Wechat2RSS。同组其它技术团队公众号标 tech；这一份模型发布和工程文都有，标 mixed，按篇归类。"
     },
     {
       "id": "tencent-engineering",
       "title": "腾讯技术工程",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml",
@@ -736,6 +897,7 @@
     {
       "id": "alibaba-tech",
       "title": "阿里技术",
+      "lane": "tech",
       "group": "国内技术团队",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml",
@@ -751,6 +913,7 @@
     {
       "id": "github-trending-daily-all",
       "title": "GitHub Trending（每日 / 全部）",
+      "lane": "special",
       "group": "GitHub Trending",
       "listUrls": [
         "https://github.com/trending"
@@ -770,6 +933,7 @@
     {
       "id": "github-trending-daily-python",
       "title": "GitHub Trending（每日 / Python）",
+      "lane": "special",
       "group": "GitHub Trending",
       "listUrls": [
         "https://github.com/trending/python?since=daily"
@@ -789,6 +953,7 @@
     {
       "id": "github-trending-daily-typescript",
       "title": "GitHub Trending（每日 / TypeScript）",
+      "lane": "special",
       "group": "GitHub Trending",
       "listUrls": [
         "https://github.com/trending/typescript?since=daily"
@@ -808,6 +973,7 @@
     {
       "id": "linux-do-welfare",
       "title": "linux.do 福利羊毛",
+      "lane": "special",
       "group": "薅羊毛",
       "listUrls": [
         "https://linux.do/c/welfare/36"
