@@ -7,4 +7,10 @@
 
 - [CrewAI概念与协作边界](<2026-10-11--CrewAI%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%8D%8F%E4%BD%9C%E8%BE%B9%E7%95%8C/INDEX.md>) — 用 teach 流程学 CrewAI：先建概念模型，再对照 LangChain / Claude Code Agent Teams，理清声明式小队与开放讨论的边界。
 - [Code Review](<2026-10-11--code-review/INDEX.md>) — 在 Cursor Bugbot 之外，为 edges 选型并试点自动 PR 代码审查方案。
+- [2026\-09\-09\-\-agent\-clients\-ux/INDEX.md](<2026-09-09--agent-clients-ux/INDEX.md>)
+- [2026\-11\-01\-\-agent\-product\-eval/INDEX.md](<2026-11-01--agent-product-eval/INDEX.md>)
+- [2026\-10\-21\-\-deepseek\-harness/INDEX.md](<2026-10-21--deepseek-harness/INDEX.md>)
+- [2026\-10\-20\-\-edges\-extensions/INDEX.md](<2026-10-20--edges-extensions/INDEX.md>)
+- [2026\-10\-28\-\-learning/INDEX.md](<2026-10-28--learning/INDEX.md>)
+- [2026\-09\-10\-\-site\-and\-content/INDEX.md](<2026-09-10--site-and-content/INDEX.md>)
 <!-- edges-entries-local:end -->

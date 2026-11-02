@@ -47,7 +47,7 @@
 | [`notes/`](notes/README.md)、[`projects/`](projects/)、[`memory/`](memory/README.md)、[`teaching/`](teaching/README.md) | 知识生产：低成本捕获、专项工作区、调研备忘、教学工作区 |
 | [`retrospectives/`](retrospectives/README.md) | 阶段性回看：周复盘与日复盘 |
 | [`edges/`](edges/README.md) | 提炼出来、可以反复使用的判断 |
-| [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护。博客成稿和「站点与内容」维护项目（[`.edges/tasks/site-and-content/`](.edges/tasks/site-and-content/README.md)）只在本仓，框架仓不再保留 |
+| [`posts/`](posts/README.md) | 对外博客成稿，由作者亲手维护。博客成稿和「站点与内容」维护项目（[`.edges/projects/2026-09-10--site-and-content/tasks/`](.edges/projects/2026-09-10--site-and-content/tasks/README.md)）只在本仓，框架仓不再保留 |
 | [`site/`](site/README.md) | 公开博客的 Astro 应用。构建时只读 `posts/` 与日期笔记，部署到 GitHub Pages |
 | [`tasks/`](tasks/README.md)、[`.edges/tasks/`](.edges/tasks/README.md) | 领域任务，以及仍留在本仓的个人维护任务（技术阅读、客户端体验、站点与内容、拆仓卡） |
 | [`archive/`](archive/README.md) | 退出活跃区域的内容 |
