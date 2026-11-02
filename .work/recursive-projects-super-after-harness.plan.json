@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "root": "/workspace",
+  "super": true,
+  "groups": [
+    {
+      "name": "agent-clients-ux",
+      "source": "/workspace/tasks/agent-clients-ux",
+      "destination": "/workspace/projects/2026-09-09--agent-clients-ux/tasks",
+      "date": "2026-09-09",
+      "project": "/workspace/projects/2026-09-09--agent-clients-ux",
+      "readme": "# Agent Clients UX\n\n客户端/插件/外设与本地 UX 实验。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [synced\\_desktop\\_pet\\_message\\_board](<backlog/2026-09-11--%E8%B7%A8%E8%AE%BE%E5%A4%87%E5%90%8C%E6%AD%A5%E6%A1%8C%E9%9D%A2%E5%AE%A0%E7%89%A9%E4%B8%8E%E7%95%99%E8%A8%80%E6%9D%BF/INDEX.md>) — 开发可在两台电脑间同步动作行为的桌面宠物，并配备留言板等功能\n- [待读\\-harness\\-playbook](<done/2026-09-09--%E5%BE%85%E8%AF%BB-harness-playbook/INDEX.md>) — 待读文章：Harness Playbook（Stencil）\n- [edges\\-connector远程MCP](<../../.edges/projects/2026-09-09--agent-clients-ux/tasks/backlog/2026-10-14--edges-connector%E8%87%AA%E5%BB%BA%E8%BF%9C%E7%A8%8B-MCP-%E8%AE%A9%E5%90%84%E8%81%8A%E5%A4%A9%E7%AA%97%E5%8F%A3%E8%AF%BB%E5%86%99-edges/INDEX.md>) — 自建远程 MCP 服务，让各聊天窗口和编程 Agent 以最低成本查询并写入 edges。卡在维护看板。\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "backlog/2026-09-11--跨设备同步桌面宠物与留言板/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-11--跨设备同步桌面宠物与留言板",
+          "name": "跨设备同步桌面宠物与留言板",
+          "description": "开发可在两台电脑间同步动作行为的桌面宠物，并配备留言板等功能"
+        },
+        {
+          "relative": "done/2026-09-09--待读-harness-playbook/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-09--待读-harness-playbook",
+          "name": "待读 Harness Playbook",
+          "description": "待读文章：Harness Playbook（Stencil）"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "backlog/2026-09-11--跨设备同步桌面宠物与留言板/.2026-09-11--跨设备同步桌面宠物与留言板.log.md",
+          "sha256": "53eb03fcfaa3db26c737b676f38b02c32a7c0f2707b721cb018dfa9df7028fa2"
+        },
+        {
+          "relative": "backlog/2026-09-11--跨设备同步桌面宠物与留言板/INDEX.md",
+          "sha256": "2cb3aaf7d6974d877d9fa8b948fe26b9ba9b94f00e1a555c05a913304351c898",
+          "normalized": "7ac26a86b33fa8fb79d2fbd9db020c51d4c69eb5444fa3db2b39e293ed22c5d5"
+        },
+        {
+          "relative": "done/2026-09-09--待读-harness-playbook/.2026-09-09--待读-harness-playbook.log.md",
+          "sha256": "5a05e7f9de2154f8002d1d60cebca5872b22d75420d5b49fb19a82ba816098c1"
+        },
+        {
+          "relative": "done/2026-09-09--待读-harness-playbook/INDEX.md",
+          "sha256": "cee58a432f6fc746cbef285da40c394da6104e6f08b4e042d751de31356d691b",
+          "normalized": "640eadeafcceaaa3268710e9aee19f17558c849f3980a5bfa73bc3f3bc621bcf"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "6e8ce7ab5deba9a39d3bae0c1c478272546c08b4ed8b0c01b61dcb3a4c8f009a",
+          "normalized": "ab47f07d50321eaa38c9879006c55306d128d3bd9bcec42f1c311fa384987021"
+        }
+      ],
+      "projectSource": "# Agent Clients UX\n\n客户端/插件/外设与本地 UX 实验。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    },
+    {
+      "name": "project-memory",
+      "source": "/workspace/tasks/project-memory",
+      "destination": "/workspace/projects/2026-09-09--project-memory/tasks",
+      "date": "2026-09-09",
+      "project": "/workspace/projects/2026-09-09--project-memory",
+      "readme": "# Project Memory\n\nProject Memory 类型/索引/reshape/与 docs 边界等。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [笔记洗成project\\-memory格式](<https://github.com/VirusPC/edges/blob/main/.edges/tasks/project-memory/backlog/2026-09-09--%E7%AC%94%E8%AE%B0%E6%B4%97%E6%88%90project-memory%E6%A0%BC%E5%BC%8F/INDEX.md>) — 把既有笔记统一洗成 project\\-memory 格式\n<!-- edges-entries-local:end -->\n",
+      "tasks": [],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "README.md",
+          "sha256": "f5ccf41e0f59d0dd8c4904f8041f241d17c645ee6a2f1fe11b347ebe7b4c500b",
+          "normalized": "f5ccf41e0f59d0dd8c4904f8041f241d17c645ee6a2f1fe11b347ebe7b4c500b"
+        }
+      ],
+      "projectSource": "# Project Memory\n\nProject Memory 类型/索引/reshape/与 docs 边界等。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [笔记洗成project\\-memory格式](<https://github.com/VirusPC/edges/blob/main/.edges/tasks/project-memory/backlog/2026-09-09--%E7%AC%94%E8%AE%B0%E6%B4%97%E6%88%90project-memory%E6%A0%BC%E5%BC%8F/INDEX.md>) — 把既有笔记统一洗成 project\\-memory 格式\n<!-- edges-entries-local:end -->\n"
+    },
+    {
+      "name": "site-and-content",
+      "source": "/workspace/tasks/site-and-content",
+      "destination": "/workspace/projects/2026-09-13--site-and-content/tasks",
+      "date": "2026-09-13",
+      "project": "/workspace/projects/2026-09-13--site-and-content",
+      "readme": "# Site and Content\n\n站点/posts/badge/内容整理检索。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [classify\\_organize\\_edges\\_for\\_retrieval](<backlog/2026-09-13--edges%E5%86%85%E5%AE%B9%E5%88%86%E7%B1%BB%E6%95%B4%E7%90%86%E4%BE%BF%E4%BA%8E%E6%A3%80%E7%B4%A2/INDEX.md>) — 仔细分类、清晰整理 edges 下内容，让外部 AI 能检索到相关理解（如产品）\n- [organize\\_posts\\_and\\_build\\_site](<../../.edges/projects/2026-09-10--site-and-content/tasks/backlog/2026-09-14--%E6%95%B4%E7%90%86posts%E6%96%87%E4%BB%B6%E5%A4%B9%E5%B9%B6%E5%BB%BA%E7%AB%99/INDEX.md>) — 整理 posts 文件夹并建站；建站栈跟已有 Astro 条目。卡在维护看板。\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "backlog/2026-09-13--edges内容分类整理便于检索/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-13--edges内容分类整理便于检索",
+          "name": "分类整理 edges 内容以便检索",
+          "description": "仔细分类、清晰整理 edges 下内容，让外部 AI 能检索到相关理解（如产品）"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "backlog/2026-09-13--edges内容分类整理便于检索/.2026-09-13--edges内容分类整理便于检索.log.md",
+          "sha256": "7754f14fd59a68239361f8c227af506ea1088ae5efda99800272b87b22089362"
+        },
+        {
+          "relative": "backlog/2026-09-13--edges内容分类整理便于检索/INDEX.md",
+          "sha256": "abee7f629e96d80604cebe4d993bf56c8d48caf4a7510da0faf5fd0e7c14b655",
+          "normalized": "60ff19c341a99a33ab3df592000837d49f549da760e1e5c7c53b47fb00bfcc46"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "253b80e2ba6cd380b72a7cfe10fc1991dc487ce8f5a4e16c959fdae58e494b12",
+          "normalized": "e4f04fd553334c2380db02916dfcedc6736f8218d5b31598f615f19360851490"
+        }
+      ],
+      "projectSource": "# Site and Content\n\n站点/posts/badge/内容整理检索。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    }
+  ],
+  "conflicts": [],
+  "totals": {
+    "projects": 3,
+    "tasks": 3,
+    "defaultTasks": 0,
+    "runLogs": 3,
+    "resources": 0,
+    "resourceBytes": 0
+  }
+}

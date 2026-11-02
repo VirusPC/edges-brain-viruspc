@@ -1,0 +1,1237 @@
+{
+  "version": 1,
+  "root": "/workspace",
+  "groups": [
+    {
+      "name": "_default",
+      "source": "/workspace/.edges/tasks/_default",
+      "destination": "/workspace/.edges/tasks",
+      "date": "2026-10-23",
+      "readme": "# Default\n\nUngrouped tasks that have not been assigned a named Task Project.\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [routines\\_目录下增加\\_project\\_分组层](<backlog/2026-10-23--routines-%E7%9B%AE%E5%BD%95%E4%B8%8B%E5%A2%9E%E5%8A%A0-Project-%E5%88%86%E7%BB%84%E5%B1%82/INDEX.md>) — 给长期问题追踪等常驻流程加一层归属分组，避免 routines 扁平堆叠。\n- [edges\\_将\\_dashboard\\_定为通用系统输出](<backlog/2026-10-24--Edges-%E5%B0%86-dashboard-%E5%AE%9A%E4%B8%BA%E9%80%9A%E7%94%A8%E7%B3%BB%E7%BB%9F%E8%BE%93%E5%87%BA/INDEX.md>) — 把 dashboard 提升为与 notes、artifacts 同级的通用输出形态，问题追踪只是第一个消费者。\n- [统一收集并统计所有\\_agent\\_的\\_session](<backlog/2026-10-24--%E7%BB%9F%E4%B8%80%E6%94%B6%E9%9B%86%E5%B9%B6%E7%BB%9F%E8%AE%A1%E6%89%80%E6%9C%89-Agent-%E7%9A%84-Session/INDEX.md>) — 把各 Agent 客户端的会话收成可查询数据源，支撑沉淀、评测、成本和跨 Agent 接力。\n- [grok\\_bot\\_会话每小时写入\\_langfuse](<backlog/2026-10-24--Grok-Bot-%E4%BC%9A%E8%AF%9D%E6%AF%8F%E5%B0%8F%E6%97%B6%E5%86%99%E5%85%A5-Langfuse/INDEX.md>) — 本地插件抓不到 Grok Bot；用定时任务按真实时间线把会话写进 Langfuse。\n- [日复盘旁路接入\\_langfusecodexcursorgrok\\_主源仍用\\_readtranscript](<backlog/2026-10-25--%E6%97%A5%E5%A4%8D%E7%9B%98%E6%97%81%E8%B7%AF%E6%8E%A5%E5%85%A5-LangfuseCodexCursorGrok-%E4%B8%BB%E6%BA%90%E4%BB%8D%E7%94%A8-ReadTranscript/INDEX.md>) — 对照过自建 Langfuse 与现有日复盘落盘后，主路径不换；给 Skill 加一条旁路，只补扫 Codex/Cursor 里已有 I/O 的 turn。\n- [收口周复盘\\_pr\\_370统一\\_readmeskill\\_文案后合入](<done/2026-10-25--%E6%94%B6%E5%8F%A3%E5%91%A8%E5%A4%8D%E7%9B%98-PR-370%E7%BB%9F%E4%B8%80-READMEskill-%E6%96%87%E6%A1%88%E5%90%8E%E5%90%88%E5%85%A5/INDEX.md>) — 消除「补记改 INDEX」与「正文写定后不改、评论记 COMMENTS.md」矛盾，再合 \\#370。\n- [验收并标\\_doneevaluation\\_迁移\\_langfuse\\_agent\\_skills\\_卡](<backlog/2026-10-26--%E9%AA%8C%E6%94%B6%E5%B9%B6%E6%A0%87-doneevaluation-%E8%BF%81%E7%A7%BB-Langfuse-Agent-skills-%E5%8D%A1/INDEX.md>) — edges\\#45 / brain\\#382 已落地，但 Skill 子卡仍 backlog；验收完成标准后标 done，并决定母卡状态。\n- [补齐或标明\\_opencodepi\\_的\\_langfuse\\_设备维度tags缺口](<backlog/2026-10-25--%E8%A1%A5%E9%BD%90%E6%88%96%E6%A0%87%E6%98%8E-OpenCodePi-%E7%9A%84-Langfuse-%E8%AE%BE%E5%A4%87%E7%BB%B4%E5%BA%A6tags%E7%BC%BA%E5%8F%A3/INDEX.md>) — OpenCode/Pi 当前无 tags 写入口，设备维度缺失；调研可写路径或在文档标明限制。\n- [harness\\_memory\\_ablation\\_题库\\_v1\\_1与线上扩库流水线](<backlog/2026-10-27--harness-memory-ablation-%E9%A2%98%E5%BA%93-v1.1%E4%B8%8E%E7%BA%BF%E4%B8%8A%E6%89%A9%E5%BA%93%E6%B5%81%E6%B0%B4%E7%BA%BF/INDEX.md>) — 对齐 Compose→顶层 submodule 后的题库真源，补齐数据集说明，并落地「线上 trace→候选→人审→upsert」流水线，供后续正式消融使用。\n- [edges\\_官网知识问答\\_rag\\_服务edges\\_rag](<backlog/2026-10-28--Edges-%E5%AE%98%E7%BD%91%E7%9F%A5%E8%AF%86%E9%97%AE%E7%AD%94-RAG-%E6%9C%8D%E5%8A%A1edges-rag/INDEX.md>) — 建 VirusPC/edges\\-rag：用 LlamaIndex\\+Chroma\\+FastAPI 为官网知识问答 Agent 提供带引用的 Edges 框架问答服务，可在 minigtr 对接 compose edges 与 4070ts Ollama。\n- [个人视频剪辑工作流马尔代夫成片](<backlog/2026-10-31--%E4%B8%AA%E4%BA%BA%E8%A7%86%E9%A2%91%E5%89%AA%E8%BE%91%E5%B7%A5%E4%BD%9C%E6%B5%81%E9%A9%AC%E5%B0%94%E4%BB%A3%E5%A4%AB%E6%88%90%E7%89%87/INDEX.md>) — 按个人视频剪辑工作流产出马尔代夫旅行成片。\n- [ai资讯工作流改为\\_rss\\_并优化数据格式与\\_token\\_对比](<in_progress/2026-10-31--AI%E8%B5%84%E8%AE%AF%E5%B7%A5%E4%BD%9C%E6%B5%81%E6%94%B9%E4%B8%BA-RSS-%E5%B9%B6%E4%BC%98%E5%8C%96%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F%E4%B8%8E-token-%E5%AF%B9%E6%AF%94/INDEX.md>) — AI 资讯周报改为以自维护 OPML 的 RSS 为先，列表页只作退路，并留下 2026-10-30 窗口的覆盖与体积对比。\n- [已有资料沉淀进\\_edges\\_工作流](<backlog/2026-10-31--%E5%B7%B2%E6%9C%89%E8%B5%84%E6%96%99%E6%B2%89%E6%B7%80%E8%BF%9B-Edges-%E5%B7%A5%E4%BD%9C%E6%B5%81/INDEX.md>) — 把已有资料系统地沉淀进 Edges 的工作流。\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "backlog/2026-10-23--routines-目录下增加-Project-分组层/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-23--routines-目录下增加-Project-分组层",
+          "name": "routines 目录下增加 Project 分组层",
+          "description": "给长期问题追踪等常驻流程加一层归属分组，避免 routines 扁平堆叠。"
+        },
+        {
+          "relative": "backlog/2026-10-24--Edges-将-dashboard-定为通用系统输出/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-24--Edges-将-dashboard-定为通用系统输出",
+          "name": "Edges 将 dashboard 定为通用系统输出",
+          "description": "把 dashboard 提升为与 notes、artifacts 同级的通用输出形态，问题追踪只是第一个消费者。"
+        },
+        {
+          "relative": "backlog/2026-10-24--Grok-Bot-会话每小时写入-Langfuse/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-24--Grok-Bot-会话每小时写入-Langfuse",
+          "name": "Grok Bot 会话每小时写入 Langfuse",
+          "description": "本地插件抓不到 Grok Bot；用定时任务按真实时间线把会话写进 Langfuse。"
+        },
+        {
+          "relative": "backlog/2026-10-24--统一收集并统计所有-Agent-的-Session/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-24--统一收集并统计所有-Agent-的-Session",
+          "name": "统一收集并统计所有 Agent 的 Session",
+          "description": "把各 Agent 客户端的会话收成可查询数据源，支撑沉淀、评测、成本和跨 Agent 接力。"
+        },
+        {
+          "relative": "backlog/2026-10-25--日复盘旁路接入-LangfuseCodexCursorGrok-主源仍用-ReadTranscript/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-25--日复盘旁路接入-LangfuseCodexCursorGrok-主源仍用-ReadTranscript",
+          "name": "日复盘旁路接入 Langfuse（Codex/Cursor），Grok 主源仍用 ReadTranscript",
+          "description": "对照过自建 Langfuse 与现有日复盘落盘后，主路径不换；给 Skill 加一条旁路，只补扫 Codex/Cursor 里已有 I/O 的 turn。"
+        },
+        {
+          "relative": "backlog/2026-10-25--补齐或标明-OpenCodePi-的-Langfuse-设备维度tags缺口/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-25--补齐或标明-OpenCodePi-的-Langfuse-设备维度tags缺口",
+          "name": "补齐或标明 OpenCode/Pi 的 Langfuse 设备维度（tags）缺口",
+          "description": "OpenCode/Pi 当前无 tags 写入口，设备维度缺失；调研可写路径或在文档标明限制。"
+        },
+        {
+          "relative": "backlog/2026-10-26--验收并标-doneevaluation-迁移-Langfuse-Agent-skills-卡/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-26--验收并标-doneevaluation-迁移-Langfuse-Agent-skills-卡",
+          "name": "验收并标 done：evaluation 迁移 Langfuse Agent skills 卡",
+          "description": "edges#45 / brain#382 已落地，但 Skill 子卡仍 backlog；验收完成标准后标 done，并决定母卡状态。"
+        },
+        {
+          "relative": "backlog/2026-10-27--harness-memory-ablation-题库-v1.1与线上扩库流水线/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-27--harness-memory-ablation-题库-v1.1与线上扩库流水线",
+          "name": "harness-memory-ablation 题库 v1.1 与线上扩库流水线",
+          "description": "对齐 Compose→顶层 submodule 后的题库真源，补齐数据集说明，并落地「线上 trace→候选→人审→upsert」流水线，供后续正式消融使用。"
+        },
+        {
+          "relative": "backlog/2026-10-28--Edges-官网知识问答-RAG-服务edges-rag/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-28--Edges-官网知识问答-RAG-服务edges-rag",
+          "name": "Edges 官网知识问答 RAG 服务（edges-rag）",
+          "description": "建 VirusPC/edges-rag：用 LlamaIndex+Chroma+FastAPI 为官网知识问答 Agent 提供带引用的 Edges 框架问答服务，可在 minigtr 对接 compose edges 与 4070ts Ollama。"
+        },
+        {
+          "relative": "backlog/2026-10-31--个人视频剪辑工作流马尔代夫成片/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-31--个人视频剪辑工作流马尔代夫成片",
+          "name": "个人视频剪辑工作流：马尔代夫成片",
+          "description": "按个人视频剪辑工作流产出马尔代夫旅行成片。"
+        },
+        {
+          "relative": "backlog/2026-10-31--已有资料沉淀进-Edges-工作流/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-31--已有资料沉淀进-Edges-工作流",
+          "name": "已有资料沉淀进 Edges 工作流",
+          "description": "把已有资料系统地沉淀进 Edges 的工作流。"
+        },
+        {
+          "relative": "done/2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入/INDEX.md",
+          "status": "done",
+          "stem": "2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入",
+          "name": "收口周复盘 PR #370：统一 README/skill 文案后合入",
+          "description": "消除「补记改 INDEX」与「正文写定后不改、评论记 COMMENTS.md」矛盾，再合 #370。"
+        },
+        {
+          "relative": "in_progress/2026-10-31--AI资讯工作流改为-RSS-并优化数据格式与-token-对比/INDEX.md",
+          "status": "in_progress",
+          "stem": "2026-10-31--AI资讯工作流改为-RSS-并优化数据格式与-token-对比",
+          "name": "AI资讯工作流改为 RSS 并优化数据格式与 token 对比",
+          "description": "AI 资讯周报改为以自维护 OPML 的 RSS 为先，列表页只作退路，并留下 2026-10-30 窗口的覆盖与体积对比。"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "backlog/2026-10-23--routines-目录下增加-Project-分组层/.2026-10-23--routines-目录下增加-Project-分组层.log.md",
+          "sha256": "77cc3c3afdd2b71874d9e841d05843d1945308c3088338485ae17d8dffcb7396"
+        },
+        {
+          "relative": "backlog/2026-10-23--routines-目录下增加-Project-分组层/INDEX.md",
+          "sha256": "f604cd0afa99d266ee31ac0eb49adf737b9a3ef5fd5ed48969db53ed47025085",
+          "normalized": "71443611eaa637c525c817986b39e46221755afabf8051edcbcb55e7a921c5e5"
+        },
+        {
+          "relative": "backlog/2026-10-24--Edges-将-dashboard-定为通用系统输出/.2026-10-24--Edges-将-dashboard-定为通用系统输出.log.md",
+          "sha256": "fe655b5db85e69313a06d69c263fe4a17cd5d2086fdc4bcb5a108644c1f3b998"
+        },
+        {
+          "relative": "backlog/2026-10-24--Edges-将-dashboard-定为通用系统输出/INDEX.md",
+          "sha256": "2352950e4a3d02c45dddab6cbbf334bdf86823513eb301a9fc1fca4fa6e90889",
+          "normalized": "57beb725c863ae85957ea721d3fc61af43eca02a469fa0f5bca4acf77f8c98fe"
+        },
+        {
+          "relative": "backlog/2026-10-24--Grok-Bot-会话每小时写入-Langfuse/.2026-10-24--Grok-Bot-会话每小时写入-Langfuse.log.md",
+          "sha256": "f2a26278b3e226c3d09a13fb6c708c12bc5ef57f237e2d15492373c4e7a16a37"
+        },
+        {
+          "relative": "backlog/2026-10-24--Grok-Bot-会话每小时写入-Langfuse/INDEX.md",
+          "sha256": "15a78ba013e4afa6dc36af74119ac90c74c2e80f42441ecf97b12155f69fc3bd",
+          "normalized": "73b60af264a6be95c73d713ca29e516b0ab96ead781748777b68cfe97f38177b"
+        },
+        {
+          "relative": "backlog/2026-10-24--统一收集并统计所有-Agent-的-Session/.2026-10-24--统一收集并统计所有-Agent-的-Session.log.md",
+          "sha256": "55f096900f09b2d96c9b976ccd085d0faeca093c80724056a2b342426382d750"
+        },
+        {
+          "relative": "backlog/2026-10-24--统一收集并统计所有-Agent-的-Session/INDEX.md",
+          "sha256": "8e554e3b6eda5a4d3eb1f018827df6970311898e887119bc6e13daff26225d58",
+          "normalized": "1162ca1b566e6b288c2da0be2a2d228dd24de888f9dea8f60ad5edb9892d37c9"
+        },
+        {
+          "relative": "backlog/2026-10-25--日复盘旁路接入-LangfuseCodexCursorGrok-主源仍用-ReadTranscript/.2026-10-25--日复盘旁路接入-LangfuseCodexCursorGrok-主源仍用-ReadTranscript.log.md",
+          "sha256": "4d62c57b7f629fc60bf5a3d7f3a090c5bf9c0bda705a726398d01332bcb1fdb7"
+        },
+        {
+          "relative": "backlog/2026-10-25--日复盘旁路接入-LangfuseCodexCursorGrok-主源仍用-ReadTranscript/INDEX.md",
+          "sha256": "6ec3ddb8cfccd282dcad75cf0ee57c45f163820cc401b58a7a5b1863c5cdcfef",
+          "normalized": "8f4e28975b654e0b2e26935c5da3172f4b0f9375f9b3f6e0e7cef8a67f2ded51"
+        },
+        {
+          "relative": "backlog/2026-10-25--补齐或标明-OpenCodePi-的-Langfuse-设备维度tags缺口/.2026-10-25--补齐或标明-OpenCodePi-的-Langfuse-设备维度tags缺口.log.md",
+          "sha256": "62d9b0a5f4944c511007f0f58262f9fcd5ec93317a241500a2621e955df18a6c"
+        },
+        {
+          "relative": "backlog/2026-10-25--补齐或标明-OpenCodePi-的-Langfuse-设备维度tags缺口/INDEX.md",
+          "sha256": "35e778f222b7b4da3d1112145cb4c97b87d6b4b027c50ed9f1bf0780dc3863ce",
+          "normalized": "db71fef9f35947266d0549d925c1fb5587deedae4acce18bdd7c40af4566c925"
+        },
+        {
+          "relative": "backlog/2026-10-26--验收并标-doneevaluation-迁移-Langfuse-Agent-skills-卡/.2026-10-26--验收并标-doneevaluation-迁移-Langfuse-Agent-skills-卡.log.md",
+          "sha256": "da22c118b7584b62da3839ea21c87b4959ff1f04dc742c35d63aaed78afff727"
+        },
+        {
+          "relative": "backlog/2026-10-26--验收并标-doneevaluation-迁移-Langfuse-Agent-skills-卡/INDEX.md",
+          "sha256": "fb3cedc8d73950b15d6f0e2b90a4f7f7791fd3b8852ee1b1774e4cc85bb5dd4e",
+          "normalized": "b9b7a9f7c12c57e05601491e177390f7c8b366685a33198fdc300c6b72d7dde3"
+        },
+        {
+          "relative": "backlog/2026-10-27--harness-memory-ablation-题库-v1.1与线上扩库流水线/.2026-10-27--harness-memory-ablation-题库-v1.1与线上扩库流水线.log.md",
+          "sha256": "02acc5a7cacf8c4f61a14d6e93ade15cfd510c29fab5f3af9cf4e7df043d306c"
+        },
+        {
+          "relative": "backlog/2026-10-27--harness-memory-ablation-题库-v1.1与线上扩库流水线/INDEX.md",
+          "sha256": "a97e313ac9627ad5e90ed5a160a22ef0f9991a5f2cf55453ce2f281424f0ace9",
+          "normalized": "14c655fd2d0a4d87876db7d3e78dd64c4056438d645686bbb57e199afa872ec6"
+        },
+        {
+          "relative": "backlog/2026-10-28--Edges-官网知识问答-RAG-服务edges-rag/.2026-10-28--Edges-官网知识问答-RAG-服务edges-rag.log.md",
+          "sha256": "08d9f46bd3e9e3a45ae71d85ed940d0063aa3a69152b7637791cd42756b430bd"
+        },
+        {
+          "relative": "backlog/2026-10-28--Edges-官网知识问答-RAG-服务edges-rag/INDEX.md",
+          "sha256": "ee3c290a805bc1df849581e3bcd629b0a6199d918b48c49479660f065000426f",
+          "normalized": "06ff68c621f32493ccc7ff307e54aeb1e33be2b7d018a3a198e8bd449bc1a00e"
+        },
+        {
+          "relative": "backlog/2026-10-31--个人视频剪辑工作流马尔代夫成片/.2026-10-31--个人视频剪辑工作流马尔代夫成片.log.md",
+          "sha256": "6721c4c25ebd4fd3116b90972c3c2c7f9a6934cf241de9a37a1080f87c9ebc38"
+        },
+        {
+          "relative": "backlog/2026-10-31--个人视频剪辑工作流马尔代夫成片/INDEX.md",
+          "sha256": "2d06f1b5cb95bc59e852271766c613a31a53097fcfeadca29cd6f91cbd4f05ec",
+          "normalized": "ee83a6f0c75783a8004bc84f4fbd1620335e4e2b5b84808a86ef72b2853d045a"
+        },
+        {
+          "relative": "backlog/2026-10-31--已有资料沉淀进-Edges-工作流/.2026-10-31--已有资料沉淀进-Edges-工作流.log.md",
+          "sha256": "4a51f0b893081fbcfac3144bbf2184bb9c5c90465e5ece1cf64eae1f29635165"
+        },
+        {
+          "relative": "backlog/2026-10-31--已有资料沉淀进-Edges-工作流/INDEX.md",
+          "sha256": "5b6f88ad4233303f92933c925382850881489132e9decf237b1b397056818506",
+          "normalized": "62c6ca129612e0c4ee04c21a8b4c8206320db3d03678dac4d0baa9507b38e12c"
+        },
+        {
+          "relative": "done/2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入/.2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入.log.md",
+          "sha256": "47164ff3cbfe16467bbbb4971c3e54dfcc8d5e73466843754ff6b96b41ac141b"
+        },
+        {
+          "relative": "done/2026-10-25--收口周复盘-PR-370统一-READMEskill-文案后合入/INDEX.md",
+          "sha256": "1143433dc037f9c2e87e626679438cc0b7479b7416cddacbc7d47274663fea67",
+          "normalized": "7da1da3afc336043bc7f661e676ec37b2606bd892596d5038254a74256182c38"
+        },
+        {
+          "relative": "in_progress/2026-10-31--AI资讯工作流改为-RSS-并优化数据格式与-token-对比/.2026-10-31--AI资讯工作流改为-RSS-并优化数据格式与-token-对比.log.md",
+          "sha256": "bc64734c1b6cc8c3869b6975ea5b03edc02f0286f9786072d44abc7c4126d051"
+        },
+        {
+          "relative": "in_progress/2026-10-31--AI资讯工作流改为-RSS-并优化数据格式与-token-对比/ab-2026-10-30.md",
+          "sha256": "77314eef83bc94777679e7713420e02d2d8262c3c4e54b6e458443123f69d37e"
+        },
+        {
+          "relative": "in_progress/2026-10-31--AI资讯工作流改为-RSS-并优化数据格式与-token-对比/INDEX.md",
+          "sha256": "6354638d31cadac49e0176162d70274dc36f9a88594df8c3125b045f84f891f0",
+          "normalized": "0e1acad3df7ecd5c4ea8ae8c929056f97f36a711f34059d8169f42489400f691"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "47f4349b7dbe6709457e729290a7c54ccd3f89ad167c72e4609e20a593d379d2",
+          "normalized": "47f4349b7dbe6709457e729290a7c54ccd3f89ad167c72e4609e20a593d379d2"
+        }
+      ]
+    },
+    {
+      "name": "agent-clients-ux",
+      "source": "/workspace/.edges/tasks/agent-clients-ux",
+      "destination": "/workspace/.edges/projects/2026-09-09--agent-clients-ux/tasks",
+      "date": "2026-09-09",
+      "project": "/workspace/.edges/projects/2026-09-09--agent-clients-ux",
+      "readme": "# Agent Clients UX\n\n客户端/插件/外设与本地 UX 实验。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [评估Agent\\-Plugins客户端支持](<backlog/2026-09-09--%E8%AF%84%E4%BC%B0Agent-Plugins%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%94%AF%E6%8C%81/INDEX.md>) — 评估给哪些 agent 客户端提供 / 补齐 Agent Plugins 支持更合适\n- [需要普通记笔记skill](<backlog/2026-09-09--%E9%9C%80%E8%A6%81%E6%99%AE%E9%80%9A%E8%AE%B0%E7%AC%94%E8%AE%B0skill/INDEX.md>) — 除 conversation\\-to\\-notes 外，还需要一个面向日常记事的普通笔记 skill\n- [data\\_view\\_separation\\_local\\_html](<backlog/2026-09-11--%E6%95%B0%E6%8D%AE%E4%B8%8E%E8%A7%86%E5%9B%BE%E5%88%86%E7%A6%BB%E6%9C%AC%E5%9C%B0HTML/INDEX.md>) — 从复杂系统角度，可能需要数据与视图分离，并提供本地 HTML\n- [local\\_memory\\_visualization\\_ui](<backlog/2026-09-11--%E6%9C%AC%E5%9C%B0memory%E5%8F%AF%E8%A7%86%E5%8C%96%E7%95%8C%E9%9D%A2/INDEX.md>) — 提供本地 memory 可视化界面；可能在 init 时本地一并初始化\n- [input\\_system\\_rokid\\_glasses](<backlog/2026-09-11--%E8%BE%93%E5%85%A5%E7%B3%BB%E7%BB%9F%E6%8E%A5%E5%85%A5Rokid%E7%9C%BC%E9%95%9C/INDEX.md>) — 输入系统接入 Rokid 眼镜\n- [count\\_personal\\_skill\\_usage](<backlog/2026-09-13--%E7%BB%9F%E8%AE%A1%E4%B8%AA%E4%BA%BAskill%E4%BD%BF%E7%94%A8%E9%A2%91%E7%8E%87/INDEX.md>) — 统计个人 skill 使用频率并收集数据\n- [review\\_page\\_result\\_callback\\_to\\_agent\\_client](<backlog/2026-09-19--review%E9%A1%B5%E7%BB%93%E6%9E%9C%E5%9B%9E%E4%BC%A0Agent%E5%AE%A2%E6%88%B7%E7%AB%AF/INDEX.md>) — 审阅页结果直接回传 Agent 客户端（替代/补强 Copy JSON 贴回聊天）；勿并入临时静态托管\n- [electron\\_edges](<backlog/2026-09-20--Electron-%E6%A1%8C%E9%9D%A2%E7%AB%AF%E4%BD%9C%E4%B8%BA-edges-%E6%93%8D%E4%BD%9C%E5%8F%B0/INDEX.md>) — 缺少统一的桌面操作台来操作 edges（看板/记忆/审阅等仍散落在聊天与临时 HTML）；用 Electron 做桌面客户端，作为 edges 的操作台。\n- [artifacts\\_preview\\_dedicated\\_repo\\_pages](<backlog/2026-09-21--Artifacts-%E9%A2%84%E8%A7%88%E6%94%B9%E8%B5%B0%E4%B8%93%E7%94%A8%E4%BB%93-GitHub-Pages/INDEX.md>) — 静态 Pages Publish 已定为脚手架可选项，与 ECS/自建动态线二选一、无运行时回退；动机是低成本接入。具体实现仍 backlog，先 grill 再写 ADR 与脚手架。\n- [tasks\\_review\\_review\\_page\\_writeback](<backlog/2026-09-21--Tasks-review-review-page-%E5%86%99%E5%9B%9E%E4%BB%93%E6%8E%A5%E5%8F%A3/INDEX.md>) — 本轮 /tasks/ 持久站只读于 git，人在页上改完无法写回仓库；需要通用 review\\-page 写回仓接口，并一并想清拖拽是否与 classify 审阅页分模式。\n- [edges\\_site\\_unified\\_agent\\_assistant](<backlog/2026-09-21--edges-%E7%AB%99%E7%82%B9%E7%BB%9F%E4%B8%80-agent-%E5%8A%A9%E6%89%8B%E6%A8%A1%E5%9D%97/INDEX.md>) — teaching、/tasks/ 等衍生站缺少统一的站内 agent 助手能力；后续要给整个 edges 站点提供可复用的 agent 助手模块。\n- [edges\\_derived\\_sites\\_unified\\_auth](<backlog/2026-09-21--edges-%E8%A1%8D%E7%94%9F%E7%AB%99%E7%82%B9%E7%BB%9F%E4%B8%80%E9%89%B4%E6%9D%83/INDEX.md>) — teaching、/tasks/ 与未来同机衍生站各管各的访问控制会重复且不一致；需要一套统一鉴权，本轮持久 Tasks 站先公开只读，鉴权后做。\n- [cloud\\_service\\_unified\\_entry](<backlog/2026-09-21--%E4%BA%91%E7%AB%AF%E6%9C%8D%E5%8A%A1%E7%BB%9F%E4%B8%80%E5%85%A5%E5%8F%A3tmp-persistent-%E9%83%A8%E7%BD%B2%E7%9B%AE%E5%BD%95/INDEX.md>) — 系统绑定的云端托管现在路径心智分散；需要提供 tmp 与 persistent 两个部署目录作为统一入口——短生命周期对标 Artifacts UUID\\+TTL，持久固定路径对标 teaching 与规划中的 /tasks/。\n- [tasks\\_review\\_semantic\\_search](<backlog/2026-09-23--Tasks%E5%AE%A1%E9%98%85%E9%A1%B5-tasks%E7%AB%99%E7%82%B9%E8%AF%AD%E4%B9%89%E6%A3%80%E7%B4%A2/INDEX.md>) — 字面搜索不够用；在 Tasks 审阅页（含 /tasks/）顶栏或同页入口支持按标题/正文/描述做语义检索，需另开索引与嵌入方案。\n- [tasks\\_review\\_shell\\_deploy\\_branch\\_gha\\_preview](<backlog/2026-09-24--Tasks-%E5%AE%A1%E9%98%85%E5%A3%B3-deploy-%E5%88%86%E6%94%AF-GitHub-Actions-%E9%A2%84%E8%A7%88%E9%83%A8%E7%BD%B2/INDEX.md>) — deploy 分支 \\+ GHA 预览 \\+ beta 域名；合 main/ECS 前可看效果；宿主与现有 deploy 关系待 grill\n- [cross\\_agent\\_client\\_messaging](<backlog/2026-09-25--%E8%B7%A8Agent%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%80%9A%E4%BF%A1%E5%B1%82/INDEX.md>) — 共享记忆与工作区不够；跨不同 Agent 客户端还要独立通信层。现用 GitHub 仓当通道会强制绑工作区且延迟高，需另开方案。\n- [artifacts\\_html](<backlog/2026-09-27--Artifacts-%E6%94%AF%E6%8C%81%E5%A4%9A%E7%A7%8D%E9%A2%84%E8%A7%88%E7%B1%BB%E5%9E%8B%E4%B8%8D%E6%AD%A2-HTML/INDEX.md>) — Artifacts 预览仍偏直接发布 HTML，Markdown 打开几乎是裸文本。先摸清主流 agent desktop 的 artifact 类型与预览，再按类型做成可读预览。\n- [review\\_page\\_markdown\\_preview\\_panel](<cancelled/2026-09-21--review-page-%E5%8F%B3%E4%BE%A7%E5%A2%9E%E5%8A%A0-markdown-%E9%A2%84%E8%A7%88-panel/INDEX.md>) — review\\-page 现在主要靠拖拽分组，缺右侧 markdown 预览；需要在右侧加 panel 预览当前选中 Task 的正文，方便边看边改归属。\n- [review\\_page\\_filter](<cancelled/2026-09-21--review-page-%E5%A2%9E%E5%8A%A0%E6%9B%B4%E4%B8%B0%E5%AF%8C%E7%9A%84%E8%BE%85%E5%8A%A9-filter/INDEX.md>) — review\\-page 现有筛选偏基础，复杂看板不好收窄；需要更丰富的辅助 filter（如状态/优先级/指派/关键词等组合），方便审阅时定位。\n- [self\\_hosted\\_temp\\_artifact\\_hosting](<done/2026-09-18--%E8%87%AA%E5%BB%BA%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%B4%E6%97%B6%E6%89%98%E7%AE%A1artifacts/INDEX.md>) — 提供稳定的 artifacts 预览服务（短生命周期托管 \\+ 真浏览器 URL）；绕开聊天内嵌 HTML 预览。\n- [artifacts\\_preview\\_deploy\\_ecs](<done/2026-09-21--Artifacts%E9%A2%84%E8%A7%88%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E5%88%B0ECS/INDEX.md>) — ADR\\-0013 服务\\+CLI 已合但 publish 只上传不部署；要把同一套 edges\\-artifacts\\-preview 挂到现有 teach 同机阿里云 ECS，经 nginx 对外提供 /artifacts 与 /health。\n- [tasks\\_review\\_persistent\\_site](<done/2026-09-21--Tasks-review-%E6%8C%81%E4%B9%85%E7%AB%99%E7%82%B9%E5%A7%8B%E7%BB%88%E5%8F%8D%E6%98%A0-main/INDEX.md>) — 临时 artifacts URL 会过期且每次 publish 新 UUID；需要像 teaching 一样有一个持久部署的 Tasks review/状态站，始终反映 main 上的看板。\n- [review\\_page\\_redesign](<done/2026-09-21--review-page-%E6%94%B9%E9%80%A0%E4%B8%89%E5%88%97%E5%B8%83%E5%B1%80-%E9%A1%B6%E6%A0%8F-filter/INDEX.md>) — 现有 review\\-page 不够用；改造成顶栏 filter \\+ 左 project / 中看板 / 右 markdown 预览三列，中间看板参考 Linear 风格状态列；可复用开源看板组件。\n- [ecs\\_cloudflare\\_tunnel\\_teaching\\_tasks\\_artifacts](<done/2026-09-22--ECS-%E4%B8%8A-Cloudflare-Tunnel-%E5%AF%B9%E5%A4%96teachingtasksartifacts/INDEX.md>) — 域名直连阿里云因未备案 Beaver \\+ TLS1.2\\+SNI 不可用；采用 ECS \\+ Cloudflare Tunnel 作为当前最简单对外方案，用域名 HTTPS 进站并保留动态服务。\n- [github\\_deployments\\_show\\_tasks\\_entry](<done/2026-09-22--GitHub-Deployments-%E5%B1%95%E7%A4%BA-tasks-%E5%85%A5%E5%8F%A3/INDEX.md>) — production Deployments 原先只显示 /teaching/。PR \\#113 合入后 workflow Deploy（.github/workflows/deploy.yml）成功时并行登记 site\\-teaching 与 site\\-tasks，入口为 https://edges.viruspc.tech/teaching/ 与 https://edges.viruspc.tech/tasks/。2026\\-09\\-22 确认收尾。\n- [teaching\\_tasks\\_dns](<done/2026-09-22--teaching-%E4%B8%8E-tasks-%E7%AB%99%E7%82%B9%E6%8C%82-DNS/INDEX.md>) — DNS 已挂 edges.viruspc.tech，域名 HTTPS/Flexible 因未备案不可用；2026\\-09\\-22 稍后改口采用 ECS\\+Tunnel，此前「放弃隧道」作废为对外策略。本卡保持 done。\n- [tasks\\_review\\_shell\\_mobile\\_narrow](<done/2026-09-24--Tasks-%E5%AE%A1%E9%98%85%E5%A3%B3%E6%89%8B%E6%9C%BA-%E7%AA%84%E5%B1%8F%E9%80%82%E9%85%8D/INDEX.md>) — \\#126 三列桌面可用；390×844 横向溢出。2026\\-09\\-24 grill 已锁窄屏纵向长滚动与双端「移到项目…」，见 ADR 0023\n- [minigtr\\_codex\\_cli\\_remote\\_control](<done/2026-09-25--minigtr-%E9%AA%8C%E8%AF%81-Codex-CLI-remote-control/INDEX.md>) — 结论：minigtr Ubuntu 上 Codex CLI remote\\-control 可用手机 ChatGPT 配对（codex\\-cli 0.157.0；需先 device\\-auth 登录）。\n- [github\\_artifacts\\_preview](<backlog/2026-10-19--Github-Artifacts-Preview/INDEX.md>) — 用 GitHub Pages 提供常开预览 URL，替代依赖自建服务端的 Artifacts Publish；浏览器看页，Grok 里继续决策。候选含 CF Pages 直传与 Tunnel+Nginx。\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "backlog/2026-09-09--评估Agent-Plugins客户端支持/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-09--评估Agent-Plugins客户端支持",
+          "name": "评估 Agent Plugins 客户端支持",
+          "description": "评估给哪些 agent 客户端提供 / 补齐 Agent Plugins 支持更合适"
+        },
+        {
+          "relative": "backlog/2026-09-09--需要普通记笔记skill/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-09--需要普通记笔记skill",
+          "name": "需要普通记笔记 skill",
+          "description": "除 edges-conversation-to-notes 外，还需要一个面向日常记事的普通笔记 skill"
+        },
+        {
+          "relative": "backlog/2026-09-11--数据与视图分离本地HTML/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-11--数据与视图分离本地HTML",
+          "name": "数据与视图分离 + 本地 HTML",
+          "description": "从复杂系统角度，可能需要数据与视图分离，并提供本地 HTML"
+        },
+        {
+          "relative": "backlog/2026-09-11--本地memory可视化界面/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-11--本地memory可视化界面",
+          "name": "本地 memory 可视化界面",
+          "description": "提供本地 memory 可视化界面；可能在 init 时本地一并初始化"
+        },
+        {
+          "relative": "backlog/2026-09-11--输入系统接入Rokid眼镜/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-11--输入系统接入Rokid眼镜",
+          "name": "输入系统接入 Rokid 眼镜",
+          "description": "输入系统接入 Rokid 眼镜"
+        },
+        {
+          "relative": "backlog/2026-09-13--统计个人skill使用频率/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-13--统计个人skill使用频率",
+          "name": "统计个人 skill 使用频率",
+          "description": "统计个人 skill 使用频率并收集数据"
+        },
+        {
+          "relative": "backlog/2026-09-19--review页结果回传Agent客户端/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-19--review页结果回传Agent客户端",
+          "name": "review页结果回传Agent客户端",
+          "description": "审阅页结果直接回传 Agent 客户端（替代/补强 Copy JSON 贴回聊天）；勿并入临时静态托管"
+        },
+        {
+          "relative": "backlog/2026-09-20--Electron-桌面端作为-edges-操作台/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-20--Electron-桌面端作为-edges-操作台",
+          "name": "Electron 桌面端作为 edges 操作台",
+          "description": "缺少统一的桌面操作台来操作 edges（看板/记忆/审阅等仍散落在聊天与临时 HTML）；用 Electron 做桌面客户端，作为 edges 的操作台。"
+        },
+        {
+          "relative": "backlog/2026-09-21--Artifacts-预览改走专用仓-GitHub-Pages/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-21--Artifacts-预览改走专用仓-GitHub-Pages",
+          "name": "Artifacts 预览改走专用仓 + GitHub Pages",
+          "description": "静态 Pages Publish 已定为脚手架可选项，与 ECS/自建动态线二选一、无运行时回退；动机是低成本接入。具体实现仍 backlog，先 grill 再写 ADR 与脚手架。"
+        },
+        {
+          "relative": "backlog/2026-09-21--edges-站点统一-agent-助手模块/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-21--edges-站点统一-agent-助手模块",
+          "name": "edges 站点统一 agent 助手模块",
+          "description": "teaching、/tasks/ 等衍生站缺少统一的站内 agent 助手能力；后续要给整个 edges 站点提供可复用的 agent 助手模块。"
+        },
+        {
+          "relative": "backlog/2026-09-21--edges-衍生站点统一鉴权/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-21--edges-衍生站点统一鉴权",
+          "name": "edges 衍生站点统一鉴权",
+          "description": "teaching、/tasks/ 与未来同机衍生站各管各的访问控制会重复且不一致；需要一套统一鉴权，本轮持久 Tasks 站先公开只读，鉴权后做。"
+        },
+        {
+          "relative": "backlog/2026-09-21--Tasks-review-review-page-写回仓接口/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-21--Tasks-review-review-page-写回仓接口",
+          "name": "Tasks review / review-page 写回仓接口",
+          "description": "本轮 /tasks/ 持久站只读于 git，人在页上改完无法写回仓库；需要通用 review-page 写回仓接口，并一并想清拖拽是否与 classify 审阅页分模式。"
+        },
+        {
+          "relative": "backlog/2026-09-21--云端服务统一入口tmp-persistent-部署目录/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-21--云端服务统一入口tmp-persistent-部署目录",
+          "name": "云端服务统一入口（tmp + persistent 部署目录）",
+          "description": "系统绑定的云端托管现在路径心智分散；需要提供 tmp 与 persistent 两个部署目录作为统一入口——短生命周期对标 Artifacts UUID+TTL，持久固定路径对标 teaching 与规划中的 /tasks/。"
+        },
+        {
+          "relative": "backlog/2026-09-23--Tasks审阅页-tasks站点语义检索/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-23--Tasks审阅页-tasks站点语义检索",
+          "name": "Tasks 审阅页 / `/tasks/` 支持语义检索",
+          "description": "字面搜索不够用；在 Tasks 审阅页（含 /tasks/）顶栏或同页入口支持按标题/正文/描述做语义检索，需另开索引与嵌入方案。"
+        },
+        {
+          "relative": "backlog/2026-09-24--Tasks-审阅壳-deploy-分支-GitHub-Actions-预览部署/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-24--Tasks-审阅壳-deploy-分支-GitHub-Actions-预览部署",
+          "name": "Tasks 审阅壳 — deploy 分支 + GitHub Actions 预览部署",
+          "description": "deploy 分支 + GHA 预览 + beta 域名；合 main/ECS 前可看效果；宿主与现有 deploy 关系待 grill"
+        },
+        {
+          "relative": "backlog/2026-09-25--跨Agent客户端通信层/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-25--跨Agent客户端通信层",
+          "name": "跨 Agent 客户端通信层（解绑工作区）",
+          "description": "共享记忆与工作区不够；跨不同 Agent 客户端还要独立通信层。现用 GitHub 仓当通道会强制绑工作区且延迟高，需另开方案。"
+        },
+        {
+          "relative": "backlog/2026-09-27--Artifacts-支持多种预览类型不止-HTML/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-27--Artifacts-支持多种预览类型不止-HTML",
+          "name": "Artifacts 支持多种预览类型（不止 HTML）",
+          "description": "Artifacts 预览仍偏直接发布 HTML，Markdown 打开几乎是裸文本。先摸清主流 agent desktop 的 artifact 类型与预览，再按类型做成可读预览。"
+        },
+        {
+          "relative": "backlog/2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges",
+          "name": "edges connector：自建远程 MCP 让各聊天窗口读写 edges",
+          "description": "自建远程 MCP 服务，让各聊天窗口和编程 Agent 以最低成本查询并写入 edges"
+        },
+        {
+          "relative": "backlog/2026-10-19--Github-Artifacts-Preview/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-19--Github-Artifacts-Preview",
+          "name": "Github Artifacts Preview",
+          "description": "用 GitHub Pages 提供常开预览 URL，替代依赖自建服务端的 Artifacts Publish；浏览器看页，Grok 里继续决策。候选含 CF Pages 直传与 Tunnel+Nginx。"
+        },
+        {
+          "relative": "cancelled/2026-09-21--review-page-右侧增加-markdown-预览-panel/INDEX.md",
+          "status": "cancelled",
+          "stem": "2026-09-21--review-page-右侧增加-markdown-预览-panel",
+          "name": "review-page 右侧增加 markdown 预览 panel",
+          "description": "review-page 现在主要靠拖拽分组，缺右侧 markdown 预览；需要在右侧加 panel 预览当前选中 Task 的正文，方便边看边改归属。"
+        },
+        {
+          "relative": "cancelled/2026-09-21--review-page-增加更丰富的辅助-filter/INDEX.md",
+          "status": "cancelled",
+          "stem": "2026-09-21--review-page-增加更丰富的辅助-filter",
+          "name": "review-page 增加更丰富的辅助 filter",
+          "description": "review-page 现有筛选偏基础，复杂看板不好收窄；需要更丰富的辅助 filter（如状态/优先级/指派/关键词等组合），方便审阅时定位。"
+        },
+        {
+          "relative": "done/2026-09-18--自建云服务器临时托管artifacts/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-18--自建云服务器临时托管artifacts",
+          "name": "自建云服务器临时托管 artifacts",
+          "description": "提供稳定的 artifacts 预览服务（短生命周期托管 + 真浏览器 URL）；绕开聊天内嵌 HTML 预览。"
+        },
+        {
+          "relative": "done/2026-09-21--Artifacts预览服务部署到ECS/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-21--Artifacts预览服务部署到ECS",
+          "name": "Artifacts预览服务部署到ECS",
+          "description": "ADR-0013 服务+CLI 已合但 publish 只上传不部署；要把同一套 edges-artifacts-preview 挂到现有 teach 同机阿里云 ECS，经 nginx 对外提供 /artifacts 与 /health。"
+        },
+        {
+          "relative": "done/2026-09-21--review-page-改造三列布局-顶栏-filter/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-21--review-page-改造三列布局-顶栏-filter",
+          "name": "review-page 改造（三列布局 + 顶栏 filter）",
+          "description": "现有 review-page 不够用；改造成顶栏 filter + 左 project / 中看板 / 右 markdown 预览三列，中间看板参考 Linear 风格状态列；可复用开源看板组件。"
+        },
+        {
+          "relative": "done/2026-09-21--Tasks-review-持久站点始终反映-main/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-21--Tasks-review-持久站点始终反映-main",
+          "name": "Tasks review 持久站点（始终反映 main）",
+          "description": "临时 artifacts URL 会过期且每次 publish 新 UUID；需要像 teaching 一样有一个持久部署的 Tasks review/状态站，始终反映 main 上的看板。"
+        },
+        {
+          "relative": "done/2026-09-22--ECS-上-Cloudflare-Tunnel-对外teachingtasksartifacts/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-22--ECS-上-Cloudflare-Tunnel-对外teachingtasksartifacts",
+          "name": "ECS 上 Cloudflare Tunnel 对外（teaching/tasks/artifacts）",
+          "description": "域名直连阿里云因未备案 Beaver + TLS1.2+SNI 不可用；采用 ECS + Cloudflare Tunnel 作为当前最简单对外方案，用域名 HTTPS 进站并保留动态服务。"
+        },
+        {
+          "relative": "done/2026-09-22--GitHub-Deployments-展示-tasks-入口/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-22--GitHub-Deployments-展示-tasks-入口",
+          "name": "GitHub Deployments 展示 /tasks/ 入口",
+          "description": "production Deployments 原先只显示 /teaching/。PR #113 合入后 workflow Deploy（.github/workflows/deploy.yml）成功时并行登记 site-teaching 与 site-tasks，入口为 https://edges.viruspc.tech/teaching/ 与 https://edges.viruspc.tech/tasks/。2026-09-22 确认收尾。"
+        },
+        {
+          "relative": "done/2026-09-22--teaching-与-tasks-站点挂-DNS/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-22--teaching-与-tasks-站点挂-DNS",
+          "name": "teaching 与 tasks 站点挂 DNS",
+          "description": "DNS 已挂 edges.viruspc.tech，域名 HTTPS/Flexible 因未备案不可用；2026-09-22 稍后改口采用 ECS+Tunnel，此前「放弃隧道」作废为对外策略。本卡保持 done。"
+        },
+        {
+          "relative": "done/2026-09-24--Tasks-审阅壳手机-窄屏适配/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-24--Tasks-审阅壳手机-窄屏适配",
+          "name": "Tasks 审阅壳 — 手机 / 窄屏适配",
+          "description": "#126 三列桌面可用；390×844 横向溢出。2026-09-24 grill 已锁窄屏纵向长滚动与双端「移到项目…」，见 ADR 0023"
+        },
+        {
+          "relative": "done/2026-09-25--minigtr-验证-Codex-CLI-remote-control/INDEX.md",
+          "status": "done",
+          "stem": "2026-09-25--minigtr-验证-Codex-CLI-remote-control",
+          "name": "minigtr 验证 Codex CLI remote-control（手机配对）",
+          "description": "结论：minigtr Ubuntu 上 Codex CLI remote-control 可用手机 ChatGPT 配对（codex-cli 0.157.0；需先 device-auth 登录）。"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [
+        "backlog/2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges/INDEX.md"
+      ],
+      "files": [
+        {
+          "relative": "backlog/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "backlog/2026-09-09--评估Agent-Plugins客户端支持/.2026-09-09--评估Agent-Plugins客户端支持.log.md",
+          "sha256": "4ae2c5155a3de31ca6bdb10cbd252742eb14da15b65e286a73ee8dc10833692d"
+        },
+        {
+          "relative": "backlog/2026-09-09--评估Agent-Plugins客户端支持/INDEX.md",
+          "sha256": "f963090d4278fc3684f50ba7c7b2e97473a55aaa8c6c72a0da2354fe2d190c3d",
+          "normalized": "1bd0ebfd747d8510111d0a6bd12ada850d1af41d50ec83a11129975707efb248"
+        },
+        {
+          "relative": "backlog/2026-09-09--需要普通记笔记skill/.2026-09-09--需要普通记笔记skill.log.md",
+          "sha256": "acd312cc1692066db18651603dcba77a3ef5205ef289135addbf10bd13def72d"
+        },
+        {
+          "relative": "backlog/2026-09-09--需要普通记笔记skill/INDEX.md",
+          "sha256": "2a68370aa9bdb409c740fa369558501fc72c3fc3d043947d5cf62017d50ccfb1",
+          "normalized": "002633dc56b53b23c56a61c4616ec2b265a177195f3eebaf826ac6e8cd838cb4"
+        },
+        {
+          "relative": "backlog/2026-09-11--数据与视图分离本地HTML/.2026-09-11--数据与视图分离本地HTML.log.md",
+          "sha256": "f4e2e8e3fcfa2f4e2e0c1d8d4ec47fe2512a586d835a81933f93524faa865e4e"
+        },
+        {
+          "relative": "backlog/2026-09-11--数据与视图分离本地HTML/INDEX.md",
+          "sha256": "97f75819f0c67939cfca691bc0b01d14ba164ae3c2b1641766901d002962c722",
+          "normalized": "0db1d4043635291661cb10b362cf2758e2ccdd6026e7663cac15552b32422659"
+        },
+        {
+          "relative": "backlog/2026-09-11--本地memory可视化界面/.2026-09-11--本地memory可视化界面.log.md",
+          "sha256": "8e6b749306c9b5a70a5c778a618f11cb261a222efd1eb9d7647df01f6c7c79c0"
+        },
+        {
+          "relative": "backlog/2026-09-11--本地memory可视化界面/INDEX.md",
+          "sha256": "67f0fb1e9bf93802089f84a0d23dc893c20265df118b6ee415cacf6189ef1f00",
+          "normalized": "f32ae1cd9fc795d65b2d9f4ec2c2b2505256e842685d02f0b4b25e15c7fa0a8a"
+        },
+        {
+          "relative": "backlog/2026-09-11--输入系统接入Rokid眼镜/.2026-09-11--输入系统接入Rokid眼镜.log.md",
+          "sha256": "7bc9765a7db12712509b79491f58e66f8110693620325cafb1813ffb3792b49d"
+        },
+        {
+          "relative": "backlog/2026-09-11--输入系统接入Rokid眼镜/INDEX.md",
+          "sha256": "d7472a46f52be9a2535b9360fb5250d7115fc7e2c96a59df092d31eb66477fce",
+          "normalized": "0eece91210f510605a2ce4176785653f02f41a70babe4089f6e545e7cda06a01"
+        },
+        {
+          "relative": "backlog/2026-09-13--统计个人skill使用频率/.2026-09-13--统计个人skill使用频率.log.md",
+          "sha256": "030aa924f594fb7d9915d80957ae05d464e37622d202ff5c9cf7cf6e45a4a2e2"
+        },
+        {
+          "relative": "backlog/2026-09-13--统计个人skill使用频率/INDEX.md",
+          "sha256": "b5b4afca76ad6c9b39a7380682912fc5a455f0ce39fead15196f41fc9b0c68ed",
+          "normalized": "38e85c1fd58aee8db9fbe69a5d0865d5e1a9ccb982b752a73b77ee39d6c1b9e3"
+        },
+        {
+          "relative": "backlog/2026-09-19--review页结果回传Agent客户端/.2026-09-19--review页结果回传Agent客户端.log.md",
+          "sha256": "fefc15236a7e16a991330563a2fae411eb4de84c9df2394701695e55b9d9bb2b"
+        },
+        {
+          "relative": "backlog/2026-09-19--review页结果回传Agent客户端/INDEX.md",
+          "sha256": "6ca04e9235f683010f7b9d68683efe001afd292e5c5d7a6b129bab91ec888c79",
+          "normalized": "9dfefa71137607f2b93deb7ca4ae65cf409e41230b102b23b10b30e3e85a0f2c"
+        },
+        {
+          "relative": "backlog/2026-09-20--Electron-桌面端作为-edges-操作台/.2026-09-20--Electron-桌面端作为-edges-操作台.log.md",
+          "sha256": "3da95c60f68af2c5b4b9ac59a4dc67b02ee5c0763d6d8402b7bb4182aa856eda"
+        },
+        {
+          "relative": "backlog/2026-09-20--Electron-桌面端作为-edges-操作台/INDEX.md",
+          "sha256": "d9551c076527453b2c593bb7599350e0ce5ae3eca16cabe81265c23516776c0d",
+          "normalized": "3e9097f87f0739c94539be5adbc3c6ba04f9a4dae710b571991881464a1b6786"
+        },
+        {
+          "relative": "backlog/2026-09-21--Artifacts-预览改走专用仓-GitHub-Pages/.2026-09-21--Artifacts-预览改走专用仓-GitHub-Pages.log.md",
+          "sha256": "a3b52dac8ddcc552535dc937c2c1d3f96586848cf1df718bce04fc0d4b80e0cd"
+        },
+        {
+          "relative": "backlog/2026-09-21--Artifacts-预览改走专用仓-GitHub-Pages/INDEX.md",
+          "sha256": "f3fe6d103901dc1ddcf658d4b4eeb3189966f06a390dafcbb0c3ae952db15c08",
+          "normalized": "873b28572aa7223414ae9f7b396d9cabba4c2240428ca59aefac8f2047e23a66"
+        },
+        {
+          "relative": "backlog/2026-09-21--edges-站点统一-agent-助手模块/.2026-09-21--edges-站点统一-agent-助手模块.log.md",
+          "sha256": "48b955c835c6e5960809d1b7e99edb21b00a3ba172677714e3cd82cfc3e7dfc4"
+        },
+        {
+          "relative": "backlog/2026-09-21--edges-站点统一-agent-助手模块/INDEX.md",
+          "sha256": "113d6bb8b73c0829eee22f3616e1fc84ef93bc43dbf4d1af315f9319085ddce4",
+          "normalized": "b13a96a0d09d3e68431cb0cfa9c1b30583a7192788fa5e3b706ecc4571586159"
+        },
+        {
+          "relative": "backlog/2026-09-21--edges-衍生站点统一鉴权/.2026-09-21--edges-衍生站点统一鉴权.log.md",
+          "sha256": "9fe8c7f8959696d7280db8674497106946b526bf1fdc78f7464033fe98e043d6"
+        },
+        {
+          "relative": "backlog/2026-09-21--edges-衍生站点统一鉴权/INDEX.md",
+          "sha256": "463369f8ae87e455a6a6140276410d0977d81b4adb3818dd1b216b9c353bf98f",
+          "normalized": "969993c19de77d9612d41ade4fa1baf925a8158b8fc7cab1e4f9a37e76a0b42c"
+        },
+        {
+          "relative": "backlog/2026-09-21--Tasks-review-review-page-写回仓接口/.2026-09-21--Tasks-review-review-page-写回仓接口.log.md",
+          "sha256": "dca012489b320ce0a455047a4405c8fe0345de186f4456f6b427e19b2b16a9e9"
+        },
+        {
+          "relative": "backlog/2026-09-21--Tasks-review-review-page-写回仓接口/INDEX.md",
+          "sha256": "39ed83f711c6350edbf6116ae946b9005b1648d88894b7e339585fb73422126b",
+          "normalized": "21558ac05cf35323eb0b46f2a517b83289a83c7db61de2f11be8d9e1a58ea4fb"
+        },
+        {
+          "relative": "backlog/2026-09-21--云端服务统一入口tmp-persistent-部署目录/.2026-09-21--云端服务统一入口tmp-persistent-部署目录.log.md",
+          "sha256": "93d65b7befec818fe03b35cfb2459a4fd06d542acc654e130998d76b5be0c3e0"
+        },
+        {
+          "relative": "backlog/2026-09-21--云端服务统一入口tmp-persistent-部署目录/INDEX.md",
+          "sha256": "e30491f0f6cb100733a37d7f474f7c6687967842e43153555c774df9b5032534",
+          "normalized": "75b86fe084ce15177e7d1c5f06107ef401ab74350119a5fac7f5a6e6df7c5ebe"
+        },
+        {
+          "relative": "backlog/2026-09-23--Tasks审阅页-tasks站点语义检索/.2026-09-23--Tasks审阅页-tasks站点语义检索.log.md",
+          "sha256": "7d03e7e3743ed4def29c3e8a88bec04ea2c36fe8d902e5dd2ff8da546686445e"
+        },
+        {
+          "relative": "backlog/2026-09-23--Tasks审阅页-tasks站点语义检索/INDEX.md",
+          "sha256": "d2ee8b050e2e3b07d51ff3332f980ee21f36e63e6a93df219542d2face85d779",
+          "normalized": "185feffce3f60b6f76d4581e85bee8f90c45a6d492c0f622b0013c7e145c5251"
+        },
+        {
+          "relative": "backlog/2026-09-24--Tasks-审阅壳-deploy-分支-GitHub-Actions-预览部署/.2026-09-24--Tasks-审阅壳-deploy-分支-GitHub-Actions-预览部署.log.md",
+          "sha256": "2aeed05a480cdffcf08be3badf2b8531170a09dd64ef9715aac7e8fa89cffe92"
+        },
+        {
+          "relative": "backlog/2026-09-24--Tasks-审阅壳-deploy-分支-GitHub-Actions-预览部署/INDEX.md",
+          "sha256": "084b302c5d4febeb3f3663dc82651ebad6514f3d8f8dddf6f912ff509ae6ff09",
+          "normalized": "6944c66f9f6ca059db9b34d111bf09076171b61cbd29df5db1f73d01863031d2"
+        },
+        {
+          "relative": "backlog/2026-09-25--跨Agent客户端通信层/.2026-09-25--跨Agent客户端通信层.log.md",
+          "sha256": "a561d4a2c931b2b2cdecb68c50ddd628a454e522c0fd2fe5fbbc53d77155d511"
+        },
+        {
+          "relative": "backlog/2026-09-25--跨Agent客户端通信层/INDEX.md",
+          "sha256": "c07ae1ed1e7519717fb6c9d5b3c8b3bd79ab9745e18bd77ad91ac062d945cc5b",
+          "normalized": "24bad97f9b7ad5d75d96d60b9a48ed1baee336a196560081e126064f6b4ad45d"
+        },
+        {
+          "relative": "backlog/2026-09-27--Artifacts-支持多种预览类型不止-HTML/.2026-09-27--Artifacts-支持多种预览类型不止-HTML.log.md",
+          "sha256": "22c5c6d8e288f3068e0dd612419925214251d6ee6dfc9181f339a62816714ed3"
+        },
+        {
+          "relative": "backlog/2026-09-27--Artifacts-支持多种预览类型不止-HTML/INDEX.md",
+          "sha256": "15bf4b25c6e08baa8f1609438c4415043b76e6bdd8e208b0163cbafaaea33a6b",
+          "normalized": "502f2d7cd6b8a95998f2e72b2c3bb67b352fac83ce8539db4dd68535a94674c0"
+        },
+        {
+          "relative": "backlog/2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges/.2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges.log.md",
+          "sha256": "3f956d716fea0375ca1bb190faddb2d8d961c75221b06680527ba8c7751fb949"
+        },
+        {
+          "relative": "backlog/2026-10-14--edges-connector自建远程-MCP-让各聊天窗口读写-edges/INDEX.md",
+          "sha256": "e425d37cdc3bf1d187fde9d6f4c017fabdc2862f3618247d9822310ecdcaf700",
+          "normalized": "7dffa5eb6c83641436b21baef2b566a56779c28e16f1b94bc8d3432c23d206a0"
+        },
+        {
+          "relative": "backlog/2026-10-19--Github-Artifacts-Preview/.2026-10-19--Github-Artifacts-Preview.log.md",
+          "sha256": "89f85a5e10b432789a469765caa9d93de93affa7949009276f996f2dc165d785"
+        },
+        {
+          "relative": "backlog/2026-10-19--Github-Artifacts-Preview/INDEX.md",
+          "sha256": "a705d5053bcd435178c8fa2ca0fd8eef6de40be64332cd76a4345cee20b83d66",
+          "normalized": "a9b270cb31a3cf40d64ff9c906c9c3348d786f491d06fb7b15fd07fba07c25fb"
+        },
+        {
+          "relative": "blocked/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "cancelled/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "cancelled/2026-09-21--review-page-右侧增加-markdown-预览-panel/.2026-09-21--review-page-右侧增加-markdown-预览-panel.log.md",
+          "sha256": "9955f99253a8c81d88bebc9dafe4fe56977b9e4327c2c7f0119609c8c6aa0605"
+        },
+        {
+          "relative": "cancelled/2026-09-21--review-page-右侧增加-markdown-预览-panel/INDEX.md",
+          "sha256": "94f0464b759d4529ee4f4ffa12b28cc7589caf4ecdb93f21ffb9eafacb3274d6",
+          "normalized": "21cc7e04de88841a5d9513c1c3ecf845ebc9bd584697018e5df313f466d652a1"
+        },
+        {
+          "relative": "cancelled/2026-09-21--review-page-增加更丰富的辅助-filter/.2026-09-21--review-page-增加更丰富的辅助-filter.log.md",
+          "sha256": "6e83e651ed87f7b6f490535324d8454ffe3843f476c33dbdfb28b3fdfd7da3a4"
+        },
+        {
+          "relative": "cancelled/2026-09-21--review-page-增加更丰富的辅助-filter/INDEX.md",
+          "sha256": "a27154a2e8af791962b617309daa475dd8a3c8bd68916db252509ab44f312806",
+          "normalized": "a5001a7704f0837bfd54987626ac6ae707e69a23b25f271b3f11487a8eb76f5b"
+        },
+        {
+          "relative": "done/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "done/2026-09-18--自建云服务器临时托管artifacts/.2026-09-18--自建云服务器临时托管artifacts.log.md",
+          "sha256": "58e5ef778aa0c434cdfca967b076210647905e18790424aa93f271c98b9dc63f"
+        },
+        {
+          "relative": "done/2026-09-18--自建云服务器临时托管artifacts/INDEX.md",
+          "sha256": "87e577a3bff0d2505682337a7b3cf9d57ac7ae16cd1cb93716fbd5dad313d3f1",
+          "normalized": "13bf2785f37782bc6220d2f69a4b6704ad36b27d8d3f6217303546648987851e"
+        },
+        {
+          "relative": "done/2026-09-21--Artifacts预览服务部署到ECS/.2026-09-21--Artifacts预览服务部署到ECS.log.md",
+          "sha256": "71fc89b4678868d4737ab13b35a3a947ce97bdf998ba3dc6d696d551dbaa3c90"
+        },
+        {
+          "relative": "done/2026-09-21--Artifacts预览服务部署到ECS/INDEX.md",
+          "sha256": "4ce3d5ed59c5c194235fe8cbd424c20468295f684b2dcd8f78c0daad90109ed7",
+          "normalized": "d7824ba2148cf014cdd8402307015e4e94c6459ac0ae0d03d601febb380211ca"
+        },
+        {
+          "relative": "done/2026-09-21--review-page-改造三列布局-顶栏-filter/.2026-09-21--review-page-改造三列布局-顶栏-filter.log.md",
+          "sha256": "6697815e9a097cd92087d304af57d3376b52b6e87dacef7d8f926530669a403f"
+        },
+        {
+          "relative": "done/2026-09-21--review-page-改造三列布局-顶栏-filter/INDEX.md",
+          "sha256": "113e6201da23d8f84dbd97016b037d347839cda56b14815ba1a6b245fd253b6b",
+          "normalized": "a9065eed446465911d36d5195e2a58ca96f55b60fa10433760568b9e1866263a"
+        },
+        {
+          "relative": "done/2026-09-21--Tasks-review-持久站点始终反映-main/.2026-09-21--Tasks-review-持久站点始终反映-main.log.md",
+          "sha256": "13026b63c61ced172292cf627fb404e476b36045049c3b5cff8d75c3a1cb5c0b"
+        },
+        {
+          "relative": "done/2026-09-21--Tasks-review-持久站点始终反映-main/INDEX.md",
+          "sha256": "127a6c21db06a8c8804bb2f17c831df218e1684111f724475ebbc7e446544091",
+          "normalized": "cb1d1f6b48c32f81f0f5ad9d11cb65cdcdd060cb20869c58960f78e862f68dd4"
+        },
+        {
+          "relative": "done/2026-09-22--ECS-上-Cloudflare-Tunnel-对外teachingtasksartifacts/.2026-09-22--ECS-上-Cloudflare-Tunnel-对外teachingtasksartifacts.log.md",
+          "sha256": "cf9092068f34c12c26d2e62e75f42deb8dab5a14caba2e550f6b1ae3b6060a2c"
+        },
+        {
+          "relative": "done/2026-09-22--ECS-上-Cloudflare-Tunnel-对外teachingtasksartifacts/INDEX.md",
+          "sha256": "3dc354bd5261ecd2b5b36da26d86438248dbd585d7f73e88bc15c5dfd943e299",
+          "normalized": "950acda8670c825870eab4adaf2aa86102fb8d52755d101adf31667c7b60fc1e"
+        },
+        {
+          "relative": "done/2026-09-22--GitHub-Deployments-展示-tasks-入口/.2026-09-22--GitHub-Deployments-展示-tasks-入口.log.md",
+          "sha256": "b7e703524751e0d88c48206cf2728e91be5ca681615e4e23cd5354fca46b917b"
+        },
+        {
+          "relative": "done/2026-09-22--GitHub-Deployments-展示-tasks-入口/INDEX.md",
+          "sha256": "19351a8c1279653dbfef8c732c062ffd0b553703c20970f50bd5d64c930c3b37",
+          "normalized": "899fec57c352a8236e39cbd920b7c2db2f3336f22d989c6ccbf68b00535feecd"
+        },
+        {
+          "relative": "done/2026-09-22--teaching-与-tasks-站点挂-DNS/.2026-09-22--teaching-与-tasks-站点挂-DNS.log.md",
+          "sha256": "d505462d4adab9d5657ada9509d1192b9139fbd28632c384d3665f4cedcc68cb"
+        },
+        {
+          "relative": "done/2026-09-22--teaching-与-tasks-站点挂-DNS/INDEX.md",
+          "sha256": "3c8c452de220e17f246a031c442cb09ac3440c16367c173f64a9a44e6541f070",
+          "normalized": "a4a142db471b795a1edd460e58c69d149bccfaea151f7e98619b11ca7862401a"
+        },
+        {
+          "relative": "done/2026-09-24--Tasks-审阅壳手机-窄屏适配/.2026-09-24--Tasks-审阅壳手机-窄屏适配.log.md",
+          "sha256": "2104dd137f51dfa1e869b75a3b26526816586d4127323931d52eb6bc72bd0dc3"
+        },
+        {
+          "relative": "done/2026-09-24--Tasks-审阅壳手机-窄屏适配/INDEX.md",
+          "sha256": "0c6a11df7a418c68642d9c97568d1c56ef43058df0f423f25af9ea3e43136e4f",
+          "normalized": "2badb263564a7dc7d7a4f8719b3803446b5c07031da3eb523e61df3c3d41207b"
+        },
+        {
+          "relative": "done/2026-09-25--minigtr-验证-Codex-CLI-remote-control/.2026-09-25--minigtr-验证-Codex-CLI-remote-control.log.md",
+          "sha256": "e0f45c484b37cef032e914338f91434780be9df49c80ecd47f820571bc02dbe1"
+        },
+        {
+          "relative": "done/2026-09-25--minigtr-验证-Codex-CLI-remote-control/INDEX.md",
+          "sha256": "70ad428983f8167045e0daa2adb37a88969862990525e9f2e2c8af7fb1400ab0",
+          "normalized": "62452212136a68b2f00321910d1b6a18cfcf67dd8c13d27dbdbdd68246276676"
+        },
+        {
+          "relative": "done/img/2026-09-24--Tasks-审阅壳手机-窄屏适配/01-board.png",
+          "sha256": "acc1b9e630b0d9ee92d35a4d8ca4f95ce44061c459b41337b1482fe5478d058e"
+        },
+        {
+          "relative": "done/img/2026-09-24--Tasks-审阅壳手机-窄屏适配/02-scroll-or-filters.png",
+          "sha256": "510f8226119e8644613bc186bc2e48880021f739281163d5f4ac57d13deb99ac"
+        },
+        {
+          "relative": "done/img/2026-09-24--Tasks-审阅壳手机-窄屏适配/03-detail.png",
+          "sha256": "0070742d6ce994a977f4268b7682ff4844c5fc402464e77f0d9560aa6f49e130"
+        },
+        {
+          "relative": "done/img/2026-09-24--Tasks-审阅壳手机-窄屏适配/04-project.png",
+          "sha256": "d9d6a6414616d0918b4a97fc63e6686f03d5468e96ba83381638e9bd7ab7b10d"
+        },
+        {
+          "relative": "in_progress/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "in_review/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "b72da0895a094c51b932688b20695f2290e617e1dbe51285173d551c5dcb80d3",
+          "normalized": "fb0c28ea91b2ca0da0397a1382c04fdde594502149767190ed806f6f52940823"
+        },
+        {
+          "relative": "todo/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "projectSource": "# Agent Clients UX\n\n客户端/插件/外设与本地 UX 实验。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    },
+    {
+      "name": "agent-product-eval",
+      "source": "/workspace/.edges/tasks/agent-product-eval",
+      "destination": "/workspace/.edges/projects/2026-11-01--agent-product-eval/tasks",
+      "date": "2026-11-01",
+      "project": "/workspace/.edges/projects/2026-11-01--agent-product-eval",
+      "readme": "# Agent产品评测\n\nAgent / AI 产品评测素材与对照（原 edges/_eval_*）。文件系统落点：projects/2026-06-21--Agent产品评测/。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [把\\_edges\\_eval\\_迁入\\_agent产品评测\\_project](<done/2026-11-01--%E6%8A%8A-edgeseval-%E8%BF%81%E5%85%A5-Agent%E4%BA%A7%E5%93%81%E8%AF%84%E6%B5%8B-Project/INDEX.md>) — 新建 projects/2026\\-06\\-21\\-\\-Agent产品评测，迁入五个 \\_eval\\_\\* 并更新引用\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "done/2026-11-01--把-edgeseval-迁入-Agent产品评测-Project/INDEX.md",
+          "status": "done",
+          "stem": "2026-11-01--把-edgeseval-迁入-Agent产品评测-Project",
+          "name": "把 edges/_eval_* 迁入 Agent产品评测 Project",
+          "description": "新建 projects/2026-06-21--Agent产品评测，迁入五个 _eval_* 并更新引用"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "done/2026-11-01--把-edgeseval-迁入-Agent产品评测-Project/.2026-11-01--把-edgeseval-迁入-Agent产品评测-Project.log.md",
+          "sha256": "2ab2f445077fc466ddfe8d7972a865e06669421a40a1f0aad675e363279b006c"
+        },
+        {
+          "relative": "done/2026-11-01--把-edgeseval-迁入-Agent产品评测-Project/INDEX.md",
+          "sha256": "afac2304f08e43237d6f5dba852643a67958c51a651bb206c5f452dc3ab05f3d",
+          "normalized": "e1761a9777f87beecfeb677b08a1d3668d038bb08cbf042722608c66e75fb3fd"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "f36be5f738c42d1a067aa47142219c87814504b4388e14dfef5518cfaaaade62",
+          "normalized": "f36be5f738c42d1a067aa47142219c87814504b4388e14dfef5518cfaaaade62"
+        }
+      ],
+      "projectSource": "# Agent产品评测\n\nAgent / AI 产品评测素材与对照（原 edges/_eval_*）。文件系统落点：projects/2026-06-21--Agent产品评测/。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    },
+    {
+      "name": "deepseek-harness",
+      "source": "/workspace/.edges/tasks/deepseek-harness",
+      "destination": "/workspace/.edges/projects/2026-10-21--deepseek-harness/tasks",
+      "date": "2026-10-21",
+      "project": "/workspace/.edges/projects/2026-10-21--deepseek-harness",
+      "readme": "# deepseek-harness\n\n围绕 DeepSeek Harness / recipe 的学习与实践看板。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [通读 DeepSeek Harness recipe 并整理笔记](<todo/2026-10-21--%E9%80%9A%E8%AF%BB-DeepSeek-Harness-recipe-%E5%B9%B6%E6%95%B4%E7%90%86%E7%AC%94%E8%AE%B0/INDEX.md>) — 通读官方或开源 DeepSeek Harness recipe，整理可沉淀中文笔记（不跑通实现）。\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "todo/2026-10-21--通读-DeepSeek-Harness-recipe-并整理笔记/INDEX.md",
+          "status": "todo",
+          "stem": "2026-10-21--通读-DeepSeek-Harness-recipe-并整理笔记",
+          "name": "通读 DeepSeek Harness recipe 并整理笔记",
+          "description": "通读官方或开源 DeepSeek Harness recipe，整理可沉淀中文笔记（不跑通实现）。"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "README.md",
+          "sha256": "be115e1931fc0c0a297f46385735fa75e0e45777bd5452c3bc78fb6a2edbae17",
+          "normalized": "be115e1931fc0c0a297f46385735fa75e0e45777bd5452c3bc78fb6a2edbae17"
+        },
+        {
+          "relative": "todo/2026-10-21--通读-DeepSeek-Harness-recipe-并整理笔记/.2026-10-21--通读-DeepSeek-Harness-recipe-并整理笔记.log.md",
+          "sha256": "1a38bdccc3bcbafaefa1bb1f5b19fa1c0cd06350a929069cae410a153a4ededf"
+        },
+        {
+          "relative": "todo/2026-10-21--通读-DeepSeek-Harness-recipe-并整理笔记/INDEX.md",
+          "sha256": "dd46c48b4087720e89889b09e5917a4519c5ba25b7c6dcf696f6e9d914e89013",
+          "normalized": "bf5c8bba569a033f2c9ad22ee7ffe7ccb699737e2a5dce12e8ff251515b30f15"
+        }
+      ],
+      "projectSource": "# deepseek-harness\n\n围绕 DeepSeek Harness / recipe 的学习与实践看板。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    },
+    {
+      "name": "edges-extensions",
+      "source": "/workspace/.edges/tasks/edges-extensions",
+      "destination": "/workspace/.edges/projects/2026-10-20--edges-extensions/tasks",
+      "date": "2026-10-20",
+      "project": "/workspace/.edges/projects/2026-10-20--edges-extensions",
+      "readme": "# Edges Extensions\n\n个人仓主要留拆仓相关的卡（含 Compose 改造）。其余 CLI、脚手架、发布与鉴权卡在框架仓 [VirusPC/edges 的 edges-extensions 看板](https://github.com/VirusPC/edges/tree/main/.edges/tasks/edges-extensions)。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [把个人大脑从\\_viruspc\\_edges\\_系统仓拆出去](<done/2026-10-20--%E6%8A%8A%E4%B8%AA%E4%BA%BA%E5%A4%A7%E8%84%91%E4%BB%8E-VirusPCedges-%E7%B3%BB%E7%BB%9F%E4%BB%93%E6%8B%86%E5%87%BA%E5%8E%BB/INDEX.md>) — 现在系统实现和个人知识混在同一个公开仓里。拆开以后，edges 只放系统本身，个人大脑走独立仓，再用 Compose 挂回来。\n- [把 edges\\-private 改名为 edges\\-brain\\-viruspc\\-private](<done/2026-10-20--%E6%8A%8A-edges-private-%E6%94%B9%E5%90%8D%E4%B8%BA-edges-brain-viruspc-private/INDEX.md>) — 公开拆仓后命名已对齐；私仓仍叫 edges\\-private，改为 edges\\-brain\\-viruspc\\-private，并改完 Compose 与文档引用。\n- [Compose 底层改用 git submodule，装到 \\`.edges/compose/\\<name\\>\\`](<done/2026-10-20--Compose-%E5%BA%95%E5%B1%82%E6%94%B9%E7%94%A8-git-submodule%E8%A3%85%E5%88%B0-harnesscomposename/INDEX.md>) — 现在 compose 把本机绝对路径写进 AGENTS.md，换机器就不能用；改为底层用 git submodule 装到仓内 `.edges/compose/<name>`，AGENTS.md 只写相对路径，默认只展开一层。\n- [把 edges\\-brain\\-viruspc\\-private 改造成 Edges 结构](<done/2026-10-20--%E6%8A%8A-edges-brain-viruspc-private-%E6%94%B9%E9%80%A0%E6%88%90-Edges-%E7%BB%93%E6%9E%84/INDEX.md>) — 私密仓改名后内部仍是旧 Obsidian vault，套上 .edges/ 结构，保住 vault 可用，并与公开大脑 edges\\-brain\\-viruspc 配对。\n- [任务卡与技术方案用 HTML plan 审阅与评论](<todo/2026-10-21--%E4%BB%BB%E5%8A%A1%E5%8D%A1%E4%B8%8E%E6%8A%80%E6%9C%AF%E6%96%B9%E6%A1%88%E7%94%A8-HTML-plan-%E5%AE%A1%E9%98%85%E4%B8%8E%E8%AF%84%E8%AE%BA/INDEX.md>) — 把用 HTML plan 做审阅与评论纳入任务卡与技术方案工作流，方便 review 和 comment（具体形态 grill 再定）。\n- [新建私有跨机保险柜仓并迁入 Artifacts 配置](<todo/2026-10-22--%E6%96%B0%E5%BB%BA%E7%A7%81%E6%9C%89%E8%B7%A8%E6%9C%BA%E4%BF%9D%E9%99%A9%E6%9F%9C%E4%BB%93%E5%B9%B6%E8%BF%81%E5%85%A5-Artifacts-%E9%85%8D%E7%BD%AE/INDEX.md>) — 新建私有跨机保险柜仓，迁入 Artifacts 配置的可安全分发形式\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "done/2026-10-20--Compose-底层改用-git-submodule装到-harnesscomposename/INDEX.md",
+          "status": "done",
+          "stem": "2026-10-20--Compose-底层改用-git-submodule装到-harnesscomposename",
+          "name": "Compose 底层改用 git submodule，装到 `.edges/compose/<name>`",
+          "description": "现在 compose 把本机绝对路径写进 AGENTS.md，换机器就不能用；改为底层用 git submodule 装到仓内 `.edges/compose/<name>`，AGENTS.md 只写相对路径，默认只展开一层。"
+        },
+        {
+          "relative": "done/2026-10-20--把-edges-brain-viruspc-private-改造成-Edges-结构/INDEX.md",
+          "status": "done",
+          "stem": "2026-10-20--把-edges-brain-viruspc-private-改造成-Edges-结构",
+          "name": "把 edges-brain-viruspc-private 改造成 Edges 结构",
+          "description": "私密仓改名后内部仍是旧 Obsidian vault，套上 .edges/ 结构，保住 vault 可用，并与公开大脑 edges-brain-viruspc 配对。"
+        },
+        {
+          "relative": "done/2026-10-20--把-edges-private-改名为-edges-brain-viruspc-private/INDEX.md",
+          "status": "done",
+          "stem": "2026-10-20--把-edges-private-改名为-edges-brain-viruspc-private",
+          "name": "把 edges-private 改名为 edges-brain-viruspc-private",
+          "description": "公开拆仓后命名已对齐；私仓仍叫 edges-private，改为 edges-brain-viruspc-private，并改完 Compose 与文档引用。"
+        },
+        {
+          "relative": "done/2026-10-20--把个人大脑从-VirusPCedges-系统仓拆出去/INDEX.md",
+          "status": "done",
+          "stem": "2026-10-20--把个人大脑从-VirusPCedges-系统仓拆出去",
+          "name": "把个人大脑从 VirusPC/edges 系统仓拆出去",
+          "description": "现在系统实现和个人知识混在同一个公开仓里。拆开以后，edges 只放系统本身，个人大脑走独立仓，再用 Compose 挂回来。"
+        },
+        {
+          "relative": "todo/2026-10-21--任务卡与技术方案用-HTML-plan-审阅与评论/INDEX.md",
+          "status": "todo",
+          "stem": "2026-10-21--任务卡与技术方案用-HTML-plan-审阅与评论",
+          "name": "任务卡与技术方案用 HTML plan 审阅与评论",
+          "description": "把用 HTML plan 做审阅与评论纳入任务卡与技术方案工作流，方便 review 和 comment（具体形态 grill 再定）。"
+        },
+        {
+          "relative": "todo/2026-10-22--新建私有跨机保险柜仓并迁入-Artifacts-配置/INDEX.md",
+          "status": "todo",
+          "stem": "2026-10-22--新建私有跨机保险柜仓并迁入-Artifacts-配置",
+          "name": "新建私有跨机保险柜仓并迁入 Artifacts 配置",
+          "description": "新建私有跨机保险柜仓，迁入 Artifacts 配置的可安全分发形式"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "backlog/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "blocked/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "cancelled/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "done/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "done/2026-10-20--Compose-底层改用-git-submodule装到-harnesscomposename/.2026-10-20--Compose-底层改用-git-submodule装到-harnesscomposename.log.md",
+          "sha256": "62308289e66f3938e798571dbfbe24aa11d5935ccfe8fc6aea540b4d81d0a600"
+        },
+        {
+          "relative": "done/2026-10-20--Compose-底层改用-git-submodule装到-harnesscomposename/INDEX.md",
+          "sha256": "e3b3c226052e89d2be193d817066fb67a0b574c575619e71e8a49ab2435a0b4b",
+          "normalized": "72de3fa6bfc28803a3b08b152dc2378684928ffc704656b86a1f3a5cb6716e56"
+        },
+        {
+          "relative": "done/2026-10-20--把-edges-brain-viruspc-private-改造成-Edges-结构/.2026-10-20--把-edges-brain-viruspc-private-改造成-Edges-结构.log.md",
+          "sha256": "9ad5a7824852ba452dd79500479c74ea4991a56868dd176e76655e94151c91ea"
+        },
+        {
+          "relative": "done/2026-10-20--把-edges-brain-viruspc-private-改造成-Edges-结构/INDEX.md",
+          "sha256": "7df32699c3dcc781afd61710b2ddcc53ed8d62b31a3d5ff9c950bf1b02d4895a",
+          "normalized": "add18cfd37d00849b00df1b1f643b9afd2310e887e0238cc04b91ad0a90d8489"
+        },
+        {
+          "relative": "done/2026-10-20--把-edges-private-改名为-edges-brain-viruspc-private/.2026-10-20--把-edges-private-改名为-edges-brain-viruspc-private.log.md",
+          "sha256": "1f89d7e58e07ce9b757604418a5ea144af76c943dc1b4063de84c77659cd7c70"
+        },
+        {
+          "relative": "done/2026-10-20--把-edges-private-改名为-edges-brain-viruspc-private/INDEX.md",
+          "sha256": "b8ad06f2f9a26096307690c6a1b2d1e545959422bb34bbef0bd5a2a63a68969c",
+          "normalized": "77ac37a7052f7f98884bfcb6db18c52cfc8a7c2eb7d5c58aebe4b5068477c90a"
+        },
+        {
+          "relative": "done/2026-10-20--把个人大脑从-VirusPCedges-系统仓拆出去/.2026-10-20--把个人大脑从-VirusPCedges-系统仓拆出去.log.md",
+          "sha256": "e15cba9a58ea603a163c4fdc02e3bdc3571abfd698fc1a46165722f7de24584f"
+        },
+        {
+          "relative": "done/2026-10-20--把个人大脑从-VirusPCedges-系统仓拆出去/INDEX.md",
+          "sha256": "4f8609a93f21aef89822b1babb2a2a2328a4c85d01d009d79a396d71a865c25a",
+          "normalized": "1524dd266331e9b28971c2dcfd410db8ba2eeca2e32e329749f9515da4f24d39"
+        },
+        {
+          "relative": "in_progress/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "in_review/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "b5caa0f1f0663759364e82483bbd28ce70f4f902bd24bc58f09b4e1ac5c3984a",
+          "normalized": "b5caa0f1f0663759364e82483bbd28ce70f4f902bd24bc58f09b4e1ac5c3984a"
+        },
+        {
+          "relative": "todo/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "todo/2026-10-21--任务卡与技术方案用-HTML-plan-审阅与评论/.2026-10-21--任务卡与技术方案用-HTML-plan-审阅与评论.log.md",
+          "sha256": "f0f4b720a300b192b8dc12a967b5c6a8550ed761e1e0bc1822eb15174bf0e94e"
+        },
+        {
+          "relative": "todo/2026-10-21--任务卡与技术方案用-HTML-plan-审阅与评论/INDEX.md",
+          "sha256": "7c7610f48844f160923b108904608d7d51ae8bf0b8163686818c9df3c1e2a71a",
+          "normalized": "29c8a160824ba6e2be62738d660348f80227ceba8c341ed650fed35342166f98"
+        },
+        {
+          "relative": "todo/2026-10-22--新建私有跨机保险柜仓并迁入-Artifacts-配置/.2026-10-22--新建私有跨机保险柜仓并迁入-Artifacts-配置.log.md",
+          "sha256": "8b0c0e2bef9cbd349610498f91b6035a78965b05ec0e72bb84af57cba7dd752d"
+        },
+        {
+          "relative": "todo/2026-10-22--新建私有跨机保险柜仓并迁入-Artifacts-配置/INDEX.md",
+          "sha256": "81c6fa3caa8ca8d90875840ca44eaba5e15ec6e98a6daa07f9cf2b4244d734e5",
+          "normalized": "6b1153b262f480386a480cb4c2a1e7fc2c2b22bed6cb874798cdef374096d6b3"
+        }
+      ],
+      "projectSource": "# Edges Extensions\n\n个人仓主要留拆仓相关的卡（含 Compose 改造）。其余 CLI、脚手架、发布与鉴权卡在框架仓 [VirusPC/edges 的 edges-extensions 看板](https://github.com/VirusPC/edges/tree/main/.edges/tasks/edges-extensions)。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    },
+    {
+      "name": "learning",
+      "source": "/workspace/.edges/tasks/learning",
+      "destination": "/workspace/.edges/projects/2026-10-28--learning/tasks",
+      "date": "2026-10-28",
+      "project": "/workspace/.edges/projects/2026-10-28--learning",
+      "readme": "# 学习\n\n学习区：阅读、课程、源码精读与对照实践等学习工作项。看板管进度；可读笔记仍可落 notes。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [学习\\_rag\\_关键设计对照\\_edges\\_rag](<backlog/2026-10-28--%E5%AD%A6%E4%B9%A0-RAG-%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E5%AF%B9%E7%85%A7-edges-rag/INDEX.md>) — 精读 RAG 设计要点资料，对照已落地的 edges\\-rag，记清可改进点与下一步实验。\n- [学习\\_harness\\_engineering\\_论文十一套\\_coding\\_agent\\_源码解剖](<backlog/2026-10-28--%E5%AD%A6%E4%B9%A0-Harness-Engineering-%E8%AE%BA%E6%96%87%E5%8D%81%E4%B8%80%E5%A5%97-coding-agent-%E6%BA%90%E7%A0%81%E8%A7%A3%E5%89%96/INDEX.md>) — 精读 arXiv:2609.00006，弄清 harness 七子系统、跨系统观察与设计模式，并对照 Edges / 日常 coding agent 用法。\n- [open\\_grokbot\\_用\\_electron或\\_tauri包一层桌面壳macos\\_可开](<backlog/2026-10-29--open-grokbot-%E7%94%A8-Electron%E6%88%96-Tauri%E5%8C%85%E4%B8%80%E5%B1%82%E6%A1%8C%E9%9D%A2%E5%A3%B3macOS-%E5%8F%AF%E5%BC%80/INDEX.md>) — H5 已可在浏览器跑；加一层桌面壳，使 macOS 能当桌面应用打开，不改 Worker 侧 Agent 架构。\n- [edges\\_小助手\\_ios\\_swiftui\\_客户端](<backlog/2026-10-30--Edges-%E5%B0%8F%E5%8A%A9%E6%89%8B-iOSSwiftUI%E5%AE%A2%E6%88%B7%E7%AB%AF/INDEX.md>) — 按 edges\\-rag POST /api/ask 契约，在 Mac/Xcode 验证并收口 VirusPC/edges\\-assistant\\-ios 原生 SwiftUI 客户端。\n- [调研\\_eccminimax\\_等开源最新\\_ai\\_工作流](<backlog/2026-10-31--%E8%B0%83%E7%A0%94-ECCMiniMax-%E7%AD%89%E5%BC%80%E6%BA%90%E6%9C%80%E6%96%B0-AI-%E5%B7%A5%E4%BD%9C%E6%B5%81/INDEX.md>) — 调研 ECC、MiniMax 等开源项目的最新 AI 工作流，提炼可借鉴做法。\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "backlog/2026-10-28--学习-Harness-Engineering-论文十一套-coding-agent-源码解剖/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-28--学习-Harness-Engineering-论文十一套-coding-agent-源码解剖",
+          "name": "学习 Harness Engineering 论文（十一套 coding agent 源码解剖）",
+          "description": "精读 arXiv:2609.00006，弄清 harness 七子系统、跨系统观察与设计模式，并对照 Edges / 日常 coding agent 用法。"
+        },
+        {
+          "relative": "backlog/2026-10-28--学习-RAG-关键设计对照-edges-rag/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-28--学习-RAG-关键设计对照-edges-rag",
+          "name": "学习 RAG 关键设计（对照 edges-rag）",
+          "description": "精读 RAG 设计要点资料，对照已落地的 edges-rag，记清可改进点与下一步实验。"
+        },
+        {
+          "relative": "backlog/2026-10-29--open-grokbot-用-Electron或-Tauri包一层桌面壳macOS-可开/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-29--open-grokbot-用-Electron或-Tauri包一层桌面壳macOS-可开",
+          "name": "open-grokbot 用 Electron（或 Tauri）包一层桌面壳（macOS 可开）",
+          "description": "H5 已可在浏览器跑；加一层桌面壳，使 macOS 能当桌面应用打开，不改 Worker 侧 Agent 架构。"
+        },
+        {
+          "relative": "backlog/2026-10-30--Edges-小助手-iOSSwiftUI客户端/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-30--Edges-小助手-iOSSwiftUI客户端",
+          "name": "Edges 小助手 iOS（SwiftUI）客户端",
+          "description": "按 edges-rag POST /api/ask 契约，在 Mac/Xcode 验证并收口 VirusPC/edges-assistant-ios 原生 SwiftUI 客户端。"
+        },
+        {
+          "relative": "backlog/2026-10-31--调研-ECCMiniMax-等开源最新-AI-工作流/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-31--调研-ECCMiniMax-等开源最新-AI-工作流",
+          "name": "调研 ECC、MiniMax 等开源最新 AI 工作流",
+          "description": "调研 ECC、MiniMax 等开源项目的最新 AI 工作流，提炼可借鉴做法。"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [],
+      "files": [
+        {
+          "relative": "backlog/2026-10-28--学习-Harness-Engineering-论文十一套-coding-agent-源码解剖/.2026-10-28--学习-Harness-Engineering-论文十一套-coding-agent-源码解剖.log.md",
+          "sha256": "a3803c86f5384c66587525f5432adcf52c1e00ca502a475ddcb2ad958784d2f3"
+        },
+        {
+          "relative": "backlog/2026-10-28--学习-Harness-Engineering-论文十一套-coding-agent-源码解剖/INDEX.md",
+          "sha256": "207ad3b24e5d29906851c31ffe8a982412c2959e48fd3152abadf89d4abbd7ec",
+          "normalized": "29e9a1fe74a55cec2d4b76294a433ed3abbc649c9f01a7dcbe1c22053094eccb"
+        },
+        {
+          "relative": "backlog/2026-10-28--学习-RAG-关键设计对照-edges-rag/.2026-10-28--学习-RAG-关键设计对照-edges-rag.log.md",
+          "sha256": "4a63b23d7786c0b9ba1016097380e7b143ec1448e3ab5a6c336492508e95d6f0"
+        },
+        {
+          "relative": "backlog/2026-10-28--学习-RAG-关键设计对照-edges-rag/INDEX.md",
+          "sha256": "f4735f75f47a067696b0b2119fbda6f407851491bcb80d6fbf8ed7e23cddb409",
+          "normalized": "976baae4d60f4c961366c1abb0b7178a5e8acb9c122e0c7d5c5995dc6c66e44c"
+        },
+        {
+          "relative": "backlog/2026-10-29--open-grokbot-用-Electron或-Tauri包一层桌面壳macOS-可开/.2026-10-29--open-grokbot-用-Electron或-Tauri包一层桌面壳macOS-可开.log.md",
+          "sha256": "05c346ccaeaa8c632accee0724b7e59deca47fd1852af3f46a932e1d01a53820"
+        },
+        {
+          "relative": "backlog/2026-10-29--open-grokbot-用-Electron或-Tauri包一层桌面壳macOS-可开/INDEX.md",
+          "sha256": "b483e466a5ceffd0aae00e0f4d5bd31442423dfaf90e4377466317c4a4562895",
+          "normalized": "dfc8828083c7d6b84a3b463838e0861205ea298a9e8313418a712974317dca07"
+        },
+        {
+          "relative": "backlog/2026-10-30--Edges-小助手-iOSSwiftUI客户端/.2026-10-30--Edges-小助手-iOSSwiftUI客户端.log.md",
+          "sha256": "996f7892c340e9c35f850fd71b4ec255abaef4a652cec4cc2290db63f5cae7fb"
+        },
+        {
+          "relative": "backlog/2026-10-30--Edges-小助手-iOSSwiftUI客户端/INDEX.md",
+          "sha256": "bdc8e27f260a4be4760fbdd0b74329d9f18830fbc897794666a396e3e945bc6d",
+          "normalized": "8f6d58d45c741b8c0d182cb267629b1c240ce280db94eeb568871b146a16bc8c"
+        },
+        {
+          "relative": "backlog/2026-10-31--调研-ECCMiniMax-等开源最新-AI-工作流/.2026-10-31--调研-ECCMiniMax-等开源最新-AI-工作流.log.md",
+          "sha256": "21a4024d5b92e046849043980efaa6e856014ea80f5cef58edabaa7b89a3dbcf"
+        },
+        {
+          "relative": "backlog/2026-10-31--调研-ECCMiniMax-等开源最新-AI-工作流/INDEX.md",
+          "sha256": "5075901b5b5df802fdea48ae1d98ac9dc8920e04e5967c2b4c54aaa1894a27ed",
+          "normalized": "83e2d04bd0156d575645522d220ed2478d3fd7b64f1237d74f01b59682c73b08"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "5aeda08442dceacde2b3b394bfb302a01ec5f122bfd10dd75b934b85efd1e3f3",
+          "normalized": "5aeda08442dceacde2b3b394bfb302a01ec5f122bfd10dd75b934b85efd1e3f3"
+        }
+      ],
+      "projectSource": "# 学习\n\n学习区：阅读、课程、源码精读与对照实践等学习工作项。看板管进度；可读笔记仍可落 notes。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    },
+    {
+      "name": "site-and-content",
+      "source": "/workspace/.edges/tasks/site-and-content",
+      "destination": "/workspace/.edges/projects/2026-09-10--site-and-content/tasks",
+      "date": "2026-09-10",
+      "project": "/workspace/.edges/projects/2026-09-10--site-and-content",
+      "readme": "# Site and Content\n\n站点/posts/badge/内容整理检索。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n- [posts用Astro搭博客与CI](<todo/2026-09-10--posts%E7%94%A8Astro%E6%90%AD%E5%8D%9A%E5%AE%A2%E4%B8%8ECI/INDEX.md>) — posts 对外展示，后续用 Astro \\+ GitHub Actions 搭博客与 CI\n- [add\\_more\\_repo\\_badges](<backlog/2026-09-14--%E4%BB%93%E5%BA%93%E4%B8%BB%E9%A1%B5%E5%A2%9E%E5%8A%A0%E6%9B%B4%E5%A4%9Abadge/INDEX.md>) — 仓库主页增加更多 badge，不只 teach 部署这一枚\n- [richer\\-content\\-outputs](<backlog/2026-10-07--%E9%99%A4-posts-%E5%A4%96%E6%94%AF%E6%8C%81%E6%9B%B4%E4%B8%B0%E5%AF%8C%E7%9A%84%E5%86%85%E5%AE%B9%E8%BE%93%E5%87%BA%E5%BD%A2%E6%80%81/INDEX.md>) — 在 posts 之外扩展 videos、朋友圈、flashcards、ppt 等输出；对标 Google NotebookLM 一类「同知识多形态输出」能力。\n- [个人资料主页](<backlog/2026-10-31--%E4%B8%AA%E4%BA%BA%E8%B5%84%E6%96%99%E4%B8%BB%E9%A1%B5/INDEX.md>) — 建设对外可访问的个人资料主页。\n<!-- edges-entries-local:end -->\n",
+      "tasks": [
+        {
+          "relative": "backlog/2026-09-14--仓库主页增加更多badge/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-14--仓库主页增加更多badge",
+          "name": "仓库主页增加更多 badge",
+          "description": "仓库主页增加更多 badge，不只 teach 部署这一枚"
+        },
+        {
+          "relative": "backlog/2026-09-14--整理posts文件夹并建站/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-09-14--整理posts文件夹并建站",
+          "name": "整理 posts 文件夹并建站",
+          "description": "整理 knowledge/posts 文件夹并建站；建站栈跟已有 Astro 条目"
+        },
+        {
+          "relative": "backlog/2026-10-07--除-posts-外支持更丰富的内容输出形态/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-07--除-posts-外支持更丰富的内容输出形态",
+          "name": "除 posts 外支持更丰富的内容输出形态",
+          "description": "在 posts 之外扩展 videos、朋友圈、flashcards、ppt 等输出；对标 Google NotebookLM 一类「同知识多形态输出」能力。"
+        },
+        {
+          "relative": "backlog/2026-10-31--个人资料主页/INDEX.md",
+          "status": "backlog",
+          "stem": "2026-10-31--个人资料主页",
+          "name": "个人资料主页",
+          "description": "建设对外可访问的个人资料主页。"
+        },
+        {
+          "relative": "todo/2026-09-10--posts用Astro搭博客与CI/INDEX.md",
+          "status": "todo",
+          "stem": "2026-09-10--posts用Astro搭博客与CI",
+          "name": "posts 用 Astro 搭博客与 CI",
+          "description": "posts 对外展示，后续用 Astro + GitHub Actions 搭博客与 CI"
+        }
+      ],
+      "missingReferences": [],
+      "unindexedTasks": [
+        "backlog/2026-09-14--整理posts文件夹并建站/INDEX.md"
+      ],
+      "files": [
+        {
+          "relative": "backlog/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "backlog/2026-09-14--仓库主页增加更多badge/.2026-09-14--仓库主页增加更多badge.log.md",
+          "sha256": "f51477056b612ac4591db74d09e4847427528ca2dc5cb4bf49259c24d5749167"
+        },
+        {
+          "relative": "backlog/2026-09-14--仓库主页增加更多badge/INDEX.md",
+          "sha256": "48d3123386130ad6b233011b0eb86a5e7ca94564d556632244d3889acc76a0f9",
+          "normalized": "54ed8b68106cc5d0bec35a80659c6e6e76324063a398a751dcdc911f3ced12a2"
+        },
+        {
+          "relative": "backlog/2026-09-14--整理posts文件夹并建站/.2026-09-14--整理posts文件夹并建站.log.md",
+          "sha256": "aa8657ab864b7575640657561885d748934101eb479efe9e2f424094d65b8a85"
+        },
+        {
+          "relative": "backlog/2026-09-14--整理posts文件夹并建站/INDEX.md",
+          "sha256": "a6596f1e234a073950352410f266a70f2e9d7d6e0c4823688decfef41f48316f",
+          "normalized": "419cd19fd01171f7587041c6d3e63043bd0c851a22cc4d5daad6fe46c5903f96"
+        },
+        {
+          "relative": "backlog/2026-10-07--除-posts-外支持更丰富的内容输出形态/.2026-10-07--除-posts-外支持更丰富的内容输出形态.log.md",
+          "sha256": "3a0a2aa1d6def128d368bfa38cbb10873c04b9c03c97a876ae51022712e68213"
+        },
+        {
+          "relative": "backlog/2026-10-07--除-posts-外支持更丰富的内容输出形态/INDEX.md",
+          "sha256": "2809d6fdbc4cae4a95e890bec844a4c7a21bdd5711c6ac2c6d6cb961e966ca6a",
+          "normalized": "a60b9590fed37f66dc486dc894648f3aca736c82ac8081bbfc7dbe42acfe565f"
+        },
+        {
+          "relative": "backlog/2026-10-31--个人资料主页/.2026-10-31--个人资料主页.log.md",
+          "sha256": "a502c3cb1181d96d9a59c4a4ac00685365c0fdaffed61650c580834b01f19b35"
+        },
+        {
+          "relative": "backlog/2026-10-31--个人资料主页/INDEX.md",
+          "sha256": "7a3ea97d83619e7acc7720f7b89b6fd2fd8217332c37c57ba0d5000c04f19e48",
+          "normalized": "f702775e9fd4af39ff1f8cacfe6e53ddb400b9c73e1df8310830750fdff29722"
+        },
+        {
+          "relative": "blocked/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "cancelled/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "done/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "in_progress/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "in_review/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "README.md",
+          "sha256": "9939ec23911523f08109af1e8268b98a7df8b6796d056026c3f000de9b560b3b",
+          "normalized": "ac5d10f3f67a4471dd1d74e474c242060072c929c20f31607baf36308ee97756"
+        },
+        {
+          "relative": "todo/.gitkeep",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "relative": "todo/2026-09-10--posts用Astro搭博客与CI/.2026-09-10--posts用Astro搭博客与CI.log.md",
+          "sha256": "dea08302a9f818a91484817ef198e5f6973adc37eabed5c3b307eb0249e14660"
+        },
+        {
+          "relative": "todo/2026-09-10--posts用Astro搭博客与CI/INDEX.md",
+          "sha256": "9285dca5e9844663caac35e363837869ff67c842dac6ec88e1030dd93be6bef8",
+          "normalized": "b8a26f3dde3be29e183bd6e48f0a51fda366bb69e5a0781585bd481bd52fb815"
+        }
+      ],
+      "projectSource": "# Site and Content\n\n站点/posts/badge/内容整理检索。\n\n<!-- edges-entries-local:start -->\n## 本层内容\n\n<!-- edges-entries-local:end -->\n"
+    }
+  ],
+  "conflicts": [],
+  "totals": {
+    "projects": 6,
+    "tasks": 61,
+    "defaultTasks": 13,
+    "runLogs": 61,
+    "resources": 5,
+    "resourceBytes": 137257
+  }
+}
