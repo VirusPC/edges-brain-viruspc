@@ -66,6 +66,7 @@
 - [已有资料沉淀进\_edges\_工作流](<backlog/2026-10-31--%E5%B7%B2%E6%9C%89%E8%B5%84%E6%96%99%E6%B2%89%E6%B7%80%E8%BF%9B-Edges-%E5%B7%A5%E4%BD%9C%E6%B5%81/INDEX.md>) — 把已有资料系统地沉淀进 Edges 的工作流。
 - [收口周复盘\_pr\_370统一\_readmeskill\_文案后合入](<done/2026-10-25--%E6%94%B6%E5%8F%A3%E5%91%A8%E5%A4%8D%E7%9B%98-PR-370%E7%BB%9F%E4%B8%80-READMEskill-%E6%96%87%E6%A1%88%E5%90%8E%E5%90%88%E5%85%A5/INDEX.md>) — 消除「补记改 INDEX」与「正文写定后不改、评论记 COMMENTS.md」矛盾，再合 \#370。
 - [ai资讯工作流改为\_rss\_并优化数据格式与\_token\_对比](<in_progress/2026-10-31--AI%E8%B5%84%E8%AE%AF%E5%B7%A5%E4%BD%9C%E6%B5%81%E6%94%B9%E4%B8%BA-RSS-%E5%B9%B6%E4%BC%98%E5%8C%96%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F%E4%B8%8E-token-%E5%AF%B9%E6%AF%94/INDEX.md>) — AI 资讯周报改为以自维护 OPML 的 RSS 为先，列表页只作退路，并留下 2026\-10\-30 窗口的覆盖与体积对比。
+- [补充重要邮件提醒\_routine](<backlog/2026-11-03--%E8%A1%A5%E5%85%85%E9%87%8D%E8%A6%81%E9%82%AE%E4%BB%B6%E6%8F%90%E9%86%92-routine/INDEX.md>) — 在个人大脑补一条 important\-email\-reminder，定时扫重要邮件并提醒。
 <!-- edges-entries-local:end -->
 
 <!-- edges-migrated-task-default:start -->
