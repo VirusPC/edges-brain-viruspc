@@ -9,4 +9,6 @@
 - [.edges/projects/README.md](<projects/README.md>) — 项目内容叶子的组织清单。
 - [.edges/notes/README.md](<notes/README.md>) — 笔记模块的 harness 条目。叶子登记在 scope 的 notes/README.md。
 - [Routines](<routines/README.md>) — 例行任务定义；执行与调度由外部平台负责。
+- [memory/feedbacks/README.md](<memory/feedbacks/README.md>)
+- [memory/references/README.md](<memory/references/README.md>)
 <!-- edges-entries-local:end -->
