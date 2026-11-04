@@ -13,8 +13,8 @@
 
 本仓已有两份相邻材料，范围不同，这里不重复它们的结论：
 
-- [pi 生态与插件扩展](../../projects/agent-infra/2026-10-19--pi生态与插件扩展.md) 记的是 2026-10-19 的插件下载量、omp 硬分叉和 OpenClaw。那天的「除 OpenClaw 外没有成熟产品」没有在本次重做。
-- [Pi 沙箱不等于文件系统隔离](../../.edges/memory/projects/project_pi_sandbox_not_fs_isolation/INDEX.md) 仍适用。下文只补官方现在怎么写权限，以及 codemode 那个 sandbox 限制的是什么。
+- [pi 生态与插件扩展](../../../../../projects/agent-infra/2026-10-19--pi生态与插件扩展.md) 记的是 2026-10-19 的插件下载量、omp 硬分叉和 OpenClaw。那天的「除 OpenClaw 外没有成熟产品」没有在本次重做。
+- [Pi 沙箱不等于文件系统隔离](../../../../../.edges/memory/projects/project_pi_sandbox_not_fs_isolation/INDEX.md) 仍适用。下文只补官方现在怎么写权限，以及 codemode 那个 sandbox 限制的是什么。
 
 ## 定义对比
 
@@ -150,7 +150,7 @@ Pi 没有内置的文件系统、进程、网络或凭据权限系统，工具�
 
 - 宿主是 Node.js 或 Bun，希望复用 Coding Agent 的工具、`AGENTS.md` 发现、会话、扩展和事件：用 SDK。`createAgentSession()` 默认带上当前工作目录、发现到的资源、已存设置和凭据。`cwd` 决定项目资源、context file、会话分组和内置工具的路径。可以换成内存里的 `SessionManager.inMemory()`、自己的 `resourceLoader`，或用 `tools` / `customTools` 改工具集。`prompt()` 在这一轮（含自动重试）结束后返回。流式输出要在 `prompt()` 之前 `subscribe`。已经在跑时再 `prompt()`，必须显式指定 steer 还是 follow-up，否则直接拒绝。
 - 宿主不是 Node，或者要把 agent 关在子进程里：用 RPC。隔离边界是进程，不是 SDK 对象。
-- 产品根本不是「对着一个目录改代码」（聊天渠道里的个人助理、自有工具循环）：官方 README 把 [OpenClaw](https://github.com/OpenClaw/OpenClaw) 当作真实集成例子。这种情况下可以只依赖 `pi-ai` + `pi-agent-core`，自己注册工具，不必背上 `read` / `write` / `bash`。本仓 [云沙箱 Agent 内核](../../projects/agent-infra/2026-10-19--云沙箱Agent开源产品的Agent内核.md) 把「用 `pi-agent-core` 做内核」记成一条路线；那篇是 2026-10-19 的检索，本次没有重核 Kortix。
+- 产品根本不是「对着一个目录改代码」（聊天渠道里的个人助理、自有工具循环）：官方 README 把 [OpenClaw](https://github.com/OpenClaw/OpenClaw) 当作真实集成例子。这种情况下可以只依赖 `pi-ai` + `pi-agent-core`，自己注册工具，不必背上 `read` / `write` / `bash`。本仓 [云沙箱 Agent 内核](../../../../../projects/agent-infra/2026-10-19--云沙箱Agent开源产品的Agent内核.md) 把「用 `pi-agent-core` 做内核」记成一条路线；那篇是 2026-10-19 的检索，本次没有重核 Kortix。
 
 ### 用 extensions / skills 定制
 
@@ -202,6 +202,6 @@ Package 是一个普通目录或 npm 包，约定放 `extensions/`、`skills/`�
 
 本仓：
 
-- [pi 生态与插件扩展](../../projects/agent-infra/2026-10-19--pi生态与插件扩展.md)
-- [云沙箱 Agent 开源产品的 Agent 内核](../../projects/agent-infra/2026-10-19--云沙箱Agent开源产品的Agent内核.md)
-- [Pi 沙箱不等于文件系统隔离](../../.edges/memory/projects/project_pi_sandbox_not_fs_isolation/INDEX.md)
+- [pi 生态与插件扩展](../../../../../projects/agent-infra/2026-10-19--pi生态与插件扩展.md)
+- [云沙箱 Agent 开源产品的 Agent 内核](../../../../../projects/agent-infra/2026-10-19--云沙箱Agent开源产品的Agent内核.md)
+- [Pi 沙箱不等于文件系统隔离](../../../../../.edges/memory/projects/project_pi_sandbox_not_fs_isolation/INDEX.md)

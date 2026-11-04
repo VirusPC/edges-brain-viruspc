@@ -9,7 +9,7 @@ Agent 基础设施专项工作区：记录支撑 Agent 运行的底层设施，�
 ## 文档
 
 - [prompt-caching.md](prompt-caching.md)：Prompt caching 知识笔记：各厂商（Anthropic / OpenAI / Gemini / DeepSeek）机制和计价对比、Agent 场景实践，以及 pi cache warmer 案例
-- [2026-10-19--pi生态与插件扩展.md](2026-10-19--pi生态与插件扩展.md)：pi 本体、按月下载量排的插件、omp 硬分叉与 OpenClaw；结论是插件 / SDK 扩展 + 锁版本可行，分叉 core 是陷阱。分层说明在笔记 [Pi 工具包与 Pi Coding Agent](../../notes/2026-11-04--pi-工具包与-pi-coding-agent/INDEX.md)
+- [2026-10-19--pi生态与插件扩展.md](2026-10-19--pi生态与插件扩展.md)：pi 本体、按月下载量排的插件、omp 硬分叉与 OpenClaw；结论是插件 / SDK 扩展 + 锁版本可行，分叉 core 是陷阱。分层说明在学习 Project 的笔记 [Pi 工具包与 Pi Coding Agent](../../.edges/projects/2026-10-28--learning/notes/2026-11-04--pi-工具包与-pi-coding-agent/INDEX.md)
 - [2026-10-19--云沙箱Agent开源产品的Agent内核.md](2026-10-19--云沙箱Agent开源产品的Agent内核.md)：云沙箱 + agent 开源产品的三条内核路线（自研 loop / SDK / 沙箱里无头跑现成 CLI）、沙箱层选型，以及每会话容器的通用启动模式
 - [2026-10-19--云沙箱服务SDK语言与隔离技术调研.md](2026-10-19--云沙箱服务SDK语言与隔离技术调研.md)：托管 Sandbox 服务的 TS/Python/Go/Java SDK 矩阵、隔离技术、大厂 Agent 公开用法、国内 E2B 兼容趋势与面试要点
 - [2026-10-19--Vercel-coding-agent-template源码分析.md](2026-10-19--Vercel-coding-agent-template源码分析.md)：Vercel Sandbox 里无头跑多家 CLI 的流程、adapter 与命令、会话恢复、清理方式，以及该借鉴和不该照抄的地方
