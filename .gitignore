@@ -96,3 +96,7 @@ extensions/cli/skills/
 
 # Retrieval eval clones and client logs.
 .edges/evaluation/.cache/
+
+# skills 安装锁。source 指向本机 npx 缓存（~/.npm/_npx/...），不能当跨机记录。
+# 技能正文在 .agents/skills/。
+/skills-lock.json
