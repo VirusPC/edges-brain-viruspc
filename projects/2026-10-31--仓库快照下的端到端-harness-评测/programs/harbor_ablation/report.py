@@ -297,9 +297,14 @@ def markdown_report(report: dict) -> str:
               "| 项目 | 记录 |", "| --- | --- |"]
     for name, key in (("模型", "model"), ("Codex CLI", "codex_version"), ("Harbor", "harbor_version"),
                       ("推理强度", "reasoning_effort"), ("Agent 超时（秒）", "timeout_sec"),
+                      ("最大并发 trial", "concurrency"), ("时延运行条件", "latency_context"),
+                      ("批次墙钟时间（毫秒）", "execution_wall_ms"),
                       ("Prompt 版本", "prompt_version"), ("Prompt SHA-256", "prompt_sha256"),
                       ("Dataset SHA-256", "dataset_sha256")):
-        lines.append(f"| {name} | {cell(manifest.get(key))} |")
+        value = manifest.get(key)
+        if key == 'latency_context' and isinstance(value, dict):
+            value = value.get('interpretation')
+        lines.append(f"| {name} | {cell(value)} |")
     lines += ["", "## 数据卡", "", "| 范围 | 题数 | 来源 session | 有 gold / 无 gold | scope 未知 | 每题可见记忆 最小 / 中位 / 最大 | gold > 5 | 正例平均 recall@5 上限 |",
               "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
     for track in TRACKS:
@@ -420,7 +425,8 @@ def generate(run_dir: Path, output: Path, *, bootstrap: int = 2000) -> dict:
     commands, audit = audit_commands(run_dir, plan)
     manifest_summary = {key: manifest.get(key) for key in (
         "model", "codex_version", "harbor_version", "reasoning_effort", "timeout_sec",
-        "prompt_version", "prompt_sha256", "dataset_sha256", "seed", "repeats", "split", "limit")}
+        "prompt_version", "prompt_sha256", "dataset_sha256", "seed", "repeats", "split", "limit",
+        "concurrency", "latency_context", "execution_wall_ms", "execution_started_at", "execution_finished_at", "interrupted")}
     result = {"schema_version": 1, "created_at": datetime.now(timezone.utc).isoformat(),
               "manifest_summary": manifest_summary, "protocol": protocol_info,
               "input_sha256": {name: sha256(run_dir / name) if (run_dir / name).is_file() else None

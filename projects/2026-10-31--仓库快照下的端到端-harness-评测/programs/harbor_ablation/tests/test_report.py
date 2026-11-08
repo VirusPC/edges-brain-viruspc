@@ -76,6 +76,16 @@ class ReportTests(unittest.TestCase):
     def make_report(self):
         return report.generate(self.run, self.output, bootstrap=30)
 
+    def test_concurrent_latency_context_is_disclosed(self):
+        self.manifest.update(concurrency=6, latency_context={'interpretation': 'six simultaneous jobs; shared host'}, execution_wall_ms=12345)
+        self.save()
+        result = self.make_report()
+        self.assertEqual(result['manifest_summary']['concurrency'], 6)
+        self.assertEqual(result['manifest_summary']['execution_wall_ms'], 12345)
+        markdown = (self.output / 'report.md').read_text()
+        self.assertIn('| 最大并发 trial | 6 |', markdown)
+        self.assertIn('six simultaneous jobs; shared host', markdown)
+
     def read_csv(self, name):
         with (self.output / name).open(newline="", encoding="utf-8") as stream:
             return list(csv.DictReader(stream))
