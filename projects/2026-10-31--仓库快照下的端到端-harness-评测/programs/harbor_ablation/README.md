@@ -51,7 +51,7 @@ docker build -t edges-harbor-codex:0.162.1 - < Dockerfile.base
 
 调用前写出固定 seed 的随机 trial 顺序；每个 case×condition×repeat 都有明确 trial ID。`--concurrency` 为正整数、默认 1，限制同时在途的原生 `harbor run` Job 数量。控制器按既定计划派发，每个 Job 只有一个 trial，使用独立容器、`jobs/<trial_id>/` 和控制器日志；完成顺序可不同，结果始终按原 trial 身份配对。只有主线程收集结果，每完成一个 trial 就写 `trials.json` 和 `result.json` 检查点，保存顺序仍按计划排列。没有自动重试，进程启动或单次结果收集异常保留为失败行，其他 trial 继续完成；新的重跑使用新输出目录并完整报告。`--limit` 按输入数据顺序截取，适用于 smoke，不能把这种方便样本说成随机代表样本。
 
-第一次 Ctrl-C 停止派发新 Job，取消尚未启动的工作，并等待已在途 Job 按自身时限结束、逐条保存结果后退出；manifest 标记 `interrupted=true`。它不会立即杀掉原生 Harbor 进程，等待时间可能包含构建、安装及 Agent 的时限。再次中断可能只留下此前检查点；未收集的计划仍显示为不完整，不能把它们算作成功或自动补跑。
+第一次 Ctrl-C 停止派发新 Job，取消尚未启动的工作，并等待控制器已登记的在途 Job 按自身时限结束、逐条保存结果后退出；manifest 标记 `interrupted=true`。它不会立即杀掉原生 Harbor 进程，等待时间可能包含构建、安装及 Agent 的时限。在提交线程任务后、登记 Future 前的极窄窗口中断，或再次中断，可能只留下此前检查点；未收集的计划仍显示为不完整，不能把它们算作成功或自动补跑。
 
 manifest 记录 `concurrency`、`latency_context` 和 `execution_wall_ms`（整批执行墙钟，含调度及逐条检查点，不含材料准备、镜像检查和最后的统计计算）。三路并发的整批耗时可能缩短，但不等于单独运行一个 trial 的时延；单 trial 的 `agent_latency_ms` 与 `trial_wall_ms` 仍可能受到共享 CPU、内存、Docker 和模型服务并发的影响。比较延迟时须同时报告并发设置，不把整批墙钟除以 trial 数当单 trial 延迟，也不把重叠的 trial 墙钟求和当整批耗时。
 
