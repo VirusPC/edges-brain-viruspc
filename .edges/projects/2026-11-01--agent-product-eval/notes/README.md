@@ -4,4 +4,5 @@
 ## 本层内容
 
 - [2026\-11\-08\-\-kimi\-work\-%E6%8F%90%E9%97%AE%E7%BB%84%E4%BB%B6%E6%9C%80%E5%A4%9A\-4\-%E9%80%89%E9%A1%B9/INDEX.md](<2026-11-08--kimi-work-%E6%8F%90%E9%97%AE%E7%BB%84%E4%BB%B6%E6%9C%80%E5%A4%9A-4-%E9%80%89%E9%A1%B9/INDEX.md>)
+- [2026\-11\-08\-\-codex\-cloud%E4%B8%8Ecursor\-cloud%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87%E4%B8%8E%E4%BB%A3%E7%A0%81%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6%E5%AF%B9%E6%AF%94/INDEX.md](<2026-11-08--codex-cloud%E4%B8%8Ecursor-cloud%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87%E4%B8%8E%E4%BB%A3%E7%A0%81%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6%E5%AF%B9%E6%AF%94/INDEX.md>)
 <!-- edges-entries-local:end -->
