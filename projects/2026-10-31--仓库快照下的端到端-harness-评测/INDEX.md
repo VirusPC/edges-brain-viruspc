@@ -54,7 +54,7 @@
 
 2026-11-09 的独立 `harbor_ablation` 三条件程序已迁至 Edges 框架评测区，本项目仅保留导航。该程序使用 Harbor 0.25.0、Codex CLI 0.162.1、每 trial 独立 Docker 和 separate verifier，支持有上限的并发执行。真实开发集的 scoped/root/none 三组已全部运行成功，53 项离线测试通过；正式测试与真实数据保存在私密归档，开发 smoke 不作为分层收益结论。该程序不改变上述旧四框架实验。
 
-同日完成 12 路并行的 279 次正式 trial，零失败；原生累计 token、Agent 时延、冻结评分、配对统计和工具行为均经过独立审计。完整结果及局限保留在私密归档；[脱敏聚合报告](https://github.com/VirusPC/edges/blob/e73accc3b2b04b19b53fb926de7d7827f1035042/packages/evaluation/reports/2026-11-09-harbor-memory-ablation.md)与[实验程序](https://github.com/VirusPC/edges/tree/e73accc3b2b04b19b53fb926de7d7827f1035042/packages/evaluation/experiments/harness_memory_ablation/harbor)由 Edges 维护。整体 recall、token 和时延尚无明确收益证据。归属纠正见 [框架草稿 PR](https://github.com/VirusPC/edges/pull/114)，迁移不改变冻结证据，也没有重跑模型。
+同日完成 12 路并行的 279 次正式 trial，零失败；原生累计 token、Agent 时延、冻结评分、配对统计和工具行为均经过独立审计。完整结果及局限保留在私密归档；[脱敏聚合报告](https://github.com/VirusPC/edges/blob/9aaf855afd17c8012f4455af1dc9f455c6e6d59c/packages/evaluation/reports/2026-11-09-harbor-memory-ablation.md)与[实验程序](https://github.com/VirusPC/edges/tree/9aaf855afd17c8012f4455af1dc9f455c6e6d59c/packages/evaluation/experiments/harness_memory_ablation/harbor)由 Edges 维护。整体 recall、token 和时延尚无明确收益证据。归属纠正见 [框架草稿 PR](https://github.com/VirusPC/edges/pull/114)，迁移不改变冻结证据，也没有重跑模型。
 
 ## 来源
 
@@ -83,3 +83,5 @@
 - [公共底层](programs/shared/README.md) — 四套程序共用的快照、题集、判分、结果归一化、比较及测试数据；不执行 Agent，不依赖框架 SDK。
 
 - [DeepEval 程序](programs/deepeval/README.md) — 独立 CLI、LLMTestCase、自定义 Metric、evaluate() 与离线检查。
+
+完整实验现统一由 [Edges 实验入口](https://github.com/VirusPC/edges/tree/9aaf855afd17c8012f4455af1dc9f455c6e6d59c/packages/evaluation/experiments/harness_memory_ablation/harbor)维护，包含设计、数据形成与标注、冻结协议、评测及审计程序和报告。新增可复用合成生成器与独立验证器，40 题、682 份合成记忆，正式 288 次 trial；见[数据报告](https://github.com/VirusPC/edges/blob/9aaf855afd17c8012f4455af1dc9f455c6e6d59c/packages/evaluation/experiments/harness_memory_ablation/harbor/synthetic/DATA_REPORT.md)和[新实验报告](https://github.com/VirusPC/edges/blob/9aaf855afd17c8012f4455af1dc9f455c6e6d59c/packages/evaluation/experiments/harness_memory_ablation/harbor/synthetic/RESULTS.md)。合成结果与原真实问题结果分开，不改写历史结论。真实原件及完整日志集中在同一实验的 Git 忽略区，受限原备份保留。
