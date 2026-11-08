@@ -2,7 +2,7 @@
 
 ## 归属与依赖
 
-本项目属于公开个人大脑：保存评测框架选型、personal benchmark 调研及 memory 消融试验程序。仅正式纳入 Edges 的通用实现才进入框架仓。2026-10-31 从框架工作树迁入个人脑独立工作树。
+本项目属于公开个人大脑：保存评测框架选型、personal benchmark 调研和既有四框架对照程序。2026-10-31 从框架工作树迁入个人脑独立工作树。验证 Edges 自身架构的正式实验归框架 evaluation；不能因为复用本项目的工具就沿用个人研究归属。
 
 程序复用 Edges 已有评测模块；共同工作区内自动发现 edges/，独立检出时显式设置 EDGES_ROOT。
 
@@ -52,9 +52,9 @@
 - 原生链路不完全相同：Inspect SWE 使用模型 Bridge，Harbor／Promptfoo 使用 Codex 原生链路。Promptfoo／DeepEval 宿主目录副本的读隔离较弱，结果明确标记为探索性，不输出 memory 默认开启建议。
 - Docker 端到端尚未完成。真实模型 smoke 已获授权，最终执行情况记录在 programs/VALIDATION.md。
 
-2026-11-09 新增独立 `harbor_ablation` 三条件程序，使用 Harbor 0.25.0、Codex CLI 0.162.1、每 trial 独立 Docker 和 separate verifier，支持有上限的并发执行。真实开发集的 scoped/root/none 三组已全部运行成功，53 项离线测试通过；正式测试与真实数据保存在私密归档，开发 smoke 不作为分层收益结论。该程序不改变上述旧四框架实验。
+2026-11-09 的独立 `harbor_ablation` 三条件程序已迁至 Edges 框架评测区，本项目仅保留导航。该程序使用 Harbor 0.25.0、Codex CLI 0.162.1、每 trial 独立 Docker 和 separate verifier，支持有上限的并发执行。真实开发集的 scoped/root/none 三组已全部运行成功，53 项离线测试通过；正式测试与真实数据保存在私密归档，开发 smoke 不作为分层收益结论。该程序不改变上述旧四框架实验。
 
-同日完成 12 路并行的 279 次正式 trial，零失败；原生累计 token、Agent 时延、冻结评分、配对统计和工具行为均经过独立审计。完整结果及局限保留在私密归档，不把运行成功写成分层收益已获证明。
+同日完成 12 路并行的 279 次正式 trial，零失败；原生累计 token、Agent 时延、冻结评分、配对统计和工具行为均经过独立审计。完整结果及局限保留在私密归档；[脱敏聚合报告](https://github.com/VirusPC/edges/blob/e73accc3b2b04b19b53fb926de7d7827f1035042/packages/evaluation/reports/2026-11-09-harbor-memory-ablation.md)与[实验程序](https://github.com/VirusPC/edges/tree/e73accc3b2b04b19b53fb926de7d7827f1035042/packages/evaluation/experiments/harness_memory_ablation/harbor)由 Edges 维护。整体 recall、token 和时延尚无明确收益证据。归属纠正见 [框架草稿 PR](https://github.com/VirusPC/edges/pull/114)，迁移不改变冻结证据，也没有重跑模型。
 
 ## 来源
 
@@ -77,7 +77,7 @@
 - [Memory 有无消融程序与运行说明](programs/README.md) — 四个框架的统一接口对照，保留共同题集、快照、判分与统计；说明模型链路、读隔离和验证层级的差异。
 - [Inspect 程序](programs/inspect/README.md) — Inspect SWE codex_cli()、Task、scorer、依赖与测试。
 - [Harbor 程序](programs/harbor/README.md) — 任务包、内置 codex、独立 verifier、依赖与测试。
-- [Harbor 分层／根目录／无记忆三组消融](programs/harbor_ablation/README.md) — 有界 Langfuse 导出、历史记忆与复核绑定、真实 Docker 执行、recall@5、累计 token、时延及 session 聚类配对统计。
+- [Harbor 分层／根目录／无记忆三组消融](programs/harbor_ablation/README.md) — 已迁入 Edges evaluation；此处保留维护入口与历史来源导航。
 - [Promptfoo 程序](programs/promptfoo/README.md) — 原生 Codex SDK、HOME hook、assertion、Node 依赖与协议测试。
 - [Promptfoo 与 Inspect 代码及实测对比](programs/promptfoo/COMPARE_INSPECT.md) — 同一 shared 底层的框架接口、容器生命周期、数据和接入成本对比。
 - [公共底层](programs/shared/README.md) — 四套程序共用的快照、题集、判分、结果归一化、比较及测试数据；不执行 Agent，不依赖框架 SDK。
