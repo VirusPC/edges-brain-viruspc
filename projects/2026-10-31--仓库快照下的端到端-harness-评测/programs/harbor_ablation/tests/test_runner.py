@@ -43,6 +43,60 @@ def events(answer: dict, *, outputs: list[dict] | None = None, usage: dict | Non
     return "\n".join(json.dumps(line) for line in lines)
 
 
+class ContentEvidenceTests(unittest.TestCase):
+    def test_partial_body_read_counts_without_eof_marker(self):
+        body = 'A uniquely worded release policy requiring the stable branch and two reviewers before every deployment.'
+        anchors = metrics.content_anchors([{'memory_id': 'm2', 'body': body}])
+        spec = {'case': fixture()['cases'][0], 'condition': 'scoped',
+                'visible_memory_ids': ['m2'], 'read_markers': {'m2': 'ABSENT_EOF_MARKER'},
+                'content_anchors': anchors}
+        raw = events({'answer': 'Use stable.', 'selected_memory_ids': ['m2']}, outputs=[
+            {'id': 'read-1', 'type': 'command_execution', 'aggregated_output': body[:90]}])
+        result = metrics.evaluate_artifact(spec, raw)
+        self.assertEqual(result['content_recall_at_5'], 1)
+        self.assertEqual(result['marker_recall_at_5'], 0)
+        self.assertEqual(result['evidence_recall_at_5'], 1)
+
+    def test_shared_body_cannot_identify_a_memory_by_content(self):
+        body = 'This sufficiently long shared paragraph is identical across two different documents and is not unique evidence.'
+        anchors = metrics.content_anchors([{'memory_id': 'a', 'body': body}, {'memory_id': 'b', 'body': body}])
+        self.assertEqual(anchors, {'a': [], 'b': []})
+
+    def test_shifted_shared_body_is_not_unique(self):
+        body = 'This sufficiently long shared paragraph is identical across two different documents and is not unique evidence.'
+        anchors = metrics.content_anchors([{'memory_id': 'a', 'body': body}, {'memory_id': 'b', 'body': 'X' + body + 'Y'}])
+        self.assertEqual(anchors['a'], [])
+
+    def test_short_body_contained_in_longer_body_is_not_unique(self):
+        short = '1234567890abcdefghijABCDEFGHIJklmnopqrstuv'
+        anchors = metrics.content_anchors([{'memory_id': 'a', 'body': short}, {'memory_id': 'b', 'body': 'prefix-padding-' + short + '-suffix-padding-long'}])
+        self.assertEqual(anchors['a'], [])
+
+    def test_command_or_answer_text_is_not_content_evidence(self):
+        body = 'A uniquely worded release policy requiring the stable branch and two reviewers before every deployment.'
+        spec = {'case': fixture()['cases'][0], 'condition': 'root', 'visible_memory_ids': ['m2'],
+                'read_markers': {}, 'content_anchors': metrics.content_anchors([{'memory_id': 'm2', 'body': body}])}
+        result = metrics.evaluate_artifact(spec, events({'answer': body, 'selected_memory_ids': ['m2']}, outputs=[
+            {'id': 'search-1', 'type': 'command_execution', 'command': body, 'aggregated_output': 'no matches'}]))
+        self.assertEqual(result['content_recall_at_5'], 0)
+
+    def test_mcp_unicode_and_newline_text_remains_decoded(self):
+        body = '发布之前必须核对当前分支、目标环境和审阅结果，并且保留这次操作所依据的原始材料。\n如果必要的输入仍然缺失，应该先记录未知条件，再根据现有的项目约定决定下一步如何进行。'
+        spec = {'case': fixture()['cases'][0], 'condition': 'root', 'visible_memory_ids': ['m2'],
+                'read_markers': {}, 'content_anchors': metrics.content_anchors([{'memory_id': 'm2', 'body': body}])}
+        result = metrics.evaluate_artifact(spec, events({'answer': 'Use stable.', 'selected_memory_ids': ['m2']}, outputs=[
+            {'id': 'mcp-1', 'type': 'mcp_tool_call', 'result': {'content': [{'type': 'text', 'text': body}]}}]))
+        self.assertEqual(result['content_recall_at_5'], 1)
+
+    def test_mcp_blocks_are_not_joined_to_invent_a_body_span(self):
+        body = '1234567890' * 8
+        spec = {'case': fixture()['cases'][0], 'condition': 'root', 'visible_memory_ids': ['m2'],
+                'read_markers': {}, 'content_anchors': metrics.content_anchors([{'memory_id': 'm2', 'body': body}])}
+        result = metrics.evaluate_artifact(spec, events({'answer': 'Use stable.', 'selected_memory_ids': ['m2']}, outputs=[
+            {'id': 'mcp-1', 'type': 'mcp_tool_call', 'result': {'content': [{'type': 'text', 'text': body[:40]}, {'type': 'text', 'text': body[40:]}]}}]))
+        self.assertEqual(result['content_recall_at_5'], 0)
+
+
 class DatasetTests(unittest.TestCase):
     def test_temporal_gold_is_strictly_before_query(self):
         data = fixture()

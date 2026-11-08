@@ -24,7 +24,8 @@
 
 ```bash
 uv venv --python 3.12 /path/to/work/venv
-uv pip install --python /path/to/work/venv/bin/python -r requirements.txt
+uv pip install --python /path/to/work/venv/bin/python -r requirements.lock.txt
+docker build -t edges-harbor-codex:0.162.1 - < Dockerfile.base
 
 # 只生成材料并用真实 Harbor SDK 校验任务结构
 /path/to/work/venv/bin/python run.py \
@@ -35,36 +36,66 @@ uv pip install --python /path/to/work/venv/bin/python -r requirements.txt
 /path/to/work/venv/bin/python run.py \
   --dataset /private/dataset.json --output /private/run \
   --model gpt-6.1-sol --codex-version 0.162.1 \
+  --agent-image edges-harbor-codex:0.162.1 \
   --auth-json /private/auth.json --split test --repeats 3 --seed 20261108
+
+# 仅离线汇总，使用 run/source/ 中冻结的指标协议；不再调用模型
+/path/to/work/venv/bin/python report.py \
+  --run /private/run --output /private/report
 
 /path/to/work/venv/bin/python -m unittest discover -s tests -v
 ```
 
-默认 reasoning effort 为 low，Agent 阶段超时 180 秒；可显式覆盖。安装、构建和 verifier 有独立时限，不计入 agent latency。Web search 关闭，但 Docker 网络仍用于安装和模型访问；“不联网”是任务指令，不应宣称网络硬隔离。`--agent-image` 默认 `python:3.12-slim`，正式复现实验应传固定 digest 并记录实际 Docker/模型服务版本。这个 Dockerfile 要求基于 Debian 的 Python 镜像。
+默认 reasoning effort 为 low，Agent 阶段超时 180 秒；可显式覆盖。安装、构建和 verifier 有独立时限，不计入 agent latency。Web search 关闭，但 Docker 网络仍用于安装和模型访问；“不联网”是任务指令，不应宣称网络硬隔离。`--agent-image` 默认 `python:3.12-slim`，正式复现实验应使用内容固定的镜像并记录实际 Docker/模型服务版本。`Dockerfile.base` 固定 Node 基础镜像 digest 与 Codex 版本，预装 Python、Git 和 ripgrep；任务构建层要求 Debian 兼容的包管理器。
 
 调用前写出固定 seed 的随机 trial 顺序；每个 case×condition×repeat 都有明确 trial ID。按计划逐个调用 `harbor run`，每个 Job 只有一个 trial，不依赖框架内部排序或重试。默认没有自动重试，失败保留；新的重跑应使用新的输出目录并完整报告。`--limit` 按输入数据顺序截取，适用于 smoke，不能把这种方便样本说成随机代表样本。
 
 登录文件仅以 `CODEX_AUTH_JSON_PATH` 环境指针交给 Harbor；不把内容、路径写入任务、命令或 manifest。显式登录文件会移除 Agent API-key 环境候选，控制器使用隔离 HOME。Harbor 内置适配器负责容器内临时导入、独立 Codex HOME 与清理；不继承本机 Codex 配置、skills 或会话。
+
+## 真实数据建设
+
+`export_langfuse.py` 只读 [Langfuse v2 observations](https://langfuse.com/docs/api-and-data-platform/features/public-api)，限定起止时间并遍历 cursor；凭据配置需有 `base_url/public_key/secret_key`。原始分页逐份保存校验和，终页后的完整性检查完成才标记 complete；可中断后续传。多版本同 ID 的所有行保留在原件中，候选建设保守排除这些 observation，不修改服务端记录。
+
+```bash
+python export_langfuse.py --config /private/langfuse.json \
+  --output /private/raw/roots --start 2026-10-20T00:00:00Z --end 2026-11-08T00:00:00Z
+python build_dataset.py memories \
+  --repo framework=/local/framework --repo brain=/local/brain \
+  --cutoff 2026-10-31T00:00:00Z --output /private/memories.json
+python build_dataset.py candidates --export /private/raw/roots \
+  --cutoff 2026-10-20T00:00:00Z --output /private/candidates.json
+# 标注及独立复核后，才可组装正式集
+python build_dataset.py assemble --memories /private/memories.json \
+  --candidates /private/candidates.json --annotations /private/annotations-reviewed.json \
+  --output /private/dataset.json
+```
+
+memory 库取 cutoff 前 Git 快照中的叶子正文，去掉作者等 frontmatter，仅保留内容、稳定 ID、scope、标题、最近 Git 变更时间及原件摘要。针对比快照更早的题，过滤掉后来变更过的文件；这是一份保守的固定历史候选库，**不是完整历史版本回放**。不要仅凭 frontmatter 时间断言文件更早存在。
+
+候选按整个 source session 的稳定 hash 预分 dev/test；过滤已知非 user 包装、子 Agent、机器转发结果、空 I/O、重复观测等。user 槽仍可能含其他 Agent 派发的任务，必须人工式标注 `source_request_origin=direct_user/delegated_agent/uncertain`；主集与辅助集分开。近重复主题仍需复核，不能把 schema 通过当作语义独立证明。
+
+`annotations` 每条需给 candidate_id、status、annotator、task_mode、scope 证据、gold IDs、逐 gold relevance_rationale、reference_answer、origin；改变原题时保留原文与 normalization_notes。`review` 必须由不同 reviewer 批准，并用 `memory_corpus_sha256`、`candidate_sha256` 和 `annotation_sha256` 绑定审过的文件/对象（后两者使用 `build_dataset.object_sha`，annotation 不含 review）。这些摘要防止批准后材料静默改变，不替代审阅者实际阅读证据。没有任何时间合格记忆的题禁止进入正式 placement/误检对照。没有相关 gold 的负例必须经过对可见库的检查。
 
 ## 指标口径
 
 | 字段 | 含义 |
 | --- | --- |
 | `selected_recall_at_5` | 选出的前 5 个稳定 ID 与 gold 的交集大小 / gold 数量；不是实际文件读取证明 |
-| `evidence_recall_at_5` | 上述命中还须在 Codex **工具返回内容**中出现该记忆正文的随机 marker；命令文本和最终回答不计证据 |
+| `evidence_recall_at_5` | 上述命中还须在已完成工具的**返回内容**中出现正文 marker 或正文唯一连续片段；命令文本和最终回答不计证据 |
+| `marker_recall_at_5` / `content_recall_at_5` | 分别只按末尾 marker / 可见库内唯一正文片段核验，便于识别取证方法差异 |
 | `precision_at_5` | selected 命中数 / 5；少于 5 个选择仍以 5 为分母 |
 | `mrr` | 第一个正确 selected ID 的排名倒数 |
 | `answer_checks_pass` | 预声明正则全部匹配的 0/1；只是窄规则检查，不等于语义正确率 |
 | `forbidden_violation_rate` | 任一预声明禁止正则命中的 0/1；没定义规则则为 null |
 | `unknown_selected_count` | 选择了当前条件不存在的 ID 数量 |
 | `empty_gold_selection_rate` | 无相关 gold 的问题仍选择了记忆的 0/1；用于观察不必要检索 |
-| `observed_memory_count` | 工具返回中出现 marker 的记忆数；不要求被最终选中 |
+| `observed_memory_count` | 工具返回中出现 marker 或唯一正文片段的记忆数；不要求被最终选中 |
 | `tool_calls` | JSONL 中完成的工具 item 数量，以 item ID 去重 |
 | `input/output/cached/uncached/total_tokens` | Codex 实际提供的用量；uncached=input−cached，total=input+output，未知不补零 |
 | `agent_latency_ms` | Harbor 原生 `agent_execution` 开始至结束 |
 | `trial_wall_ms` | 控制器执行单个 Job 的墙钟时间，含构建、安装和 verifier |
 
-没有 gold 的问题 recall/P@5/MRR 为 null，避免除零或把无相关记忆误算失败。none 在有 gold 的问题上 recall=0，即使猜中 ID 也没有可检索文件；这是结构性基线。读取 marker 证明内容在工具结果中暴露，**不能证明整份文件被读完、理解正确或因果使用**；局部读取或 grep 未返回末尾 marker 时也可能漏计，因此 evidence recall 是保守的可观察证据指标。该指标可检测“只报 ID 未读正文”，不是防恶意模型伪造证据的安全协议。
+没有 gold 的问题 recall/P@5/MRR 为 null，避免除零或把无相关记忆误算失败。none 在有 gold 的问题上 recall=0，即使猜中 ID 也没有可检索文件；这是结构性基线。**主指标是 selected recall@5**，取证指标用于审计。正文片段使用每隔16字符采样的64字符窗口，短正文至少32字符；仅合并空白，保留标点和顺序；可见库内共享片段不用于指认某一个ID，metadata、标题与marker不参与正文片段生成。这补充了末尾marker无法覆盖长文件局部读取的问题，仍可能漏计短片段、加行号或转义的工具输出。两种证据都只能说明材料暴露，**不能证明整份文件被读完、理解正确或因果使用**，也不是防恶意模型伪造证据的安全协议。
 
 JSON 不合规格、Agent/基础设施/验证器失败不会作为答错；质量指标为 null，已知资源用量仍保留并报告失败率。读取失败或截断日志不能冒充成功。缺失 cache 明细不补成零，部分 turn 缺失某个 token 字段则该字段总量为 null。
 
@@ -73,6 +104,7 @@ JSON 不合规格、Agent/基础设施/验证器失败不会作为答错；质�
 ## 可复现产物
 
 - `dataset.json`：输入文件原样冻结，位于所有构建上下文之外。
+- `source/`：实际运行的程序、依赖锁与基础镜像定义副本，位于构建上下文之外；不能只靠一个无法还原的哈希追溯版本。
 - `plan.json`、`commands.json`：随机执行计划、精确 case/condition/repeat/ID 及无凭据命令。
 - `manifest.json`：代码/数据/快照摘要、逐记忆内容校验、模型、CLI、Harbor、预算与机器环境。
 - `tasks/`：Harbor 任务；`environment/` 只有该条件可见材料，`tests/` 保存私密 gold 和 verifier。
@@ -80,3 +112,7 @@ JSON 不合规格、Agent/基础设施/验证器失败不会作为答错；质�
 - `trials.json`、`result.json`：逐 trial 结果、覆盖率、三组汇总与三个配对比较；每个 trial 后写检查点。
 
 输出目录默认权限 0700。`status=complete` 只代表计划矩阵全部尝试完成，必须同时检查 `failed_trials`；失败时 CLI 非零退出。结果支持观察分层是否有收益，也允许平局或退化，程序不预设分层必须获胜。
+
+`report.py` 校验冻结数据、代码摘要和完整计划矩阵，再按整体、QA、执行前检索、有已知子作用域、共同根/未知作用域分别汇总。报告目录必须新建且位于 run 之外，产物包括中文 `report.md`、完整 `report.json`、组指标与配对比较 CSV、逐题/逐 trial/完整计划矩阵 CSV，以及 `tool-commands.jsonl`。Markdown 不复制原始问题、答案和来源 ID；详细表和命令仍属于私密数据。命令审计须阅读实际执行语义，不能把搜索词里出现 curl 等词误判为联网。scope 为 `.` 的已知全局场景也进入共同根/未知组，不能将该分组全称为缺失来源。
+
+48 项离线测试覆盖原件完整性、时间与 session 泄漏、金标批准绑定、任务隔离、累计 token、正文暴露证据、失败缺失值和报告覆盖率。另已完成独立 Docker 中的三条件真实开发 smoke；开发 smoke 只证明链路可运行，正式效应须以冻结 test 矩阵为准。

@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from importlib.metadata import version
 from pathlib import Path, PurePosixPath
 
-from metrics import CONDITIONS, evaluate_artifact, invalidate_quality, summarize
+from metrics import CONDITIONS, content_anchors, evaluate_artifact, invalidate_quality, summarize
 
 HERE = Path(__file__).resolve().parent
 HARBOR_VERSION = "0.25.0"
@@ -216,6 +216,7 @@ def instruction(case: dict) -> str:
     )
     return (
         "在 /workspace 的独立环境中回答下面的真实问题。当前任务作用域是 " + json.dumps(case["scope"], ensure_ascii=False) + "。\n"
+        "历史任务时间为 " + case["query_at"] + "；请按该时间理解记忆中的事实与变更。\n"
         "可读取本地文件；若存在 AGENTS.md，则从它发现相关材料。仅使用适用于该作用域的事实；可以参考祖先或其他作用域的材料，但不要混淆适用范围。\n"
         "不要联网、修改文件或虚构未获得的事实。只有实际读取过正文的记忆才能进入 selected_memory_ids。\n"
         "按与问题的相关程度排序，最多选择 5 个不同 memory_id；没有相关记忆则返回空数组。记忆 ID 见正文。\n"
@@ -247,9 +248,18 @@ def prepare(args: argparse.Namespace) -> tuple[dict, list[dict], list[dict], dic
                for memory in dataset["memories"]}
     # Preserve the exact input outside every Docker build context.
     shutil.copyfile(args.dataset, args.output / "dataset.json")
-    snapshots, tasks = {}, {}
+    source_dir = args.output / 'source'
+    source_dir.mkdir()
+    for source in sorted(HERE.iterdir()):
+        if source.is_file() and (source.suffix == '.py' or source.name in {'requirements.txt', 'requirements.lock.txt', 'Dockerfile.base'}):
+            shutil.copy2(source, source_dir / source.name)
+    snapshots, tasks, anchor_cache = {}, {}, {}
     for index, case in enumerate(cases, 1):
         visible = [memory for memory in dataset["memories"] if timestamp(memory["available_at"]) < timestamp(case["query_at"])]
+        visible_key = tuple(memory['memory_id'] for memory in visible)
+        if visible_key not in anchor_cache:
+            anchor_cache[visible_key] = content_anchors(visible)
+        anchors = anchor_cache[visible_key]
         for condition in CONDITIONS:
             name = f"case-{index:04d}-{condition}"
             task = args.output / "tasks" / name
@@ -271,9 +281,10 @@ def prepare(args: argparse.Namespace) -> tuple[dict, list[dict], list[dict], dic
             write_json(tests / "spec.json", {
                 "case": case, "condition": condition, "visible_memory_ids": visible_ids,
                 "read_markers": {mid: markers[mid] for mid in visible_ids},
+                "content_anchors": {mid: anchors[mid] for mid in visible_ids},
             })
             for module in ("metrics.py", "verify.py"):
-                shutil.copy2(HERE / module, tests / module)
+                shutil.copy2(source_dir / module, tests / module)
             (tests / "test.sh").write_text("#!/bin/bash\nset -euo pipefail\npython3 /tests/verify.py --spec /tests/spec.json\n")
             (tests / "test.sh").chmod(0o755)
             (task / "task.toml").write_text(
@@ -308,13 +319,15 @@ def prepare(args: argparse.Namespace) -> tuple[dict, list[dict], list[dict], dic
         "task_modes": {mode: sum(case.get("task_mode", "memory_qa") == mode for case in cases)
                        for mode in ("memory_qa", "pre_task_retrieval")},
         "dataset_sha256": hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
-        "program_sha256": {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in HERE.glob("*.py")},
+        "program_sha256": {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in source_dir.glob("*.py")},
+        "prompt_version": "three-arm-historical-retrieval-v2",
+        "prompt_sha256": {case['case_id']: hashlib.sha256(instruction(case).encode()).hexdigest() for case in cases},
         "snapshots": snapshots, "platform": platform.platform(), "python": platform.python_version(),
         "isolation": "fresh Docker per trial; separate verifier; native Codex clean HOME",
         "project_root": "identical empty git repository initialized at /workspace for native ancestor AGENTS discovery",
         "network": "web search disabled; network available for installation and model access",
         "treatment": "memory placement plus scope navigation; identical memory payloads and temporal visibility",
-        "retrieval_definition": "selected-memory recall@5; evidence requires selected ID and marker in tool-returned content",
+        "retrieval_definition": "primary selected-memory recall@5; evidence requires selected ID and body marker or unique body snippet in completed tool output",
         "quality_definition": "predeclared regex checks only, not semantic correctness",
     }
     write_json(args.output / "manifest.json", manifest)

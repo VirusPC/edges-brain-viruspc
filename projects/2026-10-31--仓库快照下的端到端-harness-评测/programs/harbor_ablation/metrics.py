@@ -11,9 +11,39 @@ from typing import Any
 
 CONDITIONS = ("scoped", "root", "none")
 QUALITY_METRICS = (
-    "selected_recall_at_5", "evidence_recall_at_5", "precision_at_5", "mrr",
+    "selected_recall_at_5", "evidence_recall_at_5", "marker_recall_at_5", "content_recall_at_5", "precision_at_5", "mrr",
     "answer_checks_pass", "forbidden_violation_rate", "unknown_selected_count", "empty_gold_selection_rate",
 )
+
+
+def normalized_content(text: str) -> str:
+    """Ignore whitespace only; retain punctuation and character order."""
+    return re.sub(r"\s+", "", text)
+
+
+def content_anchors(memories: list[dict]) -> dict[str, list[str]]:
+    """Build body-only snippets unique within this case's visible corpus.
+
+    A match proves a piece of body text was exposed, not full reading or correct
+    use. Overlapping 64-character anchors allow partial reads of long documents.
+    Short bodies need at least 32 characters; smaller snippets are too ambiguous.
+    """
+    by_id = {}
+    full_bodies = {memory['memory_id']: normalized_content(memory['body']) for memory in memories}
+    for memory in memories:
+        body = full_bodies[memory['memory_id']]
+        anchors = set()
+        if len(body) >= 64:
+            anchors = {body[i:i + 64] for i in range(0, len(body) - 63, 16)}
+            anchors.add(body[-64:])
+        elif len(body) >= 32:
+            anchors.add(body)
+        by_id[memory['memory_id']] = anchors
+    # Uniqueness is against every full body, not sampled windows: the same text
+    # can occur in another document at an offset not divisible by our stride.
+    return {mid: sorted(anchor for anchor in anchors
+                        if not any(anchor in body for other, body in full_bodies.items() if other != mid))
+            for mid, anchors in by_id.items()}
 METRICS = QUALITY_METRICS + (
     "tool_calls", "observed_memory_count", "input_tokens", "output_tokens",
     "cached_input_tokens", "uncached_input_tokens", "total_tokens",
@@ -24,6 +54,22 @@ METRICS = QUALITY_METRICS + (
 def number(value: Any) -> bool:
     """Recognize finite measured numbers, without accepting booleans."""
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def returned_text_blocks(value: Any) -> list[str]:
+    """Extract decoded returned values, without concatenating separate blocks.
+
+    This handles text/content/resource/structuredContent MCP results. Only the
+    already-returned result enters this function, never tool call arguments.
+    JSON serialization would escape Unicode and line breaks and lose matches.
+    """
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [text for part in value.values() for text in returned_text_blocks(part)]
+    if isinstance(value, list):
+        return [text for part in value for text in returned_text_blocks(part)]
+    return []
 
 
 def parse_events(text: str) -> dict:
@@ -54,7 +100,7 @@ def parse_events(text: str) -> dict:
             # Only returned content, never the command/arguments or assistant text.
             result = item.get("result")
             if isinstance(result, (dict, list, str)):
-                outputs.append(result if isinstance(result, str) else json.dumps(result))
+                outputs.extend(returned_text_blocks(result))
     completed = [event for event in events if event["type"] == "turn.completed"]
     usage = {}
     for field in ("input_tokens", "output_tokens", "cached_input_tokens"):
@@ -92,10 +138,16 @@ def evaluate_artifact(spec: dict, events_text: str) -> dict:
     parsed = parse_events(events_text)
     outputs = parsed.pop("tool_outputs")
     markers = spec["read_markers"]
-    observed = [mid for mid, marker in markers.items() if any(marker in output for output in outputs)]
+    marker_observed = {mid for mid, marker in markers.items() if any(marker in output for output in outputs)}
+    normalized_outputs = [normalized_content(output) for output in outputs]
+    content_observed = {mid for mid, anchors in spec.get('content_anchors', {}).items()
+                        if any(anchor in output for anchor in anchors for output in normalized_outputs)}
+    observed = marker_observed | content_observed
     row = {"case_id": spec["case"]["case_id"], "condition": spec["condition"],
            "task_mode": spec["case"].get("task_mode", "memory_qa"),
            **parsed, "observed_memory_ids": sorted(observed),
+           "marker_observed_memory_ids": sorted(marker_observed),
+           "content_observed_memory_ids": sorted(content_observed),
            "observed_memory_count": len(observed) if parsed["tool_calls"] is not None else None,
            "selected_memory_ids": None, "answer": None, "format_valid": None,
            **dict.fromkeys(QUALITY_METRICS), "agent_latency_ms": None}
@@ -115,6 +167,8 @@ def evaluate_artifact(spec: dict, events_text: str) -> dict:
     if gold:
         row.update(selected_recall_at_5=len(hits) / len(gold),
                    evidence_recall_at_5=len(hits.intersection(observed)) / len(gold),
+                   marker_recall_at_5=len(hits.intersection(marker_observed)) / len(gold),
+                   content_recall_at_5=len(hits.intersection(content_observed)) / len(gold),
                    precision_at_5=len(hits) / 5,
                    mrr=next((1 / rank for rank, mid in enumerate(selected, 1) if mid in hits), 0.0))
     else:
@@ -173,7 +227,7 @@ def summarize(plan: list[dict], rows: list[dict], cases: list[dict], *, seed: in
         return statistics.mean(values)
 
     def eligible(case: dict, metric: str) -> bool:
-        if metric in {"selected_recall_at_5", "evidence_recall_at_5", "precision_at_5", "mrr"}:
+        if metric in {"selected_recall_at_5", "evidence_recall_at_5", "marker_recall_at_5", "content_recall_at_5", "precision_at_5", "mrr"}:
             return bool(case.get("gold_memory_ids"))
         if metric == "empty_gold_selection_rate":
             return not case.get("gold_memory_ids")

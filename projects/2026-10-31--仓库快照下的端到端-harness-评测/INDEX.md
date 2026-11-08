@@ -52,6 +52,8 @@
 - 原生链路不完全相同：Inspect SWE 使用模型 Bridge，Harbor／Promptfoo 使用 Codex 原生链路。Promptfoo／DeepEval 宿主目录副本的读隔离较弱，结果明确标记为探索性，不输出 memory 默认开启建议。
 - Docker 端到端尚未完成。真实模型 smoke 已获授权，最终执行情况记录在 programs/VALIDATION.md。
 
+2026-11-09 新增独立 `harbor_ablation` 三条件程序，使用 Harbor 0.25.0、Codex CLI 0.162.1、每 trial 独立 Docker 和 separate verifier。真实开发集的 scoped/root/none 三组已全部运行成功，48 项离线测试通过；正式测试与真实数据保存在私密归档，开发 smoke 不作为分层收益结论。该程序不改变上述旧四框架实验。
+
 ## 来源
 
 本项目源于 2026-10-31 的对话：用户提出“在某个仓库快照下，开启 harness，输入提示词执行任务”的评测需求，并要求在 Edges 框架仓建立 project。
@@ -73,6 +75,7 @@
 - [Memory 有无消融程序与运行说明](programs/README.md) — 四个框架的统一接口对照，保留共同题集、快照、判分与统计；说明模型链路、读隔离和验证层级的差异。
 - [Inspect 程序](programs/inspect/README.md) — Inspect SWE codex_cli()、Task、scorer、依赖与测试。
 - [Harbor 程序](programs/harbor/README.md) — 任务包、内置 codex、独立 verifier、依赖与测试。
+- [Harbor 分层／根目录／无记忆三组消融](programs/harbor_ablation/README.md) — 有界 Langfuse 导出、历史记忆与复核绑定、真实 Docker 执行、recall@5、累计 token、时延及 session 聚类配对统计。
 - [Promptfoo 程序](programs/promptfoo/README.md) — 原生 Codex SDK、HOME hook、assertion、Node 依赖与协议测试。
 - [Promptfoo 与 Inspect 代码及实测对比](programs/promptfoo/COMPARE_INSPECT.md) — 同一 shared 底层的框架接口、容器生命周期、数据和接入成本对比。
 - [公共底层](programs/shared/README.md) — 四套程序共用的快照、题集、判分、结果归一化、比较及测试数据；不执行 Agent，不依赖框架 SDK。
