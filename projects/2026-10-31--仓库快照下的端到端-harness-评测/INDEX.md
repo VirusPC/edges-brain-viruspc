@@ -52,7 +52,7 @@
 - 原生链路不完全相同：Inspect SWE 使用模型 Bridge，Harbor／Promptfoo 使用 Codex 原生链路。Promptfoo／DeepEval 宿主目录副本的读隔离较弱，结果明确标记为探索性，不输出 memory 默认开启建议。
 - Docker 端到端尚未完成。真实模型 smoke 已获授权，最终执行情况记录在 programs/VALIDATION.md。
 
-2026-11-09 新增独立 `harbor_ablation` 三条件程序，使用 Harbor 0.25.0、Codex CLI 0.162.1、每 trial 独立 Docker 和 separate verifier。真实开发集的 scoped/root/none 三组已全部运行成功，48 项离线测试通过；正式测试与真实数据保存在私密归档，开发 smoke 不作为分层收益结论。该程序不改变上述旧四框架实验。
+2026-11-09 新增独立 `harbor_ablation` 三条件程序，使用 Harbor 0.25.0、Codex CLI 0.162.1、每 trial 独立 Docker 和 separate verifier，支持有上限的并发执行。真实开发集的 scoped/root/none 三组已全部运行成功，53 项离线测试通过；正式测试与真实数据保存在私密归档，开发 smoke 不作为分层收益结论。该程序不改变上述旧四框架实验。
 
 ## 来源
 
