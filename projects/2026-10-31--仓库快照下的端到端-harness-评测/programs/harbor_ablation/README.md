@@ -37,7 +37,8 @@ docker build -t edges-harbor-codex:0.162.1 - < Dockerfile.base
   --dataset /private/dataset.json --output /private/run \
   --model gpt-6.1-sol --codex-version 0.162.1 \
   --agent-image edges-harbor-codex:0.162.1 \
-  --auth-json /private/auth.json --split test --repeats 3 --seed 20261108
+  --auth-json /private/auth.json --split test --repeats 3 --seed 20261108 \
+  --concurrency 3
 
 # 仅离线汇总，使用 run/source/ 中冻结的指标协议；不再调用模型
 /path/to/work/venv/bin/python report.py \
@@ -48,7 +49,11 @@ docker build -t edges-harbor-codex:0.162.1 - < Dockerfile.base
 
 默认 reasoning effort 为 low，Agent 阶段超时 180 秒；可显式覆盖。安装、构建和 verifier 有独立时限，不计入 agent latency。Web search 关闭，但 Docker 网络仍用于安装和模型访问；“不联网”是任务指令，不应宣称网络硬隔离。`--agent-image` 默认 `python:3.12-slim`，正式复现实验应使用内容固定的镜像并记录实际 Docker/模型服务版本。`Dockerfile.base` 固定 Node 基础镜像 digest 与 Codex 版本，预装 Python、Git 和 ripgrep；任务构建层要求 Debian 兼容的包管理器。
 
-调用前写出固定 seed 的随机 trial 顺序；每个 case×condition×repeat 都有明确 trial ID。按计划逐个调用 `harbor run`，每个 Job 只有一个 trial，不依赖框架内部排序或重试。默认没有自动重试，失败保留；新的重跑应使用新的输出目录并完整报告。`--limit` 按输入数据顺序截取，适用于 smoke，不能把这种方便样本说成随机代表样本。
+调用前写出固定 seed 的随机 trial 顺序；每个 case×condition×repeat 都有明确 trial ID。`--concurrency` 为正整数、默认 1，限制同时在途的原生 `harbor run` Job 数量。控制器按既定计划派发，每个 Job 只有一个 trial，使用独立容器、`jobs/<trial_id>/` 和控制器日志；完成顺序可不同，结果始终按原 trial 身份配对。只有主线程收集结果，每完成一个 trial 就写 `trials.json` 和 `result.json` 检查点，保存顺序仍按计划排列。没有自动重试，进程启动或单次结果收集异常保留为失败行，其他 trial 继续完成；新的重跑使用新输出目录并完整报告。`--limit` 按输入数据顺序截取，适用于 smoke，不能把这种方便样本说成随机代表样本。
+
+第一次 Ctrl-C 停止派发新 Job，取消尚未启动的工作，并等待已在途 Job 按自身时限结束、逐条保存结果后退出；manifest 标记 `interrupted=true`。它不会立即杀掉原生 Harbor 进程，等待时间可能包含构建、安装及 Agent 的时限。再次中断可能只留下此前检查点；未收集的计划仍显示为不完整，不能把它们算作成功或自动补跑。
+
+manifest 记录 `concurrency`、`latency_context` 和 `execution_wall_ms`（整批执行墙钟，含调度及逐条检查点，不含材料准备、镜像检查和最后的统计计算）。三路并发的整批耗时可能缩短，但不等于单独运行一个 trial 的时延；单 trial 的 `agent_latency_ms` 与 `trial_wall_ms` 仍可能受到共享 CPU、内存、Docker 和模型服务并发的影响。比较延迟时须同时报告并发设置，不把整批墙钟除以 trial 数当单 trial 延迟，也不把重叠的 trial 墙钟求和当整批耗时。
 
 登录文件仅以 `CODEX_AUTH_JSON_PATH` 环境指针交给 Harbor；不把内容、路径写入任务、命令或 manifest。显式登录文件会移除 Agent API-key 环境候选，控制器使用隔离 HOME。Harbor 内置适配器负责容器内临时导入、独立 Codex HOME 与清理；不继承本机 Codex 配置、skills 或会话。
 
@@ -115,4 +120,4 @@ JSON 不合规格、Agent/基础设施/验证器失败不会作为答错；质�
 
 `report.py` 校验冻结数据、代码摘要和完整计划矩阵，再按整体、QA、执行前检索、有已知子作用域、共同根/未知作用域分别汇总。报告目录必须新建且位于 run 之外，产物包括中文 `report.md`、完整 `report.json`、组指标与配对比较 CSV、逐题/逐 trial/完整计划矩阵 CSV，以及 `tool-commands.jsonl`。Markdown 不复制原始问题、答案和来源 ID；详细表和命令仍属于私密数据。命令审计须阅读实际执行语义，不能把搜索词里出现 curl 等词误判为联网。scope 为 `.` 的已知全局场景也进入共同根/未知组，不能将该分组全称为缺失来源。
 
-48 项离线测试覆盖原件完整性、时间与 session 泄漏、金标批准绑定、任务隔离、累计 token、正文暴露证据、失败缺失值和报告覆盖率。另已完成独立 Docker 中的三条件真实开发 smoke；开发 smoke 只证明链路可运行，正式效应须以冻结 test 矩阵为准。
+离线测试覆盖原件完整性、时间与 session 泄漏、金标批准绑定、任务隔离、累计 token、正文暴露证据、失败缺失值和报告覆盖率；并通过假进程检验并发上限、每 trial 恰好一次、乱序完成的身份配对、逐条检查点以及失败和中断后的结果保存。另已完成独立 Docker 中的三条件真实开发 smoke；开发 smoke 只证明链路可运行，正式效应须以冻结 test 矩阵为准。

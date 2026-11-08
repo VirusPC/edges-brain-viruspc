@@ -2,10 +2,14 @@
 from __future__ import annotations
 
 import copy
+import contextlib
+import io
 import json
 import os
+import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -337,6 +341,187 @@ class StatisticsTests(unittest.TestCase):
         rows[0]["repeat"] = 3
         with self.assertRaises(ValueError):
             metrics.summarize(plan, rows, cases, seed=7)
+
+
+class SchedulingTests(unittest.TestCase):
+    def args(self, directory, concurrency=3, repeats=2, name="run"):
+        dataset = directory / "dataset.json"
+        dataset.write_text(json.dumps(fixture()))
+        return run.arguments().parse_args([
+            "--dataset", str(dataset), "--output", str(directory / name),
+            "--model", "offline-test", "--repeats", str(repeats),
+            "--concurrency", str(concurrency), "--bootstrap", "0",
+        ])
+
+    def native_result(self, command):
+        """Write synthetic native artifacts using the command's own identity."""
+        task = Path(command[command.index("-p") + 1])
+        trial_id = command[command.index("--job-name") + 1]
+        job = Path(command[command.index("--jobs-dir") + 1]) / trial_id / "fake-native"
+        spec = json.loads((task / "tests/spec.json").read_text())
+        selected = ["m2"] if spec["condition"] != "none" else []
+        raw = events({"answer": "stable", "selected_memory_ids": selected},
+                     usage={"input_tokens": 100 + int(trial_id.rsplit("-", 1)[1]),
+                            "output_tokens": 20, "cached_input_tokens": 30})
+        run.write_json(job / "verifier/trial.json", metrics.evaluate_artifact(spec, raw))
+        run.write_json(job / "result.json", {
+            "agent_execution": {"started_at": "2026-01-10T00:00:00Z",
+                                "finished_at": "2026-01-10T00:00:01Z"},
+        })
+        return subprocess.CompletedProcess(command, 0)
+
+    def test_concurrency_validation_and_seeded_plan_are_independent(self):
+        parser = run.arguments()
+        base = ["--dataset", "x", "--output", "y", "--model", "offline"]
+        self.assertEqual(parser.parse_args(base).concurrency, 1)
+        for invalid in ("0", "-1", "1.5", "many"):
+            with self.subTest(invalid=invalid), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                parser.parse_args(base + ["--concurrency", invalid])
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            plans, commands = [], []
+            for concurrency in (1, 3):
+                args = self.args(directory, concurrency, name=f"run-{concurrency}")
+                args.prepare_only = True
+                run.execute(args)
+                plans.append(json.loads((args.output / "plan.json").read_text()))
+                commands.append((args.output / "commands.json").read_text().replace(str(args.output), "RUN"))
+                manifest = json.loads((args.output / "manifest.json").read_text())
+                self.assertEqual(manifest["concurrency"], concurrency)
+                self.assertIn("isolated", manifest["latency_context"]["interpretation"])
+            self.assertEqual(plans[0], plans[1])
+            self.assertEqual(commands[0], commands[1])
+            args = self.args(directory, name="bad-direct-args")
+            args.concurrency = 0
+            with self.assertRaisesRegex(ValueError, "concurrency"):
+                run.execute(args)
+            self.assertFalse(args.output.exists())
+
+    def test_bounded_parallel_jobs_keep_identity_and_checkpoint_each_completion(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            args = self.args(Path(temporary), repeats=4)
+            lock, barrier, release_first = threading.Lock(), threading.Barrier(3), threading.Event()
+            active = peak = 0
+            launches, checkpoints, result_checkpoints = [], [], []
+            controller_thread = threading.get_ident()
+            original_write = run.write_json
+
+            def fake_subprocess(command, **kwargs):
+                nonlocal active, peak
+                if command[0] == "docker":
+                    return subprocess.CompletedProcess(command, 0, stdout="[]")
+                trial_id = command[command.index("--job-name") + 1]
+                with lock:
+                    active += 1
+                    peak = max(peak, active)
+                    launches.append((trial_id, Path(command[command.index("-p") + 1]).name))
+                try:
+                    if trial_id in {"trial-000001", "trial-000002", "trial-000003"}:
+                        barrier.wait(timeout=10)
+                    if trial_id == "trial-000001":
+                        if not release_first.wait(timeout=10):
+                            raise RuntimeError("controller failed to checkpoint another completion")
+                    return self.native_result(command)
+                finally:
+                    with lock:
+                        active -= 1
+
+            def observe_write(path, value):
+                original_write(path, value)
+                if path.parent != args.output:
+                    return
+                if path.name == "trials.json":
+                    self.assertEqual(threading.get_ident(), controller_thread)
+                    checkpoints.append([row["trial_id"] for row in value])
+                    release_first.set()
+                if path.name == "result.json":
+                    self.assertEqual(threading.get_ident(), controller_thread)
+                    result_checkpoints.append(len(value["trials"]))
+
+            with patch.object(run.subprocess, "run", side_effect=fake_subprocess), patch.object(run, "write_json", side_effect=observe_write):
+                report = run.execute(args)
+            plan = json.loads((args.output / "plan.json").read_text())
+            rows = json.loads((args.output / "trials.json").read_text())
+            self.assertEqual(peak, 3)
+            self.assertEqual(active, 0)
+            self.assertCountEqual(launches, [(entry["trial_id"], entry["task_name"]) for entry in plan])
+            self.assertEqual(len({trial_id for trial_id, _ in launches}), len(plan))
+            self.assertNotIn("trial-000001", checkpoints[0])
+            self.assertEqual([len(ids) for ids in checkpoints], list(range(1, len(plan) + 1)))
+            self.assertEqual(result_checkpoints, list(range(1, len(plan) + 1)) + [len(plan)])
+            for entry, row in zip(plan, rows, strict=True):
+                for field in ("trial_id", "case_id", "condition", "repeat", "order", "task_name"):
+                    self.assertEqual(row[field], entry[field])
+                self.assertEqual(row["input_tokens"], 100 + entry["order"])
+                self.assertEqual(row["agent_latency_ms"], 1000)
+            self.assertEqual(report["status"], "complete")
+            self.assertEqual(report["failed_trials"], 0)
+            manifest = json.loads((args.output / "manifest.json").read_text())
+            self.assertGreater(manifest["execution_wall_ms"], 0)
+
+    def test_worker_and_collector_failures_do_not_drop_other_results_or_retry(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            args = self.args(Path(temporary))
+            launched = []
+            original_collect = run.collect_trial
+
+            def fake_subprocess(command, **kwargs):
+                if command[0] == "docker":
+                    return subprocess.CompletedProcess(command, 0, stdout="[]")
+                trial_id = command[command.index("--job-name") + 1]
+                launched.append(trial_id)
+                if trial_id == "trial-000001":
+                    raise RuntimeError("synthetic worker error")
+                return self.native_result(command)
+
+            def fake_collect(output, entry, wall_ms, returncode):
+                if entry["trial_id"] == "trial-000002":
+                    raise ValueError("synthetic malformed artifact")
+                return original_collect(output, entry, wall_ms, returncode)
+
+            with patch.object(run.subprocess, "run", side_effect=fake_subprocess), patch.object(run, "collect_trial", side_effect=fake_collect):
+                report = run.execute(args)
+            rows = json.loads((args.output / "trials.json").read_text())
+            self.assertEqual(len(launched), 6)
+            self.assertEqual(len(set(launched)), 6)
+            self.assertEqual(len(rows), 6)
+            self.assertEqual(rows[0]["error"], "controller:RuntimeError")
+            self.assertEqual(rows[1]["error"], "controller:collection-ValueError")
+            self.assertTrue(all(row["error"] is None for row in rows[2:]))
+            self.assertEqual(report["status"], "complete")
+            self.assertEqual(report["failed_trials"], 2)
+
+    def test_keyboard_interrupt_stops_admission_and_checkpoints_inflight_jobs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            args = self.args(Path(temporary))
+            all_started, finish = threading.Event(), threading.Event()
+            lock, launched = threading.Lock(), []
+
+            def fake_subprocess(command, **kwargs):
+                if command[0] == "docker":
+                    return subprocess.CompletedProcess(command, 0, stdout="[]")
+                with lock:
+                    launched.append(command[command.index("--job-name") + 1])
+                    if len(launched) == 3:
+                        all_started.set()
+                if not finish.wait(timeout=10):
+                    raise RuntimeError("test failed to release jobs")
+                return self.native_result(command)
+
+            def interrupt_once(*args, **kwargs):
+                self.assertTrue(all_started.wait(timeout=10))
+                finish.set()
+                raise KeyboardInterrupt
+
+            with patch.object(run.subprocess, "run", side_effect=fake_subprocess), patch.object(run, "wait", side_effect=interrupt_once), self.assertRaises(KeyboardInterrupt):
+                run.execute(args)
+            rows = json.loads((args.output / "trials.json").read_text())
+            result = json.loads((args.output / "result.json").read_text())
+            self.assertCountEqual(launched, ["trial-000001", "trial-000002", "trial-000003"])
+            self.assertEqual([row["trial_id"] for row in rows], sorted(launched))
+            self.assertTrue(all(row["error"] is None for row in rows))
+            self.assertEqual(result["status"], "incomplete")
+            self.assertTrue(result["manifest"]["interrupted"])
 
 
 if __name__ == "__main__":

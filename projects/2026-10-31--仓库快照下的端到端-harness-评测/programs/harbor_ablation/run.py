@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import time
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from datetime import datetime, timezone
 from importlib.metadata import version
 from pathlib import Path, PurePosixPath
@@ -227,6 +228,8 @@ def instruction(case: dict) -> str:
 
 def prepare(args: argparse.Namespace) -> tuple[dict, list[dict], list[dict], dict]:
     dataset = validate_dataset(json.loads(args.dataset.read_text()))
+    if type(args.concurrency) is not int or args.concurrency < 1:
+        raise ValueError("concurrency must be a positive integer")
     if args.repeats < 1 or args.timeout < 1 or args.bootstrap < 0 or (args.limit is not None and args.limit < 1):
         raise ValueError("repeats, timeout and limit must be positive; bootstrap must be nonnegative")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/:@-]*", args.agent_image):
@@ -315,6 +318,15 @@ def prepare(args: argparse.Namespace) -> tuple[dict, list[dict], list[dict], dic
         "reasoning_effort": args.reasoning_effort, "agent_image": args.agent_image,
         "auth_mode": "auth-json" if args.auth_json else "api-key",
         "seed": args.seed, "repeats": args.repeats, "timeout_sec": args.timeout,
+        "concurrency": args.concurrency,
+        "latency_context": {
+            "scheduling": "serial" if args.concurrency == 1 else "bounded-parallel",
+            "launch_order": "seeded plan order; completion order may differ",
+            "agent_latency_ms": "native agent execution under the configured concurrency; may include shared-resource contention",
+            "trial_wall_ms": "elapsed time of one Harbor job, including build, installation and verifier; excludes controller queue time",
+            "execution_wall_ms": "elapsed controller batch time, excluding preparation, image inspection and final statistics; overlapping jobs are not additive",
+            "interpretation": "parallel batch wall time is not isolated single-trial latency; compare latency only with scheduling context reported",
+        },
         "split": args.split, "limit": args.limit, "cases": len(cases), "planned_trials": len(plan),
         "task_modes": {mode: sum(case.get("task_mode", "memory_qa") == mode for case in cases)
                        for mode in ("memory_qa", "pre_task_retrieval")},
@@ -353,7 +365,7 @@ def controller_environment(output: Path, auth_json: Path | None) -> dict[str, st
     return env
 
 
-def collect_trial(output: Path, entry: dict, wall_ms: float, returncode: int) -> dict:
+def collect_trial(output: Path, entry: dict, wall_ms: float | None, returncode: int) -> dict:
     job = output / "jobs" / entry["trial_id"]
     spec = json.loads((output / "tasks" / entry["task_name"] / "tests/spec.json").read_text())
     artifacts = list(job.glob("*/verifier/trial.json"))
@@ -396,6 +408,21 @@ def collect_trial(output: Path, entry: dict, wall_ms: float, returncode: int) ->
     return row
 
 
+def run_job(command: list[str], log_path: Path, env: dict[str, str]) -> tuple[float, int, str | None]:
+    """Workers only launch one native job; the controller owns all result writes."""
+    started = time.monotonic()
+    try:
+        with log_path.open("w") as log:
+            completed = subprocess.run(command, cwd=HERE, env=env, stdout=log,
+                                       stderr=subprocess.STDOUT, check=False)
+        returncode, error = completed.returncode, None
+    except (OSError, subprocess.SubprocessError) as exc:
+        # A failed launch is one attempted trial, never an implicit retry. Avoid
+        # copying exception messages that could contain host paths or credentials.
+        returncode, error = 127, "controller:" + type(exc).__name__
+    return (time.monotonic() - started) * 1000, returncode, error
+
+
 def execute(args: argparse.Namespace) -> dict | None:
     _dataset, cases, plan, manifest = prepare(args)
     executable = Path(sys.executable).with_name("harbor")
@@ -425,22 +452,89 @@ def execute(args: argparse.Namespace) -> dict | None:
     write_json(args.output / "manifest.json", manifest)
     rows = []
     (args.output / "controller-logs").mkdir()
+    started = time.monotonic()
+    manifest["execution_started_at"] = datetime.now(timezone.utc).isoformat()
+    write_json(args.output / "manifest.json", manifest)
     try:
-        for entry, command in zip(plan, commands):
-            print(f"[{entry['order']}/{len(plan)}] {entry['case_id']} {entry['condition']} repeat={entry['repeat']}", flush=True)
-            started = time.monotonic()
-            with (args.output / "controller-logs" / (entry["trial_id"] + ".log")).open("w") as log:
-                completed = subprocess.run(command, cwd=HERE, env=env, stdout=log, stderr=subprocess.STDOUT, check=False)
-            row = collect_trial(args.output, entry, (time.monotonic() - started) * 1000, completed.returncode)
-            rows.append(row)
-            write_json(args.output / "trials.json", rows)
-            # Checkpoint without expensive confidence intervals after every trial.
-            report = summarize(plan, rows, cases, seed=args.seed, bootstrap=0)
-            write_json(args.output / "result.json", {**report, "manifest": manifest, "trials": rows})
+        with ThreadPoolExecutor(max_workers=args.concurrency) as executor:
+            pending = {}
+            remaining = iter(zip(plan, commands, strict=True))
+
+            def submit_next() -> None:
+                pair = next(remaining, None)
+                if pair is None:
+                    return
+                entry, command = pair
+                print(f"[{entry['order']}/{len(plan)}] {entry['case_id']} {entry['condition']} repeat={entry['repeat']}", flush=True)
+                future = executor.submit(run_job, command,
+                                         args.output / "controller-logs" / (entry["trial_id"] + ".log"), env)
+                pending[future] = entry
+
+            def record_completed(future) -> None:
+                entry = pending[future]
+                try:
+                    wall_ms, returncode, error = future.result()
+                except Exception as exc:
+                    # A worker exception must not discard other completed jobs.
+                    wall_ms, returncode, error = None, 127, "controller:" + type(exc).__name__
+                try:
+                    row = collect_trial(args.output, entry, wall_ms, returncode)
+                except Exception as exc:
+                    spec = json.loads((args.output / "tasks" / entry["task_name"] / "tests/spec.json").read_text())
+                    row = evaluate_artifact(spec, "")
+                    row.update(entry, trial_wall_ms=wall_ms, harbor_returncode=returncode)
+                    error = "controller:collection-" + type(exc).__name__
+                if error:
+                    invalidate_quality(row, error)
+                # Idempotent if Ctrl-C interrupts a checkpoint before pending is
+                # popped and the same completed future is drained below.
+                by_id = {item["trial_id"]: item for item in rows}
+                by_id[entry["trial_id"]] = row
+                rows[:] = sorted(by_id.values(), key=lambda item: item["order"])
+                write_json(args.output / "trials.json", rows)
+                report = summarize(plan, rows, cases, seed=args.seed, bootstrap=0)
+                write_json(args.output / "result.json", {**report, "manifest": manifest, "trials": rows})
+                pending.pop(future)
+
+            try:
+                for _ in range(min(args.concurrency, len(plan))):
+                    submit_next()
+                while pending:
+                    completed, _ = wait(pending, return_when=FIRST_COMPLETED)
+                    # Resolve simultaneous completions deterministically; identities
+                    # always come from the future's original plan entry.
+                    for future in sorted(completed, key=lambda item: pending[item]["order"]):
+                        record_completed(future)
+                        submit_next()
+            except KeyboardInterrupt:
+                # Stop admission, cancel work not yet started, and preserve every
+                # in-flight result before propagating Ctrl-C. Native jobs retain
+                # their configured timeouts; this can take until they finish.
+                manifest["interrupted"] = True
+                write_json(args.output / "manifest.json", manifest)
+                for future in sorted(list(pending), key=lambda item: pending[item]["order"]):
+                    if future.cancel():
+                        pending.pop(future)
+                    else:
+                        record_completed(future)
+                raise
     finally:
+        manifest["execution_wall_ms"] = (time.monotonic() - started) * 1000
+        manifest["execution_finished_at"] = datetime.now(timezone.utc).isoformat()
+        write_json(args.output / "manifest.json", manifest)
         report = summarize(plan, rows, cases, seed=args.seed, bootstrap=args.bootstrap)
         write_json(args.output / "result.json", {**report, "manifest": manifest, "trials": rows})
     return report
+
+
+def positive_integer(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer") from exc
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return number
 
 
 def arguments() -> argparse.ArgumentParser:
@@ -451,6 +545,8 @@ def arguments() -> argparse.ArgumentParser:
     parser.add_argument("--codex-version", default="0.162.1")
     parser.add_argument("--auth-json", type=Path)
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--concurrency", type=positive_integer, default=1,
+                        help="maximum concurrent native Harbor jobs (default: 1)")
     parser.add_argument("--seed", type=int, default=20261108)
     parser.add_argument("--split", choices=["dev", "test", "all"], default="test")
     parser.add_argument("--limit", type=int)
