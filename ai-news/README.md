@@ -5,6 +5,8 @@
 订阅真源是 [`skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml)，阅读器可直接导入。没有可用 feed 的站写在同目录的 [`ai-coding-blogs.meta.json`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.meta.json)。拉 feed 用 [`scripts/fetch_feeds.py`](../skills/managed/weekly-ai-blogs-digest/scripts/fetch_feeds.py)。
 
 ## 已归档周报
+
+- [2026-11-06 AI Coding 资讯](2026-11-06-ai-coding-news.md) — 覆盖 2026-10-30～2026-11-05，收录 69 篇文章。
 - [2026-10-30 AI Coding 资讯](2026-10-30-ai-coding-news.md) — 覆盖 2026-10-23～2026-10-29，收录 66 篇文章。
 - [2026-10-23 AI Coding 资讯](2026-10-23-ai-coding-news.md) — 覆盖 2026-10-16～2026-10-22，收录 76 篇文章。
 - [2026-10-16 AI Coding 资讯](2026-10-16-ai-coding-news.md) — 覆盖 2026-10-09～2026-10-15，收录 63 篇文章。
@@ -19,7 +21,7 @@
 
 ## 归档范围与缺口
 
-当前归档包含工作区中可核验的 11 期成品，覆盖 2026-08-07～2026-10-29。`2026-09-04～2026-09-10` 尚无已完成周报文件；2026-08-07 之前的历史文件不在当前工作区，后续如找回可按相同命名规则补入。
+当前归档包含工作区中可核验的 12 期成品，覆盖 2026-08-07～2026-11-05。`2026-09-04～2026-09-10` 尚无已完成周报文件；2026-08-07 之前的历史文件不在当前工作区，后续如找回可按相同命名规则补入。
 
 ## 维护约定
 
