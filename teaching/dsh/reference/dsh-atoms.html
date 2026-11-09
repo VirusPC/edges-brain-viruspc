@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查：dsh 核心术语与五类 profile</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Reference</p>
+      <h1>dsh 核心术语与五类 profile</h1>
+      <p class="lede">配合第 1 课。锚点版本 <span class="mono">dsh@0.2.2-rc.1</span>。缩写首次在正文展开；本页作复习。</p>
+      <p class="nav-links"><a href="../lessons/0001-web-profile-not-model.html">第 1 课</a> <a href="../index.html">首页</a></p>
+    </header>
+
+    <h2>产品分层</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>Harness</dt>
+        <dd>把大模型、工具、会话、权限与多种界面装配成可运行产品的运行时层。DeepSeek Harness 的命令名是 <code>dsh</code>。</dd>
+      </div>
+      <div class="term card">
+        <dt>大模型（LLM）</dt>
+        <dd>负责推理与生成的模型本身；不等于 harness，也不等于网页客户端。</dd>
+      </div>
+      <div class="term card">
+        <dt>客户端 / GUI</dt>
+        <dd>图形或终端外壳。Web UI 只是 dsh 的一种界面组合，不是全部能力。</dd>
+      </div>
+      <div class="term card">
+        <dt>Cordis</dt>
+        <dd>插件框架：服务、类型化事件、可逆副作用。dsh 的「一切皆插件」建在其上。</dd>
+      </div>
+    </dl>
+
+    <h2>装配</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>profile（配置档）</dt>
+        <dd>Harness home 中的具名组装：有序组合包列表 + <code>cordis.patch.yml</code> + 可装树外插件。命令 <code>dsh web</code> 选中的是 profile，不是模型名。</dd>
+      </div>
+      <div class="term card">
+        <dt>bundle（组合包）</dt>
+        <dd>Cordis 配置与挂载代码的分发单位。例：<code>dsh-base</code>、<code>dsh-web-app</code>、<code>dsh-sdk-minimal</code>。</dd>
+      </div>
+      <div class="term card">
+        <dt>patch 层序</dt>
+        <dd>空根 → bundles → profile 的 <code>cordis.patch.yml</code> → <code>$DSH_HOME/cordis.patch.yml</code> → <code>--patch</code>。</dd>
+      </div>
+      <div class="term card">
+        <dt>Harness home</dt>
+        <dd>显式配置 → <code>$DSH_HOME</code> → 默认 <code>~/.dsh</code>。</dd>
+      </div>
+    </dl>
+
+    <h2>五类随附 profile</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt><code>web</code></dt>
+        <dd>浏览器 GUI：聊天、设置、会话。人机日常编码。默认端口 3080，URL 带启动令牌。</dd>
+      </div>
+      <div class="term card">
+        <dt><code>headless</code></dt>
+        <dd>一次性任务，打印答案后退出；可 <code>--json</code> / <code>--session-id</code> 供监督进程续跑。默认不开监听端口。不适合当 GUI 多轮点选。</dd>
+      </div>
+      <div class="term card">
+        <dt><code>sdk</code></dt>
+        <dd>完整 JSON-RPC（JSON 远程过程调用）服务，建立在 <code>dsh-base</code> 上，给程序嵌 dsh。</dd>
+      </div>
+      <div class="term card">
+        <dt><code>sdk-minimal</code></dt>
+        <dd>独立瘦身 SDK 树：排除 base/Web/settings/托管凭据/遥测/文本文件工具/workspace 指令/skill/jobs/subagent；默认 shell + read_image + working_directory。需隔离 workspace。</dd>
+      </div>
+      <div class="term card">
+        <dt><code>acp</code></dt>
+        <dd>Agent Client Protocol 自动化通道（stdio），直到断开。</dd>
+      </div>
+      <div class="term card">
+        <dt><code>desktop</code> / TUI</dt>
+        <dd><code>desktop</code> 名保留给 Electron。CLI 中的 <code>tui</code> 示例写明「若已安装」——非随附模板。</dd>
+      </div>
+    </dl>
+
+    <h2>路径与凭据</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt><code>profiles/&lt;name&gt;/cordis.patch.yml</code></dt>
+        <dd>设置页写入的现行补丁（web 即 <code>profiles/web/...</code>）。</dd>
+      </div>
+      <div class="term card">
+        <dt><code>.credentials.yaml</code></dt>
+        <dd>API 密钥只写存储；界面只保留引用。</dd>
+      </div>
+      <div class="term card">
+        <dt>legacy <code>settings.yaml</code></dt>
+        <dd>若存在则导入一次并改名为 <code>settings.yaml.imported</code>。</dd>
+      </div>
+      <div class="term card">
+        <dt><code>dsh-llm-pi-ai</code></dt>
+        <dd>依赖 <code>@earendil-works/pi-ai</code> 的多提供方适配器；与自有 vendored Pi 相关但包边界不同。</dd>
+      </div>
+    </dl>
+
+    <h2>排障口诀</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt><code>EADDRINUSE …:3080</code></dt>
+        <dd>webserver 绑定失败；其它插件等待服务常为连锁结果。Mac：<code>lsof -nP -iTCP:3080 -sTCP:LISTEN</code> 后 <code>ps</code> 核对；或 <code>dsh web --port 3081</code> / <code>--port 0</code>。勿无差别 <code>pkill</code>。</dd>
+      </div>
+      <div class="term card">
+        <dt>空目录 ≠ 沙箱</dt>
+        <dd>只降低误改真项目的概率；SAFETY：沙箱不保证隔离。</dd>
+      </div>
+    </dl>
+
+    <p class="footer-note cite">来源：README.zh、architecture.zh、apps/cli/README.zh、user/guide、providers、public-deployments、web-app / headless / sdk-minimal README、home-paths、settings、llm-pi-ai @ tag dsh-v0.2.2-rc.1。</p>
+  </main>
+</body>
+</html>
