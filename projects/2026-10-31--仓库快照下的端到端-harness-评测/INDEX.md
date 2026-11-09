@@ -62,6 +62,8 @@
 
 ## 调研材料
 
+- [Benchmark 论文论证与审稿问题](<../../.edges/projects/2026-11-01--agent-product-eval/notes/2026-11-09--benchmark-论文论证与审稿问题/INDEX.md>) — 以 NeurIPS、ICLR、ICML、ARR 官方指南整理研究价值、覆盖、标注、指标、统计、复现等论证及审稿自查；正文收于 Agent 产品评测 Project。
+
 - [Harbor 与 Inspect 深入对比](<notes/2026-10-31--harbor-%E4%B8%8E-inspect-%E6%B7%B1%E5%85%A5%E5%AF%B9%E6%AF%94/INDEX.md>) — 基于官方文档与固定提交源码，对比真实 Agent 执行、快照、材料加载、评分、轨迹、长期记忆及 Edges 接入边界。
 
 - [Personal Benchmark 的实践趋势与记忆消融定位](<notes/2026-10-31--personal-benchmark-%E7%9A%84%E5%AE%9E%E8%B7%B5%E8%B6%8B%E5%8A%BF%E4%B8%8E%E8%AE%B0%E5%BF%86%E6%B6%88%E8%9E%8D%E5%AE%9A%E4%BD%8D/INDEX.md>) — 记录个人评测集的公开实践信号、热度判断边界，以及现有记忆消融实验的 Inspect 接入澄清。
