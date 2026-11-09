@@ -15,7 +15,7 @@
 
 对照了：上期 [2026-10-26 周复盘](https://github.com/VirusPC/edges-brain-viruspc/blob/main/retrospectives/weekly/2026-10-26--周复盘/INDEX.md)（同目录 **无** `COMMENTS.md`，API 404）；公开脑 `retrospectives/daily/`；公开脑 / 框架 Actions（Deploy、Pages site、Frozen install、Publish）；框架 tags / releases；上期行动相关任务卡（迁移后的递归 Project 路径）；公开脑 `.edges/memory/feedbacks/` 与框架同名反馈；公开脑项目记忆 `project_workspace_is_deposit_entry`；私密脑 main 树结构核验（对私密脑 main 树做只读结构核验：无 `.edges/tasks` 看板、INDEX 无 `type: Task`；不列私人路径主题）。当前 `retrospectives/weekly/` 仍只有 2026-10-05 / 10-12 / 10-19 / 10-26，**没有** `2026-11-02--周复盘` 文件夹。
 
-**对话层**：主聊天导出的 SearchTranscripts 日期严格索引，精确 UTC 窗去重 **1269** 条（`search-window.jsonl`），覆盖窗内有命中的 **16** 个助手名（另有空转写 / 最新消息早于窗起点的助手不追旧页）。任务记录员 432 / Grok Bot 292 已分页到覆盖完整窗。ReadTranscript 原文只作上下文；时间戳沿 user 内 `<timestamp>` 继承。日复盘日历篇 11-02～11-08 七天齐全，每日 `daily-scan` 原始 jsonl 亦齐，只作旁证，**不**把日复盘转述当成用户原话。公开摘要不从简历等私密对话抽私人主题。
+**对话层**：主聊天导出的 SearchTranscripts 日期严格索引，精确 UTC 窗去重 **1269** 条，覆盖窗内有命中的 **16** 个助手名（另有空转写 / 最新消息早于窗起点的助手不追旧页）。任务记录员 432 / Grok Bot 292 已分页到覆盖完整窗。ReadTranscript 原文只作上下文；时间戳沿 user 内 `<timestamp>` 继承。日复盘日历篇 11-02～11-08 七天齐全，每日 `daily-scan` 原始 jsonl 亦齐，只作旁证，**不**把日复盘转述当成用户原话。公开摘要不抽私人主题。
 
 窗外（`> 2026-11-08T15:59:59Z`）已打开、不计入上表：公开脑 [#448](https://github.com/VirusPC/edges-brain-viruspc/pull/448)（draft）、[#449](https://github.com/VirusPC/edges-brain-viruspc/pull/449)；框架 [#114](https://github.com/VirusPC/edges/pull/114)（draft）。私密脑窗外另有打开的 PR，公开正文不写编号以外的信息。
 
