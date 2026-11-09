@@ -68,6 +68,7 @@
 - [ai资讯工作流改为\_rss\_并优化数据格式与\_token\_对比](<in_progress/2026-10-31--AI%E8%B5%84%E8%AE%AF%E5%B7%A5%E4%BD%9C%E6%B5%81%E6%94%B9%E4%B8%BA-RSS-%E5%B9%B6%E4%BC%98%E5%8C%96%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F%E4%B8%8E-token-%E5%AF%B9%E6%AF%94/INDEX.md>) — AI 资讯周报改为以自维护 OPML 的 RSS 为先，列表页只作退路，并留下 2026\-10\-30 窗口的覆盖与体积对比。
 - [补充重要邮件提醒\_routine](<backlog/2026-11-03--%E8%A1%A5%E5%85%85%E9%87%8D%E8%A6%81%E9%82%AE%E4%BB%B6%E6%8F%90%E9%86%92-routine/INDEX.md>) — 在个人大脑补一条 important\-email\-reminder，定时扫重要邮件并提醒。
 - [现场配置\_minigtr\_断电恢复后自动开机](<backlog/2026-11-08--%E7%8E%B0%E5%9C%BA%E9%85%8D%E7%BD%AE-minigtr-%E6%96%AD%E7%94%B5%E6%81%A2%E5%A4%8D%E5%90%8E%E8%87%AA%E5%8A%A8%E5%BC%80%E6%9C%BA/INDEX.md>) — 断电后来电仍停机会让 minigtr 远程不可用。在维护窗口把来电自动开机设好，并在安全窗口验证；未测则标明待验证。
+- [把\_OpenAI\_Developer\_Blog\_补进\_weekly\_ai\_blogs\_digest](<backlog/2026-11-09--%E6%8A%8A-OpenAI-Developer-Blog-%E8%A1%A5%E8%BF%9B-weekly-ai-blogs-digest/INDEX.md>) — weekly\-ai\-blogs\-digest 已订 OpenAI News RSS，但未覆盖 Developer Blog。按对话核定的方式用列表页补上这一源，不把站点 rss.xml 当博客订阅，并保留原 News RSS。
 <!-- edges-entries-local:end -->
 
 <!-- edges-migrated-task-default:start -->
