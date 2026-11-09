@@ -23,3 +23,4 @@
 - 2026-11-09：Lesson 05 读 transcript/核 outcome/归因；20–50 标为建议起步；artifacts 发布；不写掌握型 LR。
 - 2026-11-09：用户标记「约 20–50 道简单任务」起步规模值得记，记入 LR-0009。
 - 2026-11-09：Lesson 06 框架 vs 任务/grader 质量；结课闭环；Harbor Rewardkit 仅作便利层例；artifacts + 入库大脑 PR452。答案序列 C/B/D/A。
+- 2026-11-09：Lesson 06 审核修正——Q4 仅 outcome/transcript 唯一正确；Q2 并列查任务与 grader；闭环补 human grader 并分清 metric；去掉未核验 Reddit；保留已核验 Latent Space；答案仍 C/B/D/A。
