@@ -13,5 +13,4 @@
 - [2026\-10\-20\-\-edges\-extensions/INDEX.md](<2026-10-20--edges-extensions/INDEX.md>)
 - [2026\-10\-28\-\-learning/INDEX.md](<2026-10-28--learning/INDEX.md>)
 - [2026\-09\-10\-\-site\-and\-content/INDEX.md](<2026-09-10--site-and-content/INDEX.md>)
-- [2026\-11\-09\-\-dsh/INDEX.md](<2026-11-09--dsh/INDEX.md>)
 <!-- edges-entries-local:end -->

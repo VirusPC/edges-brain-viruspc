@@ -17,3 +17,5 @@
 
 - 2026-11-09：用户更正落库位置——个人大脑新建 teaching 主题，课程与笔记同放。已迁入 `teaching/dsh/`。
 - 2026-11-09：再更正——同名 Edges Project `2026-11-09--dsh` 承载笔记并引用 teaching；笔记正文在 Project `notes/`，teaching 课页 Notes 只链过去。learning 上的 #453/#454 仍暂不关闭。
+
+- 2026-11-09：用户要求个人大脑优先 `--super`；同名 Project 迁到仓库根 `projects/2026-11-09--dsh`，笔记用 `edges --scope projects/… --super notes create` 写入；`.edges/projects/2026-11-09--dsh` 已移除。
