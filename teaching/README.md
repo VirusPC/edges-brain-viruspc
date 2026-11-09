@@ -6,6 +6,7 @@ Public homepage: [`index.html`](index.html)（公网 `/teaching/`）。每次交
 
 ## Topics
 
+- [agent-evals](agent-evals) — Anthropic《Demystifying evals for AI agents》概念课：task/trial/transcript/outcome、三类 grader；系统补齐评测方法，不绑定具体项目
 - [changelog](changelog) — write a usable `CHANGELOG.md` for your own projects
 - [cloud-coding-agent](cloud-coding-agent) — 看懂云端 coding agent 产品的架构：以 vercel-labs/coding-agent-template 为教材，讲任务流程、Sandbox 生命周期、预制环境与隔离、Agent CLI、进度回传、密钥与信任边界（6 课）
 - [crewai](crewai) — CrewAI 概念模型：Agent / Task / Crew / Flow，以及 Quickstart 数据流（概念优先）

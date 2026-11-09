@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 1 课 · 可验证的成功：task / trial / transcript / outcome</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Lesson 01 · ~5 分钟</p>
+      <h1>可验证的成功：四个原子</h1>
+      <p class="lede">先学会把「agent 说成功了」和「环境里真的成功了」分开。这是一切 agent 评测的地基。</p>
+      <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
+      <p class="nav-links">
+        <a href="../reference/eval-atoms.html">术语速查</a>
+        <a href="./0002-three-grader-types.html">第 2 课 →</a>
+        <a href="https://www.anthropic.com/research/demystifying-evals-for-ai-agents">原文</a>
+      </p>
+    </header>
+
+    <section>
+      <h2>这一课你要带走什么</h2>
+      <p>结束时，你应能用自己的话区分四个词，并给任意 agent 任务写出<strong>可在环境里核对</strong>的成功标准——而不是只听它口头汇报。</p>
+    </section>
+
+    <section>
+      <h2>四个词，一次说清</h2>
+      <dl class="term-grid">
+        <div class="term">
+          <dt>task <span class="en">任务</span></dt>
+          <dd>一条测试：有定义好的输入，以及清晰的成功标准。</dd>
+        </div>
+        <div class="term">
+          <dt>trial <span class="en">试次</span></dt>
+          <dd>对同一 task 跑一次。模型有随机性，所以常跑多次 trial。</dd>
+        </div>
+        <div class="term">
+          <dt>transcript <span class="en">轨迹</span></dt>
+          <dd>这一次 trial 里说了什么、调了哪些工具、中间发生了什么。也叫 trace / trajectory。</dd>
+        </div>
+        <div class="term">
+          <dt>outcome <span class="en">结果状态</span></dt>
+          <dd>trial 结束时，<em>环境</em>里留下的最终状态——数据库行、文件内容、测试是否通过——不是嘴上那句「好了」。</dd>
+        </div>
+      </dl>
+      <div class="callout">
+        <strong>记住这一句</strong>
+        订票 agent 在对话末尾说「Your flight has been booked」——那是 transcript 里的话；真正的 outcome 是环境 SQL 里有没有那条 reservation。
+      </div>
+    </section>
+
+    <section>
+      <h2>例子 A：订票（看 outcome）</h2>
+      <div class="example">
+        <h3>同一 task，一次 trial</h3>
+        <ol>
+          <li><strong>task</strong>：按政策帮用户改签到指定航班；成功 = 预订表出现正确新航班，且旧段按规则处理。</li>
+          <li><strong>trial</strong>：让 agent 完整跑完这一次对话与工具调用。</li>
+          <li><strong>transcript</strong>：用户话轮、政策查询、改签 API 调用、agent 的确认话术。</li>
+          <li><strong>outcome</strong>：库里的 reservation 记录是否等于标注的目标状态。</li>
+        </ol>
+      </div>
+      <p>若 transcript 里客服腔调完美，但库里没有改签成功——按可验证标准，这次 trial <strong>失败</strong>。</p>
+    </section>
+
+    <section>
+      <h2>例子 B：改文件（coding 同理）</h2>
+      <div class="example">
+        <h3>修「空密码可登录」漏洞</h3>
+        <ol>
+          <li><strong>task</strong>：修复空密码绕过；成功 = 相关失败测试转绿，且既有测试不挂。</li>
+          <li><strong>trial</strong>：agent 在干净仓库里改代码并跑测，算一次。</li>
+          <li><strong>transcript</strong>：读文件、编辑、跑测命令、推理过程。</li>
+          <li><strong>outcome</strong>：测试结果与仓库最终状态（必要时含安全日志事件）。</li>
+        </ol>
+      </div>
+      <p>Agent 在 transcript 里宣称「已加固」，但测试仍红——outcome 说了算。</p>
+    </section>
+
+    <section>
+      <h2>技能：写出可验证的成功</h2>
+      <p>好的成功标准，应让<strong>两名领域专家独立给出同一 pass/fail</strong>。写的时候问自己：</p>
+      <ul>
+        <li>我要核对的是哪一个<strong>环境事实</strong>（行、文件、测试、票据状态）？</li>
+        <li>只听 transcript，会不会被「说得对」骗过？</li>
+        <li>合法的不同路径，会不会被我误判失败？（通常应评 outcome，少绑死路径。）</li>
+      </ul>
+    </section>
+
+    <section class="quiz" aria-label="自测">
+      <h2>自测（点选后立即反馈）</h2>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：口头汇报属于 transcript；有没有订上要看环境 outcome。"
+        data-bad="再想：agent 说「订好了」只是 transcript。库里有没有 reservation，才是 outcome。">
+        <p class="q-num">Question 1 / 3</p>
+        <p class="q-prompt">订票 agent 说「已订好」，但数据库没有 reservation。这次 trial 算成功吗？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>算成功：仅凭话术便可过关</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>算失败：环境状态尚未达成</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>算半过：语气良好即可给分</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>无法判：缺少模型名称信息</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="C"
+        data-ok="正确：trial 是对同一 task 的一次完整尝试；多次 trial 用来估计稳定性。"
+        data-bad="再想：task 是题目本身；trial 才是「跑了这一次」。">
+        <p class="q-num">Question 2 / 3</p>
+        <p class="q-prompt">下面哪一项最符合 trial 的含义？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>一整套相关任务组成的集合</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>一条写明成功标准的测试题</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>对同一题目的一次完整尝试</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>环境里最终留下的结果状态</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="A"
+        data-ok="正确：优先用可核对的环境事实定义成功；transcript 用来解释过程与失败原因。"
+        data-bad="再想：可验证成功要钉在 outcome（环境事实）上，而不是只看自我汇报或固定路径。">
+        <p class="q-num">Question 3 / 3</p>
+        <p class="q-prompt">写 coding task 的成功标准时，更稳妥的做法是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>规定测试须通过并核对终态</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>只要求回复出现已修复字样</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>只允许某一种固定编辑顺序</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>凭主观感觉给一个五分制分</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    <section class="footer-note">
+      <h2>主文献与下一步</h2>
+      <p class="cite">
+        定义与订票 outcome 例子对齐：
+        <a href="https://www.anthropic.com/research/demystifying-evals-for-ai-agents">Anthropic, “Demystifying evals for AI agents,” Jan 9, 2026</a>
+        （作者：Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, Jiri De Jonghe）。
+      </p>
+      <p>有疑问直接问我：例如「我的任务算不算写清了 outcome？」或「transcript 还要不要打分？」。</p>
+      <p class="nav-links"><a href="../reference/eval-atoms.html">术语速查</a> · <a href="./0002-three-grader-types.html">下一课：三类 grader →</a></p>
+    </section>
+  </main>
+  <script src="../assets/quiz.js"></script>
+</body>
+</html>
