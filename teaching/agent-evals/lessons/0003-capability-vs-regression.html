@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 3 课 · capability vs regression</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Lesson 03 · ~5 分钟</p>
+      <h1>两套题库：爬山 vs 守城</h1>
+      <p class="lede">capability（质量）eval 问「还能做什么」——起步 pass 该偏低；regression eval 问「以前会的还会吗」——应接近 100%。爬上去的题，可以毕业进回归套件。</p>
+      <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
+      <p class="nav-links">
+        <a href="./0002-three-grader-types.html">← 第 2 课</a>
+        <a href="./0004-pass-at-k-vs-pass-hat-k.html">第 4 课 →</a>
+        <a href="../reference/eval-atoms.html">术语速查</a>
+        <a href="https://www.anthropic.com/research/demystifying-evals-for-ai-agents">原文</a>
+      </p>
+    </header>
+
+    <section>
+      <h2>这一课你要带走什么</h2>
+      <p>能分清两套 eval 的目的与目标 pass rate，并知道：高 pass 的 capability 题可以 <strong>graduate</strong> 成持续跑的 regression——从「能不能做」变成「还能不能稳定做」。</p>
+    </section>
+
+    <section>
+      <h2>一张对照表</h2>
+      <dl class="term-grid">
+        <div class="term">
+          <dt>capability / quality eval <span class="en">能力 / 质量</span></dt>
+          <dd>问：What can this agent do well？挑还做不好的题当小山爬。起步 pass rate 应<strong>偏低</strong>，才有改进信号。</dd>
+        </div>
+        <div class="term">
+          <dt>regression eval <span class="en">回归</span></dt>
+          <dd>问：Does the agent still handle what it used to？保护已会的行为。pass rate 应<strong>接近 100%</strong>；掉分 = 坏了。</dd>
+        </div>
+      </dl>
+      <div class="callout">
+        <strong>同时跑</strong>
+        爬 capability 时也要跑 regression，避免「这边修好、那边回退」。上线优化后，高 pass 的 capability 可毕业进回归套件持续守住。
+      </div>
+    </section>
+
+    <section>
+      <h2>例子 A：订票客服</h2>
+      <div class="example">
+        <h3>两套题，不同目标分</h3>
+        <ol>
+          <li><strong>capability</strong>：复合改签 + 政策边界 + 生气用户——当前常挂，pass 偏低，专门用来爬山。</li>
+          <li><strong>regression</strong>：查订单、简单退款、身份校验——早已稳定，套件应近满分；一掉就报警。</li>
+          <li><strong>graduate</strong>：某道「拒改签 basic economy」从常挂练到连续近满分 → 迁入 regression，不再当能力前沿。</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <h2>例子 B：改文件 / coding</h2>
+      <div class="example">
+        <h3>同一仓库，两种压力</h3>
+        <ol>
+          <li><strong>capability</strong>：多文件重构、罕见安全漏洞、长程调试——难、低 pass，推动 harness / prompt / 模型升级。</li>
+          <li><strong>regression</strong>：空密码拒绝、基础 lint、常见 CRUD 修复——应几乎次次过；用来防「为了难题牺牲旧能力」。</li>
+          <li>若整份 capability 套件已近饱和，改进信号变弱——要加难题，或把已稳的题毕业走。</li>
+        </ol>
+      </div>
+      <p class="cite">原文举例 SWE-bench Verified 曾从约 30% 爬到 &gt;80% 近饱和；以你自己套件的实测为准。</p>
+    </section>
+
+    <section>
+      <h2>实操口诀</h2>
+      <ul>
+        <li>新能力 → 先写低 pass 的 capability 题（eval-driven）。</li>
+        <li>已稳定 → 放进 regression，CI 里常跑。</li>
+        <li>只看「总分涨了」不够：要分开看两套，避免用难题掩盖回退。</li>
+        <li>100% 的 capability 不再教你进步——该加难或毕业。</li>
+      </ul>
+    </section>
+
+    <section class="quiz" aria-label="自测">
+      <h2>自测（点选后立即反馈）</h2>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：capability 要留爬山空间，起步 pass 偏低才有改进信号。"
+        data-bad="再想：接近 100% 是 regression 的目标；capability 起步应偏低。">
+        <p class="q-num">Question 1 / 3</p>
+        <p class="q-prompt">一套专门测「前沿难题」的 capability eval，理想起点是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>应接近百分百以防能力回退</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>应故意偏低好留下攀爬空间</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>必须永远停在零分才算健康</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>分数高低其实完全都不重要</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：regression 保护已会行为，分数应接近满分；掉分即告警。"
+        data-bad="再想：发现能力上限是 capability 的事；regression 是守城、近 100%。">
+        <p class="q-num">Question 2 / 3</p>
+        <p class="q-prompt">regression eval 的核心用途是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>应用来发现新能力上限边界</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>应抓回退并保持近满分通过</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>只适合替代全部生产监控项</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>只看对话语气不必查看终态</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：高 pass 的 capability 题可 graduate 进 regression，持续防止回退。"
+        data-bad="再想：原文建议把已稳的能力题迁入回归套件，而不是删掉或永远留在能力前沿。">
+        <p class="q-num">Question 3 / 3</p>
+        <p class="q-prompt">若干 capability 题已长期近满分，较稳妥的做法是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>删掉它们以免分数虚高好看</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>毕业迁入回归套件持续守住</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>改成只靠模型口嗨自评通过</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>永远留在能力套件不再迁移</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    <section class="footer-note">
+      <h2>主文献与下一步</h2>
+      <p class="cite">
+        capability vs regression、graduate 说法对齐：
+        <a href="https://www.anthropic.com/research/demystifying-evals-for-ai-agents">Anthropic, “Demystifying evals for AI agents,” Jan 9, 2026</a>
+        （作者：Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, Jiri De Jonghe）。
+      </p>
+      <p>有疑问直接问我：例如「这道题该进哪套？」。</p>
+      <p class="nav-links">
+        <a href="./0002-three-grader-types.html">← 第 2 课</a>
+        <a href="./0004-pass-at-k-vs-pass-hat-k.html">下一课：pass@k vs pass^k →</a>
+        <a href="../reference/eval-atoms.html">术语速查</a>
+      </p>
+    </section>
+  </main>
+  <script src="../assets/quiz.js"></script>
+</body>
+</html>

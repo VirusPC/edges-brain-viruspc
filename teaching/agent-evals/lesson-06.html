@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 6 课 · 框架加速，质量在任务与 grader</title>
+  <style>
+:root {
+  --bg: #f7f4ef;
+  --paper: #fffdf8;
+  --ink: #1c1917;
+  --muted: #57534e;
+  --line: #e7e0d5;
+  --accent: #9a3412;
+  --accent-soft: #ffedd5;
+  --ok: #166534;
+  --ok-bg: #dcfce7;
+  --bad: #991b1b;
+  --bad-bg: #fee2e2;
+  --code-bg: #f5f0e8;
+  --shadow: 0 1px 0 rgba(28, 25, 23, 0.04), 0 12px 32px rgba(28, 25, 23, 0.06);
+  --radius: 14px;
+  --max: 42rem;
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 18px; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #fff7ed 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #ffedd5 0%, transparent 45%),
+    var(--bg);
+  font-family: var(--font);
+  line-height: 1.65;
+}
+
+.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+header.hero {
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.kicker {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: 1.85rem;
+  line-height: 1.25;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.meta {
+  margin-top: 1rem;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 2.25rem 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p, li { color: var(--ink); }
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.term-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.term {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.9rem;
+}
+
+.term dt {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+}
+
+.term dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.term .en {
+  font-weight: 500;
+  color: var(--ink);
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+.example {
+  background: var(--paper);
+  border: 1px dashed #d6c7b5;
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+}
+
+.example h3 {
+  margin-top: 0;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.example ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.example li { margin: 0.35rem 0; }
+
+.callout {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+  margin: 1.25rem 0;
+  border: 1px solid #fdba74;
+}
+
+.callout strong {
+  font-family: var(--sans);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+code, .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--code-bg);
+  padding: 0.08em 0.35em;
+  border-radius: 0.35em;
+}
+
+.quiz {
+  margin: 1.5rem 0;
+}
+
+.q {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.15rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.q-num {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+
+.q-prompt {
+  margin: 0 0 0.9rem;
+  font-weight: 600;
+}
+
+.options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.opt:hover:not(:disabled) {
+  border-color: #c4b5a5;
+  background: #fffaf3;
+}
+
+.opt:disabled { cursor: default; }
+
+.opt .key {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--code-bg);
+  color: var(--muted);
+}
+
+.opt.correct {
+  border-color: #86efac;
+  background: var(--ok-bg);
+}
+
+.opt.incorrect {
+  border-color: #fca5a5;
+  background: var(--bad-bg);
+}
+
+.feedback {
+  display: none;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.feedback.show { display: block; }
+
+.feedback.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.feedback.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+.footer-note {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cite {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.nav-links {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.nav-links a { margin-right: 0.9rem; }
+
+@media (max-width: 640px) {
+  html { font-size: 17px; }
+  h1 { font-size: 1.55rem; }
+  .page { padding: 1.5rem 1rem 3rem; }
+}
+
+
+details.reveal {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.05rem;
+  margin: 1rem 0;
+}
+details.reveal summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-weight: 700;
+  color: var(--accent);
+  list-style: none;
+}
+details.reveal summary::-webkit-details-marker { display: none; }
+details.reveal[open] summary { margin-bottom: 0.55rem; }
+
+</style>
+</head>
+<body>
+  <main class="page" id="top">
+    <header class="hero">
+      <p class="kicker">Lesson 06 · ~5 分钟 · 结课 · 可离线单文件</p>
+      <h1>框架只是加速器：异常时查哪里？</h1>
+      <p class="lede">选 Harbor / Langfuse / Inspect 等 <strong>evaluation harness</strong>（跑评测的端到端基础设施）能省工程量，但原文写明：框架再好，也只和你放进去的 <strong>task</strong> 与 <strong>grader</strong> 一样好。</p>
+      <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
+      <p class="nav-links">
+        <a href="lesson-05.html">← 第 5 课</a>
+        <a href="#glossary">术语速查</a>
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">原文</a>
+      </p>
+    </header>
+
+    <section>
+      <h2>这一课你要带走什么</h2>
+      <p>看到「分数怪了」时，能判断更像<strong>框架/基础设施</strong>、<strong>任务设计</strong>还是<strong>grader</strong>问题，并说出下一步查什么——而不是先换框架碰运气。</p>
+    </section>
+
+    <section>
+      <h2>原文怎么说框架</h2>
+      <p>附录列举 Harbor、Braintrust、LangSmith、Langfuse、Arize 等，方便离线评测与/或可观测。关键原意是：框架可加速与标准化，但<strong>它们只和你跑的评测任务一样好</strong>；宜尽快选一个贴合工作流的，然后把精力投在高质量用例与 grader 上。<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">（Anthropic 2026-01-09）</a></p>
+      <p>文中<strong>没有</strong>点名 Anthropic 内部固定使用哪一个开源框架；评价「一个 agent」时评的是 agent harness + 模型，与选用哪个 eval 框架是两件事。</p>
+      <div class="example">
+        <h3>例：Harbor Rewardkit（已核验文档，非「银弹」）</h3>
+        <p><a href="https://docs.harborframework.com/rewardkit/judge-criteria">官方 Judge criteria</a> 支持 TOML 声明式 criterion（binary / likert / numeric / rubric levels）、权重与聚合、多次采样取中位、guard 防提示注入等——这是<strong>便利层</strong>。它不替你决定该评什么业务能力，也不自动保证与人类专家对齐；对齐仍要靠抽样人工与读 transcript。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>三种异常 → 先查哪一层（假设场景）</h2>
+      <div class="example">
+        <ol>
+          <li><strong>分数很高，线上用户狂投诉</strong> → <em>并列</em>查：任务是否偏离真实用法、覆盖是否偏科；以及 grader 是否过松、是否与人对齐。补真实失败/工单题，抽样人工复核；自动评测之外再加生产监控与用户反馈（多层防护，像瑞士奶酪模型那样叠层拦截）。</li>
+          <li><strong>只换框架，同一套题分数大变</strong>（假设） → 先对齐隔离环境、超时、默认 grader 聚合与日志；再比对同一 trial 的 transcript / outcome，区分基础设施噪声与真正能力差。</li>
+          <li><strong>套件几乎全过、分数不再动</strong> → 警惕能力评测 <em>饱和</em>：加难题，或把已经稳定通过的题<strong>毕业</strong>迁入回归套件；并读 transcript，确认不是 grader 过松。</li>
+        </ol>
+      </div>
+      <p>无论哪一层，都要<strong>读 transcript、核 outcome</strong>；失败应显得公平。分数不涨时，先怀疑评测本身（题面歧义、刚性判分、运行环境约束），再骂模型。</p>
+    </section>
+
+    <section>
+      <h2>六课闭环（间隔检索也可用）</h2>
+      <div class="callout">
+        <p><strong>主链条</strong>：先定 task（题目）→ 同一题跑多次 trial（尝试）→ 每次留下 transcript（过程记录）与 outcome（环境终态）→ 用 grader 判分：可以是 <strong>代码断言</strong>、<strong>带评分细则的模型裁判</strong>，也可以是 <strong>人工评分（human grader）</strong>；可评过程与/或终态，得到 score（分数）。</p>
+        <p><strong>指标（metric）</strong>：可以汇总这些 score（例如通过率），也可以<strong>不经过 score</strong>、直接统计耗时或 token 等。</p>
+        <p><strong>两类套件</strong>：能力评测（capability）起步通过率宜低，用来爬山改进；回归评测（regression）通过率宜接近满分，用来守住已会的行为。能力题稳定通过后可毕业迁入回归。多 trial 时用 pass@k（至少一次成功）与 pass^k（次次都成功）。起步约 20–50 道简单任务是建议，不是充分样本量。</p>
+      </div>
+      <p>自动评测只是一层；原文还强调生产监控、A/B 测试、用户反馈与系统化人工复核组合，多层叠防。</p>
+      <p>可选延伸阅读（本轮已核验）：<a href="https://latent.space/wiki/evals/">Latent Space · Evals 词条</a>。</p>
+    </section>
+
+    <section class="quiz" aria-label="自测">
+      <h2>自测（含前课间隔检索）</h2>
+
+      <div class="q" data-quiz-q data-answer="C"
+        data-ok="正确：原文强调框架加速，但质量取决于你投入的任务与 grader。"
+        data-bad="再想：附录明确框架只和评测任务一样好；要投资用例与判分，而非指望换框架自动变强。">
+        <p class="q-num">Question 1 / 4</p>
+        <p class="q-prompt">关于评测框架，更符合原文立场的是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>换框架后分数自然等于真能力提升</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>接入框架后就不必再读过程记录了</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>框架可加速，质量取决于题与判分</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>框架会替你决定该评哪些业务能力</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：高分却投诉时，应并列查任务是否贴真实用法，以及 grader 是否过松、是否与人对齐，并抽样人工复核。"
+        data-bad="再想：不要先怪框架算术或删掉回归套件；也不要武断只怪任务——grader 过松同样会造成虚高。">
+        <p class="q-num">Question 2 / 4</p>
+        <p class="q-prompt">离线套件分数很高，但用户持续投诉「不好用」。优先？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>先认定是评测框架把分数都算错了</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>先并列查任务覆盖与判分是否对齐</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>先把所有代码判分都改成口头自述</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>先删掉回归套件只留能力难题题库</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="D"
+        data-ok="正确：接近饱和时要加难题，或把已易通过的题毕业迁入回归套件，并继续读 transcript。"
+        data-bad="再想：饱和意味着缺少改进信号；换框架或停读记录解决不了题库过时。">
+        <p class="q-num">Question 3 / 4</p>
+        <p class="q-prompt">能力评测套件长期接近满分、分数几乎不动。较稳妥的是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>说明模型已完美无需任何后续评测</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>应立刻更换评测框架以刷新分数板</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>应停止阅读过程记录以免浪费时间</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>应加难题或把易过题迁入回归套件</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="A"
+        data-ok="正确：outcome 是环境终态；transcript 是过程记录（亦称 trace / trajectory）。"
+        data-bad="再想：两者不能对调；outcome 不是工具调用序列；也不是「框架汇总分」的同义词。">
+        <p class="q-num">Question 4 / 4 · 间隔检索</p>
+        <p class="q-prompt">关于 outcome 与 transcript，哪一项正确？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>环境终态叫outcome，过程记录叫transcript</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>环境终态叫transcript，过程记录叫outcome</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>工具调用序列叫outcome，终态叫transcript</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>outcome与transcript同义且都指框架汇总分</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    
+    <section id="glossary">
+      <h2>术语速查（本课 + 闭环）</h2>
+      <dl class="term-grid">
+        <div class="term card"><dt>evaluation harness</dt><dd>跑评测的基础设施；加速≠质量。</dd></div>
+        <div class="term card"><dt>三类 grader</dt><dd>代码断言、模型裁判、人工评分（human grader）。</dd></div>
+        <div class="term card"><dt>metric</dt><dd>可汇总 score，也可直接统计耗时/token。</dd></div>
+        <div class="term card"><dt>质量在 task / grader</dt><dd>原文：框架只和你的评测任务一样好。</dd></div>
+      </dl>
+    </section>
+
+    <section class="footer-note">
+      <h2>主文献与结课</h2>
+      <p class="cite">
+        框架附录与「投资任务/grader」、读 transcript、饱和、多层防护组合：
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic, “Demystifying evals for AI agents,” Jan 9, 2026</a>。
+        Harbor 声明式 judge：<a href="https://docs.harborframework.com/rewardkit/judge-criteria">Rewardkit Judge criteria</a>。异常三例为教学假设。
+      </p>
+      <p>六课到此收束。仍可问我具体异常该查哪一层。</p>
+      <p class="nav-links">
+        <a href="lesson-05.html">← 第 5 课</a>
+        <a href="#top">课程目录</a>
+        <a href="#glossary">术语速查 →</a>
+      </p>
+    </section>
+  </main>
+  <script>
+(function () {
+  function grade(button) {
+    var q = button.closest("[data-quiz-q]");
+    if (!q || q.getAttribute("data-answered") === "1") return;
+
+    var correct = q.getAttribute("data-answer");
+    var chosen = button.getAttribute("data-choice");
+    var feedback = q.querySelector("[data-feedback]");
+    var okText = q.getAttribute("data-ok") || "正确。";
+    var badText = q.getAttribute("data-bad") || "再想一想。";
+
+    q.setAttribute("data-answered", "1");
+    Array.prototype.forEach.call(q.querySelectorAll("[data-choice]"), function (btn) {
+      btn.disabled = true;
+      var c = btn.getAttribute("data-choice");
+      if (c === correct) btn.classList.add("correct");
+      if (c === chosen && c !== correct) btn.classList.add("incorrect");
+    });
+
+    if (!feedback) return;
+    var isOk = chosen === correct;
+    feedback.className = "feedback show " + (isOk ? "ok" : "bad");
+    feedback.textContent = isOk ? okText : badText;
+  }
+
+  document.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-choice]");
+    if (!btn) return;
+    grade(btn);
+  });
+})();
+
+</script>
+</body>
+</html>

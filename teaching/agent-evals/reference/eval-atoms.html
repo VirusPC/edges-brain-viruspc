@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>速查：Agent 评测术语</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Reference</p>
+      <h1>Agent 评测术语速查</h1>
+      <p class="lede">第 1–2 课配套。掌握后再晋升工作区 <span class="mono">GLOSSARY.md</span>。文中 transcript / trace / trajectory 指同一过程记录。</p>
+    </header>
+
+    <h2>四个原子</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>task <span class="en">任务 / 用例</span></dt>
+        <dd>一条有明确输入与成功标准的测试。别名：problem、test case。</dd>
+      </div>
+      <div class="term card">
+        <dt>trial <span class="en">试次</span></dt>
+        <dd>对同一 task 的一次完整尝试。因随机性常跑多次。</dd>
+      </div>
+      <div class="term card">
+        <dt>transcript <span class="en">轨迹 / 记录</span></dt>
+        <dd>一次 trial 的完整过程记录：输出、工具调用、推理、中间结果。别名：trace、trajectory（同指过程记录，不是另一种对象）。</dd>
+      </div>
+      <div class="term card">
+        <dt>outcome <span class="en">结果状态</span></dt>
+        <dd>trial 结束时环境的最终状态（如数据库是否真有订单），不是 agent 说了什么。</dd>
+      </div>
+    </dl>
+
+    <h2>grader 三类</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>grader <span class="en">评分器</span></dt>
+        <dd>对表现某侧面打分的逻辑；可含多条 assertion / check；可评 transcript 或 outcome；产出 score；不必都用 rubric。</dd>
+      </div>
+      <div class="term card">
+        <dt>code-based grader</dt>
+        <dd>确定性检查（测试、状态、匹配、静态分析等）。能用时优先；脆、难评主观项。</dd>
+      </div>
+      <div class="term card">
+        <dt>model-based grader</dt>
+        <dd>LLM rubric / 断言等。灵活；需与人类校准后才可信。</dd>
+      </div>
+      <div class="term card">
+        <dt>human grader</dt>
+        <dd>人工金标准；用于校准与抽检，成本高。</dd>
+      </div>
+    </dl>
+
+    
+    
+    
+    <h2>框架与质量</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>evaluation harness / 框架</dt>
+        <dd>跑评测的基础设施（并发、记录、聚合）。加速不等于质量；质量在 task 与 grader。原文：框架只和你的评测任务一样好。</dd>
+      </div>
+      <div class="term card">
+        <dt>异常分层排查</dt>
+        <dd>用户体感脱节→任务覆盖；换框架分数变→环境/默认判分；全过不动→饱和或 grader 过松。都要读 transcript、核 outcome。</dd>
+      </div>
+      <div class="term card">
+        <dt>多层防护（瑞士奶酪模型）</dt>
+        <dd>自动评测 + 生产监控 + A/B + 用户反馈 + 人工复核叠层拦截。</dd>
+      </div>
+    </dl>
+
+    <h2>诊断失败 trial</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>先证据后归因</dt>
+        <dd>先核 outcome、再读 transcript 与 score，再分 Agent / grader / 任务环境；证据不足不硬判。</dd>
+      </div>
+      <div class="term card">
+        <dt>起步 20–50</dt>
+        <dd>原文建议的早期简单任务规模；非充分样本量证明；来源含真实失败与手工/工单场景。</dd>
+      </div>
+    </dl>
+
+    <h2>多 trial 指标</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>pass@k</dt>
+        <dd>同一 task 的 k 次 trial 中至少一次成功。k↑ 通常升。常关心 pass@1。</dd>
+      </div>
+      <div class="term card">
+        <dt>pass^k</dt>
+        <dd>同一 task 的 k 次 trial 全部成功。k↑ 通常降。强调一致性，不是工作流连续 k 步。</dd>
+      </div>
+    </dl>
+    <p class="cite">乘方示意仅在独立同分布简化下；真实套件以实测为准。</p>
+
+    <h2>两套套件</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>capability eval</dt>
+        <dd>测「还能做什么」；起步低 pass，用来爬山。</dd>
+      </div>
+      <div class="term card">
+        <dt>regression eval</dt>
+        <dd>测「以前会的还会吗」；应接近 100%，防回退。</dd>
+      </div>
+      <div class="term card">
+        <dt>graduate</dt>
+        <dd>高 pass 的 capability 题迁入 regression，持续守住。</dd>
+      </div>
+    </dl>
+
+    <div class="callout">
+      <strong>可验证成功</strong>
+      优先检查 outcome；transcript / trace 用来解释 why。能代码验就别只靠模型自评。爬山与守城要分开建套件。
+    </div>
+
+    <p class="cite">术语对齐 Anthropic, <em>Demystifying evals for AI agents</em>, 2026-01-09。</p>
+    <p class="nav-links">
+      <a href="../lessons/0001-task-trial-transcript-outcome.html">第 1 课</a>
+      <a href="../lessons/0002-three-grader-types.html">第 2 课</a>
+      <a href="../lessons/0003-capability-vs-regression.html">第 3 课</a>
+      <a href="../lessons/0004-pass-at-k-vs-pass-hat-k.html">第 4 课</a>
+      <a href="../lessons/0005-read-transcript-check-outcome.html">第 5 课</a>
+      <a href="../lessons/0006-frameworks-vs-task-grader-quality.html">第 6 课</a>
+    </p>
+  </main>
+</body>
+</html>

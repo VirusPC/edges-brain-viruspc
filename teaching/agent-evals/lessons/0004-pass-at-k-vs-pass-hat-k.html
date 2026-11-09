@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 4 课 · pass@k vs pass^k</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Lesson 04 · ~5 分钟</p>
+      <h1>多 trial：至少一次 vs 次次都成</h1>
+      <p class="lede">Agent 有随机性。同一 task 多跑几次时：pass@k 问「k 次里有没有一次成」；pass^k 问「k 次是不是全成」。选型看产品能不能接受重试。</p>
+      <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
+      <p class="nav-links">
+        <a href="./0003-capability-vs-regression.html">← 第 3 课</a>
+        <a href="./0005-read-transcript-check-outcome.html">第 5 课 →</a>
+        <a href="../reference/eval-atoms.html">术语速查</a>
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">原文</a>
+      </p>
+    </header>
+
+    <details class="reveal">
+      <summary>先点开：用前三课四个词把场景钉住（延迟复习）</summary>
+      <p>对同一 <strong>task</strong> 跑多次 <strong>trial</strong>。每次留下 <strong>transcript</strong>（也叫 trace / trajectory）与可核对的 <strong>outcome</strong>。grader 判定每次 trial 成败后，再用 pass@k / pass^k 汇总「多试几次」的故事——不是另起一套成功定义。</p>
+    </details>
+
+    <section>
+      <h2>这一课你要带走什么</h2>
+      <p>会按使用场景选指标：容许多次尝试找一个解 → <strong>pass@k</strong>；用户期望每次都稳 → <strong>pass^k</strong>。并记住：这是<strong>同一任务重复 trial</strong>，不是工作流里连续 k 个子步骤。</p>
+    </section>
+
+    <section>
+      <h2>两个指标</h2>
+      <dl class="term-grid">
+        <div class="term">
+          <dt>pass@k <span class="en">至少一次</span></dt>
+          <dd>k 次尝试里<strong>至少有一次</strong>成功的可能性。k 越大通常越高（更多「射门机会」）。coding 常关心 pass@1（第一次就要对）。</dd>
+        </div>
+        <div class="term">
+          <dt>pass^k <span class="en">次次都成</span></dt>
+          <dd>k 次尝试<strong>全部</strong>成功的可能性。k 越大通常越低（一致性更难）。客服等「每次都要可靠」的场景更贴切。</dd>
+        </div>
+      </dl>
+      <div class="callout">
+        <strong>原文对照</strong>
+        k=1 时两者相同（都等于单次成功率）。k 变大后故事相反：pass@k 趋向升高，pass^k 趋向降低。原文写到约 k=10 时，一边接近 100%、一边接近 0%——这是趋势描述，不是你套件的实测分数。
+      </div>
+    </section>
+
+    <section>
+      <h2>假设示例（标清：教学用，非你系统实测）</h2>
+      <div class="example">
+        <h3>若某 task 单次成功率 p=0.8，且各 trial 独立同分布</h3>
+        <ol>
+          <li><strong>pass^3</strong> ≈ 0.8³ = <strong>0.512（51.2%）</strong>——三次全成并不轻松。</li>
+          <li><strong>pass@3</strong> ≈ 1 − (1−0.8)³ = 1 − 0.008 = <strong>0.992（99.2%）</strong>——三次里至少一次成则很容易。</li>
+          <li>原文另有示意：p=0.75、k=3 时 pass^3 ≈ (0.75)³ ≈ 42%。同一简化假设。</li>
+        </ol>
+      </div>
+      <p><strong>局限（必读）</strong>：上面的乘方 / 补概率只在「同一 task、trial 近似独立同分布」时好算。真实评测里，不同 task 难度异质，trial 可能因环境/缓存相关，重试还有时间与金钱成本——<strong>不要把简单公式当成普适估计器</strong>。应用时以你实测的多 trial 结果为准。</p>
+    </section>
+
+    <section>
+      <h2>怎么选</h2>
+      <ul>
+        <li>工具允许「多生成几个候选、有一个过测就行」→ 看 <strong>pass@k</strong>（常先看 pass@1）。</li>
+        <li>用户每次会话都期望成功、不能靠「再试一次」掩盖翻车 → 看 <strong>pass^k</strong>。</li>
+        <li>capability 爬山与 regression 守城都可参考；越在意稳定性，越该盯 pass^k（或多次全过）。</li>
+      </ul>
+      <div class="callout">
+        <strong>易错点</strong>
+        pass^k ≠「一个长工作流连续 k 步都对」。它是：同一 task，重复 k 次 trial，要求这 k 次 outcome 全过。
+      </div>
+    </section>
+
+    <section class="quiz" aria-label="自测">
+      <h2>自测（点选后立即反馈）</h2>
+
+      <div class="q" data-quiz-q data-answer="A"
+        data-ok="正确：pass@k = k 次里至少成功一次；适合容许多次试错找解。"
+        data-bad="再想：pass@k 是至少一次成功，不是次次成功，也不是工作流连续 k 步。">
+        <p class="q-num">Question 1 / 3</p>
+        <p class="q-prompt">哪一句最贴近 pass@k？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>至少一次成功，容许多次试错</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>必须次次成功，要求每次可靠</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>误把连续k步工作流当一指标</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>只信口头汇报忽略trial</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：pass^k = 同一 task 重复 k 次 trial 全部成功；强调一致性。"
+        data-bad="再想：pass^k 不是工作流子步骤，而是同一任务多次 trial 全过。">
+        <p class="q-num">Question 2 / 3</p>
+        <p class="q-prompt">哪一句最贴近 pass^k？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>至少一次成功，容许多次试错</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>必须次次成功，要求每次可靠</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>误把连续k步工作流当一指标</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>只信口头汇报忽略trial</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：k=1 时两者相同；k 变大后 pass@k 升、pass^k 降。"
+        data-bad="再想：原文强调 k=1 一致，k 增大后两者走势相反。">
+        <p class="q-num">Question 3 / 3</p>
+        <p class="q-prompt">关于 k 变大时两者关系，正确的是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>k变大时两者都会一起上升</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>k=1时相同，变大则相反</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>k变大时两者都会一起下降</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>两者其实只是同一定义别名</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    <section class="footer-note">
+      <h2>主文献与下一步</h2>
+      <p class="cite">
+        非确定性与 pass@k / pass^k 定义对齐：
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic, “Demystifying evals for AI agents,” Jan 9, 2026</a>
+        （engineering 页；作者：Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, Jiri De Jonghe）。文中示例数值（如 75%→≈42%）与本课 p=0.8 演算均为示意。
+      </p>
+      <p>有疑问直接问我：例如「我的产品该报 pass@1 还是 pass^3？」。</p>
+      <p class="nav-links">
+        <a href="./0003-capability-vs-regression.html">← 第 3 课</a>
+        <a href="./0005-read-transcript-check-outcome.html">下一课：读 transcript 核 outcome →</a>
+        <a href="../reference/eval-atoms.html">术语速查</a>
+      </p>
+    </section>
+  </main>
+  <script src="../assets/quiz.js"></script>
+</body>
+</html>

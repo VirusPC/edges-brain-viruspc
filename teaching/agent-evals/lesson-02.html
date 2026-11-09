@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 2 课 · 三类 grader：code / model / human</title>
+  <style>
+:root {
+  --bg: #f7f4ef;
+  --paper: #fffdf8;
+  --ink: #1c1917;
+  --muted: #57534e;
+  --line: #e7e0d5;
+  --accent: #9a3412;
+  --accent-soft: #ffedd5;
+  --ok: #166534;
+  --ok-bg: #dcfce7;
+  --bad: #991b1b;
+  --bad-bg: #fee2e2;
+  --code-bg: #f5f0e8;
+  --shadow: 0 1px 0 rgba(28, 25, 23, 0.04), 0 12px 32px rgba(28, 25, 23, 0.06);
+  --radius: 14px;
+  --max: 42rem;
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 18px; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #fff7ed 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #ffedd5 0%, transparent 45%),
+    var(--bg);
+  font-family: var(--font);
+  line-height: 1.65;
+}
+
+.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+header.hero {
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.kicker {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: 1.85rem;
+  line-height: 1.25;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.meta {
+  margin-top: 1rem;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 2.25rem 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p, li { color: var(--ink); }
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.term-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.term {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.9rem;
+}
+
+.term dt {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+}
+
+.term dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.term .en {
+  font-weight: 500;
+  color: var(--ink);
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+.example {
+  background: var(--paper);
+  border: 1px dashed #d6c7b5;
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+}
+
+.example h3 {
+  margin-top: 0;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.example ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.example li { margin: 0.35rem 0; }
+
+.callout {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+  margin: 1.25rem 0;
+  border: 1px solid #fdba74;
+}
+
+.callout strong {
+  font-family: var(--sans);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+code, .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--code-bg);
+  padding: 0.08em 0.35em;
+  border-radius: 0.35em;
+}
+
+.quiz {
+  margin: 1.5rem 0;
+}
+
+.q {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.15rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.q-num {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+
+.q-prompt {
+  margin: 0 0 0.9rem;
+  font-weight: 600;
+}
+
+.options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.opt:hover:not(:disabled) {
+  border-color: #c4b5a5;
+  background: #fffaf3;
+}
+
+.opt:disabled { cursor: default; }
+
+.opt .key {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--code-bg);
+  color: var(--muted);
+}
+
+.opt.correct {
+  border-color: #86efac;
+  background: var(--ok-bg);
+}
+
+.opt.incorrect {
+  border-color: #fca5a5;
+  background: var(--bad-bg);
+}
+
+.feedback {
+  display: none;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.feedback.show { display: block; }
+
+.feedback.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.feedback.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+.footer-note {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cite {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.nav-links {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.nav-links a { margin-right: 0.9rem; }
+
+@media (max-width: 640px) {
+  html { font-size: 17px; }
+  h1 { font-size: 1.55rem; }
+  .page { padding: 1.5rem 1rem 3rem; }
+}
+
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Lesson 02 · ~5 分钟 · 可离线单文件</p>
+      <h1>三类 grader：能确定性就别全靠模型</h1>
+      <p class="lede">grader 给 trial 打分。同一 task 可组合多种：能用代码验的先用代码；模型评分要靠人校准；人是金标准，但贵且慢。</p>
+      <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
+      <p class="nav-links">
+        <a href="lesson-01.html">← 第 1 课</a>
+        <a href="lesson-03.html">第 3 课 →</a>
+        <a href="#glossary">术语速查</a>
+        <a href="https://www.anthropic.com/research/demystifying-evals-for-ai-agents">原文</a>
+      </p>
+    </header>
+
+    <section>
+      <h2>这一课你要带走什么</h2>
+      <p>能说出三种 grader 各自擅长什么，并在订票 / 改文件场景里选<strong>默认优先用哪一种</strong>——尤其记住：能确定性检查时，不要一上来就全交给 LLM judge。</p>
+    </section>
+
+    <section>
+      <h2>grader 是什么</h2>
+      <p><strong>grader</strong>：对 agent 表现某一侧面打分的逻辑。一个 task 可以有多个 grader；每个 grader 里又可有多条 assertion（checks）。它们可以评 <strong>transcript</strong>（过程），也可以评 <strong>outcome</strong>（环境终态）。</p>
+      <p>计分常见三种拼法：全部通过（binary）、加权达阈值（weighted）、或混合（hybrid）。</p>
+    </section>
+
+    <section>
+      <h2>三类 grader</h2>
+      <dl class="term-grid">
+        <div class="term">
+          <dt>code-based <span class="en">代码 / 确定性</span></dt>
+          <dd>字符串匹配、单元测试、静态分析、状态检查、工具调用校验、token/轮数统计。快、便宜、可复现；但对合法变体可能过脆，难评主观质量。</dd>
+        </div>
+        <div class="term">
+          <dt>model-based <span class="en">模型评分</span></dt>
+          <dd>按 rubric / 自然语言断言 / 成对比较 / 参考答案 / 多 judge 共识。灵活、可扩展；非确定性、更贵，<strong>必须与人类校准</strong>。</dd>
+        </div>
+        <div class="term">
+          <dt>human <span class="en">人工</span></dt>
+          <dd>专家评审、抽检、众包、一致性检查。金标准，并用来校准 model grader；贵、慢，难大规模常开。</dd>
+        </div>
+      </dl>
+      <div class="callout">
+        <strong>原文取向</strong>
+        能确定性就用确定性；需要灵活或开放输出时用模型评分；人工用于校验与校准——而不是默认让 LLM 包办一切。
+      </div>
+    </section>
+
+    <section>
+      <h2>例子 A：订票</h2>
+      <div class="example">
+        <h3>同一 task，不同 grader</h3>
+        <ol>
+          <li><strong>code-based</strong>：查库——refunds 是否 processed、tickets 是否 resolved；是否调用了 <span class="mono">verify_identity</span> / <span class="mono">process_refund</span>；轮数是否 ≤ 10。</li>
+          <li><strong>model-based</strong>：rubric 评「是否共情」「解释是否清楚」「答复是否 grounded 在政策工具结果」。</li>
+          <li><strong>human</strong>：抽检难例，核对 LLM rubric 是否与客服主管一致；分歧就改 rubric。</li>
+        </ol>
+      </div>
+      <p>库里没退款成功，却被模型夸「态度很好」——code-based outcome 检查仍应判失败。</p>
+    </section>
+
+    <section>
+      <h2>例子 B：改文件</h2>
+      <div class="example">
+        <h3>修空密码登录漏洞</h3>
+        <ol>
+          <li><strong>code-based</strong>：指定失败测试转绿、既有测试不挂；可选 <span class="mono">ruff</span> / <span class="mono">mypy</span> / 安全扫描；核对安全日志事件。</li>
+          <li><strong>model-based</strong>：rubric 评代码清晰度、是否过度工程、工具使用是否合理。</li>
+          <li><strong>human</strong>：定期抽样，确认「质量」rubric 没漂；别让模型自己给自己发满分。</li>
+        </ol>
+      </div>
+      <p>实践上 coding 常以<strong>单元测试 + 必要的 LLM rubric</strong>为主，其余按需加——不必一次堆满所有 grader。</p>
+    </section>
+
+    <section>
+      <h2>选型口诀</h2>
+      <ul>
+        <li>终态能查库 / 跑测 → 先 <strong>code-based</strong>。</li>
+        <li>语气、共情、开放综合 → <strong>model-based</strong>，并做人机对齐。</li>
+        <li>定金标准、校准、抽查争议 → <strong>human</strong>。</li>
+        <li>少绑死「必须按某顺序点工具」——合法路径不该被脆检查误杀。</li>
+      </ul>
+    </section>
+
+    <section class="quiz" aria-label="自测">
+      <h2>自测（点选后立即反馈）</h2>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：能确定性验证时优先 code-based（快、可复现、好调试）。"
+        data-bad="再想：原文建议能确定性就用代码检查；模型与人工是补充，不是默认首选。">
+        <p class="q-num">Question 1 / 3</p>
+        <p class="q-prompt">修复漏洞且可用单元测试判定对错时，默认应？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>优先用模型评分再偶尔抽查</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>优先写确定性代码检查条件</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>优先请专家每次做人工打分</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>优先只看对话语气是否礼貌</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：model-based grader 非确定性，需要与人类专家校准后才能信任。"
+        data-bad="再想：模型评分灵活，但不能免校准；它也不等于只做状态检查。">
+        <p class="q-num">Question 2 / 3</p>
+        <p class="q-prompt">对「是否共情」这类开放判断用 LLM rubric 时？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>可直接上线且无需任何校准</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>需与人类专家判断对齐校准</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>只能替代全部人工评审工作</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>只适用于检查数据库终态行</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="C"
+        data-ok="正确：人工是金标准，关键用途是校准 model grader、处理主观争议。"
+        data-bad="再想：测试与工具统计更适合 code-based；人工贵，要用在校准与金标准上。">
+        <p class="q-num">Question 3 / 3</p>
+        <p class="q-prompt">human grader 最关键的定位是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>当单元测试已覆盖全部对错</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>当只需统计调用了几次工具</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>当校准模型评分或定金标准</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>当延迟和费用都必须降到零</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    
+    <section id="glossary">
+      <h2>术语速查（本课相关）</h2>
+      <dl class="term-grid">
+        <div class="term card"><dt>grader</dt><dd>对 trial 某侧面打分的逻辑。</dd></div>
+        <div class="term card"><dt>code-based</dt><dd>确定性检查；能用时优先。</dd></div>
+        <div class="term card"><dt>model-based</dt><dd>LLM 评分；需人类校准。</dd></div>
+        <div class="term card"><dt>human</dt><dd>金标准；校准与抽检。</dd></div>
+      </dl>
+    </section>
+
+    <section class="footer-note">
+      <h2>主文献与下一步</h2>
+      <p class="cite">
+        三类 grader 的方法 / 强弱对齐：
+        <a href="https://www.anthropic.com/research/demystifying-evals-for-ai-agents">Anthropic, “Demystifying evals for AI agents,” Jan 9, 2026</a>
+        （作者：Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, Jiri De Jonghe）。
+      </p>
+      <p>有疑问直接问我：例如「这条断言该写成代码还是 rubric？」。</p>
+      <p class="nav-links">
+        <a href="lesson-01.html">← 第 1 课</a>
+        <a href="lesson-03.html">下一课：capability vs regression →</a>
+        <a href="#glossary">术语速查</a>
+      </p>
+    </section>
+  </main>
+  <script>
+(function () {
+  function grade(button) {
+    var q = button.closest("[data-quiz-q]");
+    if (!q || q.getAttribute("data-answered") === "1") return;
+
+    var correct = q.getAttribute("data-answer");
+    var chosen = button.getAttribute("data-choice");
+    var feedback = q.querySelector("[data-feedback]");
+    var okText = q.getAttribute("data-ok") || "正确。";
+    var badText = q.getAttribute("data-bad") || "再想一想。";
+
+    q.setAttribute("data-answered", "1");
+    Array.prototype.forEach.call(q.querySelectorAll("[data-choice]"), function (btn) {
+      btn.disabled = true;
+      var c = btn.getAttribute("data-choice");
+      if (c === correct) btn.classList.add("correct");
+      if (c === chosen && c !== correct) btn.classList.add("incorrect");
+    });
+
+    if (!feedback) return;
+    var isOk = chosen === correct;
+    feedback.className = "feedback show " + (isOk ? "ok" : "bad");
+    feedback.textContent = isOk ? okText : badText;
+  }
+
+  document.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-choice]");
+    if (!btn) return;
+    grade(btn);
+  });
+})();
+
+</script>
+</body>
+</html>
