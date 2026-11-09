@@ -44,6 +44,12 @@
 3. **[Terminal-Bench / Harbor 社区（Discord，公告称约 1k 成员）](https://www.tbench.ai/news/announcement-2-0)**  
    公告写明 Terminal-Bench 社区 Discord；偏 coding/agent harness 与任务质量。Use for: 容器化 coding agent 评测与任务验题经验。（具体 invite 以 tbench/Harbor 站点当前入口为准。）
 
+
+### 本课补充（第 6 课）
+
+- **[Anthropic engineering 同文](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)** — 与 research 路径同文；附录框架列表与「投资任务/grader」。Use for: 框架立场与 Swiss Cheese。
+- **[Harbor Rewardkit · Judge criteria](https://docs.harborframework.com/rewardkit/judge-criteria)** — 声明式 rubric/权重/采样/guard；不替代业务标准与人对齐。Use for: 框架便利层示例。
+
 ## Gaps
 
 - τ2-Bench / BrowseComp / WebArena / OSWorld：主文有提，本轮未逐一深读；需要时可单开抓取。

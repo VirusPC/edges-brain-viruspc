@@ -22,3 +22,4 @@
 - 2026-11-09：用户纠正评分关系链，补 outcome；LR-0008 关系链已吸收进第 5 课；暂停已解除。
 - 2026-11-09：Lesson 05 读 transcript/核 outcome/归因；20–50 标为建议起步；artifacts 发布；不写掌握型 LR。
 - 2026-11-09：用户标记「约 20–50 道简单任务」起步规模值得记，记入 LR-0009。
+- 2026-11-09：Lesson 06 框架 vs 任务/grader 质量；结课闭环；Harbor Rewardkit 仅作便利层例；artifacts + 入库大脑 PR452。答案序列 C/B/D/A。

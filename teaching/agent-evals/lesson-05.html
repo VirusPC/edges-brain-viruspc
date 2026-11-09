@@ -335,7 +335,7 @@ details.reveal[open] summary { margin-bottom: 0.55rem; }
 </style>
 </head>
 <body>
-  <main class="page">
+  <main class="page" id="top">
     <header class="hero">
       <p class="kicker">Lesson 05 · ~5 分钟 · 可离线单文件</p>
       <h1>从小任务起步：先看证据，再谈谁错了</h1>
@@ -343,6 +343,7 @@ details.reveal[open] summary { margin-bottom: 0.55rem; }
       <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
       <p class="nav-links">
         <a href="lesson-04.html">← 第 4 课</a>
+        <a href="lesson-06.html">第 6 课 →</a>
         <a href="#glossary">术语速查</a>
         <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">原文</a>
       </p>
@@ -441,12 +442,9 @@ details.reveal[open] summary { margin-bottom: 0.55rem; }
 
     
     <section id="glossary">
-      <h2>术语速查（本课相关）</h2>
+      <h2>术语速查</h2>
       <dl class="term-grid">
-        <div class="term card"><dt>transcript / outcome</dt><dd>过程记录 vs 环境终态；自述不能代替 outcome。</dd></div>
-        <div class="term card"><dt>grader → score</dt><dd>按规则检查证据得分；不必都用 rubric；可看 transcript 与/或 outcome。</dd></div>
-        <div class="term card"><dt>metric</dt><dd>报告口径：可汇总 score，也可直接测耗时等。</dd></div>
-        <div class="term card"><dt>先证据后归因</dt><dd>分清 Agent / grader / 任务环境；不足则待查。</dd></div>
+        <div class="term card"><dt>先证据后归因</dt><dd>核 outcome、读 transcript，再分 Agent/grader/环境。</dd></div>
       </dl>
     </section>
 
@@ -460,7 +458,8 @@ details.reveal[open] summary { margin-bottom: 0.55rem; }
       <p>有疑问直接问我：例如「这条失败该记 Agent 还是记 grader？」下一课可继续路线图里的题面无歧义 / 环境隔离，或 capability 饱和。</p>
       <p class="nav-links">
         <a href="lesson-04.html">← 第 4 课</a>
-        <a href="#glossary">术语速查 →</a>
+        <a href="lesson-06.html">下一课：框架 vs 任务/grader →</a>
+        <a href="#glossary">术语速查</a>
       </p>
     </section>
   </main>

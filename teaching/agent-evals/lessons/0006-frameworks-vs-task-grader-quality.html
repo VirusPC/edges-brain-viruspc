@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 6 课 · 框架加速，质量在任务与 grader</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Lesson 06 · ~5 分钟 · 结课</p>
+      <h1>框架只是加速器：异常时查哪里？</h1>
+      <p class="lede">选 Harbor / Langfuse / Inspect 等 <strong>evaluation harness</strong>（跑评测的端到端基础设施）能省工程量，但原文写明：框架再好，也只和你放进去的 <strong>task</strong> 与 <strong>grader</strong> 一样好。</p>
+      <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
+      <p class="nav-links">
+        <a href="./0005-read-transcript-check-outcome.html">← 第 5 课</a>
+        <a href="../reference/eval-atoms.html">术语速查</a>
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">原文</a>
+      </p>
+    </header>
+
+    <section>
+      <h2>这一课你要带走什么</h2>
+      <p>看到「分数怪了」时，能判断更像<strong>框架/基础设施</strong>、<strong>任务设计</strong>还是<strong>grader</strong>问题，并说出下一步查什么——而不是先换框架碰运气。</p>
+    </section>
+
+    <section>
+      <h2>原文怎么说框架</h2>
+      <p>附录列举 Harbor、Braintrust、LangSmith、Langfuse、Arize 等，方便离线评测与/或可观测。关键原意是：框架可加速与标准化，但<strong>它们只和你跑的评测任务一样好</strong>；宜尽快选一个贴合工作流的，然后把精力投在高质量用例与 grader 上。<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">（Anthropic 2026-01-09）</a></p>
+      <p>文中<strong>没有</strong>点名 Anthropic 内部固定使用哪一个开源框架；评价「一个 agent」时评的是 agent harness + 模型，与选用哪个 eval 框架是两件事。</p>
+      <div class="example">
+        <h3>例：Harbor Rewardkit（已核验文档，非「银弹」）</h3>
+        <p><a href="https://docs.harborframework.com/rewardkit/judge-criteria">官方 Judge criteria</a> 支持 TOML 声明式 criterion（binary / likert / numeric / rubric levels）、权重与聚合、多次采样取中位、guard 防提示注入等——这是<strong>便利层</strong>。它不替你决定该评什么业务能力，也不自动保证与人类专家对齐；对齐仍要靠抽样人工与读 transcript。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>三种异常 → 先查哪一层（假设场景）</h2>
+      <div class="example">
+        <ol>
+          <li><strong>分数很高，线上用户狂投诉</strong> → 优先查 <em>任务是否偏离真实用法</em>、覆盖是否偏科；补真实失败/工单题；自动评测外加生产监控与人工抽检（Swiss Cheese）。</li>
+          <li><strong>只换框架，同一套题分数大变</strong>（假设） → 先对齐隔离环境、超时、默认 grader 聚合与日志；再比对同一 trial 的 transcript / outcome，区分基础设施噪声与真正能力差。</li>
+          <li><strong>套件几乎全过、分数不再动</strong> → 警惕 capability <em>饱和</em>：加难题，或把高通题 <em>graduate</em> 进 regression；并读 transcript，确认不是 grader 过松。</li>
+        </ol>
+      </div>
+      <p>无论哪一层，都要<strong>读 transcript、核 outcome</strong>；失败应显得公平。分数不涨时，先怀疑 eval（题面歧义、刚性判分、harness 约束），再骂模型。</p>
+    </section>
+
+    <section>
+      <h2>六课闭环（间隔检索也可用）</h2>
+      <div class="callout">
+        <strong>链条</strong>
+        task → 多次 trial → 每次留下 transcript + outcome → grader（代码断言与/或带 rubric 的模型裁判；可评过程与/或终态）→ score → metric（可汇总 score，也可直接测耗时/token）· 另建 capability（低 pass 爬山）与 regression（近 100% 守城）· 多 trial 用 pass@k / pass^k · 起步约 20–50 道简单任务是建议而非充分样本量。
+      </div>
+      <p>自动评测只是一层；原文还强调生产监控、A/B、用户反馈与人工复核组合，像 Swiss Cheese 叠防。</p>
+      <p>实践社区（可选）：<a href="https://latent.space/wiki/evals/">Latent Space · Evals</a>、<a href="https://www.reddit.com/r/AIEval">r/AIEval</a>。</p>
+    </section>
+
+    <section class="quiz" aria-label="自测">
+      <h2>自测（含前课间隔检索）</h2>
+
+      <div class="q" data-quiz-q data-answer="C"
+        data-ok="正确：原文强调框架加速，但质量取决于你投入的任务与 grader。"
+        data-bad="再想：附录明确框架只和评测任务一样好；要投资用例与判分，而非指望换框架自动变强。">
+        <p class="q-num">Question 1 / 4</p>
+        <p class="q-prompt">关于评测框架，更符合原文立场的是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>换框架后分数自然等于真能力提升</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>接入框架后就不必再读过程记录了</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>框架可加速质量取决于题目与判分</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>框架会替你决定该评哪些业务能力</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：分数与用户体感脱节时，先查任务是否贴真实用法，并抽样人工复核。"
+        data-bad="再想：这更像任务覆盖/真实用法问题，不是先怪框架算术或删掉回归套件。">
+        <p class="q-num">Question 2 / 4</p>
+        <p class="q-prompt">离线套件分数很高，但用户持续投诉「不好用」。优先？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>先认定是框架厂商把指标算错了啊</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>先查题是否贴真实用法并抽样人工</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>先把所有代码判分改成口头自述分</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>先删掉回归套件只留能力难题题库</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="D"
+        data-ok="正确：接近饱和时要加难题，或把高通题毕业进 regression，并继续读 transcript。"
+        data-bad="再想：饱和意味着缺少改进信号；换框架或停读记录解决不了题库过时。">
+        <p class="q-num">Question 3 / 4</p>
+        <p class="q-prompt">capability 套件长期接近满分、分数几乎不动。较稳妥的是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>说明模型已完美无需任何后续评测</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>应立刻更换评测框架以刷新分数板</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>应停止阅读过程记录以免浪费时间</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>应加难题或把高通题迁入回归套件</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="A"
+        data-ok="正确：outcome（结果态）=环境终态；transcript（轨迹）=过程记录。pass^k=同任务多次 trial 全成；20–50 是建议起步规模。"
+        data-bad="再想：回扣第1/4课——outcome≠transcript；pass^k≠工作流连续k步；20–50 非充分样本量硬下限。">
+        <p class="q-num">Question 4 / 4 · 间隔检索</p>
+        <p class="q-prompt">下列哪一项术语对应正确？（结果态≈outcome，轨迹≈transcript，帽子k≈pass^k）</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>结果态是环境终态，轨迹是过程记录</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>轨迹是环境终态，结果态是过程记录</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>帽子k指同任务多次试验必须全部成</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>二十至五十是唯一充分样本量硬下限</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    <section class="footer-note">
+      <h2>主文献与结课</h2>
+      <p class="cite">
+        框架附录与「投资任务/grader」、读 transcript、饱和、Swiss Cheese 组合：
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic, “Demystifying evals for AI agents,” Jan 9, 2026</a>。
+        Harbor 声明式 judge：<a href="https://docs.harborframework.com/rewardkit/judge-criteria">Rewardkit Judge criteria</a>。异常三例为教学假设。
+      </p>
+      <p>六课到此收束。仍可问我具体异常该查哪一层；或到社区对照别人的实践。</p>
+      <p class="nav-links">
+        <a href="./0005-read-transcript-check-outcome.html">← 第 5 课</a>
+        <a href="../index.html">课程目录</a>
+        <a href="../reference/eval-atoms.html">术语速查 →</a>
+      </p>
+    </section>
+  </main>
+  <script src="../assets/quiz.js"></script>
+</body>
+</html>
