@@ -306,3 +306,21 @@ code, .mono {
   h1 { font-size: 1.55rem; }
   .page { padding: 1.5rem 1rem 3rem; }
 }
+
+
+details.reveal {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.05rem;
+  margin: 1rem 0;
+}
+details.reveal summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-weight: 700;
+  color: var(--accent);
+  list-style: none;
+}
+details.reveal summary::-webkit-details-marker { display: none; }
+details.reveal[open] summary { margin-bottom: 0.55rem; }

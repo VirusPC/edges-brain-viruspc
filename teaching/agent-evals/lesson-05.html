@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 5 课 · 读 transcript、核 outcome、再归因</title>
+  <style>
+:root {
+  --bg: #f7f4ef;
+  --paper: #fffdf8;
+  --ink: #1c1917;
+  --muted: #57534e;
+  --line: #e7e0d5;
+  --accent: #9a3412;
+  --accent-soft: #ffedd5;
+  --ok: #166534;
+  --ok-bg: #dcfce7;
+  --bad: #991b1b;
+  --bad-bg: #fee2e2;
+  --code-bg: #f5f0e8;
+  --shadow: 0 1px 0 rgba(28, 25, 23, 0.04), 0 12px 32px rgba(28, 25, 23, 0.06);
+  --radius: 14px;
+  --max: 42rem;
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 18px; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #fff7ed 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #ffedd5 0%, transparent 45%),
+    var(--bg);
+  font-family: var(--font);
+  line-height: 1.65;
+}
+
+.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+header.hero {
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.kicker {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: 1.85rem;
+  line-height: 1.25;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.meta {
+  margin-top: 1rem;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 2.25rem 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p, li { color: var(--ink); }
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.term-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.term {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.9rem;
+}
+
+.term dt {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+}
+
+.term dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.term .en {
+  font-weight: 500;
+  color: var(--ink);
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+.example {
+  background: var(--paper);
+  border: 1px dashed #d6c7b5;
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+}
+
+.example h3 {
+  margin-top: 0;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.example ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.example li { margin: 0.35rem 0; }
+
+.callout {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+  margin: 1.25rem 0;
+  border: 1px solid #fdba74;
+}
+
+.callout strong {
+  font-family: var(--sans);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+code, .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--code-bg);
+  padding: 0.08em 0.35em;
+  border-radius: 0.35em;
+}
+
+.quiz {
+  margin: 1.5rem 0;
+}
+
+.q {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.15rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.q-num {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+
+.q-prompt {
+  margin: 0 0 0.9rem;
+  font-weight: 600;
+}
+
+.options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.opt:hover:not(:disabled) {
+  border-color: #c4b5a5;
+  background: #fffaf3;
+}
+
+.opt:disabled { cursor: default; }
+
+.opt .key {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--code-bg);
+  color: var(--muted);
+}
+
+.opt.correct {
+  border-color: #86efac;
+  background: var(--ok-bg);
+}
+
+.opt.incorrect {
+  border-color: #fca5a5;
+  background: var(--bad-bg);
+}
+
+.feedback {
+  display: none;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.feedback.show { display: block; }
+
+.feedback.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.feedback.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+.footer-note {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cite {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.nav-links {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.nav-links a { margin-right: 0.9rem; }
+
+@media (max-width: 640px) {
+  html { font-size: 17px; }
+  h1 { font-size: 1.55rem; }
+  .page { padding: 1.5rem 1rem 3rem; }
+}
+
+
+details.reveal {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.05rem;
+  margin: 1rem 0;
+}
+details.reveal summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-weight: 700;
+  color: var(--accent);
+  list-style: none;
+}
+details.reveal summary::-webkit-details-marker { display: none; }
+details.reveal[open] summary { margin-bottom: 0.55rem; }
+
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Lesson 05 · ~5 分钟 · 可离线单文件</p>
+      <h1>从小任务起步：先看证据，再谈谁错了</h1>
+      <p class="lede">分数掉了先别骂模型。读 <strong>transcript</strong>（过程记录，也叫 trace / trajectory），核 <strong>outcome</strong>（环境终态），再分清：Agent 真败了、grader 误判了，还是任务/环境本身有问题。</p>
+      <p class="meta">主文献：Anthropic · Demystifying evals for AI agents · 2026-01-09</p>
+      <p class="nav-links">
+        <a href="lesson-04.html">← 第 4 课</a>
+        <a href="#glossary">术语速查</a>
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">原文</a>
+      </p>
+    </header>
+
+    <section>
+      <h2>这一课你要带走什么</h2>
+      <p>会按「先证据、后归因」处理一次失败 trial：核对 outcome → 阅读 transcript 与 grader 给出的 <strong>score</strong>（一次评分结果）→ 才判断责任落在 Agent、grader，还是 task / 环境。</p>
+    </section>
+
+    <section>
+      <h2>关系链（半句版）</h2>
+      <p><strong>task</strong>（一条用例）跑多次 <strong>trial</strong>（一次尝试）。每次留下 transcript 与 outcome。<strong>grader</strong>（判分逻辑）按规则检查这些证据，得到 score；规则可以是代码断言，也可以是带 <strong>rubric</strong>（事先写好的评分细则）的模型裁判——不是所有 grader 都用 rubric，也不是只看 transcript。<strong>metric</strong>（你要报告的测量量）可以汇总多次 score（如通过率），也可以直接测耗时、token 等。</p>
+    </section>
+
+    <section>
+      <h2>从小规模真实任务开始</h2>
+      <p>原文建议早期用大约 <strong>20–50</strong> 道简单任务起步：改动效应大，小集合往往就够看见信号。这是<strong>实践建议</strong>，不是「统计上已充分」的样本量证明，也不是只能收失败案例。</p>
+      <ul>
+        <li>优先：真实失败、支持工单、缺陷跟踪里的问题。</li>
+        <li>也来：你发版前本来就在手工检查的行为、用户常见路径。</li>
+        <li>题面要无歧义；grader 检查的内容应能从题面读出。有参考解可证明题可解、grader 配得对。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>假设示例：退款（标清：教学虚构）</h2>
+      <div class="example">
+        <h3>Task：给已认证用户退款 ≤100</h3>
+        <ol>
+          <li><strong>Trial A</strong>：transcript 里 agent 说「已退款」；查库 <span class="mono">refunds.status</span> 仍是 pending → outcome 未达成。先别信自述。</li>
+          <li>继续读 transcript：从未调用 <span class="mono">process_refund</span> → 更像 <strong>Agent 失败</strong>（漏动作）。</li>
+          <li><strong>Trial B</strong>（假设）：库里已 processed，路径合法但与出题人预想的工具顺序不同；只允许固定顺序的代码 grader 判挂 → 更像 <strong>grader 过脆误杀</strong>。</li>
+          <li><strong>Trial C</strong>（假设）：多 trial 都因沙箱内存耗尽在同一步崩；彼此不独立 → 更像 <strong>环境/题面问题</strong>，不宜当成能力差。</li>
+        </ol>
+      </div>
+      <p>原文亦提醒：失败应显得公平；分数不涨时，要确信是 agent，而不是 eval（含题面歧义、刚性评分、harness 约束）。例如 CORE-Bench 曾因评分过脆等从约 42% 修到约 95%——说明先修 eval 再骂模型。</p>
+    </section>
+
+    <section>
+      <h2>诊断口诀</h2>
+      <ul>
+        <li>① 核 outcome（库、测试、文件）——自述不能代替状态。</li>
+        <li>② 读 transcript：做了什么、漏了什么、是否被合法创新。</li>
+        <li>③ 对照 grader：规则是否过脆、题面是否歧义、环境是否串扰。</li>
+        <li>④ 证据不足 → 标「待查」，不要硬判。</li>
+      </ul>
+    </section>
+
+    <section class="quiz" aria-label="自测">
+      <h2>自测：三个诊断题（点选即时反馈）</h2>
+
+      
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：20–50 是原文建议的起步规模，不是普适充分样本量，也不是只能收失败。"
+        data-bad="再想：原文写 20–50 道简单任务是很好的开始；也可来自手工检查与工单，并非唯一硬性统计标准。">
+        <p class="q-num">Question 1 / 3</p>
+        <p class="q-prompt">文章里的「约 20–50 道简单任务」应如何理解？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>任何领域唯一正确必须达标数</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>原文建议起步规模非充分证明</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>只能收集失败案例的硬性上限</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>功效分析算出的最小必要样本</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="A"
+        data-ok="正确：先核 outcome，再读 transcript，才能归因；口头汇报不能代替库状态。"
+        data-bad="再想：退款是否成功看库表 outcome；先证据后归因，不要直接换模型或盲信自述。">
+        <p class="q-num">Question 2 / 3</p>
+        <p class="q-prompt">Agent 说「已退款」，但库中退款仍 pending。你应？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>先核对库状态再读过程后归因</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>直接断定模型太差必须立刻换</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>直接相信口头汇报算已经成功</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>先改提示词且不再查看任何迹</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="C"
+        data-ok="正确：outcome 已对而路径合法时，刚性顺序检查更像 grader 误杀，应改规则而非先骂 Agent。"
+        data-bad="再想：证据指向合法路径被脆检查拒绝时，优先怀疑 grader/题面，且证据不足不要硬判。">
+        <p class="q-num">Question 3 / 3</p>
+        <p class="q-prompt">库状态已正确，仅因工具顺序与预期不同被判挂。更合理的是？</p>
+        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>一定是智能体完全不会做该题</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>证据不足也可先硬判环境故障</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>更像评分规则过脆误杀合法解</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>应忽略终态只信模型口头自述</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    
+    <section id="glossary">
+      <h2>术语速查（本课相关）</h2>
+      <dl class="term-grid">
+        <div class="term card"><dt>transcript / outcome</dt><dd>过程记录 vs 环境终态；自述不能代替 outcome。</dd></div>
+        <div class="term card"><dt>grader → score</dt><dd>按规则检查证据得分；不必都用 rubric；可看 transcript 与/或 outcome。</dd></div>
+        <div class="term card"><dt>metric</dt><dd>报告口径：可汇总 score，也可直接测耗时等。</dd></div>
+        <div class="term card"><dt>先证据后归因</dt><dd>分清 Agent / grader / 任务环境；不足则待查。</dd></div>
+      </dl>
+    </section>
+
+    <section class="footer-note">
+      <h2>主文献与下一步</h2>
+      <p class="cite">
+        起步规模、读 transcript、公平失败、修 eval 再解读分数等对齐：
+        <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic, “Demystifying evals for AI agents,” Jan 9, 2026</a>
+        （engineering；作者：Mikaela Grace, Jeremy Hadfield, Rodrigo Olivares, Jiri De Jonghe）。退款三 trial 为教学假设。
+      </p>
+      <p>有疑问直接问我：例如「这条失败该记 Agent 还是记 grader？」下一课可继续路线图里的题面无歧义 / 环境隔离，或 capability 饱和。</p>
+      <p class="nav-links">
+        <a href="lesson-04.html">← 第 4 课</a>
+        <a href="#glossary">术语速查 →</a>
+      </p>
+    </section>
+  </main>
+  <script>
+(function () {
+  function grade(button) {
+    var q = button.closest("[data-quiz-q]");
+    if (!q || q.getAttribute("data-answered") === "1") return;
+
+    var correct = q.getAttribute("data-answer");
+    var chosen = button.getAttribute("data-choice");
+    var feedback = q.querySelector("[data-feedback]");
+    var okText = q.getAttribute("data-ok") || "正确。";
+    var badText = q.getAttribute("data-bad") || "再想一想。";
+
+    q.setAttribute("data-answered", "1");
+    Array.prototype.forEach.call(q.querySelectorAll("[data-choice]"), function (btn) {
+      btn.disabled = true;
+      var c = btn.getAttribute("data-choice");
+      if (c === correct) btn.classList.add("correct");
+      if (c === chosen && c !== correct) btn.classList.add("incorrect");
+    });
+
+    if (!feedback) return;
+    var isOk = chosen === correct;
+    feedback.className = "feedback show " + (isOk ? "ok" : "bad");
+    feedback.textContent = isOk ? okText : badText;
+  }
+
+  document.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-choice]");
+    if (!btn) return;
+    grade(btn);
+  });
+})();
+
+</script>
+</body>
+</html>

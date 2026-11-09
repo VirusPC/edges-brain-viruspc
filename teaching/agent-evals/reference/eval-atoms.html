@@ -38,7 +38,7 @@
     <dl class="term-grid">
       <div class="term card">
         <dt>grader <span class="en">评分器</span></dt>
-        <dd>对表现某侧面打分的逻辑；可含多条 assertion / check；可评 transcript 或 outcome。</dd>
+        <dd>对表现某侧面打分的逻辑；可含多条 assertion / check；可评 transcript 或 outcome；产出 score；不必都用 rubric。</dd>
       </div>
       <div class="term card">
         <dt>code-based grader</dt>
@@ -54,15 +54,61 @@
       </div>
     </dl>
 
+    
+    
+    <h2>诊断失败 trial</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>先证据后归因</dt>
+        <dd>先核 outcome、再读 transcript 与 score，再分 Agent / grader / 任务环境；证据不足不硬判。</dd>
+      </div>
+      <div class="term card">
+        <dt>起步 20–50</dt>
+        <dd>原文建议的早期简单任务规模；非充分样本量证明；来源含真实失败与手工/工单场景。</dd>
+      </div>
+    </dl>
+
+    <h2>多 trial 指标</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>pass@k</dt>
+        <dd>同一 task 的 k 次 trial 中至少一次成功。k↑ 通常升。常关心 pass@1。</dd>
+      </div>
+      <div class="term card">
+        <dt>pass^k</dt>
+        <dd>同一 task 的 k 次 trial 全部成功。k↑ 通常降。强调一致性，不是工作流连续 k 步。</dd>
+      </div>
+    </dl>
+    <p class="cite">乘方示意仅在独立同分布简化下；真实套件以实测为准。</p>
+
+    <h2>两套套件</h2>
+    <dl class="term-grid">
+      <div class="term card">
+        <dt>capability eval</dt>
+        <dd>测「还能做什么」；起步低 pass，用来爬山。</dd>
+      </div>
+      <div class="term card">
+        <dt>regression eval</dt>
+        <dd>测「以前会的还会吗」；应接近 100%，防回退。</dd>
+      </div>
+      <div class="term card">
+        <dt>graduate</dt>
+        <dd>高 pass 的 capability 题迁入 regression，持续守住。</dd>
+      </div>
+    </dl>
+
     <div class="callout">
       <strong>可验证成功</strong>
-      优先检查 outcome；transcript / trace 用来解释 why。能代码验就别只靠模型自评。
+      优先检查 outcome；transcript / trace 用来解释 why。能代码验就别只靠模型自评。爬山与守城要分开建套件。
     </div>
 
     <p class="cite">术语对齐 Anthropic, <em>Demystifying evals for AI agents</em>, 2026-01-09。</p>
     <p class="nav-links">
       <a href="../lessons/0001-task-trial-transcript-outcome.html">第 1 课</a>
       <a href="../lessons/0002-three-grader-types.html">第 2 课</a>
+      <a href="../lessons/0003-capability-vs-regression.html">第 3 课</a>
+      <a href="../lessons/0004-pass-at-k-vs-pass-hat-k.html">第 4 课</a>
+      <a href="../lessons/0005-read-transcript-check-outcome.html">第 5 课</a>
     </p>
   </main>
 </body>
