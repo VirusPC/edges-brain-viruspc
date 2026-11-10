@@ -8,4 +8,5 @@
 - [2026\-09\-09\-\-agent\-clients\-ux/INDEX.md](<2026-09-09--agent-clients-ux/INDEX.md>)
 - [2026\-09\-09\-\-project\-memory/INDEX.md](<2026-09-09--project-memory/INDEX.md>)
 - [2026\-09\-13\-\-site\-and\-content/INDEX.md](<2026-09-13--site-and-content/INDEX.md>)
+- [dsh](<2026-11-09--dsh/INDEX.md>) — DeepSeek Harness（dsh）学习：课程在 `teaching/dsh/`，笔记在本 Project；个人大脑 `--super` 材料面
 <!-- edges-entries-local:end -->
