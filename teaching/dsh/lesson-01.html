@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第 1 课 · 先看清 dsh，再安全跑通 web（便携单文件）</title>
+  <style>
+:root {
+  --bg: #f7f4ef;
+  --paper: #fffdf8;
+  --ink: #1c1917;
+  --muted: #57534e;
+  --line: #e7e0d5;
+  --accent: #9a3412;
+  --accent-soft: #ffedd5;
+  --ok: #166534;
+  --ok-bg: #dcfce7;
+  --bad: #991b1b;
+  --bad-bg: #fee2e2;
+  --code-bg: #f5f0e8;
+  --shadow: 0 1px 0 rgba(28, 25, 23, 0.04), 0 12px 32px rgba(28, 25, 23, 0.06);
+  --radius: 14px;
+  --max: 42rem;
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 18px; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #fff7ed 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #ffedd5 0%, transparent 45%),
+    var(--bg);
+  font-family: var(--font);
+  line-height: 1.65;
+}
+
+.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+header.hero {
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.kicker {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: 1.85rem;
+  line-height: 1.25;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.meta {
+  margin-top: 1rem;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 2.25rem 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+p, li { color: var(--ink); }
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.term-grid {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.term {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.9rem;
+}
+
+.term dt {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 0.2rem;
+}
+
+.term dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.term .en {
+  font-weight: 500;
+  color: var(--ink);
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+.example {
+  background: var(--paper);
+  border: 1px dashed #d6c7b5;
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+}
+
+.example h3 {
+  margin-top: 0;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.example ol {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.example li { margin: 0.35rem 0; }
+
+.callout {
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+  margin: 1.25rem 0;
+  border: 1px solid #fdba74;
+}
+
+.callout strong {
+  font-family: var(--sans);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+code, .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--code-bg);
+  padding: 0.08em 0.35em;
+  border-radius: 0.35em;
+}
+
+.quiz {
+  margin: 1.5rem 0;
+}
+
+.q {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.15rem 1.2rem;
+  margin: 1rem 0;
+}
+
+.q-num {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+
+.q-prompt {
+  margin: 0 0 0.9rem;
+  font-weight: 600;
+}
+
+.options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.opt:hover:not(:disabled) {
+  border-color: #c4b5a5;
+  background: #fffaf3;
+}
+
+.opt:disabled { cursor: default; }
+
+.opt .key {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--code-bg);
+  color: var(--muted);
+}
+
+.opt.correct {
+  border-color: #86efac;
+  background: var(--ok-bg);
+}
+
+.opt.incorrect {
+  border-color: #fca5a5;
+  background: var(--bad-bg);
+}
+
+.feedback {
+  display: none;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.feedback.show { display: block; }
+
+.feedback.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.feedback.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+.footer-note {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cite {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.nav-links {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.nav-links a { margin-right: 0.9rem; }
+
+@media (max-width: 640px) {
+  html { font-size: 17px; }
+  h1 { font-size: 1.55rem; }
+  .page { padding: 1.5rem 1rem 3rem; }
+}
+
+
+details.reveal {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.05rem;
+  margin: 1rem 0;
+}
+details.reveal summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-weight: 700;
+  color: var(--accent);
+  list-style: none;
+}
+details.reveal summary::-webkit-details-marker { display: none; }
+details.reveal[open] summary { margin-bottom: 0.55rem; }
+
+/* Architecture diagram */
+.arch {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre;
+  overflow-x: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+  color: var(--ink);
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+.checklist li {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin: 0.55rem 0;
+  padding: 0.65rem 0.8rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.checklist .box {
+  flex: 0 0 auto;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.15rem;
+  border: 1.5px solid #a8a29e;
+  border-radius: 4px;
+  background: #fff;
+}
+.tag {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+.tag-obs { background: #e0e7ff; color: #3730a3; }
+.tag-src { background: #dcfce7; color: #166534; }
+.tag-mig { background: #ffedd5; color: #9a3412; }
+.tag-unc { background: #fef3c7; color: #92400e; }
+
+
+.toc {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin: 1rem 0 1.5rem;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+}
+.toc ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.toc li { margin: 0.25rem 0; }
+.section-label {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.35rem;
+}
+.risk {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: var(--radius);
+  padding: 0.95rem 1.1rem;
+  margin: 1.25rem 0;
+}
+.risk strong { font-family: var(--sans); display: block; margin-bottom: 0.25rem; color: #9f1239; }
+
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Lesson 01 · 约 15–20 分钟 · 可分小节阅读</p>
+      <h1>先看清 dsh，再安全跑通 web</h1>
+      <p class="lede">本课先建立全貌：DeepSeek Harness（简称 <strong>dsh</strong>）是什么、它与「模型本身 / 终端客户端」有何不同、一条命令如何选中 <strong>profile</strong>（配置档）而不是选模型。然后带你从空文件夹走完整操作路径，并解释端口占用这类真实连锁报错。</p>
+      <p class="meta">版本锚点 <code>@deepseek-ai/dsh@0.2.2-rc.1</code>（标签 <code>dsh-v0.2.2-rc.1</code>）· 主文献：
+        <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/README.zh.md">README.zh</a> ·
+        <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/docs/user/guide/index.zh.md">Web UI 指南</a> ·
+        <a href="reference/dsh-atoms.html">术语速查</a>
+      </p>
+      <p class="nav-links">
+        <a href="index.html">课程首页</a>
+        <a href="MISSION.md">MISSION</a>
+        <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/docs/architecture.zh.md">架构文档</a>
+      </p>
+    </header>
+
+    <nav class="toc" aria-label="本课目录">
+      <strong>本课小节</strong>
+      <ol>
+        <li><a href="#win">你要带走什么</a></li>
+        <li><a href="#what">dsh 是什么（全貌）</a></li>
+        <li><a href="#profiles">五类随附 profile 给谁用</a></li>
+        <li><a href="#mental">心智图：web → 插件装配 → Cordis → pi-ai</a></li>
+        <li><a href="#lab">完整操作路径（空文件夹）</a></li>
+        <li><a href="#risk">权限、费用与「空目录≠沙箱」</a></li>
+        <li><a href="#eaddr">真实案例：端口占用连锁失败</a></li>
+        <li><a href="#quiz">自测</a></li>
+      </ol>
+    </nav>
+
+    <section id="win">
+      <p class="section-label">Part A · 目标</p>
+      <h2>这一课你要带走什么</h2>
+      <p>读完并按清单自行操作后，你应能：</p>
+      <ul>
+        <li>用完整中文解释：dsh 是一套<strong>可插拔的 agent harness（智能体运行时框架）</strong>，不是某一个大模型，也不是「换皮版 Claude Code」。</li>
+        <li>说明 <code>dsh web</code> 选中的是名为 <code>web</code> 的 <strong>profile</strong>（配置档 / 组装），随后才在浏览器里配置模型。</li>
+        <li>从空目录走通：启动 → 打开带启动令牌（token）的 URL →（可选）填密钥 → 小文件任务 → 自己核对产物 → 正确退出。</li>
+        <li>遇到 <code>EADDRINUSE …:3080</code> 时，知道这是 webserver 绑定失败，其它插件「等待服务」往往是<strong>连锁结果</strong>，并会用 <code>lsof</code> / 换端口处理（不盲目 <code>pkill</code>）。</li>
+      </ul>
+      <div class="callout">
+        <strong>证据标签（贯穿本课）</strong>
+        <span class="tag tag-obs">观察事实</span>本会话在你 Mac 上测到的现象；
+        <span class="tag tag-src">源码结论</span>官方文档或标签源码；
+        <span class="tag tag-mig">迁移建议</span>给你自己基于 Pi 的 agent 的提示；
+        <span class="tag tag-unc">未证实</span>聊天里说过但本课不采信的说法。
+      </div>
+      <p>本课<strong>不</strong>代你调用付费模型，也<strong>不</strong>收集 API key（应用程序接口密钥）。清单里的密钥步骤由你自己完成。</p>
+    </section>
+
+    <section id="what">
+      <p class="section-label">Part B · 全貌</p>
+      <h2>dsh 是什么</h2>
+      <p><span class="tag tag-src">源码结论</span>
+        <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/README.zh.md">官方 README</a>写明：
+        DeepSeek Harness（命令名 <code>dsh</code>）是 DeepSeek AI 开发的<strong>开源 agent harness</strong>。
+        它构建于「<strong>一切皆插件</strong>」架构，由 <strong>Cordis</strong>（一套把服务、事件、可逆副作用组织成插件树的框架）驱动。
+        当前处于<strong>开发者预览</strong>：会有破坏兼容性的变更；运行前应阅读
+        <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/SAFETY.zh.md">SAFETY.zh.md</a>。
+      </p>
+
+      <h3>三个容易混在一起的东西</h3>
+      <dl class="term-grid">
+        <div class="term">
+          <dt>大模型（LLM）</dt>
+          <dd>例如 DeepSeek 的聊天模型本身：负责推理与生成。它不知道你仓库里有什么文件，除非有人把工具与上下文接给它。</dd>
+        </div>
+        <div class="term">
+          <dt>客户端 / 界面</dt>
+          <dd>你用来看对话、点按钮的外壳：浏览器页面、将来可能的桌面窗、或脚本读到的标准输出。界面不等于「整套能力」。</dd>
+        </div>
+        <div class="term">
+          <dt>Harness（本课的主角）</dt>
+          <dd>把「模型 + 工具 + 会话日志 + 权限/沙箱 + 多种界面」装配成可运行产品的那一层。dsh 就是这类 harness；换 profile，等于换一套装配。</dd>
+        </div>
+      </dl>
+
+      <h3>为什么用起来不像终端里的 Claude Code / Codex</h3>
+      <p>Claude Code、Codex 一类工具，开箱就是<strong>固定形态的终端编码助手</strong>：一条命令进入交互，产品边界相对封闭。</p>
+      <p>dsh 的公开入口则强调：唯一受支持的 Node 启动器是 <code>dsh</code>，它启动的是<strong>具名 profile</strong>——有序的插件<strong>组合包（bundle）</strong> patch 层，再叠你自己的覆盖。
+        SDK（软件开发工具包）、ACP（Agent Client Protocol，面向自动化客户端的协议）也都是 profile，而不是另起一套公开二进制。
+        （见 <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/apps/cli/README.zh.md">apps/cli/README.zh.md</a>。）</p>
+      <p>因此你的第一感觉往往是：「怎么先起了一个网页？」——因为默认推荐的日常入口是 <code>web</code> 这套浏览器 GUI（图形用户界面），而不是内置终端 TUI（文本用户界面）。</p>
+      <p><span class="tag tag-obs">观察事实</span>在你本机，<code>dsh tui --help</code> 曾报 profile <code>tui</code> 不存在。
+        <span class="tag tag-src">源码结论</span>CLI 文档写 <code>dsh --profile tui …</code> 时，明确加了「assuming the tui profile is installed」。
+        本课<strong>不</strong>据此断言「官方有可安装的 TUI 插件包」；只说明：开箱路径请走 <code>web</code>。</p>
+
+      <h3>一条命令选中的是 profile，不是模型</h3>
+      <p>例如：</p>
+      <ul>
+        <li><code>dsh web</code> 或 <code>dsh --profile web</code> → 启动 <code>$DSH_HOME/profiles/web</code> 这套组装（浏览器 GUI）。</li>
+        <li><code>dsh --profile headless "……"</code> → 启动 headless 组装，跑完一个任务后退出。</li>
+      </ul>
+      <p>模型提供方、API key、默认模型，是组装启动<strong>之后</strong>，在 Web 的「设置 → 模型」里配置的另一件事
+        （或由环境变量 / patch 提供）。把「启动哪套产品形态」和「对话用哪个模型」揉成一个开关，是另一类产品的习惯；dsh 刻意拆开。</p>
+
+      <h3>一个 profile 里到底有什么</h3>
+      <p><span class="tag tag-src">源码结论</span>按架构文档与 CLI README，一个 profile 目录大致包含：</p>
+      <ul>
+        <li><code>package.json</code>：其中的 <code>dsh.profile.bundles</code> 列出<strong>有序</strong>组合包；也可声明树外插件依赖。</li>
+        <li><code>cordis.patch.yml</code>：你（或设置页）对该 profile 的覆盖层。</li>
+        <li>安装后的 <code>node_modules</code>：树外插件落在这里。</li>
+      </ul>
+      <p>配置树从空根叠起：各 bundle 的 patch → profile 的 <code>cordis.patch.yml</code> → home 级 <code>$DSH_HOME/cordis.patch.yml</code> → 命令行 <code>--patch</code>。
+        默认 Harness home：显式配置 → 环境变量 <code>$DSH_HOME</code> → <code>~/.dsh</code>
+        （包 <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/packages/util/home-paths/README.zh.md">dsh-home-paths</a>）。</p>
+      <p><span class="tag tag-unc">未证实（已纠正）</span>「主配置就是 <code>~/.dsh/settings.yaml</code>」——过时。
+        模型页写入 <code>profiles/&lt;name&gt;/cordis.patch.yml</code>；密钥在 <code>$DSH_HOME/.credentials.yaml</code>。
+        若仍有旧版 <code>settings.yaml</code>，Settings 插件会导入一次并改名为 <code>settings.yaml.imported</code>。</p>
+    </section>
+
+    <section id="profiles">
+      <h2>五类随附 profile：给谁用、典型场景</h2>
+      <p><span class="tag tag-src">源码结论</span>发行版随附模板：<code>web</code>、<code>headless</code>、<code>sdk</code>、<code>sdk-minimal</code>、<code>acp</code>。
+        名称 <code>desktop</code> 保留给 Electron 桌面壳，npm CLI 拒绝替你启动它。
+        （架构文档 / CLI README。）</p>
+
+      <div class="card">
+        <h3><code>web</code> — 浏览器里的日常编码助手</h3>
+        <p><strong>给谁：</strong>人坐在电脑前，想点选工作区、看对话、改设置、偶尔审批工具调用。</p>
+        <p><strong>典型场景：</strong><code>dsh web</code> 后打开打印的 URL，在空练习目录里改文件、跑命令。</p>
+        <p><strong>非场景：</strong>CI 流水线里无人值守跑一条任务（更适合 headless）；给外部程序用 JSON-RPC 驱动（更适合 sdk）。</p>
+        <p>组合上通常是共享的 <code>dsh-base</code> + <code>dsh-web-app</code>（浏览器应用层）。</p>
+      </div>
+
+      <div class="card">
+        <h3><code>headless</code> — 一次性任务，跑完就退</h3>
+        <p><strong>给谁：</strong>脚本、CI、只想在终端拿最终答案的人。</p>
+        <p><strong>典型场景：</strong><code>dsh --profile headless "run the tests"</code>；可 <code>--json</code> 输出事件流。</p>
+        <p><strong>非场景：</strong>需要长时间盯着 GUI 多轮点选时——官方建议改用 web。</p>
+        <p><strong>注意（避免过度绝对化）：</strong>headless「主要边界」是每次调用跑一个任务、没有交互式后续；
+          但监督进程仍可用 <code>--session-id</code> 在<strong>同一段已持久化对话</strong>上继续唤醒，并用 <code>--json</code> 读进度。
+          它默认不开监听端口、任务结束后进程退出；这不等于「完全不能做任何会话控制」。</p>
+        <p>凭据方面：随附 headless 默认禁用托管凭据存储，更依赖环境 / <code>.env</code>；与 web 的「设置页存 key」习惯不同。</p>
+      </div>
+
+      <div class="card">
+        <h3><code>sdk</code> — 给程序用的完整 JSON-RPC 服务</h3>
+        <p><strong>给谁：</strong>要用 TypeScript / Python SDK 把 dsh 嵌进自己工具链的开发者。</p>
+        <p><strong>典型场景：</strong><code>dsh --profile sdk</code>，客户端经标准输入输出上的 JSON-RPC 驱动，直到关闭。</p>
+        <p><strong>非场景：</strong>只想本机开网页聊两句（用 web 即可）。</p>
+        <p>它建立在共享 <code>dsh-base</code> 之上，因此带上完整产品基础（设置、凭据、更完整工具清单等——以 base 为准）。</p>
+      </div>
+
+      <div class="card">
+        <h3><code>sdk-minimal</code> — 刻意变瘦的 SDK 组合</h3>
+        <p><span class="tag tag-src">源码结论</span>
+          <a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/packages/bundle/sdk-minimal/README.zh.md">sdk-minimal README</a>：
+          这是<strong>独立</strong>组合包，提供完整显式 Cordis 配置树，并<strong>排除</strong> <code>dsh-base</code>、Web、settings、托管凭据、遥测、文本文件工具、workspace 指令、skill、jobs 与 subagent。
+          默认工具侧重持久 shell、<code>read_image</code>、<code>working_directory</code>；danger-full-access 策略下 shell 可改进程能访问的路径，必须配合隔离 workspace。</p>
+        <p><strong>给谁：</strong>需要小型、边界清晰的跨平台 coding agent 运行时，且能接受「少很多产品功能」的 SDK 调用方。</p>
+        <p><strong>非场景：</strong>你还想要 settings UI、托管凭据、完整默认工具——请改用 <code>sdk</code>。</p>
+      </div>
+
+      <div class="card">
+        <h3><code>acp</code> — Agent Client Protocol 自动化通道</h3>
+        <p><strong>给谁：</strong>通过 ACP 标准输入输出对接的自动化客户端。</p>
+        <p><strong>典型场景：</strong><code>dsh --profile acp</code>，服务直到断开。</p>
+        <p><strong>非场景：</strong>人类日常点选编码（用 web）。</p>
+      </div>
+
+      <details class="reveal">
+        <summary>进阶：组合包名字速查（本课不必背）</summary>
+        <p>安装目录会解析诸如
+          <code>@deepseek-ai/dsh-base</code>、<code>@deepseek-ai/dsh-web-app</code>、<code>@deepseek-ai/dsh-headless</code>、
+          <code>@deepseek-ai/dsh-sdk-app</code>、<code>@deepseek-ai/dsh-sdk-minimal</code>、<code>@deepseek-ai/dsh-acp-app</code>。
+          之后的「profile 装配」课再拆 patch 如何按 id 替换整段 config。</p>
+      </details>
+    </section>
+
+    <section id="mental">
+      <h2>心智图：从 web 连到插件装配、Cordis 与 pi-ai</h2>
+      <p>第一课只搭骨架，不灌实现细节。请先建立这张图：</p>
+      <pre class="arch" aria-label="心智示意图">你输入:  dsh web
+            │  ① 启动器只解析「要哪个 profile」
+            ▼
+   ~/.dsh/profiles/web/     （或 $DSH_HOME/...）
+   · bundles 有序列表
+   · cordis.patch.yml
+            │  ② Cordis Loader 按层挂载插件
+            ▼
+   ┌─────────────────────────────────────┐
+   │  dsh-base（模型适配、工具、会话、沙箱…） │
+   │  + dsh-web-app（浏览器 GUI / 端口）     │
+   │  + 你的 patch / 设置页写入               │
+   └─────────────────────────────────────┘
+            │
+            ├─③→ 浏览器 UI @ 127.0.0.1:3080
+            │      设置→模型 / 选工作区 / 会话
+            │
+            └─④→ LLM 适配器之一：dsh-llm-pi-ai
+                   （依赖 @earendil-works/pi-ai）
+                   把「harness 的生成请求」路由到各提供方
+                   另有直连 DeepSeek 的适配器可并存</pre>
+      <p><span class="tag tag-src">源码结论</span>
+        仓内包 <code>@deepseek-ai/dsh-llm-pi-ai</code> 依赖 <code>@earendil-works/pi-ai</code>，用于多提供方 / OpenAI 兼容网关路由。
+        这与你自己 vendored 的 Pi（<code>pi-agent-core</code> / <code>pi-ai</code> + <code>PiTurnRunner</code>）<strong>同属 Pi 生态思路</strong>，但<strong>包名与边界不同</strong>——迁移课再对照，本课只需知道：模型适配也是可替换插件。</p>
+      <p><span class="tag tag-mig">迁移建议</span>抄 dsh 时，先问「这是装配层（profile/bundle）还是模型适配层（llm-*）还是界面层（web-app）」；不要把三层捏成一个开关。</p>
+    </section>
+
+    <section id="lab">
+      <p class="section-label">Part C · 操作</p>
+      <h2>完整操作路径（请你自己做）</h2>
+      <p>下面用明确示例路径。若你的家目录不同，只替换用户名，保持「专用空目录」原则。</p>
+
+      <h3>0. 前置</h3>
+      <ul class="checklist">
+        <li><span class="box" aria-hidden="true"></span><span>已安装 <code>@deepseek-ai/dsh@0.2.2-rc.1</code>，Node.js ≥ 24.9。终端执行 <code>dsh --version</code> 核对。</span></li>
+        <li><span class="box" aria-hidden="true"></span><span>本课不代你付费调用；是否填写 DeepSeek API key 由你决定。</span></li>
+      </ul>
+
+      <h3>1. 准备空练习目录</h3>
+      <div class="example">
+        <h3>示例（macOS / zsh 或 bash）</h3>
+        <pre class="arch" style="margin:0">mkdir -p "$HOME/tmp/dsh-sandbox-lesson01"
+cd "$HOME/tmp/dsh-sandbox-lesson01"
+pwd   # 确认你在空目录里</pre>
+      </div>
+      <p>调用目录会成为默认 workspace 根的参考；但 Web UI 仍要求你在页面里<strong>显式选择工作区</strong>。空目录用于降低误改真项目的风险——它<strong>不是</strong>安全沙箱（见下一节）。</p>
+
+      <h3>2. 前台启动 web</h3>
+      <div class="example">
+        <pre class="arch" style="margin:0"># 仍在 $HOME/tmp/dsh-sandbox-lesson01 中
+dsh web
+# 或：dsh web --no-open    # 只起服务，不自动开浏览器</pre>
+      </div>
+      <p>默认监听 <code>http://127.0.0.1:3080</code>。终端会打印一行带<strong>启动令牌（token）</strong>的完整 URL。
+        <strong>不要</strong>把真实 token 贴到聊天、截图发群或提交到 git。本课只用占位写法示意：</p>
+      <pre class="arch">http://127.0.0.1:3080/?token=&lt;启动时打印的令牌&gt;</pre>
+      <p><span class="tag tag-src">源码结论</span>公开部署文档说明：带 token 的入口把令牌换成签名会话 cookie；无令牌的直访会被拒绝。这是预期行为。</p>
+      <p><strong>前台运行 vs 残留后台：</strong>你在当前终端前台跑 <code>dsh web</code> 时，关掉该终端或按 <code>Ctrl+C</code> 应结束该进程。
+        若曾用另一终端启动、或进程被放到后台、或上次异常退出后仍占用 3080，就会留下「幽灵服务」——下一节专门讲。</p>
+
+      <h3>3. 打开打印出的 URL</h3>
+      <ul class="checklist">
+        <li><span class="box" aria-hidden="true"></span><span>用终端打印的<strong>完整</strong>链接打开（自动打开失败时手动粘贴）。</span></li>
+        <li><span class="box" aria-hidden="true"></span><span>若只打开 <code>http://127.0.0.1:3080/</code> 而无 token，被拒绝是正常的。</span></li>
+      </ul>
+
+      <h3>4. 选择工作区</h3>
+      <p>在 UI 中选择 / 添加工作区，指向刚才的 <code>$HOME/tmp/dsh-sandbox-lesson01</code>。未选中前，会话输入框不可用（Web UI 指南）。</p>
+
+      <h3>5. （可选）配置模型——不把 key 发给任何人</h3>
+      <p>打开<strong>设置 → 模型</strong>，在 DeepSeek 卡片自行粘贴 API key 并保存。
+        密钥只写存储；页面之后只看到脱敏描述。也可在启动前自行 <code>export DEEPSEEK_API_KEY=…</code>（勿写入本课程文件）。</p>
+      <p>若本课你只想验证「装配能起来」，看到 UI 且能选中工作区即可，不必发真实任务。</p>
+
+      <h3>6. 安全的小文件任务（可选，会产生模型费用）</h3>
+      <div class="example">
+        <h3>建议提示词</h3>
+        <p>请在当前工作区创建一个文件 <code>hello-dsh.txt</code>，文件内容只有一行：<code>dsh-web-ok</code>。不要修改其它路径。</p>
+        <h3>预期产物</h3>
+        <p>工作区出现文件 <code>$HOME/tmp/dsh-sandbox-lesson01/hello-dsh.txt</code>，内容为 <code>dsh-web-ok</code>（允许末尾换行）。</p>
+        <h3>你自己检查（不要只听 agent 口头说「写好了」）</h3>
+        <pre class="arch" style="margin:0">cd "$HOME/tmp/dsh-sandbox-lesson01"
+ls -la hello-dsh.txt
+cat hello-dsh.txt</pre>
+      </div>
+      <p>若 UI 弹出审批，先读命令与路径再允许。</p>
+
+      <h3>7. 退出与再启动</h3>
+      <ul>
+        <li>在跑着 <code>dsh web</code> 的终端按 <code>Ctrl+C</code>，等待进程退出。</li>
+        <li>再启动时重新执行 <code>dsh web</code>；新的启动令牌会出现在新的打印 URL 里——旧 token 不要复用。</li>
+        <li>会话数据在 Harness home 下持久化；练习目录里的 <code>hello-dsh.txt</code> 是你的工作区文件，删不删由你决定。</li>
+      </ul>
+    </section>
+
+    <section id="risk">
+      <h2>权限、费用与「空目录 ≠ 沙箱」</h2>
+      <div class="risk">
+        <strong>请认真对待</strong>
+        <ul>
+          <li><strong>文件与命令：</strong>agent 可能读写工作区、跑 shell。错误输出、错误批准或恶意插件都可能改文件、泄凭据。官方 SAFETY：沙箱与审批可降低风险，但不保证隔离。</li>
+          <li><strong>空目录只是习惯防护：</strong>它降低你「一上手就指到家目录 / 真仓库」的概率，但<strong>不是</strong>虚拟机级沙箱。工具一旦拿到更宽权限，仍可能影响其它路径。</li>
+          <li><strong>模型费用：</strong>每次真实对话与工具循环都可能计费。本课的小任务故意极短；不需要时不要反复重试。</li>
+          <li><strong>令牌与 URL：</strong>打印的启动 URL 含进程凭据，只给你自己用。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="eaddr">
+      <h2>真实案例：3080 被占用时的连锁失败</h2>
+      <p><span class="tag tag-obs">观察事实</span>（来自你本机排障经验，已抽象成模式）：当 <code>127.0.0.1:3080</code> 已被占用时，webserver 会以类似 <code>EADDRINUSE</code> 的错误启动失败。
+        日志里还可能出现其它插件「等待某服务」的警告——这通常是因为 required / 依赖的 web 服务没起来，属于<strong>同一故障的连锁结果</strong>，不要当成两个互不相关的独立 bug 分别「乱修」。</p>
+
+      <h3>在 Mac 上先看清是谁占用了端口</h3>
+      <div class="example">
+        <pre class="arch" style="margin:0">lsof -nP -iTCP:3080 -sTCP:LISTEN
+# 记下 COMMAND / PID / 用户
+ps -p &lt;上面看到的PID&gt; -o pid,ppid,user,start,command</pre>
+      </div>
+      <p>用 <code>ps</code> 确认那是不是你之前没关掉的 <code>dsh</code> / node。只有确认是自己的残留进程时，才在<strong>该终端</strong>用你平时结束前台任务的方式结束它，或针对<strong>已辨认的 PID</strong>做一次有意识的终止。
+        <strong>不要</strong>教也不会建议无差别的 <code>pkill node</code> / 乱杀进程——可能误伤其它项目。</p>
+      <p>说明：此前一次排障中，残留进程曾占用 3080，主助手在确认身份后已结束该进程并核对端口释放。本课<strong>不</strong>要求你对任何历史 PID 再执行一次杀死；只把「先辨认、再处理」当作教训。</p>
+
+      <h3>或者：换端口启动</h3>
+      <p><span class="tag tag-src">源码结论</span>web-app 文档示例支持 <code>--port</code>，例如 <code>dsh --profile web --no-open --port 8080</code>。
+        <span class="tag tag-obs">观察事实</span>本机 <code>dsh web --help</code> 亦展示端口相关选项；可用：</p>
+      <pre class="arch">dsh web --port 3081
+# 或让系统分配空闲端口（help 支持 --port 0 时）：
+dsh web --port 0</pre>
+      <p>换端口后，务必打开<strong>新打印</strong>的带 token URL（主机仍是 127.0.0.1，端口以打印为准）。</p>
+    </section>
+
+    <section id="quiz" class="quiz" aria-label="自测">
+      <h2>自测（点选后立即反馈）</h2>
+
+      <div class="q" data-quiz-q data-answer="B"
+        data-ok="正确：dsh web 首先装载名为 web 的 profile（插件组合 + 补丁层）并拉起 Web UI；模型要在设置里另配或用环境变量提供。"
+        data-bad="再想一层：命令行选中的是 profile（产品装配形态），不是「默认对话模型」本身。模型配置发生在组装启动之后。">
+        <p class="q-num">Question 1 / 3</p>
+        <p class="q-prompt">运行 <code>dsh web</code> 时，按官方语义，你首先完成的是哪一件事？</p>
+                <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>选定某一个默认对话模型条目</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>装载网页配置档中的插件组合</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>自动安装官方终端界面套件包</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>清空本机全部会话记录与密钥</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="C"
+        data-ok="正确：设置→模型会把提供商配置写入当前 profile 目录下的 cordis.patch.yml；API 密钥进入 .credentials.yaml，页面只保留引用。"
+        data-bad="再想：现行主写入面是 profiles/&lt;profile&gt;/cordis.patch.yml，不是笼统的 ~/.dsh/settings.yaml，也不是浏览器临时内存。">
+        <p class="q-num">Question 2 / 3</p>
+        <p class="q-prompt">在 Web「设置 → 模型」保存提供商配置后，这些配置主要持久化到哪里？</p>
+                        <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>系统全局目录中的主机配置文件</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>当前仓库根目录的依赖锁定文件</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>该配置档目录中的补丁配置文件</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>浏览器进程内部的临时内存对象</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+
+      <div class="q" data-quiz-q data-answer="A"
+        data-ok="正确：webserver 因端口占用启动失败后，其它插件等待依赖服务是连锁现象。应先用 lsof/ps 辨认占用者，或换 --port；不要当成两个无关 bug，也不要无差别 pkill。"
+        data-bad="再想：EADDRINUSE 先打在监听端口上；随后的「等待服务」常常是因为 web 栈没就绪，属于同一故障链。">
+        <p class="q-num">Question 3 / 3</p>
+        <p class="q-prompt">若启动 web 时出现 <code>EADDRINUSE 127.0.0.1:3080</code>，同时有插件报「等待服务」，最合理的理解是？</p>
+                <div class="options">
+          <button type="button" class="opt" data-choice="A"><span class="key">A</span><span>端口占用致网页服务失败并连锁等待</span></button>
+          <button type="button" class="opt" data-choice="B"><span class="key">B</span><span>视为两套互不相关缺陷同时独立爆发</span></button>
+          <button type="button" class="opt" data-choice="C"><span class="key">C</span><span>无差别结束本机全部节点相关进程组</span></button>
+          <button type="button" class="opt" data-choice="D"><span class="key">D</span><span>说明官方禁止使用浏览器作为入口层</span></button>
+        </div>
+        <div class="feedback" data-feedback></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>建议精读</h2>
+      <ol>
+        <li><a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/docs/user/guide/index.zh.md">使用 Web UI</a></li>
+        <li><a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/docs/architecture.zh.md">架构：Profile 与组合包</a>（只读开头两节即可）</li>
+        <li><a href="https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.1/SAFETY.zh.md">安全说明</a></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>下一课预告</h2>
+      <p>使用 / 安全与会话（审批、工作区、token 生命周期）→ profile 装配细节 → Cordis 服务生命周期 → 最小插件 → 迁到你的 Pi agent 的取舍。</p>
+    </section>
+
+    <p class="footer-note">有不清楚的地方，直接问我（你的教师 agent）。本课<strong>不</strong>声称你已完成清单练习；你做完某一步可以告诉我，再记 learning-record。</p>
+  </main>
+  <script>
+(function () {
+  function grade(button) {
+    var q = button.closest("[data-quiz-q]");
+    if (!q || q.getAttribute("data-answered") === "1") return;
+
+    var correct = q.getAttribute("data-answer");
+    var chosen = button.getAttribute("data-choice");
+    var feedback = q.querySelector("[data-feedback]");
+    var okText = q.getAttribute("data-ok") || "正确。";
+    var badText = q.getAttribute("data-bad") || "再想一想。";
+
+    q.setAttribute("data-answered", "1");
+    Array.prototype.forEach.call(q.querySelectorAll("[data-choice]"), function (btn) {
+      btn.disabled = true;
+      var c = btn.getAttribute("data-choice");
+      if (c === correct) btn.classList.add("correct");
+      if (c === chosen && c !== correct) btn.classList.add("incorrect");
+    });
+
+    if (!feedback) return;
+    var isOk = chosen === correct;
+    feedback.className = "feedback show " + (isOk ? "ok" : "bad");
+    feedback.textContent = isOk ? okText : badText;
+  }
+
+  document.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("[data-choice]");
+    if (!btn) return;
+    grade(btn);
+  });
+})();
+
+</script>
+</body>
+</html>
