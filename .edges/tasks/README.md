@@ -69,6 +69,7 @@
 - [补充重要邮件提醒\_routine](<backlog/2026-11-03--%E8%A1%A5%E5%85%85%E9%87%8D%E8%A6%81%E9%82%AE%E4%BB%B6%E6%8F%90%E9%86%92-routine/INDEX.md>) — 在个人大脑补一条 important\-email\-reminder，定时扫重要邮件并提醒。
 - [现场配置\_minigtr\_断电恢复后自动开机](<backlog/2026-11-08--%E7%8E%B0%E5%9C%BA%E9%85%8D%E7%BD%AE-minigtr-%E6%96%AD%E7%94%B5%E6%81%A2%E5%A4%8D%E5%90%8E%E8%87%AA%E5%8A%A8%E5%BC%80%E6%9C%BA/INDEX.md>) — 断电后来电仍停机会让 minigtr 远程不可用。在维护窗口把来电自动开机设好，并在安全窗口验证；未测则标明待验证。
 - [把\_OpenAI\_Developer\_Blog\_补进\_weekly\_ai\_blogs\_digest](<backlog/2026-11-09--%E6%8A%8A-OpenAI-Developer-Blog-%E8%A1%A5%E8%BF%9B-weekly-ai-blogs-digest/INDEX.md>) — weekly\-ai\-blogs\-digest 已订 OpenAI News RSS，但未覆盖 Developer Blog。按对话核定的方式用列表页补上这一源，不把站点 rss.xml 当博客订阅，并保留原 News RSS。
+- [把\_edges\_的\_super\_材料面识别收成一条简单原则并按它重构\_pr\_120\_涉及的\_skill](<backlog/2026-11-10--%E6%8A%8A-edges-%E7%9A%84-super-%E6%9D%90%E6%96%99%E9%9D%A2%E8%AF%86%E5%88%AB%E6%94%B6%E6%88%90%E4%B8%80%E6%9D%A1%E7%AE%80%E5%8D%95%E5%8E%9F%E5%88%99%E5%B9%B6%E6%8C%89%E5%AE%83%E9%87%8D%E6%9E%84-PR-120-%E6%B6%89%E5%8F%8A%E7%9A%84-skill/INDEX.md>) — edges \#120 的 skill 把 super 材料面识别写成了分散规则。定稿一条简单原则，并按它收口 CLI 与相关 skill。
 <!-- edges-entries-local:end -->
 
 <!-- edges-migrated-task-default:start -->

@@ -8,5 +8,5 @@
 <!-- edges-entries-local:start -->
 ## 本层内容
 
-- 暂无条目。
+- [写 skill 和规则只写核心原则，越具体越优先](<feedback_write_core_principles_specific_first/INDEX.md>) — 写 skill、入库规则和说明时打开：只写做什么的核心原则；规则越少越好；越具体的设置越优先。
 <!-- edges-entries-local:end -->
