@@ -148,10 +148,9 @@ assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/2026-11-06\/"/);
 assert.match(aiNewsList, /2026-10-30～11-05/);
 assert.match(aiNewsList, /交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab/);
 assert.match(aiNewsList, /2026-10-23 AI Coding 资讯/);
-assert.match(aiNewsList, /class="tag">旧版</);
-assert.match(aiNewsList, /76 篇/);
+assert.match(aiNewsList, /MiniMax M3\.1 Flash 与 Code Mini App/);
 assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/rss\.xml"/);
-assert.doesNotMatch(aiNewsList, /2026-11-06 AI Coding 资讯[\s\S]{0,80}class="tag">旧版/);
+assert.doesNotMatch(aiNewsList, /class="tag">旧版/);
 
 const latestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-06/index.html'), 'utf8');
 assert.match(latestIssue, /<h1>\s*2026-11-06 AI Coding 资讯\s*<\/h1>/);
@@ -175,11 +174,16 @@ assert.ok(arenaSrc, 'latest issue is missing the arena image');
 const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 exists(arenaRel);
 
-const legacyIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
-assert.match(legacyIssue, /<h1>\s*2026-10-23 AI Coding 资讯<span class="tag">旧版<\/span>\s*<\/h1>/);
-assert.match(legacyIssue, /覆盖 2026-10-16～10-22/);
-assert.match(legacyIssue, /文章总结列表/);
-assert.match(legacyIssue, /class="toc"/);
+const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
+assert.match(backfillIssue, /<h1>\s*2026-10-23 AI Coding 资讯\s*<\/h1>/);
+assert.doesNotMatch(backfillIssue, /旧版/);
+assert.match(backfillIssue, /覆盖 2026-10-16～10-22/);
+assert.match(backfillIssue, /一、本周关键词/);
+assert.doesNotMatch(backfillIssue, /文章总结列表/);
+const backfillToc = backfillIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+assert.ok(backfillToc, '2026-10-23 is missing the chapter toc');
+assert.match(backfillToc[0], /二、模型进展/);
+assert.match(backfillIssue, /alt="LLM Arena Top15 2026-10-22"/);
 
 const aiFeed = fs.readFileSync(path.join(dist, 'ai-news/rss.xml'), 'utf8');
 assert.match(aiFeed, /<title>AI Coding 资讯<\/title>/);
