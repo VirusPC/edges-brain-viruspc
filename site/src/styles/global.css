@@ -235,7 +235,12 @@ h2 {
   text-decoration: none;
 }
 
-.toc a:hover { color: var(--note); }
+.toc a:hover,
+.toc a.is-current {
+  color: var(--note);
+}
+
+.toc a.is-current { font-weight: 600; }
 
 .post.has-toc {
   display: grid;

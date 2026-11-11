@@ -162,7 +162,12 @@ assert.ok(latestToc, 'latest issue is missing the chapter toc');
 for (const heading of ['〇、薅羊毛', '一、本周关键词', '二、模型进展', '三、项目开源', '四、国内进展', '五、国际进展']) {
   assert.match(latestToc[0], new RegExp(heading));
 }
-assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####/);
+assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current/);
+assert.match(latestIssue, /IntersectionObserver/);
+assert.match(latestIssue, /is-current/);
+const plainNote = fs.readFileSync(path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/index.html'), 'utf8');
+assert.doesNotMatch(plainNote, /IntersectionObserver/);
+assert.doesNotMatch(aiNewsList, /IntersectionObserver/);
 assert.match(latestIssue, /aria-current="page"[^>]*>\s*AI News\s*</);
 assert.match(latestIssue, /alt="LLM Arena Top15 2026-11-06"/);
 const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-11-06"[^>]*src="([^"]+)"/)
