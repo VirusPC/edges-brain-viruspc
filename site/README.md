@@ -26,7 +26,6 @@
 | `/posts`、`/posts/…` | 成稿列表与正文。衬线正文；Markdown 脚注 `[^1]` 在宽屏排到页边，窄屏点序号展开 |
 | `/notes`、`/notes/…` | 日期笔记，与成稿同一套纸面版式。列表按年与月份分组 |
 | `/projects`、`/projects/…` | 顶层项目分节，节内是同一套日期加标题的文档列表。Markdown 有正文页；PDF 链到 GitHub |
-| `/archive` | 成稿按年归档 |
 | `/about` | 占位，作者以后在本目录改 |
 | `/rss.xml` | posts 与日期笔记 |
 | `/404.html` | 未找到 |

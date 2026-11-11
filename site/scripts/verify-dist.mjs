@@ -35,7 +35,6 @@ exists('rss.xml');
 exists('posts/index.html');
 exists('notes/index.html');
 exists('projects/index.html');
-exists('archive/index.html');
 exists('about/index.html');
 exists('ai-news/index.html');
 exists('ai-news/rss.xml');
@@ -191,8 +190,15 @@ assert.equal((aiFeed.match(/<item>/g) || []).length, aiNewsFiles.length);
 
 assert.match(home, /href="\/edges-brain-viruspc\/ai-news\/"/);
 assert.doesNotMatch(home, /ai-news\/2026-/);
-const archive = fs.readFileSync(path.join(dist, 'archive/index.html'), 'utf8');
-assert.doesNotMatch(archive, /ai-news\/2026-/);
+assert.equal(rels.includes('archive/index.html'), false);
+const archiveHref = /\/edges-brain-viruspc\/archive\/?/;
+for (const rel of rels.filter((item) => item.endsWith('.html') || item.endsWith('.xml'))) {
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(dist, rel), 'utf8'),
+    archiveHref,
+    `${rel} still links to /archive`,
+  );
+}
 
 const about = fs.readFileSync(path.join(dist, 'about/index.html'), 'utf8');
 assert.match(about, /亲手修订后发表的成稿/);
