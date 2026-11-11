@@ -17,17 +17,17 @@ import { formatISODate, noteDateFromName } from '../src/lib/select.mjs';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const aiNewsRoot = path.join(repoRoot, 'ai-news');
 
-const legacyCounts = {
-  '2026-08-14-ai-coding-news.md': 83,
-  '2026-08-21-ai-coding-news.md': 93,
-  '2026-08-28-ai-coding-news.md': 132,
-  '2026-09-04-ai-coding-news.md': 146,
-  '2026-09-18-ai-coding-news.md': 56,
-  '2026-09-25-ai-coding-news.md': 94,
-  '2026-10-02-ai-coding-news.md': 82,
-  '2026-10-09-ai-coding-news.md': 70,
-  '2026-10-16-ai-coding-news.md': 63,
-  '2026-10-23-ai-coding-news.md': 76,
+const backfillKeywords = {
+  '2026-08-14-ai-coding-news.md': 'GPT-5.6 Sol 的 Ultrafast，DeepSeek V4 Pro',
+  '2026-08-21-ai-coding-news.md': 'Cursor 并入 SpaceX',
+  '2026-08-28-ai-coding-news.md': 'GPT-5.6 进入 Kiro',
+  '2026-09-04-ai-coding-news.md': 'GPT-6 Astra，Fable 5.1 进入 Devin',
+  '2026-09-18-ai-coding-news.md': 'Claude Fable 5.1 发布',
+  '2026-09-25-ai-coding-news.md': 'GPT-6 Sol 与 Luna，Claude Opus 5.5',
+  '2026-10-02-ai-coding-news.md': 'GPT-6.1 Sol 与 dots',
+  '2026-10-09-ai-coding-news.md': 'GPT-6 面向所有人，Claude Haiku 5.5',
+  '2026-10-16-ai-coding-news.md': 'Gemini 4 Argon 进入 Antigravity',
+  '2026-10-23-ai-coding-news.md': 'MiniMax M3.1 Flash，DeepSeek V4.1 Flash',
 };
 
 test('issue files are the dated digests, not the readme or charts', () => {
@@ -62,11 +62,12 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   const previous = fs.readFileSync(path.join(aiNewsRoot, '2026-10-30-ai-coding-news.md'), 'utf8');
   assert.equal(summaryLine(previous, false), 'Cursor 扩展供应链后门');
 
-  for (const [name, count] of Object.entries(legacyCounts)) {
+  for (const [name, keyword] of Object.entries(backfillKeywords)) {
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
-    assert.equal(isLegacyIssue(body), true, name);
-    assert.equal(countArticles(body), count, name);
-    assert.equal(summaryLine(body, true), `${count} 篇`, name);
+    assert.equal(isLegacyIssue(body), false, name);
+    assert.equal(summaryLine(body, false), keyword, name);
+    assert.match(body, /本期于 2026-11 按新版格式补录。/);
+    assert.equal(countArticles(body), 0, name);
   }
 });
 
