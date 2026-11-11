@@ -2,19 +2,23 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 没有落到这个窗口的可核验快照（Wayback 未收录该栏目），不把后来的帖子写进来。窗口内也没有核对到面向开发者的额度或订阅优惠。
+本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。
+
+#### Devin：Gemini 3.7 Flash 两周五折
+
+Devin 桌面端和 CLI 已可用 Gemini 3.7 Flash。RSS 称其达到 Claude Sonnet 5 一档的表现、价格不到一半，并在两周内五折。额度与截止日期以 Devin 原文为准。
+
+> 原始链接：[Gemini 3.7 Flash is now available in Devin](https://devin.ai/blog/gemini-37-flash)（发布日 2026-08-13）
 
 <br/>
 
 ## 一、本周关键词
 
-Cursor 云端构建提速，Firetiger 并入
+GPT-5.6 Sol 的 Ultrafast，DeepSeek V4 Pro
 
-Gemini 3.7 Flash 进入 Antigravity，Zed 做多人协作环境 Delta
+Grok 4.6 与 Grok Bot，Antigravity 自定义 Agent
 
-Claude Code 默认 Auto，Amp 的全局插件与「不靠 PR 过 SOC 2」
-
-Agent 调用里只有少数轮次需要前沿模型
+Claude Code 默认 Auto，Amp 的全局插件
 
 <br/>
 
@@ -22,19 +26,31 @@ Agent 调用里只有少数轮次需要前沿模型
 
 #### 整体排名
 
-LLM Arena（Hugging Face 数据集 `lmarena-ai/leaderboard-dataset`，`text_style_control` / overall，榜单发布日 **2026-08-12**，落在本窗口内）。相对上一份快照（2026-08-11），Top-15 里 Claude Opus 的 thinking 条目换成了 high，Gemini 3.6 Flash 换成了 Flash High，没有新的模型族进入，故图中不标 NEW。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+LLM Arena（Hugging Face `lmarena-ai/leaderboard-dataset` 全量文件，`text_style_control` / overall，榜单发布日 **2026-08-12**，落在本窗口内）。相对 2026-08-11，Top-15 里是 thinking / Flash 换成 high 变体，没有新的模型族进入，图中不标 NEW。当前脚本只拉 `latest`，这份历史榜来自全量 parquet。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
 
 ![LLM Arena Top15 2026-08-12](llm-arena-top15-2026-08-12-marked.png)
 
-#### Gemini 3.7 Flash 进入 Google Antigravity
+#### GPT-5.6 Sol 的 Ultrafast
 
-Antigravity 引入 Gemini 3.7 Flash，页面将其称为面向编码与 Agent 的高智能、偏实用模型。编码 Agent 选型应把它和同窗口的路由实验放在一起看，而不是只看聊天榜。
+OpenAI News RSS：Ultrafast 是新的 API 服务档，把 GPT-5.6 Sol 加速到最多 14 倍，由 Cerebras 提供，输出最高约每秒 750 token。日期取自 RSS。
 
-> 原始链接：[Gemini 3.7 Flash in Google Antigravity](https://antigravity.google/blog/gemini-3-7-flash-in-google-antigravity)（发布日 2026-08-13）
+> 原始链接：[Previewing Ultrafast mode](https://openai.com/index/previewing-ultrafast)（发布日 2026-08-13）
+
+#### DeepSeek V4 Pro 正式版
+
+深度求索公众号（Wechat2RSS）：V4 Pro 正式版已在 App、网页和 API 更新。RSS 称 Agent 能力明显增强，生产环境里的提升更明显；API 模型名不变。
+
+> 原始链接：[DeepSeek-V4-Pro 正式版上线](https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ==&mid=2247485770&idx=1&sn=dab0be341cb46a410ec40a062a5cb895)（发布日 2026-08-13）
+
+#### Grok 4.6
+
+xAI RSS：Grok 4.6 在 4.5 之上，重点是长时 Agent，以及更重的交互和视觉工作。
+
+> 原始链接：[Introducing Grok 4.6](https://x.ai/news/grok-4-6)（发布日 2026-08-12）
 
 #### Muse Glimmer
 
-Hugging Face 介绍 Meta 的 Muse Glimmer：本地、具备 Agent 能力、多模态且开源。页面的通用摘要没有给出参数与许可细节，落地前以原文和模型卡为准。
+Hugging Face 博客标题：Meta 的 Muse Glimmer，本地、可做 Agent、多模态且开源。该条 RSS 正文为空，参数与许可以原文为准。
 
 > 原始链接：[Meta is back with Muse Glimmer](https://huggingface.co/blog/muse-glimmer)（发布日 2026-08-10）
 
@@ -44,91 +60,61 @@ Hugging Face 介绍 Meta 的 Muse Glimmer：本地、具备 Agent 能力、多�
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 GitHub Trending RSS 没有这一窗口的历史名次。下面 5 条来自 Wayback 对 [github.com/trending](https://github.com/trending) 的存档（页面为 Today、全部语言，即 daily / all），快照 **2026-08-13**。简介译自存档页上的仓库描述。
+OPML 里的 GitHubTrendingRSS 只保留当天快照（本次拉取为 2026-11-11）。该 RSS 的 Wayback 在整个窗口里只有 2026-09-09 一份，盖不住各周名次。下面 5 条来自 Wayback 对 [github.com/trending](https://github.com/trending) 的存档（页面为 Today、全部语言，即 daily / all），快照 **2026-08-13**。简介译自存档页上的仓库描述。
 
 > 存档：[2026-08-13 github.com/trending](https://web.archive.org/web/20260813000733/https://github.com/trending)
 
 1. [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)：给 Claude Code 用的 29 种编辑式示意图，自包含 HTML + SVG。
-2. [macro-inc/macro](https://github.com/macro-inc/macro)：把邮件、聊天、文档、任务、Agent 和通话放进同一工作区，并共享 AI 记忆。
+2. [macro-inc/macro](https://github.com/macro-inc/macro)：邮件、聊天、文档、任务、Agent 和通话放在同一工作区，并共享 AI 记忆。
 3. [semantica-agi/semantica](https://github.com/semantica-agi/semantica)：面向上下文与可追责 AI 的图原生基础设施。
-4. [stablyai/orca](https://github.com/stablyai/orca)：并行编码 Agent 的环境，可用自有订阅，覆盖桌面、手机和 VPS。
+4. [stablyai/orca](https://github.com/stablyai/orca)：并行编码 Agent 的环境，可用自有订阅。
 5. [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)：一组带流程和交付物的专职 Agent。
 
-#### Zed Delta
+<br/>
 
-Zed 发布 Delta 的非公开测试：人和 Agent 一起写代码、一起看结果的多人环境，让代码和对话保持在同一上下文里。页面标注的发布时间为 2026-08-12。
+## 四、国内进展
 
-> 原始链接：[Introducing Delta](https://zed.dev/blog/introducing-delta)（发布日 2026-08-12）
+#### &lt;开源&gt;MiniMax H3 开源一周
+
+MiniMax 公众号：H3 开源一周后，Hugging Face 上衍生出接近 300 个模型，ComfyUI 版本下载量近 700 万。文中提到有人把约 120GB 的模型压进消费级显卡，也有人重写了面向 Mac 的推理引擎。
+
+> 原始链接：[开源之后，MiniMax H3 拥有了 300 个分身](https://mp.weixin.qq.com/s?__biz=MzE5MTA3NzcxMQ==&mid=2247489037&idx=1&sn=0e17d9fff121fe7c7fd8143b7287914e)（发布日 2026-08-12）
+
+字节、阿里、腾讯、支付宝、淘宝、快手这几份 Wechat2RSS 在 2026-11-11 重拉时，最早条目已经晚于本窗口，Wayback 也没有这些 feed 的存档，这几家当周文章无法从订阅补回。
 
 <br/>
 
 ## 五、国际进展
 
-#### &lt;云端环境&gt;Cursor：预构建让云端智能体启动更快
+#### &lt;Agent&gt;Grok Bot
 
-Cursor 的「构建」在后台准备可直接使用的开发环境副本。页面称云端智能体启动速度可到原来的 3 倍，且无需额外费用。长任务 Agent 的冷启动可以先看这种快照，而不是每次从空仓库装依赖。
+xAI RSS：Grok Bot 是一组一直在线的 Agent，有自己的计算机，在工具和应用里工作，并保持 7×24。
 
-> 原始链接：[借助构建，云端智能体启动速度提升至 3 倍](https://cursor.com/cn/blog/builds)（发布日 2026-08-13）
+> 原始链接：[Introducing Grok Bot](https://x.ai/news/introducing-grok-bot)（发布日 2026-08-11）
 
-#### &lt;收购&gt;Firetiger 加入 Cursor
+#### &lt;产品&gt;Antigravity 自定义 Agent
 
-Firetiger 做的是软件上线之后的智能体。Cursor 宣布该团队加入，用来把「写代码」和「看线上」接成一条路径。
+Antigravity 在 2026-08-12 发布自定义 Agent。该条 RSS 正文为空，能力以原文为准。
 
-> 原始链接：[Firetiger 加入 Cursor](https://cursor.com/cn/blog/firetiger)（发布日 2026-08-13）
+> 原始链接：[Introducing custom agents](https://antigravity.google/blog/introducing-custom-agents)（发布日 2026-08-12）
 
-#### &lt;认证&gt;Cursor 获得 AIUC-1
+#### &lt;默认值&gt;Claude Code 打开 Auto
 
-Cursor 称其控制措施经过独立审计、智能体经过对抗测试，并获得 AIUC-1 认证。引入编码 Agent 时，可以把这类审计范围问清楚：覆盖的是 IDE、云端智能体，还是只覆盖某一层。
+Claude Code 将为 Pro、Max 和 Team 默认使用 Auto，以便跑更长的自主任务，并在测试里拦住比人工复查更多的危险命令。
 
-> 原始链接：[Cursor 获得 AIUC-1 智能体安全与可靠性认证](https://cursor.com/cn/blog/aiuc-1)（发布日 2026-08-13）
+> 原始链接：[Auto mode is now the default in Claude Code](https://claude.com/resources/articles/auto-mode-default-in-claude-code)（发布日 2026-08-07）
 
-#### &lt;安全&gt;CodeRabbit Security
+#### &lt;扩展&gt;Amp 的全局插件和技能
 
-CodeRabbit Security 在代码库里查应用层漏洞，用代码证据核验，再给出可审查的修复。它适合接在 Agent 改动之后，而不是替代原有的依赖扫描。
-
-> 原始链接：[Introducing CodeRabbit Security](https://coderabbit.ai/blog/introducing-coderabbit-security)（发布日 2026-08-13）
-
-#### &lt;Agent产品&gt;Antigravity 自定义 Agent
-
-Antigravity 认为软件工程正在从写代码转到编排 Agent，并放出自定义 Agent。团队可以把设计系统和仓库约定收成可复用的 Agent，而不是每条任务重新写提示。
-
-> 原始链接：[Introducing Custom Agents](https://antigravity.google/blog/introducing-custom-agents)（发布日 2026-08-12）
-
-#### &lt;产品&gt;Claude Code 默认打开 Auto
-
-Claude Code 将为 Pro、Max、Ultra 和 Team 默认使用 Auto，以便跑更长的自主任务，并拦住更多危险命令。默认值一变，权限和确认策略要重新看一遍。
-
-> 原始链接：[Auto mode is now the default in Claude Code](https://claude.com/blog/auto-mode-default-in-claude-code)（发布日 2026-08-07）
-
-#### &lt;扩展&gt;Kiro powers 支持 Agent 插件
-
-Kiro 让 powers 带上 Agent 插件，用来装团队自己的技能和内部 MCP。插件一旦能进共享目录，就要同时定版本和权限。
-
-> 原始链接：[Kiro powers now support Agent Plugins](https://kiro.dev/blog/powers-supports-plugins/)（发布日 2026-08-07）
-
-#### &lt;扩展&gt;Amp：全局插件与技能
-
-Amp 的插件和技能可以在各处使用，并在工作区里给队友发现、导入和更新。
+Amp 把插件和技能放到自己托管的全局位置，让它们在 Amp 运行的各处可用，也可以让 Amp 自己创建个人插件。
 
 > 原始链接：[Global Plugins and Skills](https://ampcode.com/news/global-plugins-and-skills)（发布日 2026-08-11）
 
-#### &lt;合规&gt;Amp：不用 PR 也可以谈 SOC 2
+#### &lt;评估&gt;JetBrains 如何用 Claude Fable 5
 
-Amp 回应「直接推 main、不做 PR 就不符合 SOC 2」的说法，认为合规看的是风险控制，不是某一种评审形式。小团队可以对照自己的推送权限、签名和审计日志，而不是先假定必须有人工 PR。
+JetBrains 的 Agent 系统负责人谈他们如何在私有仓库上评估前沿模型、什么时候用 Claude Fable 5，以及为什么把防护和数据保留看成使用条件。
 
-> 原始链接：[That's not SOC 2 compliant](https://ampcode.com/notes/thats-not-soc-2-compliant)（发布日 2026-08-13）
-
-#### &lt;路由&gt;多数 Agent 轮次用不到前沿模型
-
-LangChain 用 NVIDIA NeMo Switchyard 在 145 个 Agent 任务上做了路由实验。页面称只有 7% 的轮次需要前沿模型，路由后成本下降 74%，准确率掉了 6 个点。自建 harness 可以先量自己的轮次分布，再决定默认模型。
-
-> 原始链接：[How many of your agent's calls actually need a frontier model?](https://www.langchain.com/blog/switchyard-agent-routing-benchmark)（发布日 2026-08-11）
-
-#### &lt;企业落地&gt;JetBrains 如何评估 Claude Fable 5
-
-JetBrains 介绍在自家环境里评估和部署 Claude Fable 5，并把防护与数据保留看成使用前沿模型的前提。私有仓库上的评测集，比公开榜更接近日常编码。
-
-> 原始链接：[How JetBrains evaluates and deploys Claude Fable 5](https://claude.com/blog/how-jetbrains-evaluates-and-deploys-claude-fable-5)（发布日 2026-08-13）
+> 原始链接：[How JetBrains evaluates and deploys Claude Fable 5](https://claude.com/resources/articles/how-jetbrains-evaluates-and-deploys-claude-fable-5)（发布日 2026-08-13）
 
 <br/>
 

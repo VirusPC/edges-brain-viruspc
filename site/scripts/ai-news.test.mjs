@@ -18,16 +18,16 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../
 const aiNewsRoot = path.join(repoRoot, 'ai-news');
 
 const backfillKeywords = {
-  '2026-08-14-ai-coding-news.md': 'Cursor 云端构建提速，Firetiger 并入',
+  '2026-08-14-ai-coding-news.md': 'GPT-5.6 Sol 的 Ultrafast，DeepSeek V4 Pro',
   '2026-08-21-ai-coding-news.md': 'Cursor 并入 SpaceX',
-  '2026-08-28-ai-coding-news.md': 'Qoder 桌面端重做，CodeRabbit 进入 Cursor',
-  '2026-09-04-ai-coding-news.md': 'Fable 5.1 进入 Devin，OpenAI 准备停止向 Cursor 供模',
-  '2026-09-18-ai-coding-news.md': 'Devin Fusion harness，Amp 可自带钥匙免费用',
-  '2026-09-25-ai-coding-news.md': 'Kimi K3 登陆 Bedrock，Cursor 推出开发 Bots',
-  '2026-10-02-ai-coding-news.md': 'Gemini 4 Argon 登顶 Arena，Manus 2.0',
-  '2026-10-09-ai-coding-news.md': 'Claude Haiku 5.5 上 AWS',
-  '2026-10-16-ai-coding-news.md': 'Gemini 4 Argon 进入 Antigravity，Muse Spark 开放权重',
-  '2026-10-23-ai-coding-news.md': 'MiniMax M3.1 Flash 与 Code Mini App',
+  '2026-08-28-ai-coding-news.md': 'GPT-5.6 进入 Kiro',
+  '2026-09-04-ai-coding-news.md': 'GPT-6 Astra，Fable 5.1 进入 Devin',
+  '2026-09-18-ai-coding-news.md': 'Claude Fable 5.1 发布',
+  '2026-09-25-ai-coding-news.md': 'GPT-6 Sol 与 Luna，Claude Opus 5.5',
+  '2026-10-02-ai-coding-news.md': 'GPT-6.1 Sol 与 dots',
+  '2026-10-09-ai-coding-news.md': 'GPT-6 面向所有人，Claude Haiku 5.5',
+  '2026-10-16-ai-coding-news.md': 'Gemini 4 Argon 进入 Antigravity',
+  '2026-10-23-ai-coding-news.md': 'MiniMax M3.1 Flash，DeepSeek V4.1 Flash',
 };
 
 test('issue files are the dated digests, not the readme or charts', () => {

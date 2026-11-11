@@ -148,7 +148,7 @@ assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/2026-11-06\/"/);
 assert.match(aiNewsList, /2026-10-30～11-05/);
 assert.match(aiNewsList, /交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab/);
 assert.match(aiNewsList, /2026-10-23 AI Coding 资讯/);
-assert.match(aiNewsList, /MiniMax M3\.1 Flash 与 Code Mini App/);
+assert.match(aiNewsList, /MiniMax M3\.1 Flash，DeepSeek V4\.1 Flash/);
 assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/rss\.xml"/);
 assert.doesNotMatch(aiNewsList, /class="tag">旧版/);
 

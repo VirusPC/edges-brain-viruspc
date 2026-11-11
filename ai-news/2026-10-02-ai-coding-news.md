@@ -2,17 +2,17 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 没有落到这个窗口的可核验快照（Wayback 未收录该栏目），不把后来的帖子写进来。窗口内没有核对到新的开发者额度或订阅优惠。
+本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。百度 Geek 说 9 月 30 日的「国庆免费领」是音箱和京东卡一类礼品，不是开发者额度，不写入本期。
 
 <br/>
 
 ## 一、本周关键词
 
-Gemini 4 Argon 登顶 Arena，Manus 2.0
+GPT-6.1 Sol 与 dots
 
-Kiro workflows，Warp 接上 ChatGPT 订阅
+Claude Sonnet 5.5 上 AWS，Opus 5.5 进入 Kiro
 
-Opus 5.5 进入 Kiro，Sonnet 5.5 的审查对比
+Devin 变便宜，DeepSeek 开源昇腾组件
 
 <br/>
 
@@ -20,21 +20,39 @@ Opus 5.5 进入 Kiro，Sonnet 5.5 的审查对比
 
 #### 整体排名
 
-LLM Arena（Hugging Face `lmarena-ai/leaderboard-dataset`，`text_style_control` / overall，榜单发布日 **2026-09-30**，落在本窗口内）。红圈为相对 2026-09-25 新进入 Top-15 的 **gemini-4-argon-high**，并且排在第一。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-09-30**）。红圈为相对 2026-09-25 新进入 Top-15 的 **gemini-4-argon-high**，并且排在第一。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
 
 ![LLM Arena Top15 2026-09-30](llm-arena-top15-2026-09-30-marked.png)
 
+#### GPT-6.1 Sol
+
+OpenAI RSS：接近 Astra 的编码、计算机使用和专业工作能力，标准 API 的输入和输出价格大约是 Astra 的五分之一。日期取自 RSS。
+
+> 原始链接：[Introducing GPT-6.1 Sol](https://openai.com/index/introducing-gpt-6-1-sol)（发布日 2026-09-29）
+
+#### dots
+
+OpenAI RSS：dots 是会主动往下做的助手，可以在复杂项目和日常任务里持续工作，同时让人保持控制。
+
+> 原始链接：[Introducing dots](https://openai.com/index/introducing-dots)（发布日 2026-09-29）
+
+#### Claude Sonnet 5.5
+
+Anthropic 在 2026-09-28 发布 Claude Sonnet 5.5。AWS 同一天把它放上 Amazon Bedrock 和 AWS 上的 Claude Platform，称它是更聪明、更省的 Sonnet，适合聚焦的编码和知识工作，单任务成本更低、速度更快。
+
+> 原始链接：[Claude Sonnet 5.5](https://www.anthropic.com/claude-sonnet-5-5)（发布日 2026-09-28）；[Introducing Claude Sonnet 5.5 on AWS](https://aws.amazon.com/blogs/machine-learning/introducing-claude-sonnet-5-5-on-aws/)（发布日 2026-09-28）
+
 #### Claude Opus 5.5 进入 Kiro
 
-Kiro 称 Claude Opus 5.5 已在 IDE、CLI、Crew 和 Web 提供，并称它是当时最强的 Opus，表现对齐 Fable 5.1 这一档。具体价目以 Kiro 的模型页为准。
+Kiro 博客标题称 Opus 5.5 已可用，发布日 2026-09-28。RSS 正文只有拼写忽略标记，档位和价格以原文为准。
 
-> 原始链接：[Claude Opus 5.5 is now available in Kiro](https://kiro.dev/blog/opus-5-5/)（发布日 2026-09-28）
+> 原始链接：[Claude Opus 5.5 is now available in Kiro](https://kiro.dev/blog/opus-5-5)（发布日 2026-09-28）
 
 #### Holo4
 
-H company 在 Hugging Face 介绍 Holo4，标题写的是驱动通用计算机使用 Agent。页面通用摘要没有指标，能力边界以原文为准。
+Hugging Face 博客标题：Holo4 用来驱动通用计算机使用 Agent。该条 RSS 正文为空。
 
-> 原始链接：[Holo4: powering generalist computer-use agents](https://huggingface.co/blog/Hcompany/holo4)（发布日 2026-09-28）
+> 原始链接：[Holo4](https://huggingface.co/blog/Hcompany/holo4)（发布日 2026-09-28）
 
 <br/>
 
@@ -42,57 +60,41 @@ H company 在 Hugging Face 介绍 Holo4，标题写的是驱动通用计算机�
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 RSS 没有这一窗口的历史名次。下面 5 条来自 Wayback 对 [github.com/trending](https://github.com/trending) 的存档（Today、全部语言），快照 **2026-10-01**。简介译自存档页描述。
+第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-10-01**。
 
 > 存档：[2026-10-01 github.com/trending](https://web.archive.org/web/20261001020842/https://github.com/trending)
 
 1. [NVIDIA/OpenShell](https://github.com/NVIDIA/OpenShell)：给自主 Agent 用的运行时，强调安全和私密。
 2. [debpalash/VoiceStudio](https://github.com/debpalash/VoiceStudio)：可本地运行的语音工作室。
 3. [mvschwarz/openrig](https://github.com/mvschwarz/openrig)：把 Claude Code 和 Codex 放在同一个多 Agent harness 里跑。
-4. [mksglu/context-mode](https://github.com/mksglu/context-mode)：压缩编码 Agent 的工具输出，保留会话记忆，并通过 MCP 和钩子做路由。页面称工具输出可减少 98%。
+4. [mksglu/context-mode](https://github.com/mksglu/context-mode)：压缩编码 Agent 的工具输出并保留会话记忆。存档页称工具输出可减少 98%。
 5. [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)：让编码 Agent 少写不必要的代码。
 
 <br/>
 
 ## 四、国内进展
 
-#### &lt;产品&gt;Manus 2.0
+#### &lt;开源&gt;DeepSeek 开源昇腾基础组件
 
-Manus 在 2026-09-28（周一）发布 2.0，称这不是小版本，而是新架构和新产品。文中的 Cascade 是新一版自有 Agent harness：项目先保持轻，需要时再调入专项能力，简报、页面、视频和自动化仍在同一个项目里。
+深度求索：面向华为昇腾的 TileLang 编译器、计算库和分布式通信库开源，并与此前面向英伟达平台的组件一一对应。文中把 TileLang 写成比 CUDA 更好写、同时要打到硬件上限的高级语言。
 
-> 原始链接：[Introducing Manus 2.0](https://manus.im/blog/introducing-manus-2-0)（发布日 2026-09-28）
+> 原始链接：[DeepSeek 开源昇腾基础组件](https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ==&mid=2247485843&idx=1&sn=565102c3642d88e814331390bf62d276)（发布日 2026-09-30）
 
-#### &lt;计费&gt;Manus Flex：带上自己的 API 钥匙
-
-次日的 Manus Flex 允许在工作区里使用受支持推理服务商的自有 API 钥匙。托管 Agent 和自有钥匙可以并存，账单归属要先说清楚。
-
-> 原始链接：[Introducing Manus Flex](https://manus.im/blog/introducing-manus-flex)（发布日 2026-09-29）
+字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档。
 
 <br/>
 
 ## 五、国际进展
 
-#### &lt;工作流&gt;Kiro workflows
+#### &lt;成本&gt;Devin 整体变便宜
 
-Kiro 放出 workflows，用多个 Agent、更少看管地把复杂任务从头做到尾。他们称搭 Kiro 自己的云端配置时就在用这套流程。
+Devin RSS：Fusion 和 Normal 便宜 30% 到 40%，Ultra 便宜 15% 到 20%，Devin Review 最多便宜 70%。原因写成最新模型和更省的 harness，不是单独一档促销。
 
-> 原始链接：[Introducing Kiro workflows](https://kiro.dev/blog/introducing-workflows/)（发布日 2026-09-30）
+> 原始链接：[Devin is now up to 40% more cost-efficient](https://devin.ai/blog/more-efficient-devin)（发布日 2026-09-28）
 
-#### &lt;订阅&gt;用 ChatGPT 订阅登录 Warp
+#### &lt;审查&gt;Sonnet 5.5 比 Sonnet 5 抓得更多、用时约一半
 
-Warp 允许用 ChatGPT 订阅支付终端和 Agent CLI 里的 AI 请求，用量在 ChatGPT 的设置里查看和控制。已有订阅能否抵扣，比再买一份座位更值得先核对。
-
-> 原始链接：[Sign in to Warp with ChatGPT](https://www.warp.dev/blog/sign-in-to-warp-with-chatgpt)（发布日 2026-09-29）
-
-#### &lt;平台&gt;LangSmith：Engine v2、托管 Deep Agents 与轨迹
-
-LangChain 汇总 LangSmith 的更新：Engine v2 带红队和自动测试，托管 Deep Agents 有新版本，并加上轨迹等能力。
-
-> 原始链接：[New in LangSmith](https://www.langchain.com/blog/langsmith-engine-agents-fine-tuning-trajectories)（发布日 2026-09-25）
-
-#### &lt;代码审查&gt;Sonnet 5.5 比 Sonnet 5 抓得更多、用时约一半
-
-CodeRabbit 用 Claude Sonnet 5.5 对比 Sonnet 5 和 Opus 5.5 做代码审查，看已知缺陷的命中、精确率、速度和按标价计算的单次成本。标题称相对 Sonnet 5 抓到更多，时间约为一半。
+CodeRabbit 用 Sonnet 5.5 对比 Sonnet 5 做代码审查。标题称抓到更多，时间约为一半。
 
 > 原始链接：[Claude Sonnet 5.5 for code review](https://coderabbit.ai/blog/sonnet-5-5-model-review)（发布日 2026-09-28）
 

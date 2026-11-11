@@ -2,17 +2,17 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 没有落到这个窗口的可核验快照（Wayback 未收录该栏目），不把后来的帖子写进来。Qoder Lite 的 10 美元月费是新的付费档，写在国内进展，不算限时赠送。
+本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。订阅里没有核对到落在本窗口的开发者额度或订阅优惠。
 
 <br/>
 
 ## 一、本周关键词
 
-MiniMax M3.1 Flash 与 Code Mini App
+MiniMax M3.1 Flash，DeepSeek V4.1 Flash
 
-Reflection Beam 开放权重上 AWS，Claude Duet 开始候补
+Reflection Beam 上 AWS，Claude Duet 开始候补
 
-Cursor 放出 Agent SDK，Kiro 给 IDE 和 CLI 加记忆
+天猫数字员工，美团的 AutoResearch
 
 <br/>
 
@@ -20,21 +20,27 @@ Cursor 放出 Agent SDK，Kiro 给 IDE 和 CLI 加记忆
 
 #### 整体排名
 
-LLM Arena（Hugging Face `lmarena-ai/leaderboard-dataset`，`text_style_control` / overall，榜单发布日 **2026-10-22**，落在本窗口内）。相对上一份快照（2026-10-20）没有新模型进入 Top-15，图中不标 NEW。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-10-22**）。相对 2026-10-20 没有新模型进入 Top-15，图中不标 NEW。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
 
 ![LLM Arena Top15 2026-10-22](llm-arena-top15-2026-10-22-marked.png)
 
 #### MiniMax M3.1 Flash
 
-MiniMax 更新 M3.1 Flash。页面称它在 Agent 任务、编程、计算机使用和网络安全上有代际提升，线上推理速度约到原来的 3 倍，使用成本降低 70%。速度和成本是产品页的说法。
+MiniMax 公众号：M3.1 Flash 正式更新。文中称此前匿名处理超过 200T token 的 Space Bunny 是它的早期版本。Agent 任务、编程、计算机使用和网络安全有代际提升，线上推理速度约到原来的 3 倍，使用成本降低 70%。
 
-> 原始链接：[MiniMax M3.1 Flash](https://www.minimax.cn/blog/minimax-m31f)（发布日 2026-10-19）
+> 原始链接：[MiniMax M3.1 Flash](https://mp.weixin.qq.com/s?__biz=MzE5MTA3NzcxMQ==&mid=2247489196&idx=1&sn=4c8b969db8bd136f47d7b1a7650790c4)（发布日 2026-10-19）
 
-#### Reflection Beam：开放权重的编码模型
+#### DeepSeek V4.1 Flash 1017
 
-Reflection 的 Beam 作为开放权重模型，面向 Agent 编码和长任务。AWS 的文章写如何用 SageMaker JumpStart 做实时端点，或用 HyperPod Inference 配合 JumpStart、SGLang、vLLM 做 Kubernetes 上的分布式 GPU。Hugging Face 介绍页的标题写的是可以自己持有和定制的 **501B** 开放模型；参数量只出现在标题，没有从正文再核对。
+深度求索：网页、App 和 API 已切到 V4.1-Flash-1017。相对上一版，基准提升的同时缩短了任务时间和输出长度，并同步开放自研搜索 API。文中称在多个 Harness 下走到新的性能–费用帕累托前沿。
 
-> 原始链接：[Introducing Reflection Beam on AWS](https://aws.amazon.com/blogs/machine-learning/introducing-reflection-beam-an-open-weight-model-for-agentic-coding-on-aws/)（发布日 2026-10-16）；[Welcome Beam](https://huggingface.co/blog/reflection-beam)（发布日 2026-10-16）
+> 原始链接：[DeepSeek V4.1 Flash 新版本](https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ==&mid=2247485876&idx=1&sn=2606d3fa9ac085f94290ddd1d94649cc)（发布日 2026-10-17）
+
+#### Reflection Beam
+
+AWS 机器学习博客（Wayback 补回的历史 RSS，当前 feed 只剩 11 月的约 20 篇）：Reflection 的 Beam 是面向 Agent 编码和长任务的开放权重模型。可以先用 SageMaker JumpStart 做实时端点，或用 HyperPod Inference 配合 JumpStart、SGLang、vLLM 做 Kubernetes 上的分布式 GPU。
+
+> 原始链接：[Introducing Reflection Beam on AWS](https://aws.amazon.com/blogs/machine-learning/introducing-reflection-beam-an-open-weight-model-for-agentic-coding-on-aws/)（发布日 2026-10-16）
 
 <br/>
 
@@ -42,37 +48,45 @@ Reflection 的 Beam 作为开放权重模型，面向 Agent 编码和长任务�
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 RSS 没有这一窗口的历史名次。下面 5 条来自 Wayback 对 [github.com/trending](https://github.com/trending) 的存档（Today、全部语言），快照 **2026-10-22**。简介译自存档页描述。
+第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-10-22**。
 
 > 存档：[2026-10-22 github.com/trending](https://web.archive.org/web/20261022014611/https://github.com/trending)
 
-1. [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)：给编码 Agent 用的分阶段安全审计技能，发现要能独立核验。
-2. [vllm-project/vllm](https://github.com/vllm-project/vllm)：高吞吐、省内存的大模型推理与服务引擎。
-3. [stablyai/orca](https://github.com/stablyai/orca)：并行跑多种编码 Agent 的环境，可用自有订阅。当日简介举例包括 Grok Bot 和 Claude Code。
-4. [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom)：在工具输出、日志和检索片段进模型之前先压缩。页面称编码 Agent 可少用 20% 的 token，JSON 可少 60% 到 95%。
+1. [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)：给编码 Agent 用的分阶段安全审计技能。
+2. [vllm-project/vllm](https://github.com/vllm-project/vllm)：高吞吐、省内存的大模型推理引擎。
+3. [stablyai/orca](https://github.com/stablyai/orca)：并行跑多种编码 Agent 的环境。当日简介举例包括 Grok Bot 和 Claude Code。
+4. [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom)：在工具输出、日志和检索片段进模型之前先压缩。存档页称编码 Agent 可少用约 20% 的 token。
 5. [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)：让编码 Agent 少写不必要的代码。
 
-#### Apple 平台上的本地模型一年
+#### DeepSeek 开源推理框架 DeepInfer
 
-Hugging Face 的 AnyLanguageModel 1.0 标题写的是 Apple 平台本地模型的一年。通用摘要没有 API 清单，变化以原文为准。
+深度求索：在已开源的模型、TileLang 和算子库之外，把内部推理框架 DeepInfer 开源，用来调度大规模调用时的算力和电耗。
 
-> 原始链接：[AnyLanguageModel 1.0](https://huggingface.co/blog/anylanguagemodel-1-0)（发布日 2026-10-20）
+> 原始链接：[DeepSeek 开源推理框架](https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ==&mid=2247485884&idx=1&sn=d457981abe7db1f1b5d600fc109dc836)（发布日 2026-10-20）
 
 <br/>
 
 ## 四、国内进展
 
-#### &lt;产品&gt;MiniMax Code 的 Mini App
+#### &lt;协作&gt;天猫数字员工
 
-MiniMax 发布 Code 的 Mini App：带前端和后端、可以一直跑的应用，以插件安装，并能和 Agent 互相调用，让 Agent 的结果留在一个持续存在的页面上，而不是停在一轮对话里。
+大淘宝技术：数字员工以钉钉群为入口，和产品、开发、测试共享同一份需求上下文，从 PRD 走到发布复盘。文章把解法分成「协作」和「资产」，用来减少传递失真和隐性知识流失。
 
-> 原始链接：[插件即应用：MiniMax Code Mini App](https://www.minimax.cn/blog/minimax-code-mini-app-1792650729)（发布日 2026-10-22）
+> 原始链接：[天猫数字员工（协作篇）](https://mp.weixin.qq.com/s?__biz=MzAxNDEwNjk5OQ==&mid=2650546508&idx=1&sn=2b2b8c196cc45f7043b59d2c5c3ce81c)（发布日 2026-10-21）
 
-#### &lt;定价&gt;Qoder Lite：每月 10 美元
+#### &lt;研究&gt;美团：从 LOOP 到图探索的 AutoResearch
 
-Qoder Lite 每月 10 美元，含 1,000 积分和一组成本更低的模型。这是新的付费档，不是限时赠送。
+美团技术博客：从 Karpathy 的 AutoResearch 出发，经过三次重构，做成能在企业云上训练的算法研究自进化系统。单线程 LOOP 换成 CyclicGraph Engine，用状态机维持长周期，并用业务知识库、真实闭环和经验沉淀让系统越用越好。
 
-> 原始链接：[Introducing Qoder Lite](https://qoder.com/blog/qoder-lite)（发布日 2026-10-21）
+> 原始链接：[从 LOOP 到图探索](https://tech.meituan.com/2026/10/22/LOOP-AutoResearch.html)（发布日 2026-10-22）
+
+#### &lt;组织&gt;快手：从工程师到全员的企业 AI
+
+快手技术写企业 AI 生产力如何从工程师扩到全员、从个人扩到组织。同窗口还有 iWork 和 QCon 两篇分享合集，这里只记这一篇作为组织侧的入口。
+
+> 原始链接：[从工程师到全员，从个体到组织](https://mp.weixin.qq.com/s?__biz=Mzg2NzU4MDM0MQ==&mid=2247501508&idx=1&sn=1cf0c6dfe048cc4a660ee64cdd114c89)（发布日 2026-10-20）
+
+字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档。模型发布写在「模型进展」。
 
 <br/>
 
@@ -80,39 +94,21 @@ Qoder Lite 每月 10 美元，含 1,000 积分和一组成本更低的模型。�
 
 #### &lt;产品&gt;Claude Duet
 
-Claude Duet 是一个把 Claude 当作主动 Agent 的新应用。研究预览从即日起对美国的 Pro、Max 和 Ultra 订阅者开放候补。
+研究预览从即日起开放候补，先从美国的 Pro 和 Max 订阅者开始。RSS 摘要没有展开产品边界。
 
 > 原始链接：[Introducing Claude Duet](https://claude.com/resources/articles/claude-duet)（发布日 2026-10-21）
 
-#### &lt;框架&gt;Cursor Agent SDK
-
-Cursor 放出 Agent SDK，称 Bugbot、安全审查智能体和 Rollouts 这些自家托管智能体就是用它做的。用代码定义智能体，一条命令完成部署。
-
-> 原始链接：[隆重推出 Agent SDK](https://cursor.com/cn/blog/agent-sdk)（发布日 2026-10-20）
-
 #### &lt;工单&gt;在 Linear 里把问题派给 Amp
 
-Amp 成为 Linear 里的一个 Agent。把问题指派或委托给 Amp，或提及 @Amp，就会开一条 Agent 会话并拉起 orb；也可以为每个新问题跑一次性的分诊 orb。
+把 Linear 问题指派给 Amp 会开一条 Agent 会话并拉起 orb，也可以提及 @Amp。Amp 把回复送回同一条会话。
 
 > 原始链接：[Assign It To Amp](https://ampcode.com/news/assign-it-to-amp)（发布日 2026-10-19）
 
-#### &lt;记忆&gt;Kiro 的 IDE 和 CLI 开始记得偏好
+#### &lt;语言&gt;低资源编程语言上的编码
 
-Kiro 在 IDE 和 CLI 里加记忆，包括工作偏好、仓库里的命令和约定，以及纠正。记忆若不可审、不可删，就会变成下一轮的隐蔽提示。
+OpenAI RSS：改进 ChatGPT 在低资源编程语言上的表现，并加上软件工程、SQLite 和 COBOL 迁移的新评测。
 
-> 原始链接：[Introducing memory in Kiro IDE and CLI](https://kiro.dev/blog/memory-in-ide-cli/)（发布日 2026-10-20）
-
-#### &lt;正确性&gt;Kiro 如何改自己，并保持修改诚实
-
-Kiro 写到，文件读取和搜索工具的描述里有一句与 harness 实际行为不符，而且已经进了产品。后半讲的是怎样让这类修复保持可核对。工具描述也是产品行为，不能只当注释。
-
-> 原始链接：[How Kiro fixes itself](https://kiro.dev/blog/how-kiro-fixes-itself/)（发布日 2026-10-20）
-
-#### &lt;迁移&gt;Navan 把一个月的迁移收成一周
-
-Cursor 的客户故事称，Navan 最近一次迁移涉及 8 个应用和 15 个库，大约一周完成，开发期间没有冻结代码库。
-
-> 原始链接：[Navan 将长达一个月的迁移缩短至一周](https://cursor.com/cn/blog/navan)（发布日 2026-10-16）
+> 原始链接：[Advancing coding in low-resource programming languages](https://openai.com/index/low-resource-programming-languages)（发布日 2026-10-19）
 
 <br/>
 
