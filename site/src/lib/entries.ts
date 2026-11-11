@@ -4,6 +4,7 @@ import { listProjectFolders, projectsRoot, sortProjects, titleForProject } from 
 export type PostEntry = CollectionEntry<'posts'>;
 export type NoteEntry = CollectionEntry<'notes'>;
 export type ProjectEntry = CollectionEntry<'projects'>;
+export type AiNewsEntry = CollectionEntry<'aiNews'>;
 
 function timeOf(entry: { data: { date?: Date } }) {
   return entry.data.date?.getTime() ?? Number.NEGATIVE_INFINITY;
@@ -19,6 +20,11 @@ export async function getPosts(): Promise<PostEntry[]> {
 export async function getNotes(): Promise<NoteEntry[]> {
   const notes = await getCollection('notes');
   return notes.sort((a, b) => timeOf(b) - timeOf(a) || a.id.localeCompare(b.id, 'zh'));
+}
+
+export async function getAiNews(): Promise<AiNewsEntry[]> {
+  const issues = await getCollection('aiNews');
+  return issues.sort((a, b) => timeOf(b) - timeOf(a) || b.id.localeCompare(a.id));
 }
 
 /** Every publishable project document (markdown pages and PDF list rows). */

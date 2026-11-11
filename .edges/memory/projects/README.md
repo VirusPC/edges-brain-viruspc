@@ -33,4 +33,5 @@ format: ordinary
 - [合 PR 须经用户审，Agent 不自行 merge](<project_pr_merge_needs_user_review/INDEX.md>) — 准备合入任何 VirusPC PR 前打开：除非用户当轮明确点名要合并，否则只开 PR、保持打开，不要自行 gh pr merge
 - [grill 前先 memory ask，动手前先 html\-plan](<project_grill_memory_ask_then_html_plan/INDEX.md>) — 细化 Edges/脑仓任务卡时打开：先 memory ask，再 grill，达成共识后出中文 html\-plan 并 publish，用户确认后再改代码
 - [自建 Langfuse 已升到 v4.71.0；项目 open\-grokbot 仍在](<project_self_hosted_langfuse_at_v4_71/INDEX.md>) — 谈自建 Langfuse 版本或 open\-grokbot 可观测时打开：截至 2026\-10\-29 已是 v4.71.0（原 v4.38.0）；项目 open\-grokbot 仍在；升因 SDK 6 需 ≥4.59
+- [AI 周报上脑仓 Astro 站，不进 VirusPC/blog](<project_ai_news_section_on_brain_site/INDEX.md>) — 把 AI Coding 周报做成可浏览页面时打开：做在脑仓 site/ 的 /ai\-news/，不要改 VirusPC/blog。
 <!-- edges-entries-local:end -->

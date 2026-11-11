@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAiNews } from '../../lib/entries';
+import { formatCoverage } from '../../lib/ai-news.mjs';
+import { siteUrl } from '../../lib/paths';
+import { formatISODate } from '../../lib/select.mjs';
+
+const issues = await getAiNews();
+const feed = { title: 'AI Coding 资讯', href: siteUrl('/ai-news/rss.xml') };
+---
+
+<BaseLayout title="AI News" description="AI Coding 资讯周报。" rss={feed}>
+  <h1>AI News</h1>
+  <p class="dek">
+    每周一篇 AI Coding 资讯，覆盖发布日前的 7 天。
+    <a href={feed.href}>RSS</a>
+  </p>
+  {
+    issues.length === 0 ? (
+      <p class="empty">还没有周报。</p>
+    ) : (
+      <ol class="issue-list">
+        {issues.map((issue) => {
+          const iso = formatISODate(issue.data.date);
+          const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverageEnd);
+          const meta = issue.data.summary ? `${windowLabel} · ${issue.data.summary}` : windowLabel;
+          return (
+            <li>
+              <time datetime={iso}>{iso}</time>
+              <p class="issue-title">
+                <a href={siteUrl(`/ai-news/${issue.id}`)}>{issue.data.title}</a>
+                {issue.data.legacy ? <span class="tag">旧版</span> : null}
+              </p>
+              <p class="issue-meta">{meta}</p>
+            </li>
+          );
+        })}
+      </ol>
+    )
+  }
+</BaseLayout>

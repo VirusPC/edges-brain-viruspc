@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { listAiNewsFiles } from '../src/lib/ai-news.mjs';
 import { FIXTURE_ID, listDatedNoteDirs } from '../src/lib/select.mjs';
 import { listProjectDocuments } from '../src/lib/projects.mjs';
 
@@ -34,8 +35,9 @@ exists('rss.xml');
 exists('posts/index.html');
 exists('notes/index.html');
 exists('projects/index.html');
-exists('archive/index.html');
 exists('about/index.html');
+exists('ai-news/index.html');
+exists('ai-news/rss.xml');
 exists('favicon.svg');
 
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
@@ -128,6 +130,75 @@ assert.match(feed, /<item>/);
 assert.match(feed, /<link>https:\/\/viruspc\.github\.io\/edges-brain-viruspc\/<\/link>/);
 assert.match(feed, /edges-brain-viruspc\/notes\//);
 assert.doesNotMatch(feed, /\/posts\/README/);
+assert.doesNotMatch(feed, /ai-news/);
+
+const aiNewsFiles = listAiNewsFiles(path.join(repoRoot, 'ai-news'));
+const issuePages = rels.filter((rel) => /^ai-news\/\d{4}-\d{2}-\d{2}\/index\.html$/.test(rel));
+assert.equal(
+  issuePages.length,
+  aiNewsFiles.length,
+  `ai-news pages ${issuePages.length} != digest files ${aiNewsFiles.length}`,
+);
+assert.equal(rels.includes('ai-news/README/index.html'), false);
+
+const aiNewsList = fs.readFileSync(path.join(dist, 'ai-news/index.html'), 'utf8');
+assert.match(aiNewsList, /<h1>AI News<\/h1>/);
+assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/"[^>]*aria-current="page"/);
+assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/2026-11-06\/"/);
+assert.match(aiNewsList, /2026-10-30～11-05/);
+assert.match(aiNewsList, /交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab/);
+assert.match(aiNewsList, /2026-10-23 AI Coding 资讯/);
+assert.match(aiNewsList, /class="tag">旧版</);
+assert.match(aiNewsList, /76 篇/);
+assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/rss\.xml"/);
+assert.doesNotMatch(aiNewsList, /2026-11-06 AI Coding 资讯[\s\S]{0,80}class="tag">旧版/);
+
+const latestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-06/index.html'), 'utf8');
+assert.match(latestIssue, /<h1>\s*2026-11-06 AI Coding 资讯\s*<\/h1>/);
+assert.match(latestIssue, /覆盖 2026-10-30～11-05/);
+const latestToc = latestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+assert.ok(latestToc, 'latest issue is missing the chapter toc');
+for (const heading of ['〇、薅羊毛', '一、本周关键词', '二、模型进展', '三、项目开源', '四、国内进展', '五、国际进展']) {
+  assert.match(latestToc[0], new RegExp(heading));
+}
+assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current/);
+assert.match(latestIssue, /IntersectionObserver/);
+assert.match(latestIssue, /is-current/);
+const plainNote = fs.readFileSync(path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/index.html'), 'utf8');
+assert.doesNotMatch(plainNote, /IntersectionObserver/);
+assert.doesNotMatch(aiNewsList, /IntersectionObserver/);
+assert.match(latestIssue, /aria-current="page"[^>]*>\s*AI News\s*</);
+assert.match(latestIssue, /alt="LLM Arena Top15 2026-11-06"/);
+const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-11-06"[^>]*src="([^"]+)"/)
+  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top15 2026-11-06"/);
+assert.ok(arenaSrc, 'latest issue is missing the arena image');
+const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
+exists(arenaRel);
+
+const legacyIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
+assert.match(legacyIssue, /<h1>\s*2026-10-23 AI Coding 资讯<span class="tag">旧版<\/span>\s*<\/h1>/);
+assert.match(legacyIssue, /覆盖 2026-10-16～10-22/);
+assert.match(legacyIssue, /文章总结列表/);
+assert.match(legacyIssue, /class="toc"/);
+
+const aiFeed = fs.readFileSync(path.join(dist, 'ai-news/rss.xml'), 'utf8');
+assert.match(aiFeed, /<title>AI Coding 资讯<\/title>/);
+assert.match(aiFeed, /<title>2026-11-06 AI Coding 资讯<\/title>/);
+assert.match(aiFeed, /<title>2026-10-30 AI Coding 资讯<\/title>/);
+assert.match(aiFeed, /edges-brain-viruspc\/ai-news\/2026-11-06\//);
+assert.equal((aiFeed.match(/<item>/g) || []).length, aiNewsFiles.length);
+
+assert.match(home, /href="\/edges-brain-viruspc\/ai-news\/"/);
+assert.doesNotMatch(home, /ai-news\/2026-/);
+assert.equal(rels.includes('archive/index.html'), false);
+const archiveHref = /\/edges-brain-viruspc\/archive\/?/;
+for (const rel of rels.filter((item) => item.endsWith('.html') || item.endsWith('.xml'))) {
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(dist, rel), 'utf8'),
+    archiveHref,
+    `${rel} still links to /archive`,
+  );
+}
 
 const about = fs.readFileSync(path.join(dist, 'about/index.html'), 'utf8');
 assert.match(about, /亲手修订后发表的成稿/);
