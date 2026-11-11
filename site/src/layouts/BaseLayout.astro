@@ -15,6 +15,8 @@ interface Props {
   description?: string;
   wide?: boolean;
   home?: boolean;
+  withToc?: boolean;
+  rss?: { title: string; href: string };
 }
 
 const {
@@ -22,6 +24,8 @@ const {
   description = 'Essays, notes, and projects by peng cheng.',
   wide = false,
   home = false,
+  withToc = false,
+  rss,
 } = Astro.props;
 const fullTitle = title ? `${title} · peng cheng` : 'peng cheng';
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -31,13 +35,14 @@ const links = [
   { href: siteUrl('/posts'), label: 'Posts', key: 'posts' },
   { href: siteUrl('/notes'), label: 'Notes', key: 'notes' },
   { href: siteUrl('/projects'), label: 'Projects', key: 'projects' },
+  { href: siteUrl('/ai-news'), label: 'AI News', key: 'ai-news' },
   { href: siteUrl('/archive'), label: 'Archive', key: 'archive' },
   { href: siteUrl('/about'), label: 'About', key: 'about' },
 ];
 
 function current(href: string, key: string) {
   const target = href.replace(/\/$/, '');
-  if (key === 'posts' || key === 'notes' || key === 'projects') {
+  if (key === 'posts' || key === 'notes' || key === 'projects' || key === 'ai-news') {
     return path === target || path.startsWith(`${target}/`);
   }
   return path === target;
@@ -54,8 +59,9 @@ function current(href: string, key: string) {
     <link rel="canonical" href={canonical.href} />
     <link rel="icon" href={siteUrl('/favicon.svg')} />
     <link rel="alternate" type="application/rss+xml" title="peng cheng" href={siteUrl('/rss.xml')} />
+    {rss ? <link rel="alternate" type="application/rss+xml" title={rss.title} href={rss.href} /> : null}
   </head>
-  <body class:list={[wide && 'is-post', home && 'is-home']}>
+  <body class:list={[wide && 'is-post', home && 'is-home', withToc && 'has-toc']}>
     <a class="skip" href="#content">Skip to content</a>
     <div class="frame">
       <header class="top">

@@ -1,5 +1,5 @@
 import { defineCollection, z } from 'astro:content';
-import { notesLoader, postsLoader, projectsLoader } from './loaders/brain';
+import { aiNewsLoader, notesLoader, postsLoader, projectsLoader } from './loaders/brain';
 
 const entry = z.object({
   title: z.string().min(1),
@@ -28,6 +28,16 @@ export const collections = {
       projectId: z.string(),
       projectTitle: z.string(),
       projectDate: z.coerce.date().optional(),
+    }),
+  }),
+  aiNews: defineCollection({
+    loader: aiNewsLoader(),
+    schema: entry.extend({
+      date: z.coerce.date(),
+      coverageStart: z.coerce.date(),
+      coverageEnd: z.coerce.date(),
+      summary: z.string(),
+      legacy: z.boolean(),
     }),
   }),
 };

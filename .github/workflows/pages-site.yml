@@ -16,6 +16,7 @@ on:
       - posts/**
       - notes/**
       - projects/**
+      - ai-news/**
       - .github/workflows/pages-site.yml
   pull_request:
     paths:
@@ -23,6 +24,7 @@ on:
       - posts/**
       - notes/**
       - projects/**
+      - ai-news/**
       - .github/workflows/pages-site.yml
   workflow_dispatch:
 

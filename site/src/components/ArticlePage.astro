@@ -2,23 +2,53 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatISODate } from '../lib/select.mjs';
 
+interface TocItem {
+  slug: string;
+  text: string;
+}
+
 interface Props {
   title: string;
   description?: string;
   date?: Date;
   source?: string;
   wide?: boolean;
+  kicker?: string;
+  badge?: string;
+  toc?: TocItem[];
+  rss?: { title: string; href: string };
 }
 
-const { title, description, date, source, wide = false } = Astro.props;
+const { title, description, date, source, wide = false, kicker = '', badge = '', toc = [], rss } = Astro.props;
 const iso = date ? formatISODate(date) : '';
+const sections = toc.filter((item) => item.slug && item.text);
 ---
 
-<BaseLayout title={title} description={description} wide={wide}>
-  <article class="post">
+<BaseLayout title={title} description={description} wide={wide} withToc={sections.length > 0} rss={rss}>
+  <article class:list={['post', sections.length > 0 && 'has-toc']}>
+    {
+      sections.length > 0 ? (
+        <nav class="toc" aria-label="章节">
+          <ol>
+            {sections.map((item) => (
+              <li>
+                <a href={`#${item.slug}`}>{item.text}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      ) : null
+    }
     <header class="post-head">
-      {iso ? <p class="post-kicker"><time datetime={iso}>{iso}</time></p> : null}
-      <h1>{title}</h1>
+      {
+        iso || kicker ? (
+          <p class="post-kicker">
+            {iso ? <time datetime={iso}>{iso}</time> : null}
+            {kicker ? <span>{iso ? ` · ${kicker}` : kicker}</span> : null}
+          </p>
+        ) : null
+      }
+      {badge ? <h1>{title}<span class="tag">{badge}</span></h1> : <h1>{title}</h1>}
     </header>
     <div class="prose">
       <slot />
