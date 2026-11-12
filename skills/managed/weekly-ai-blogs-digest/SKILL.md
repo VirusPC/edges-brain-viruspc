@@ -66,7 +66,13 @@ python3 scripts/fetch_llm_arena.py --out /tmp/llm-arena.json
 
 ## 一、本周关键词
 
-一行一条短关键词，不要写成「本周风向」那样的长综述。
+一行短关键词，作列表摘要和图片 alt。
+
+![一行短关键词](keywords-cloud-YYYY-MM-DD.png)
+
+<!-- keywords-cloud
+[{"word":"短关键词","score":5,"mentions":2,"sources":2}]
+-->
 
 ## 二、模型进展
 
@@ -90,6 +96,36 @@ python3 scripts/fetch_llm_arena.py --out /tmp/llm-arena.json
 ```
 
 各章之间可用 `<br/>`。国内 / 国际按主体或主要发生地归类，不按「产品 / 技术」分栏。
+
+### 本周关键词词云
+
+第一行必须是纯文字。它同时是 PNG 的 alt，也是 /ai-news/ 列表页摘要。图片放在这一行下面，不要放到第一行。后面可以继续写短关键词，不要写成「本周风向」那样的长综述。
+
+文件名是 `ai-news/keywords-cloud-YYYY-MM-DD.svg` 与同名 `.png`，日期与周报相同。正文用相对路径引用 PNG，同目录留 SVG。
+
+权重写在章内 `<!-- keywords-cloud ... -->` 的 JSON 数组里。有 `weight` 就直接用（1.0–5.0，保留 1 位小数）。没有 `weight` 时：
+
+```
+mentionPart = min(mentions, 4) / 4 * 5
+sourcePart = min(sources, 3) / 3 * 5
+weight = clamp(round1(0.6 * score + 0.25 * mentionPart + 0.15 * sourcePart), 1, 5)
+```
+
+`score` 是模型给该词的 1–5 分，缺省 1。`mentions` 是本期 `####` 条目里出现该词的条数，关键词章不计，上限 4。`sources` 是这些条目「原始链接」的 hostname 数，上限 3。字号是 `round(18 + (weight - 1) / 4 * 40)`：权重 1 为 18px，权重 5 为 58px。词全部水平放置。放不下就停，不要静默丢词。
+
+默认配色 `--palette ink-sans`（2026-11-12 从三套样例里选定）：思源黑体粗体，家族名 `Noto Sans CJK SC`，字重 700。底色 `#fffcf7`，最大词 `#b4541f`，其余大词 `#1c1b19`，中小词 `#3d3a34`、`#5c574e`。另两套预设：`serif-earth`（思源宋体，暖褐）、`wenkai-pine`（霞鹜文楷，青绿）。测量和 PNG 用同一个字体文件。找不到该文件就停，不要换别的中文字体。
+
+在本 skill 目录：
+
+```bash
+npm install
+node scripts/render_keyword_cloud.mjs \
+  --md ../../../ai-news/YYYY-MM-DD-ai-coding-news.md \
+  --out-svg ../../../ai-news/keywords-cloud-YYYY-MM-DD.svg \
+  --out-png ../../../ai-news/keywords-cloud-YYYY-MM-DD.png
+```
+
+换预设或指定字体：`--palette serif-earth`，或 `--font-file <字体文件> --font-family <家族名>`。家族名要和字体文件里的名字一致。PNG 由 `@resvg/resvg-js` 从 SVG 导出。只给新的一期出图；更早各期是否补图另定。
 
 ### 单条模版
 

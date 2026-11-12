@@ -28,6 +28,28 @@
 
 交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab
 
+![交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab](keywords-cloud-2026-11-06.png)
+
+<!-- keywords-cloud
+[
+  {"word":"交付闭环","score":5,"mentions":2,"sources":2,"weight":4.1},
+  {"word":"上下文工程","score":5,"mentions":1,"sources":1,"weight":3.6},
+  {"word":"Harness","score":4,"mentions":2,"sources":2,"weight":3.5},
+  {"word":"千问","score":4,"mentions":1,"sources":1,"weight":3.0},
+  {"word":"SWE-2 Flash","score":4,"mentions":1,"sources":1,"weight":3.0},
+  {"word":"Claude","score":4,"mentions":1,"sources":1,"weight":3.0},
+  {"word":"Kimi","score":4,"mentions":1,"sources":1,"weight":3.0},
+  {"word":"Agent 评测","weight":2.8},
+  {"word":"混元","score":3,"mentions":1,"sources":1,"weight":2.4},
+  {"word":"Kiro","weight":2.2},
+  {"word":"LongCat","weight":2.2},
+  {"word":"GitLab","weight":1.8},
+  {"word":"Code Mode","weight":1.8},
+  {"word":"Pierre","weight":1.6},
+  {"word":"Amp","weight":1.6}
+]
+-->
+
 上下文工程分层、Claude 消息线程、Code Mode
 
 Kimi Hosted Agents（Harness as a Service）、Kiro Crew Bots

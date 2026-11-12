@@ -1,9 +1,9 @@
 ---
 metadata:
   edges-type: task
-  edges-updated-at: '2026-11-12T09:25:00.000Z'
+  edges-updated-at: '2026-11-12T10:20:00.000Z'
   edges-title: AI Coding 资讯周报的本周关键词改用词云展示
-  edges-tasks-status: backlog
+  edges-tasks-status: in_review
   edges-task-priority: none
 name: ai_coding_资讯周报的本周关键词改用词云展示
 description: 本周关键词目前只是一行文字，改用词云展示，让每期重点一眼可见。
@@ -27,3 +27,10 @@ description: 本周关键词目前只是一行文字，改用词云展示，让�
 - 生成脚本基于 d3-cloud，在 Node 中运行，中文显示正常；作为 skill 资源随 weekly-ai-blogs-digest 一起使用。
 - weekly-ai-blogs-digest SKILL.md 写明权重算法和出图步骤。
 - 已有各期是否补图，由用户另行决定。
+
+**实现记录（2026-11-12）：**
+- 脚本：`skills/managed/weekly-ai-blogs-digest/scripts/render_keyword_cloud.mjs`。依赖 `d3-cloud` 2.0.0、`@napi-rs/canvas`、`@resvg/resvg-js`。Node 20 或更高。
+- 权重：有 `weight` 就用；否则 `weight = clamp(round1(0.6*score + 0.25*mentionPart + 0.15*sourcePart), 1, 5)`。字号 `round(18 + (weight - 1) / 4 * 40)`。旋转角 0，随机种子 1。放不下就停。
+- 默认配色 `ink-sans`：思源黑体粗体 `Noto Sans CJK SC` Bold，底色 `#fffcf7`，最大词 `#b4541f`，其余大词 `#1c1b19`，中小词 `#3d3a34`、`#5c574e`。另有预设 `serif-earth`、`wenkai-pine`。PNG 用 `@resvg/resvg-js`，字体文件与测量相同。
+- 样例只补了 `ai-news/keywords-cloud-2026-11-06.svg` 与同名 png，并插入该期正文。第一行关键词原文未改。更早各期未补图。
+- 站点未另做 public 拷贝。`site/scripts/verify-dist.mjs` 断言这张 PNG 进入构建产物。
