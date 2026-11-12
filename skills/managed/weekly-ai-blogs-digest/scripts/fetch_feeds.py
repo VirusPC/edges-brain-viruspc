@@ -434,9 +434,22 @@ def fallback_rows(meta: dict) -> list[dict]:
     return rows
 
 
+_MD_HTTP_LINK = re.compile(r"(?<!!)\[([^\[\]]*)\]\((https?://[^)\s]+)\)")
+_BARE_SOURCE = re.compile(r"原始链接：[ \t]*(https?://\S+)")
+
+
+def extract_digest_links(text: str) -> list[str]:
+    """周报里的来源 URL：标题链接、短述和列表里的行内链接。
+
+    旧稿若把裸 URL 写在「原始链接：」后面，也一并收回。
+    """
+    links = [url for _label, url in _MD_HTTP_LINK.findall(text)]
+    links.extend(_BARE_SOURCE.findall(text))
+    return links
+
+
 def digest_links(path: Path) -> list[str]:
-    text = path.read_text(encoding="utf-8")
-    return re.findall(r"原始链接：(https?://\S+)", text)
+    return extract_digest_links(path.read_text(encoding="utf-8"))
 
 
 def compare_digest(digest: list[str], reports: list[dict], meta: dict, since: str, until: str) -> dict:
@@ -704,6 +717,27 @@ def self_test() -> int:
     assert reasons["https://example.com/missing"] == "not-in-feed"
     assert reasons["https://manual.example/blog/post"] == "fallback"
     assert reasons["https://other.example/post"] == "outside-list"
+    sample = """#### &lt;标签&gt;[标题](https://openai.com/a)
+
+短述。 [社区帖](https://linux.do/t/1)
+
+#### 整体排名
+
+![图](llm-arena.png)
+![外链图](https://example.com/chart.png)
+
+#### 其他短讯
+
+- **[名称](https://huggingface.co/blog/x)**：一句。
+
+> 原始链接：https://example.com/bare
+"""
+    assert extract_digest_links(sample) == [
+        "https://openai.com/a",
+        "https://linux.do/t/1",
+        "https://huggingface.co/blog/x",
+        "https://example.com/bare",
+    ]
     print("self-test ok")
     return 0
 
@@ -715,7 +749,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--since", help="YYYY-MM-DD，含当天")
     parser.add_argument("--until", help="YYYY-MM-DD，含当天")
     parser.add_argument("--out", type=Path, help="写入 JSON 文件；默认打到 stdout")
-    parser.add_argument("--compare", type=Path, help="已有周报 markdown，按「原始链接」比对覆盖")
+    parser.add_argument("--compare", type=Path, help="已有周报 markdown，按标题链接和行内链接比对覆盖")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     parser.add_argument("--pretty", action="store_true", help="缩进输出。默认紧凑 JSON，省 token")

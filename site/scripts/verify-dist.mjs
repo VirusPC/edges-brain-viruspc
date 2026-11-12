@@ -189,6 +189,10 @@ assert.ok(cloudSrc, 'latest issue is missing the keyword cloud');
 const cloudRel = cloudSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 assert.match(cloudRel, /keywords-cloud-2026-11-06/);
 exists(cloudRel);
+assert.match(latestIssue, /href="https:\/\/kiroween\.devpost\.com"/);
+assert.match(latestIssue, /href="https:\/\/linux\.do\/t\/topic\/3101137"/);
+assert.match(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
+assert.doesNotMatch(latestIssue, /原始链接/);
 
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
 assert.match(backfillIssue, /<h1>\s*2026-10-23 AI Coding 资讯\s*<\/h1>/);

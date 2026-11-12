@@ -5,6 +5,8 @@
  * 输入是 JSON [{word, weight}]，或周报 markdown 里「一、本周关键词」章。
  * 章内若有 <!-- keywords-cloud ... -->，其中的 JSON 数组优先。
  * 已有 weight 就直接用；否则按 score、mentions、sources 计算。
+ * sources 在写入 JSON 时按标题链接和短述行内链接的 hostname 计数
+ * （scripts/source_hostnames.mjs）。这里不从正文重算，避免链接换位置后把已有 weight 清掉。
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -13,6 +15,7 @@ import { pathToFileURL } from "node:url";
 import { createCanvas, GlobalFonts } from "@napi-rs/canvas";
 import { Resvg } from "@resvg/resvg-js";
 import CloudLayout from "d3-cloud";
+export { sourceHostnames } from "./source_hostnames.mjs";
 
 const PALETTES = {
   "ink-sans": {
