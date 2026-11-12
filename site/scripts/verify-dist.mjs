@@ -228,13 +228,29 @@ const about = fs.readFileSync(path.join(dist, 'about/index.html'), 'utf8');
 assert.match(about, /亲手修订后发表的成稿/);
 
 const githubLink = /<footer class="colophon">[\s\S]*?<a href="https:\/\/github\.com\/VirusPC" rel="me noopener">GitHub<\/a>/;
+const navOrder = ['Posts', 'Notes', 'Projects', 'Teaching', 'AI News', 'About'];
+let layoutPages = 0;
 for (const rel of rels.filter((item) => item.endsWith('.html'))) {
-  assert.match(
-    fs.readFileSync(path.join(dist, rel), 'utf8'),
-    githubLink,
-    `${rel} is missing the GitHub profile link`,
+  const html = fs.readFileSync(path.join(dist, rel), 'utf8');
+  assert.match(html, githubLink, `${rel} is missing the GitHub profile link`);
+  const nav = html.match(/<nav class="nav"[\s\S]*?<\/nav>/);
+  if (!nav) continue;
+  layoutPages += 1;
+  const items = [...nav[0].matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((match) => ({
+    attrs: match[1],
+    label: match[2].replace(/\s+/g, ' ').trim(),
+  }));
+  assert.deepEqual(
+    items.map((item) => item.label),
+    navOrder,
+    `${rel} nav order`,
   );
+  const teaching = items[navOrder.indexOf('Teaching')];
+  assert.match(teaching.attrs, /href="https:\/\/edges\.viruspc\.tech\/teaching\/"/, `${rel} Teaching href`);
+  assert.match(teaching.attrs, /\brel="noopener"/, `${rel} Teaching rel`);
+  assert.doesNotMatch(teaching.attrs, /is-current|aria-current/, `${rel} Teaching must not be current`);
 }
+assert.ok(layoutPages > 0, 'expected BaseLayout pages with a section nav');
 
 console.log(
   `site dist ok: ${expectedNotes.length} notes, fixture ${fixtureOn ? 'on' : 'off'}, ${rels.length} files`,
