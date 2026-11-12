@@ -83,6 +83,33 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   }
 });
 
+test('item titles link to the source and quote blocks are gone', () => {
+  for (const name of listAiNewsFiles(aiNewsRoot)) {
+    const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
+    assert.equal(body.includes('原始链接'), false, name);
+    assert.match(body, /^#### (?:&lt;[^&]+&gt;)?\[[^\]]+\]\(https?:\/\//m, name);
+    assert.match(body, /^#### 整体排名$/m, name);
+  }
+
+  const latest = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-coding-news.md'), 'utf8');
+  assert.match(
+    latest,
+    /^#### \[Kiroween 黑客松：报名可领约 4000 积分\]\(https:\/\/kiroween\.devpost\.com\)$/m,
+  );
+  assert.match(latest, /以官方 Devpost 页面为准。 \[社区帖\]\(https:\/\/linux\.do\/t\/topic\/3101137\)/);
+  assert.match(latest, /^#### \[BOTKEEP：3 个月免费托管\]\(https:\/\/linux\.do\/t\/topic\/3102454\)$/m);
+  assert.match(
+    latest,
+    /^- \*\*\[OpenAI Images 2\.6\]\(https:\/\/openai\.com\/index\/introducing-images-2-6\)\*\*：图像生成更新。$/m,
+  );
+  assert.match(
+    latest,
+    /^#### &lt;交付闭环&gt;\[OpenAI 收购 Pierre\]\(https:\/\/openai\.com\/index\/openai-to-acquire-pierre\)$/m,
+  );
+  assert.match(latest, /"word":"交付闭环","score":5,"mentions":2,"sources":2,"weight":4\.1/);
+  assert.doesNotMatch(latest, /^#### \[整体排名\]/m);
+});
+
 test('a missing keyword chapter is legacy even when the date is recent', () => {
   const body = '## 本周风向\n\n## 文章总结列表\n\n### 一条 - 2026-11-01\n';
   assert.equal(isLegacyIssue(body), true);
