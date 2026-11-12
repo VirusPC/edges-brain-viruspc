@@ -4,7 +4,8 @@ import { formatISODate, noteDateFromName } from './select.mjs';
 const ISSUE_FILE = /^(\d{4}-\d{2}-\d{2})-ai-coding-news\.md$/;
 
 /**
- * Dated digest files only. README and Arena images stay out of the collection.
+ * Dated digest files only. README, charts, and `*.notes.md` sidecars stay out.
+ * The notes suffix does not match ISSUE_FILE, so those files are not pages.
  * @param {string} aiNewsRoot
  * @returns {string[]}
  */

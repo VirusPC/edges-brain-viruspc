@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。
-
 #### Claude for Teachers：美国 K-12 的免费企业版
 
 从即日起，美国 K-12 学校和学区可以把 Claude for Teachers 当作免费企业版使用，含面向教学的技能，以及与 50 个州学业标准的连接。资格以 Anthropic 原文为准。
@@ -62,7 +60,7 @@ Qwen3.8-Max-0902，百度对比两套开源 Harness
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-09-02**）。红圈为相对 2026-09-01 新进入 Top-15 的 **claude-fable-5.1-max** 与 **gemini-3.8-flash-high**。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-09-02。红圈：claude-fable-5.1-max、gemini-3.8-flash-high。
 
 ![LLM Arena Top15 2026-09-02](llm-arena-top15-2026-09-02-marked.png)
 
@@ -132,9 +130,7 @@ AWS宣布在Amazon Bedrock上推出Claude Fable 5.1模型。
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-09-03**。
-
-> 存档：[2026-09-03 github.com/trending](https://web.archive.org/web/20260903004838/https://github.com/trending)
+快照 2026-09-03（daily / all）。
 
 1. [fmtlib/fmt](https://github.com/fmtlib/fmt)：C++ 格式化库。
 2. [google-research/timesfm](https://github.com/google-research/timesfm)：Google Research 的时间序列基础模型。
@@ -409,8 +405,6 @@ Hugging Face与Voice Arena合作，在Open ASR排行榜中引入首个全球南�
 千问发布长程商业操作基准：Agent 以 10 万元起步经营网店 365 天，覆盖采购、谈判、定价、促销、库存和现金流。
 
 > 原始链接：[E-Commerce Bench](https://x.com/Alibaba_Qwen/status/2095476249556853100)（发布日 2026-09-03）
-
-字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档。
 
 #### 高效电商 AI 智能体解剖指南 | 选自 Anthropic 的 Claude 博客
 

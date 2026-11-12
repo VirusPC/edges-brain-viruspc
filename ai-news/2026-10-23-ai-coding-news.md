@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。订阅里没有核对到落在本窗口的开发者额度或订阅优惠。
-
 #### The full Claude Platform, available on Google Cloud
 
 Claude Models on Google Cloud（Anthropic 托管）现已正式开放，提供完整 Claude Platform 功能，并支持 Google Cloud IAM、统一账单及承诺额度抵扣。
@@ -40,7 +38,7 @@ Reflection Beam 上 AWS，Claude Duet 开始候补
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-10-22**）。相对 2026-10-20 没有新模型进入 Top-15，图中不标 NEW。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-10-22。图中无红圈。
 
 ![LLM Arena Top15 2026-10-22](llm-arena-top15-2026-10-22-marked.png)
 
@@ -58,7 +56,7 @@ MiniMax 公众号：M3.1 Flash 正式更新。文中称此前匿名处理超过 
 
 #### Reflection Beam
 
-AWS 机器学习博客（Wayback 补回的历史 RSS，当前 feed 只剩 11 月的约 20 篇）：Reflection 的 Beam 是面向 Agent 编码和长任务的开放权重模型。可以先用 SageMaker JumpStart 做实时端点，或用 HyperPod Inference 配合 JumpStart、SGLang、vLLM 做 Kubernetes 上的分布式 GPU。
+Reflection 的 Beam 是面向 Agent 编码和长任务的开放权重模型。可以先用 SageMaker JumpStart 做实时端点，或用 HyperPod Inference 配合 JumpStart、SGLang、vLLM 做 Kubernetes 上的分布式 GPU。
 
 > 原始链接：[Introducing Reflection Beam on AWS](https://aws.amazon.com/blogs/machine-learning/introducing-reflection-beam-an-open-weight-model-for-agentic-coding-on-aws/)（发布日 2026-10-16）
 
@@ -86,9 +84,7 @@ AWS 机器学习博客（Wayback 补回的历史 RSS，当前 feed 只剩 11 月
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-10-22**。
-
-> 存档：[2026-10-22 github.com/trending](https://web.archive.org/web/20261022014611/https://github.com/trending)
+快照 2026-10-22（daily / all）。
 
 1. [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)：给编码 Agent 用的分阶段安全审计技能。
 2. [vllm-project/vllm](https://github.com/vllm-project/vllm)：高吞吐、省内存的大模型推理引擎。
@@ -189,8 +185,6 @@ Reflection 发布开源模型 Beam：5010 亿参数、每 token 激活 230 亿�
 快手技术写企业 AI 生产力如何从工程师扩到全员、从个人扩到组织。同窗口还有 iWork 和 QCon 两篇分享合集，这里只记这一篇作为组织侧的入口。
 
 > 原始链接：[从工程师到全员，从个体到组织](https://mp.weixin.qq.com/s?__biz=Mzg2NzU4MDM0MQ==&mid=2247501508&idx=1&sn=1cf0c6dfe048cc4a660ee64cdd114c89)（发布日 2026-10-20）
-
-字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档。模型发布写在「模型进展」。
 
 #### NotebookLM's Video Overview System Prompt: The Full Creation Workflow
 

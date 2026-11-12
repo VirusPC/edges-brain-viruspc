@@ -30,10 +30,14 @@ const backfillKeywords = {
   '2026-10-23-ai-coding-news.md': 'MiniMax M3.1 Flash，DeepSeek V4.1 Flash',
 };
 
-test('issue files are the dated digests, not the readme or charts', () => {
+test('issue files are the dated digests, not the readme, charts, or notes', () => {
   const files = listAiNewsFiles(aiNewsRoot);
+  const notes = fs.readdirSync(aiNewsRoot).filter((name) => name.endsWith('.notes.md'));
   assert.equal(files.length, 12);
+  assert.equal(notes.length, 12);
   assert.equal(files.includes('README.md'), false);
+  assert.equal(notes.includes('2026-11-06-ai-coding-news.notes.md'), true);
+  assert.equal(files.includes('2026-11-06-ai-coding-news.notes.md'), false);
   assert.equal(files.at(-1), '2026-11-06-ai-coding-news.md');
   assert.equal(files.at(0), '2026-08-14-ai-coding-news.md');
 });
@@ -58,6 +62,14 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   const latest = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-coding-news.md'), 'utf8');
   assert.equal(isLegacyIssue(latest), false);
   assert.equal(summaryLine(latest, false), '交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab');
+  assert.match(latest, /较上周无新榜/);
+  assert.match(latest, /llm-arena-top15-2026-10-28-marked\.png/);
+  assert.doesNotMatch(latest, /llm-arena-top15-2026-11-06/);
+  assert.match(latest, /keywords-cloud-2026-11-06\.png/);
+
+  const september = fs.readFileSync(path.join(aiNewsRoot, '2026-09-25-ai-coding-news.md'), 'utf8');
+  assert.match(september, /较上周无新榜/);
+  assert.match(september, /llm-arena-top15-2026-09-13-marked\.png/);
 
   const previous = fs.readFileSync(path.join(aiNewsRoot, '2026-10-30-ai-coding-news.md'), 'utf8');
   assert.equal(summaryLine(previous, false), 'Cursor 扩展供应链后门');

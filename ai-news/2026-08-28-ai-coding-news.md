@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。
-
 #### GPT-5.6 Sol 标价下调，Devin 的七折仍可叠加
 
 Devin RSS：OpenAI 把 GPT-5.6 Sol 的标价降到每百万 token 输入 4 美元、输出 20 美元，此前宣布的七折在 2026-10-03 之前仍叠加上面。
@@ -68,7 +66,7 @@ DeepSeek 的多模态视觉实验模型，Qwen3.8-Flash 上线
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-08-27**）。相对 2026-08-21 没有新模型进入 Top-15，图中不标 NEW。窗口内另有 2026-08-21 一份榜，图用较晚的这一份。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-08-27。图中无红圈。
 
 ![LLM Arena Top15 2026-08-27](llm-arena-top15-2026-08-27-marked.png)
 
@@ -102,9 +100,7 @@ Anthropic宣布将其最强模型Claude Mythos 5引入网络安全防御。
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-08-27**。
-
-> 存档：[2026-08-27 github.com/trending](https://web.archive.org/web/20260827001841/https://github.com/trending)
+快照 2026-08-27（daily / all）。
 
 1. [tt-a1i/archify](https://github.com/tt-a1i/archify)：用 Agent 技能画可核对的架构图和数据流图。
 2. [freestylefly/awesome-gpt-image-2](https://github.com/freestylefly/awesome-gpt-image-2)：GPT-Image2 的提示词与模板集。
@@ -383,8 +379,6 @@ MiniMax发布2026年上半年财报，营收同比增长283.1%至1.166亿美元�
 OpenAI RSS：ChatGPT Work 和 Codex 的 Admin 插件用来看工作区用量、管理人员和权限、调整限额，并处理管理员请求。
 
 > 原始链接：[Introducing the Admin plugin for ChatGPT Work and Codex](https://openai.com/index/introducing-admin-plugin)（发布日 2026-08-25）
-
-
 
 #### &lt;审查&gt;CodeRabbit 插件进入 Cursor
 

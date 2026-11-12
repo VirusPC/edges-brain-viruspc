@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。
-
 #### Amp：自带算力和模型钥匙则可免费使用
 
 Amp RSS：自带计算和模型订阅或 API 钥匙时可以免费使用。计费留在已有的供应商账上，不是赠送额度。
@@ -26,7 +24,7 @@ Agent 编码把 Anthropic 的 CI 撑大，Cowork 并回 Claude
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-09-13**）。红圈为相对 2026-09-11 新进入 Top-15 的 **muse-spark-1.3-max**。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-09-13。红圈：muse-spark-1.3-max。
 
 ![LLM Arena Top15 2026-09-13](llm-arena-top15-2026-09-13-marked.png)
 
@@ -54,9 +52,7 @@ Kiro 向企业客户推出 Claude Fable 5.1，强调在长时、上下文密集�
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 在本窗口没有逐日存档（Wayback 只有 2026-09-09 一份，不在本窗口）。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-09-17**。
-
-> 存档：[2026-09-17 github.com/trending](https://web.archive.org/web/20260917012101/https://github.com/trending)
+快照 2026-09-17（daily / all）。
 
 1. [alibaba/open-code-review](https://github.com/alibaba/open-code-review)：阿里巴巴的代码审查工具，确定性流水线加 LLM Agent，行级评论，并带多语言规则。
 2. [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill)：给编码 Agent 用的分阶段安全审计技能。

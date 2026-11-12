@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。
-
 #### 千问三款模型在 GMI Cloud 继续免费一周
 
 千问 RSS：Qwen3.8-Max、Qwen3.8-Flash 和 Wan3.0 在 GMI Cloud 上再免费 7 天，三个模型的速率限制也提高了。资格和截止以 GMI 与千问的原文为准。
@@ -42,7 +40,7 @@ QwenGyre 做长程 Agent 训练，Kiro CLI V3 开始铺开
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-10-15**）。相对 2026-10-13，按归一化名称没有新模型进入 Top-15（展示名改成了带空格的写法），图中不标 NEW。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-10-15。图中无红圈。
 
 ![LLM Arena Top15 2026-10-15](llm-arena-top15-2026-10-15-marked.png)
 
@@ -82,9 +80,7 @@ SpaceXAI 的 Grok 4.7 在 Amazon Bedrock 可用，具备更长的推理能力与
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-10-15**。
-
-> 存档：[2026-10-15 github.com/trending](https://web.archive.org/web/20261015004025/https://github.com/trending)
+快照 2026-10-15（daily / all）。
 
 1. [morluto/rea](https://github.com/morluto/rea)：用 Agent 做逆向。
 2. [debpalash/VoiceStudio](https://github.com/debpalash/VoiceStudio)：可本地运行的语音工作室。
@@ -143,8 +139,6 @@ LFM2.5-24B-A2B 是一款面向设备端运行的推理型 MoE 模型，保持 40
 美团技术博客讨论 SLM 生成式高并发推理引擎，优化的是延迟约束下的有效吞吐，而不是只把批量开大。
 
 > 原始链接：[SLM 生成式高并发推理引擎](https://tech.meituan.com/2026/10/15/Small-Language-Model-in-meituan.html)（发布日 2026-10-15）
-
-字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档。千问的训练系统和免费额度写在模型进展与薅羊毛。
 
 #### Qoder Fast: Keeping Pace with Your Thoughts
 

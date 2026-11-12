@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。订阅里没有核对到落在本窗口、且属于开发者额度或订阅优惠的帖。
-
 #### You can now chat with Lovable for free
 
 Lovable 现已提供免费对话功能，用户可通过提问让 Lovable 帮助评估创意、将客户反馈转为计划、比较不同版本并实时迭代；Lovable 能读取已连接工具（如 Notion、Granola、Linear）、检查应用代码与 Lovable Cloud 数据库以分析使用数据并据此建议或构建功能，还可撰写邮件、指南和提案等文档。
@@ -26,7 +24,9 @@ Qwen3.8-Omni-Flash，Grok 4.7
 
 #### 整体排名
 
-本期为补录。覆盖窗口内没有 Arena 榜单发布日。相邻两份是 2026-09-13 和 2026-09-25；后者是本期生成日，不计入窗口。不附榜单图，也不用其它日期的名次。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+较上周无新榜。榜单发布日 2026-09-13。红圈：muse-spark-1.3-max。
+
+![LLM Arena Top15 2026-09-13](llm-arena-top15-2026-09-13-marked.png)
 
 #### GPT-6 Sol 与 Luna
 
@@ -112,9 +112,7 @@ AWS 在 Amazon Bedrock 上上线了 Moonshot AI 的开源模型 Kimi K3，号称
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-09-24**。第一条在存档页上没有简介。
-
-> 存档：[2026-09-24 github.com/trending](https://web.archive.org/web/20260924000041/https://github.com/trending)
+快照 2026-09-24（daily / all）。
 
 1. [anthropics/financial-services](https://github.com/anthropics/financial-services)：存档页未给出简介。
 2. [google/ax](https://github.com/google/ax)：Google 的开放 Agent 编排运行时。
@@ -161,8 +159,6 @@ Hugging Face 介绍了 tokenizers v1 的性能重构与基准：保持与 v0.23 
 Kimi 公众号：macOS 和 Windows 版同时上线，从 kimi.com/code 安装。桌面端可以直接用 Kimi Code 的 Agent：对话读写代码、运行命令、做自动化任务。
 
 > 原始链接：[Kimi Code Desktop 正式与你见面](https://mp.weixin.qq.com/s?__biz=MzcwMjM3ODEzOA==&mid=2247487615&idx=1&sn=1969ad8d7fe3d87d538e983fb6c1963f)（发布日 2026-09-21）
-
-字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档。千问和 MiniMax 的发布写在模型进展和项目开源。
 
 #### Project & Discussion: Where Humans and Agents Work Together
 
