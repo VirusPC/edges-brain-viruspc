@@ -173,6 +173,13 @@ const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-11-06"[^>
 assert.ok(arenaSrc, 'latest issue is missing the arena image');
 const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 exists(arenaRel);
+assert.match(latestIssue, /alt="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"/);
+const cloudSrc = latestIssue.match(/<img[^>]*alt="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"[^>]*src="([^"]+)"/)
+  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"/);
+assert.ok(cloudSrc, 'latest issue is missing the keyword cloud');
+const cloudRel = cloudSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
+assert.match(cloudRel, /keywords-cloud-2026-11-06/);
+exists(cloudRel);
 
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
 assert.match(backfillIssue, /<h1>\s*2026-10-23 AI Coding 资讯\s*<\/h1>/);
