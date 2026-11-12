@@ -227,6 +227,15 @@ for (const rel of rels.filter((item) => item.endsWith('.html') || item.endsWith(
 const about = fs.readFileSync(path.join(dist, 'about/index.html'), 'utf8');
 assert.match(about, /亲手修订后发表的成稿/);
 
+const githubLink = /<footer class="colophon">[\s\S]*?<a href="https:\/\/github\.com\/VirusPC" rel="me noopener">GitHub<\/a>/;
+for (const rel of rels.filter((item) => item.endsWith('.html'))) {
+  assert.match(
+    fs.readFileSync(path.join(dist, rel), 'utf8'),
+    githubLink,
+    `${rel} is missing the GitHub profile link`,
+  );
+}
+
 console.log(
   `site dist ok: ${expectedNotes.length} notes, fixture ${fixtureOn ? 'on' : 'off'}, ${rels.length} files`,
 );
