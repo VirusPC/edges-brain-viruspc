@@ -6,13 +6,13 @@
 
 ## 已归档周报
 
-- [2026-11-06 AI Coding 资讯](2026-11-06-ai-coding-news.md) — 覆盖 2026-10-30～2026-11-05；按新模版重跑，附 Arena 2026-11-06 快照图（发布日在窗口外，文中已注明）。
+- [2026-11-06 AI Coding 资讯](2026-11-06-ai-coding-news.md) — 覆盖 2026-10-30～2026-11-05；按新模版重跑。Arena 复用 2026-10-28 的图（较上周无新榜）。
 - [2026-10-30 AI Coding 资讯](2026-10-30-ai-coding-news.md) — 覆盖 2026-10-23～2026-10-29；按新模版重跑，附 Arena 2026-10-28 快照图。
 - [2026-10-23 AI Coding 资讯](2026-10-23-ai-coding-news.md) — 覆盖 2026-10-16～2026-10-22；2026-11 按订阅重跑。关键词：MiniMax M3.1 Flash，DeepSeek V4.1 Flash。附 Arena 2026-10-22 快照图。
 - [2026-10-16 AI Coding 资讯](2026-10-16-ai-coding-news.md) — 覆盖 2026-10-09～2026-10-15；2026-11 按订阅重跑。关键词：Gemini 4 Argon 进入 Antigravity。附 Arena 2026-10-15 快照图。
 - [2026-10-09 AI Coding 资讯](2026-10-09-ai-coding-news.md) — 覆盖 2026-10-02～2026-10-08；2026-11 按订阅重跑。关键词：GPT-6 面向所有人，Claude Haiku 5.5。附 Arena 2026-10-08 快照图。本窗口订阅里没有国内技术团队的条目。
 - [2026-10-02 AI Coding 资讯](2026-10-02-ai-coding-news.md) — 覆盖 2026-09-25～2026-10-01；2026-11 按订阅重跑。关键词：GPT-6.1 Sol 与 dots。附 Arena 2026-09-30 快照图。
-- [2026-09-25 AI Coding 资讯](2026-09-25-ai-coding-news.md) — 覆盖 2026-09-18～2026-09-24；2026-11 按订阅重跑。关键词：GPT-6 Sol 与 Luna，Claude Opus 5.5。窗口内无 Arena 发布日，无榜单图。
+- [2026-09-25 AI Coding 资讯](2026-09-25-ai-coding-news.md) — 覆盖 2026-09-18～2026-09-24；2026-11 按订阅重跑。关键词：GPT-6 Sol 与 Luna，Claude Opus 5.5。Arena 复用 2026-09-13 的图（较上周无新榜）。
 - [2026-09-18 AI Coding 资讯](2026-09-18-ai-coding-news.md) — 覆盖 2026-09-11～2026-09-17；2026-11 按订阅重跑。关键词：Claude Fable 5.1 发布。附 Arena 2026-09-13 快照图。本窗口订阅里没有国内技术团队的条目。
 - [2026-09-04 AI Coding 资讯](2026-09-04-ai-coding-news.md) — 覆盖 2026-08-28～2026-09-03；2026-11 按订阅重跑。关键词：GPT-6 Astra，Fable 5.1 进入 Devin。附 Arena 2026-09-02 快照图。
 - [2026-08-28 AI Coding 资讯](2026-08-28-ai-coding-news.md) — 覆盖 2026-08-21～2026-08-27；2026-11 按订阅重跑。关键词：GPT-5.6 进入 Kiro。附 Arena 2026-08-27 快照图。本窗口订阅里没有国内技术团队的工程帖，模型发布写在模型进展。
@@ -29,3 +29,4 @@
 2. 文章优先来自 OPML 里的 feed。feed 正文够写摘要就不要再抓原文。feed 太短、失败、被截断，或该站没有 feed 时，再用列表页、sitemap 或文章页核对日期和链接。失效链接须修复或排除。
 3. 每篇摘要不超过 200 字；AI Coding 相关条目附带研发落点。
 4. 执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。播客不进 OPML，只在本周关键词或相关章节里按需点名。
+5. 每期说明文件是同名 `YYYY-MM-DD-ai-coding-news.notes.md`，记录来源细节和缺项原因。站点不收录、不链接。

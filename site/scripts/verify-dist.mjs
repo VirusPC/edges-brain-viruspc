@@ -167,9 +167,18 @@ const plainNote = fs.readFileSync(path.join(dist, 'notes/2026-10-29--open-grokbo
 assert.doesNotMatch(plainNote, /IntersectionObserver/);
 assert.doesNotMatch(aiNewsList, /IntersectionObserver/);
 assert.match(latestIssue, /aria-current="page"[^>]*>\s*AI News\s*</);
-assert.match(latestIssue, /alt="LLM Arena Top15 2026-11-06"/);
-const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-11-06"[^>]*src="([^"]+)"/)
-  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top15 2026-11-06"/);
+assert.match(latestIssue, /较上周无新榜/);
+assert.match(latestIssue, /alt="LLM Arena Top15 2026-10-28"/);
+assert.doesNotMatch(latestIssue, /llm-arena-top15-2026-11-06/);
+assert.doesNotMatch(latestIssue, /ai-coding-news\.notes/);
+assert.doesNotMatch(aiNewsList, /ai-coding-news\.notes/);
+assert.equal(
+  rels.some((rel) => rel.includes('.notes')),
+  false,
+  'notes sidecars are not site pages',
+);
+const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-10-28"[^>]*src="([^"]+)"/)
+  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top15 2026-10-28"/);
 assert.ok(arenaSrc, 'latest issue is missing the arena image');
 const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 exists(arenaRel);

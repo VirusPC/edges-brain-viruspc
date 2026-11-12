@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。
-
 #### Devin：Gemini 3.7 Flash 两周五折
 
 Devin 桌面端和 CLI 已可用 Gemini 3.7 Flash。RSS 称其达到 Claude Sonnet 5 一档的表现、价格不到一半，并在两周内五折。额度与截止日期以 Devin 原文为准。
@@ -26,7 +24,7 @@ Claude Code 默认 Auto，Amp 的全局插件
 
 #### 整体排名
 
-LLM Arena（Hugging Face `lmarena-ai/leaderboard-dataset` 全量文件，`text_style_control` / overall，榜单发布日 **2026-08-12**，落在本窗口内）。相对 2026-08-11，Top-15 里是 thinking / Flash 换成 high 变体，没有新的模型族进入，图中不标 NEW。当前脚本只拉 `latest`，这份历史榜来自全量 parquet。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-08-12。图中无红圈。
 
 ![LLM Arena Top15 2026-08-12](llm-arena-top15-2026-08-12-marked.png)
 
@@ -84,9 +82,7 @@ NVIDIA发布了开源的多语言语音合成模型Magpie TTS，支持12种语�
 
 #### GitHub Trending（daily / all 前 5）
 
-OPML 里的 GitHubTrendingRSS 只保留当天快照（本次拉取为 2026-11-11）。该 RSS 的 Wayback 在整个窗口里只有 2026-09-09 一份，盖不住各周名次。下面 5 条来自 Wayback 对 [github.com/trending](https://github.com/trending) 的存档（页面为 Today、全部语言，即 daily / all），快照 **2026-08-13**。简介译自存档页上的仓库描述。
-
-> 存档：[2026-08-13 github.com/trending](https://web.archive.org/web/20260813000733/https://github.com/trending)
+快照 2026-08-13（daily / all）。
 
 1. [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design)：给 Claude Code 用的 29 种编辑式示意图，自包含 HTML + SVG。
 2. [macro-inc/macro](https://github.com/macro-inc/macro)：邮件、聊天、文档、任务、Agent 和通话放在同一工作区，并共享 AI 记忆。
@@ -133,8 +129,6 @@ IBM研究团队介绍了ALTK-Evolve系统，旨在优化AI智能体在多步骤�
 MiniMax 公众号：H3 开源一周后，Hugging Face 上衍生出接近 300 个模型，ComfyUI 版本下载量近 700 万。文中提到有人把约 120GB 的模型压进消费级显卡，也有人重写了面向 Mac 的推理引擎。
 
 > 原始链接：[开源之后，MiniMax H3 拥有了 300 个分身](https://mp.weixin.qq.com/s?__biz=MzE5MTA3NzcxMQ==&mid=2247489037&idx=1&sn=0e17d9fff121fe7c7fd8143b7287914e)（发布日 2026-08-12）
-
-字节、阿里、腾讯、支付宝、淘宝、快手这几份 Wechat2RSS 在 2026-11-11 重拉时，最早条目已经晚于本窗口，Wayback 也没有这些 feed 的存档，这几家当周文章无法从订阅补回。
 
 #### MiniMax Music 3.0：新一代开放权重、生产级全能音乐模型
 

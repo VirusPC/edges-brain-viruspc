@@ -1,13 +1,5 @@
 覆盖窗口：2026-09-25～2026-10-01（生成日 2026-10-02）。
 
-## 〇、薅羊毛
-
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。百度 Geek 说 9 月 30 日的「国庆免费领」是音箱和京东卡一类礼品，不是开发者额度，不写入本期。
-
-<br/>
-
-<br/>
-
 ## 一、本周关键词
 
 GPT-6.1 Sol 与 dots
@@ -24,7 +16,7 @@ Devin 变便宜，DeepSeek 开源昇腾组件
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-09-30**）。红圈为相对 2026-09-25 新进入 Top-15 的 **gemini-4-argon-high**，并且排在第一。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-09-30。红圈：gemini-4-argon-high。
 
 ![LLM Arena Top15 2026-09-30](llm-arena-top15-2026-09-30-marked.png)
 
@@ -82,9 +74,7 @@ xAI 的 Grok 4.7 已在 Amazon Bedrock 上线，提供面向编码、长时代�
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-10-01**。
-
-> 存档：[2026-10-01 github.com/trending](https://web.archive.org/web/20261001020842/https://github.com/trending)
+快照 2026-10-01（daily / all）。
 
 1. [NVIDIA/OpenShell](https://github.com/NVIDIA/OpenShell)：给自主 Agent 用的运行时，强调安全和私密。
 2. [debpalash/VoiceStudio](https://github.com/debpalash/VoiceStudio)：可本地运行的语音工作室。
@@ -119,8 +109,6 @@ Hugging Face Hub 现新增“RL Environments”支持：通过在数据集仓库
 深度求索：面向华为昇腾的 TileLang 编译器、计算库和分布式通信库开源，并与此前面向英伟达平台的组件一一对应。文中把 TileLang 写成比 CUDA 更好写、同时要打到硬件上限的高级语言。
 
 > 原始链接：[DeepSeek 开源昇腾基础组件](https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ==&mid=2247485843&idx=1&sn=565102c3642d88e814331390bf62d276)（发布日 2026-09-30）
-
-字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档。
 
 <br/>
 

@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本次重拉 linux.do 福利 RSS 时，源里只剩下 2026-11-10 当天的条目（共 25 条，且已被截断），**窗口 10-23～10-29 内的社区帖已不在当前 RSS 中**，故未收录 linux.do 帖。下列两条来自同期官方博客，发布日已核对。
-
 #### Kiro：首次升级付费计划赠 500 试用额度
 
 自 2026 年 11 月 1 日起，首次从免费版升级 Kiro 付费计划，首月剩余时间免费，并获 500 点试用额度（12 个月内可用，计划额度用尽后扣除）。费用与计划额度按升级时剩余秒数比例折算。
@@ -36,7 +34,7 @@ GPT-6.1 Terra（computer use）、Mistral Large 4、Nemotron 3.5 Transcribe、LF
 
 #### 整体排名
 
-LLM Arena（Hugging Face 数据集 `lmarena-ai/leaderboard-dataset`，overall，榜单发布日 **2026-10-28**，落在本窗口内）。红圈为相对上一份可核验快照（2026-10-22）新进入 Top-15 的模型，本期仅 **Gemini 4 Carbon (High)**。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-10-28。红圈：Gemini 4 Carbon (High)。
 
 ![LLM Arena Top15 2026-10-28](llm-arena-top15-2026-10-28-marked.png)
 
@@ -78,10 +76,6 @@ Liquid AI 发布约 2B 参数量级的文本 / 视觉 / 音频 / 全模态 / 决
 <br/>
 
 ## 三、项目开源
-
-#### GitHub Trending
-
-约定源 mshibanami/GitHubTrendingRSS 的当前 RSS 只保留当天快照（本次拉取为 **2026-11-10**），其仓库的 generated-feeds 分支也是覆盖发布，**未能取回 10-23～10-29 的 daily/all 历史 XML**，故本期不列「前 5」，以免用后期数据或无法核验的名次冒充当时榜单。
 
 #### Content Studio — LangChain 设计 Agent
 

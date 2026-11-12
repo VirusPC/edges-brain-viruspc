@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。订阅里没有核对到落在本窗口的开发者额度或订阅优惠。
-
 #### We’re expanding the Claude Startups program to help founders build
 
 Anthropic 扩大了 Claude Startups 项目，为在 Claude 上构建公司的创始人提供一系列支持，包括一年免费 Claude Team（最多五个 Premium 帐位）、一次性 1,000 美元 API 额度、合作伙伴工具折扣与额度（合计最高可达 45,000 美元）、与 Applied AI 团…
@@ -28,7 +26,7 @@ GPT-6 家族选型指南，Sonnet 5.5 进入 Kiro
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-10-08**）。相对 2026-10-02 没有新模型进入 Top-15，图中不标 NEW。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-10-08。图中无红圈。
 
 ![LLM Arena Top15 2026-10-08](llm-arena-top15-2026-10-08-marked.png)
 
@@ -68,9 +66,7 @@ Anthropic 在 Project Glasswing 和扩展的 Cyber Verification Program 中向�
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-10-08**。
-
-> 存档：[2026-10-08 github.com/trending](https://web.archive.org/web/20261008024504/https://github.com/trending)
+快照 2026-10-08（daily / all）。
 
 1. [morluto/rea](https://github.com/morluto/rea)：用 Agent 做逆向，从应用行为到原生二进制。
 2. [mattpocock/skills](https://github.com/mattpocock/skills)：作者从自己的 `.agents` 目录拿出的工程技能。

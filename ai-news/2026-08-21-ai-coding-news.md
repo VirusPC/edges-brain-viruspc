@@ -2,8 +2,6 @@
 
 ## 〇、薅羊毛
 
-本期为补录。linux.do 福利 RSS 当前只剩生成日之后的帖子，Wayback 没有该地址的存档，窗口内的社区帖补不回来。下面两条来自仍在订阅里的官方 RSS。
-
 #### Amp 教育价：每月 10 美元
 
 学生和教师可以按每月 10 美元订阅 Amp，RSS 称是原价的一半，包含前沿 Agent、可无人值守的远程 orbs，以及代码托管。资格以 Amp 原文为准。
@@ -50,7 +48,7 @@ Warp Factories，Codex 两周做完多年的测试迁移
 
 #### 整体排名
 
-LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-08-19**）。红圈为相对 2026-08-12 新进入 Top-15 的 **gemini-3.7-flash-high** 与 **glm-5.3-max**。本环境无 Artificial Analysis 密钥，不单列 AA 小节。
+榜单发布日 2026-08-19。红圈：gemini-3.7-flash-high、glm-5.3-max。
 
 ![LLM Arena Top15 2026-08-19](llm-arena-top15-2026-08-19-marked.png)
 
@@ -72,9 +70,7 @@ LLM Arena（同一份全量数据集，overall，榜单发布日 **2026-08-19**�
 
 #### GitHub Trending（daily / all 前 5）
 
-第三方 Trending RSS 没有这一天的存档。下面 5 条来自 Wayback 对 `github.com/trending`（Today / 全部语言）的存档，快照 **2026-08-20**。
-
-> 存档：[2026-08-20 github.com/trending](https://web.archive.org/web/20260820001141/https://github.com/trending)
+快照 2026-08-20（daily / all）。
 
 1. [harry0703/MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo)：按主题用大模型生成短视频。
 2. [volcengine/OpenViking](https://github.com/volcengine/OpenViking)：给 Agent 用的上下文数据库，把记忆、检索和技能放在一起。
@@ -241,8 +237,6 @@ BreadStudio团队提出了CEA（认知参与对齐）数据集与研究假设，
 美团技术博客：搜索从关键词匹配、行为统计走到复杂意图。这篇写 LLM 语义表征在服务零售排序上的三期实践，从单点特征到可跨场景复用的表征。
 
 > 原始链接：[美团搜索3.0](https://tech.meituan.com/2026/08/20/01-meituan-Query-3.0.html)（发布日 2026-08-20）
-
-字节、阿里、腾讯、支付宝的 Wechat2RSS 已滚出本窗口且没有 Wayback 存档，当周文章无法从订阅补回。
 
 #### Qoder Completes Independent SOC 2 Type II Examination
 
