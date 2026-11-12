@@ -79,7 +79,10 @@ function current(href: string, key: string) {
         <slot />
       </main>
       <footer class="colophon">
-        <a href={siteUrl('/rss.xml')}>RSS</a>
+        <span class="colophon-links">
+          <a href={siteUrl('/rss.xml')}>RSS</a>
+          <a href="https://github.com/VirusPC" rel="me noopener">GitHub</a>
+        </span>
         <span>peng cheng</span>
       </footer>
     </div>

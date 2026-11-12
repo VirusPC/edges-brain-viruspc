@@ -458,6 +458,12 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
 
 .colophon a { color: inherit; }
 
+.colophon-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.95rem;
+}
+
 @media (max-width: 1000px) {
   .home-grid { grid-template-columns: 1fr; gap: 1.8rem; }
   .home-notes,
