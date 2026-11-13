@@ -1,2 +1,2 @@
-# 17.x 能配 NumPy 1.26。pyarrow 26 需要 NumPy 2。
+# 固定 17.0.0。PyPI 上没有 cp313 wheel，运行用 Python 3.12。不要为了 3.13 升级。
 pyarrow==17.0.0

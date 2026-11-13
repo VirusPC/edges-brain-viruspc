@@ -39,6 +39,7 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 - [领域任务](<tasks/AGENTS.md>) — 领域任务入口。
 - [笔记规范](<notes/AGENTS.md>) — 笔记规范入口。
 
+- [skills/managed/weekly\-ai\-blogs\-digest/AGENTS.md](<skills/managed/weekly-ai-blogs-digest/AGENTS.md>) — weekly\-ai\-blogs\-digest 的精选规则与跑周报复盘
 <!-- edges-descendants:end -->
 
 <!-- edges:end -->

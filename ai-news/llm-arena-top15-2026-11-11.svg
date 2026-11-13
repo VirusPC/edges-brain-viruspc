@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="778" viewBox="0 0 1100 778">
+<title>LLM Arena Top 15 — publish 2026-11-11</title>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="550.0" y="28" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="18" font-weight="700" fill="#222">LLM Arena Top 15 — publish 2026-11-11</text>
+<text x="550.0" y="50" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#555">HF lmarena-ai/leaderboard-dataset / text_style_control / overall</text>
+<line x1="320" y1="70" x2="320" y2="700.0" stroke="#ccc" stroke-width="1"/>
+<line x1="320.0" y1="70" x2="320.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="320.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">1485</text>
+<line x1="468.9" y1="70" x2="468.9" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="468.9" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">1495</text>
+<line x1="617.8" y1="70" x2="617.8" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="617.8" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">1505</text>
+<line x1="766.7" y1="70" x2="766.7" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="766.7" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">1515</text>
+<line x1="915.6" y1="70" x2="915.6" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="915.6" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">1525</text>
+<text x="655.0" y="738.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#444">Arena Score</text>
+<text x="308" y="95.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">1. Gemini 4 Carbon (High)</text>
+<rect x="320" y="79.5" width="613.1" height="23.1" rx="3" ry="3" fill="#5B9BD5"/>
+<text x="941.1" y="95.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1526.2</text>
+<text x="308" y="137.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">2. Gemini 4 Argon (High)</text>
+<rect x="320" y="121.5" width="546.3" height="23.1" rx="3" ry="3" fill="#5B9BD5"/>
+<text x="874.3" y="137.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1521.7</text>
+<text x="308" y="179.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">3. Muse Wonder (Max)</text>
+<rect x="320" y="163.4" width="385.0" height="23.1" rx="3" ry="3" fill="#2F5496"/>
+<text x="713.0" y="179.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1510.9</text>
+<text x="308" y="221.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">4. Claude Opus 5.5 (High)</text>
+<rect x="320" y="205.4" width="324.3" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="652.3" y="221.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1506.8</text>
+<text x="308" y="263.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">5. Claude Fable 5 (High)</text>
+<rect x="320" y="247.4" width="282.6" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="610.6" y="263.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1504.0</text>
+<text x="308" y="305.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">6. Claude Opus 4.6 (High)</text>
+<rect x="320" y="289.4" width="265.5" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="593.5" y="305.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1502.8</text>
+<text x="308" y="347.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">7. Claude Fable 5.1 (Max)</text>
+<rect x="320" y="331.4" width="257.9" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="585.9" y="347.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1502.3</text>
+<text x="308" y="389.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">8. Claude Opus 4.7 (High)</text>
+<rect x="320" y="373.4" width="240.2" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="568.2" y="389.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1501.1</text>
+<text x="308" y="431.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">9. Gemini 3.8 Flash (High)</text>
+<rect x="320" y="415.4" width="173.6" height="23.1" rx="3" ry="3" fill="#5B9BD5"/>
+<text x="501.6" y="431.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1496.7</text>
+<text x="308" y="473.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">10. Muse Spark 1.3 (Max)</text>
+<rect x="320" y="457.4" width="171.2" height="23.1" rx="3" ry="3" fill="#2F5496"/>
+<text x="499.2" y="473.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1496.5</text>
+<text x="308" y="515.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">11. Claude Opus 4.6</text>
+<rect x="320" y="499.4" width="170.2" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="498.2" y="515.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1496.4</text>
+<text x="308" y="557.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">12. Claude Opus 4.7</text>
+<rect x="320" y="541.5" width="132.1" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="460.1" y="557.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1493.9</text>
+<text x="308" y="599.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">13. Muse Spark 1.2 (xHigh)</text>
+<rect x="320" y="583.5" width="117.5" height="23.1" rx="3" ry="3" fill="#2F5496"/>
+<text x="445.5" y="599.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1492.9</text>
+<text x="308" y="641.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">14. Muse Spark 1.1</text>
+<rect x="320" y="625.5" width="87.4" height="23.1" rx="3" ry="3" fill="#2F5496"/>
+<text x="415.4" y="641.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1490.9</text>
+<text x="308" y="683.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">15. Gemini 4 Hydrogen (High)</text>
+<rect x="320" y="667.5" width="80.8" height="23.1" rx="3" ry="3" fill="#5B9BD5"/>
+<text x="408.8" y="683.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">1490.4</text>
+<ellipse cx="237.9" cy="679.0" rx="217.9" ry="17.6" fill="none" stroke="#E53935" stroke-width="2.5" opacity="0.95"/>
+<rect x="463.8" y="668.0" width="44" height="22" rx="6" ry="6" fill="#E53935"/>
+<text x="485.8" y="683.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff">NEW</text>
+<rect x="890" y="629.0" width="12" height="12" rx="2" fill="#5B9BD5"/>
+<text x="906" y="639.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">google</text>
+<rect x="890" y="647.0" width="12" height="12" rx="2" fill="#2F5496"/>
+<text x="906" y="657.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">meta</text>
+<rect x="890" y="665.0" width="12" height="12" rx="2" fill="#E8A87C"/>
+<text x="906" y="675.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">anthropic</text>
+<text x="24" y="756" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">红圈/NEW：本周新发布并出现在本期榜上的 Gemini 4 Hydrogen (High)</text>
+</svg>
