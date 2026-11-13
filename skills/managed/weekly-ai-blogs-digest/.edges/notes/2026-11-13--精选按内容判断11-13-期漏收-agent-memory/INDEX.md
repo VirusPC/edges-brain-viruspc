@@ -40,3 +40,25 @@
 ## 后续
 
 干净重跑后用户发现仍收了 IPO 路演、Devin Teams 定价、CodeRabbit ARR、AWS Marketplace 等营销稿，因此在第 12 行补充上述营销过滤规则，并再次用干净 agent 重跑验证。
+
+## 后续修正
+
+2026-11-13。在同一分支上补三处运行规则。没有重跑周报，没有改精选结果、Devin、GitHub Trending、榜图或历史期正文。
+
+### Arena 的比较基准和红圈
+
+排名比较对照上一期周报正文实际采用的那份榜（发布日和 Top-N）。`fetch_llm_arena.py` 输出的 `prior_publish_date` 只是数据集里紧挨着的上一发布日，上一期正文没采用它时，不用它做基准，也不用任意一份更早的可核验快照。
+
+红圈仍圈本周窗口内新发布、并且出现在本期这张榜上的模型，用绘图 skill 的 `--highlight` 标出。名次变化写在比较里，不拿来决定红圈。确认不了哪些是本周新发布的模型时，才用绘图 skill 的默认启发。
+
+本期采用的榜仍是 `--until` 窗口结束日之前最近一份。发布日与上一期正文采用的榜相同时，沿用那一期的图，图注写发布日，并加上「较上周无新榜」。
+
+### npm 工作目录
+
+`package.json` 在 `scripts/`，不在 skill 根目录。在 skill 根目录执行 `npm install` 因找不到 `package.json` 失败，退出码 254。同一目录执行 `npm install --prefix scripts` 后，`node scripts/render_keyword_cloud.mjs --help` 能加载 `@napi-rs/canvas`、`@resvg/resvg-js` 和 `d3-cloud`。当时的 Node 是 v22.23.4；`scripts/package.json` 的 `engines` 要求 Node 20 或以上。
+
+### Python 版本
+
+`pyarrow` 保持 `17.0.0`，没有升级。PyPI 上这份没有 cp313 wheel。Python 3.13.18 上 `pip install pyarrow==17.0.0` 转去编译 sdist，在准备构建依赖时失败（`ModuleNotFoundError: No module named 'pkg_resources'`）。加上 `--only-binary=:all:` 则直接找不到 17.0.0，可见版本从 18.0.0 起。
+
+Python 3.12.3 上按 skill 里的命令建 `/tmp/weekly-ai-blogs-digest-py312`，安装 `scripts/requirements.txt` 和 `scripts/requirements-leaderboard.txt` 成功。装上的是 feedparser 6.0.14、pyarrow 17.0.0，以及传递依赖 numpy 2.5.4（未另加 pin）。导入和一次内存 parquet 往返成功，`scripts/test_fetch_llm_arena.py` 4 项通过。三个抓取脚本的 `--help` 都由这个解释器跑通。Debian/Ubuntu 上 `python3.12 -m venv` 需要已安装 `python3.12-venv`，否则 ensurepip 不可用。

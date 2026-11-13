@@ -26,6 +26,6 @@ Artificial Analysis 和 LLM Arena 不是 OPML。见 skill 里的「非博客数�
 3. 还没有的话，到 [BestBlogs](https://github.com/ginobefun/BestBlogs) 的 `BestBlogs_RSS_Articles.opml`（以及根目录 `BestBlogs_RSS_ALL.opml`）里按域名找。对上了就写入 OPML。转换源可以订：`feedOrigin` 用 `bestblogs-rsshub`、`bestblogs-xgo` 或 `bestblogs-wechat2rss`，`bestblogs.adopted` 为 true，`fallback` 仍留 `list-page`。
 4. 上面都没有：OPML 不动，meta 里 `xmlUrl` 留空，`fallback` 写 `list-page`。列表页打不开再用浏览器。
 5. 给这条 source 写 `lane`（`product`、`tech` 或 `mixed`）。GitHub Trending 和薅羊毛用 `special`。
-6. 改完跑 `python3 ../scripts/fetch_feeds.py --check`。
+6. 改完后，用 skill「运行环境」里的 Python 3.12 跑 `../scripts/fetch_feeds.py --check`。
 
 播客不进这份 OPML。周报 skill 仍只在「本周风向」里点名播客。

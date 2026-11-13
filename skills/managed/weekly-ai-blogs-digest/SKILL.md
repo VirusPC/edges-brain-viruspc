@@ -11,15 +11,31 @@ description: 当用户想要汇总一段时间内（默认过去一周）AI / AI
 
 写周报时**侧重 Agent 与产品**（Agent 产品、编码工具、harness、企业落地）。研究向、红队、纯学术长文不要当作重点，可以不写或一笔带过。不要为了凑篇幅把窗口里每篇文章都铺进去。判断依据是内容，不是 URL 路径。融资、IPO、营收里程碑、定价套餐、厂商自写的客户案例等营销性内容不收，除非其中有具体的技术或产品细节。
 
+## 运行环境
+
+Python 用 3.12。`scripts/requirements-leaderboard.txt` 固定 `pyarrow==17.0.0`，PyPI 上这份没有 cp313 wheel；在 Python 3.13 上 pip 会转去编译源码包并失败。不要为了换解释器而升级 pyarrow。`feedparser==6.0.14` 要求 Python >=3.10，和榜单放在同一个 3.12 环境里。在本 skill 目录：
+
+```bash
+python3.12 -m venv /tmp/weekly-ai-blogs-digest-py312
+/tmp/weekly-ai-blogs-digest-py312/bin/pip install -r scripts/requirements.txt -r scripts/requirements-leaderboard.txt
+```
+
+Debian/Ubuntu 上若提示 ensurepip 不可用，先安装发行版的 `python3.12-venv`，再执行上面的 `venv` 命令。后面的 Python 脚本都用 `/tmp/weekly-ai-blogs-digest-py312/bin/python`。
+
+词云的 `package.json` 在 `scripts/`，不在 skill 根目录。Node 按 `scripts/package.json` 的 `engines` 用 20 或以上。在本 skill 目录：
+
+```bash
+npm install --prefix scripts
+```
+
 ## 任务执行流程
 
 生成日记为 D。覆盖窗口是 D-7 到 D-1（含两端，不含 D）。用户指定了别的日期就用用户的。时间窗必须写进正文，而且要严格遵守。
 
-1. 在本 skill 目录拉订阅：
+1. 在本 skill 目录，用上面的 Python 3.12 环境拉订阅：
 
 ```bash
-pip install -r scripts/requirements.txt
-python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/ai-coding-feeds.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/ai-coding-feeds.json
 ```
 
 日期要显式传入，不要依赖跑脚本那台机器的时区。
@@ -37,14 +53,14 @@ python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/
 1. **〇、薅羊毛**来自 OPML 分组「薅羊毛」里的 linux.do 福利 RSS，再加上其它博客里明显是优惠、额度、试用的帖子。只保留和 AI / Coding 相关的（模型额度、API、IDE、开发者订阅、给开发者的云主机等）。银行立减金、电商价保、会员日这类日常消费不写。
 
 2. **模型进展里的榜单**
-   - Artificial Analysis：跑 `python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`。密钥放在环境变量里，不要写进命令行或仓库。没有密钥或拉不到数据时，这一小节不写，原因写进说明文件。有数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。
-   - LLM Arena：先 `pip install -r scripts/requirements-leaderboard.txt`，再跑 `python3 scripts/fetch_llm_arena.py --until <窗口结束日> --out /tmp/llm-arena.json`。`--until` 取 `leaderboard_publish_date` ≤ 窗口结束日的最近一份。这不是 RSS，不需要密钥。Arena 官方不提供按周图片存档，图由这份历史榜单重画；上一期已有同一发布日的图时直接复用。要把 Top-N 画成带标记的 SVG，并导出 PNG，用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)。图放在「模型进展」开头。图注只写榜单发布日，以及红圈是谁；和上一期是同一份榜时，再加上「较上周无新榜」。新模型标记优先用「相对上一份可核验快照、新进入 Top-N」；只有做不到对比时，才用该绘图 skill 的默认启发。路径和分割写在 `scripts/fetch_llm_arena.py` 开头：`--until` 读 `full` parquet，不带 `--until` 才读 `latest`。
+   - Artificial Analysis：跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`。密钥放在环境变量里，不要写进命令行或仓库。没有密钥或拉不到数据时，这一小节不写，原因写进说明文件。有数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。
+   - LLM Arena：用上面的 Python 3.12 环境跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_llm_arena.py --until <窗口结束日> --out /tmp/llm-arena.json`。`--until` 取 `leaderboard_publish_date` ≤ 窗口结束日的最近一份，这份就是本期采用的榜。这不是 RSS，不需要密钥。Arena 官方不提供按周图片存档。发布日与上一期周报正文实际采用的榜相同时，沿用那一期的图，图注写发布日，并加上「较上周无新榜」。发布日更新时，用这份榜重画 Top-N 的 SVG 和 PNG，绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)。图放在「模型进展」开头。图注只写榜单发布日，以及红圈是谁。排名比较和红圈分开：排名比较对照上一期周报正文实际采用的那份榜（发布日和 Top-N）；`prior_publish_date` 只是数据集里紧挨着的上一发布日，上一期正文没采用它时不用它做基准。红圈圈本周窗口内新发布、并且出现在本期这张榜上的模型，用绘图 skill 的 `--highlight` 标出。名次变化写在比较里，不拿来决定红圈。确认不了哪些是本周新发布的模型时，才用该绘图 skill 的默认启发。路径和分割写在 `scripts/fetch_llm_arena.py` 开头：`--until` 读 `full` parquet，不带 `--until` 才读 `latest`。
 
 3. **GitHub Trending**在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，第三方抓页，不是 GitHub 官方 RSS）。周报里只保留 **daily / all 的前 5**，放到「项目开源」开头，并写快照日期。窗口内有可核验快照才列。没有可核验快照就整节省略，原因写进说明文件。
 
 ```bash
-python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json
-python3 scripts/fetch_llm_arena.py --until YYYY-MM-DD --out /tmp/llm-arena.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_llm_arena.py --until YYYY-MM-DD --out /tmp/llm-arena.json
 ```
 
 ## 输出内容模版
@@ -78,7 +94,7 @@ python3 scripts/fetch_llm_arena.py --until YYYY-MM-DD --out /tmp/llm-arena.json
 
 #### 整体排名
 
-先放榜单图。图注写发布日和红圈是谁；和上一期同一份榜时写「较上周无新榜」。有 Artificial Analysis 就一并写。再写本窗口值得记的模型发布。
+先放榜单图。图注写发布日和红圈是谁。红圈是本周窗口内新发布、且出现在本期这张榜上的模型。排名变化另写，对照上一期正文实际采用的榜。和上一期正文采用的是同一发布日时，沿用那一期的图，并写「较上周无新榜」。有 Artificial Analysis 就一并写。再写本窗口值得记的模型发布。
 
 ## 三、项目开源
 
@@ -115,10 +131,9 @@ weight = clamp(round1(0.6 * score + 0.25 * mentionPart + 0.15 * sourcePart), 1, 
 
 默认配色 `--palette ink-sans`（2026-11-12 从三套样例里选定）：思源黑体粗体，家族名 `Noto Sans CJK SC`，字重 700。底色 `#fffcf7`，最大词 `#b4541f`，其余大词 `#1c1b19`，中小词 `#3d3a34`、`#5c574e`。另两套预设：`serif-earth`（思源宋体，暖褐）、`wenkai-pine`（霞鹜文楷，青绿）。测量和 PNG 用同一个字体文件。找不到该文件就停，不要换别的中文字体。
 
-在本 skill 目录：
+在本 skill 目录（依赖由上面的 `npm install --prefix scripts` 装进 `scripts/node_modules`）：
 
 ```bash
-npm install
 node scripts/render_keyword_cloud.mjs \
   --md ../../../ai-news/YYYY-MM-DD-ai-news.md \
   --out-svg ../../../ai-news/keywords-cloud-YYYY-MM-DD.svg \
