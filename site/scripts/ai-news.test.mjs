@@ -33,12 +33,12 @@ const backfillKeywords = {
 test('issue files are the dated digests, not the readme, charts, or notes', () => {
   const files = listAiNewsFiles(aiNewsRoot);
   const notes = fs.readdirSync(aiNewsRoot).filter((name) => name.endsWith('.notes.md'));
-  assert.equal(files.length, 12);
-  assert.equal(notes.length, 12);
+  assert.equal(files.length, 13);
+  assert.equal(notes.length, 13);
   assert.equal(files.includes('README.md'), false);
   assert.equal(notes.includes('2026-11-06-ai-coding-news.notes.md'), true);
   assert.equal(files.includes('2026-11-06-ai-coding-news.notes.md'), false);
-  assert.equal(files.at(-1), '2026-11-06-ai-coding-news.md');
+  assert.equal(files.at(-1), '2026-11-13-ai-coding-news.md');
   assert.equal(files.at(0), '2026-08-14-ai-coding-news.md');
 });
 
