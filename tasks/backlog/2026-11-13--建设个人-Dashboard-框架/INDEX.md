@@ -1,7 +1,7 @@
 ---
 metadata:
   edges-type: task
-  edges-updated-at: '2026-11-13T18:42:58.724Z'
+  edges-updated-at: '2026-11-13T18:44:49.333Z'
   edges-title: 建设个人 Dashboard 框架
   edges-tasks-status: backlog
   edges-task-priority: none
@@ -34,3 +34,8 @@ description: 在改造 AI News 可视化之外，先建成一套可复用的个�
 例如学习记忆机制。技术迭代很快，学完 Codex 又出 Claude，之后又有 DSH 等框架，需要自动追踪这些相关更新。
 
 持续收集更新，保留历史并比较趋势；将新消息关联到已有学习笔记和已学内容，帮助识别值得补学的变化，并区分新机制与重复消息。
+
+**数据流编排（待探索）：**
+主题增多后，同一数据源需要复用，经不同处理流程分流到不同 Workflow；可能需要类似 Dify、n8n 的轻量数据流编排能力。
+
+这是候选方向，不等于已经决定引入这些产品，也不预设可视化拖拽、节点协议、技术栈或完成标准。
