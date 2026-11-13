@@ -36,3 +36,7 @@
 - Devin 与麦肯锡合作那篇链接已经 404，重跑时去掉了。
 
 本次改动在 [brain#479](https://github.com/VirusPC/edges-brain-viruspc/pull/479)，尚未合并。
+
+## 后续
+
+干净重跑后用户发现仍收了 IPO 路演、Devin Teams 定价、CodeRabbit ARR、AWS Marketplace 等营销稿，因此在第 12 行补充上述营销过滤规则，并再次用干净 agent 重跑验证。
