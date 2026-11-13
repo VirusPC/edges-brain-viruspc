@@ -6,13 +6,13 @@ import { siteUrl } from '../../lib/paths';
 import { formatISODate } from '../../lib/select.mjs';
 
 const issues = await getAiNews();
-const feed = { title: 'AI Coding 资讯', href: siteUrl('/ai-news/rss.xml') };
+const feed = { title: 'AI 资讯', href: siteUrl('/ai-news/rss.xml') };
 ---
 
-<BaseLayout title="AI News" description="AI Coding 资讯周报。" rss={feed}>
+<BaseLayout title="AI News" description="AI 资讯周报。" rss={feed}>
   <h1>AI News</h1>
   <p class="dek">
-    每周一篇 AI Coding 资讯，覆盖发布日前的 7 天。
+    每周一篇 AI 资讯，覆盖发布日前的 7 天。
     <a href={feed.href}>RSS</a>
   </p>
   {

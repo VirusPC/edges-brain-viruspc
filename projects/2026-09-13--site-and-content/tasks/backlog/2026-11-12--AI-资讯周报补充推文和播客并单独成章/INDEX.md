@@ -2,10 +2,10 @@
 metadata:
   edges-type: task
   edges-updated-at: '2026-11-11T17:01:00.857Z'
-  edges-title: AI Coding 资讯周报补充推文和播客并单独成章
+  edges-title: AI 资讯周报补充推文和播客并单独成章
   edges-tasks-status: backlog
   edges-task-priority: none
-name: ai_coding_资讯周报补充推文和播客并单独成章
+name: ai_资讯周报补充推文和播客并单独成章
 description: 现有周报只从博客、RSS、榜单和 Trending 取材；把推文和播客加入信源，并在周报中各自单独成章。
 ---
 **背景：**

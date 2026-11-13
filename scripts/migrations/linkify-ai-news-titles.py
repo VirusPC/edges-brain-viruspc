@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""把 AI Coding 周报条目标题改成来源链接，并去掉「原始链接」引用块。
+"""把 AI 资讯周报条目标题改成来源链接，并去掉「原始链接」引用块。
 
 可重复运行：已经是新格式的稿件保持不变。先在内存里改完全部文件，任一处对不上就整批不写。
 
@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 AI_NEWS = ROOT / "ai-news"
-ISSUE = re.compile(r"^\d{4}-\d{2}-\d{2}-ai-coding-news\.md$")
+ISSUE = re.compile(r"^\d{4}-\d{2}-\d{2}-ai-news\.md$")
 
 LINK_RE = re.compile(r"(?<!!)\[([^\[\]]*)\]\((https?://[^)\s]+)\)")
 HEADING_RE = re.compile(r"^####[ \t]+(.*)$")

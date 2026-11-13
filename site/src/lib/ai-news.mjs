@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { formatISODate, noteDateFromName } from './select.mjs';
 
-const ISSUE_FILE = /^(\d{4}-\d{2}-\d{2})-ai-coding-news\.md$/;
+const ISSUE_FILE = /^(\d{4}-\d{2}-\d{2})-ai-news\.md$/;
 
 /**
  * Dated digest files only. README, charts, and `*.notes.md` sidecars stay out.
@@ -81,7 +81,7 @@ export function formatCoverage(start, end) {
 
 /** @param {Date} date */
 export function issueTitle(date) {
-  return `${formatISODate(date)} AI Coding 资讯`;
+  return `${formatISODate(date)} AI 资讯`;
 }
 
 /**

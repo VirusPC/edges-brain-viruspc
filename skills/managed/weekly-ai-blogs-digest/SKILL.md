@@ -1,6 +1,6 @@
 ---
 name: weekly-ai-blogs-digest
-description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用此技能。先读 OPML 订阅并用脚本拉 RSS/Atom，再按固定章节精选成 markdown 周报。触发短语："本周 AI 资讯"、"汇总一下 AI 博客"、"weekly AI digest"、"看看这周 AI Coding 有什么新东西"。不要为单篇文章总结（用 summarize-ai-article）或非博客类信源单独触发。
+description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用此技能。先读 OPML 订阅并用脚本拉 RSS/Atom，再按固定章节精选成 markdown 周报。栏目名是「AI 资讯」。触发短语："本周 AI 资讯"、"AI Coding 资讯"、"汇总一下 AI 博客"、"weekly AI digest"、"看看这周 AI Coding 有什么新东西"。不要为单篇文章总结（用 summarize-ai-article）或非博客类信源单独触发。
 ---
 
 ## 订阅从哪来
@@ -49,11 +49,11 @@ python3 scripts/fetch_llm_arena.py --until YYYY-MM-DD --out /tmp/llm-arena.json
 
 ## 输出内容模版
 
-文件名：`ai-news/YYYY-MM-DD-ai-coding-news.md`（日期是生成日 D）。写完后更新 [`ai-news/README.md`](../../../ai-news/README.md) 的索引。榜单图和 SVG 真源放在同一目录，正文用相对路径引用 PNG。
+文件名：`ai-news/YYYY-MM-DD-ai-news.md`（日期是生成日 D）。写完后更新 [`ai-news/README.md`](../../../ai-news/README.md) 的索引。榜单图和 SVG 真源放在同一目录，正文用相对路径引用 PNG。
 
-说明文件：`ai-news/YYYY-MM-DD-ai-coding-news.notes.md`，与周报同目录。来源细节、密钥缺失、截断或快照缺失的原因写在这里。站点 `/ai-news/` 的列表和正文不展示、不链接这份文件。
+说明文件：`ai-news/YYYY-MM-DD-ai-news.notes.md`，与周报同目录。来源细节、密钥缺失、截断或快照缺失的原因写在这里。站点 `/ai-news/` 的列表和正文不展示、不链接这份文件。
 
-不要写文首一级标题。章节固定为下面这个顺序；某一章确实没有任何可写内容时，整章去掉，不要留空标题。
+栏目名是「AI 资讯」。索引、列表和 RSS 的标题写成 `YYYY-MM-DD AI 资讯`。正文不要写文首一级标题。章节固定为下面这个顺序；某一章确实没有任何可写内容时，整章去掉，不要留空标题。
 
 ```
 覆盖窗口：{{yyyy-MM-DD}}～{{yyyy-MM-DD}}（生成日 {{yyyy-MM-DD}}）。
@@ -120,7 +120,7 @@ weight = clamp(round1(0.6 * score + 0.25 * mentionPart + 0.15 * sourcePart), 1, 
 ```bash
 npm install
 node scripts/render_keyword_cloud.mjs \
-  --md ../../../ai-news/YYYY-MM-DD-ai-coding-news.md \
+  --md ../../../ai-news/YYYY-MM-DD-ai-news.md \
   --out-svg ../../../ai-news/keywords-cloud-YYYY-MM-DD.svg \
   --out-png ../../../ai-news/keywords-cloud-YYYY-MM-DD.png
 ```

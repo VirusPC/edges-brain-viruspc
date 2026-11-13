@@ -40,7 +40,7 @@
 ### 文章整体框架
 
 ```
-# {{yyyy-MM-DD}} AI Coding 资讯
+# {{yyyy-MM-DD}} AI 资讯
 
 ## 本周风向：{{yyyy-MM-DD}}～{{yyyy-MM-DD}}
 {{本周风向}}

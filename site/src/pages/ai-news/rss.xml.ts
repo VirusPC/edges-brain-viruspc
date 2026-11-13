@@ -20,8 +20,8 @@ export async function GET(context: { site?: string | URL }) {
   });
 
   return rss({
-    title: 'AI Coding 资讯',
-    description: '每周一篇 AI Coding 资讯。',
+    title: 'AI 资讯',
+    description: '每周一篇 AI 资讯。',
     site,
     items,
     customData: '<language>zh-cn</language>',

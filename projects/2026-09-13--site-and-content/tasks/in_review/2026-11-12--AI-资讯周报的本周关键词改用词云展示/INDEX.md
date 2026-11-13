@@ -2,10 +2,10 @@
 metadata:
   edges-type: task
   edges-updated-at: '2026-11-12T10:20:00.000Z'
-  edges-title: AI Coding 资讯周报的本周关键词改用词云展示
+  edges-title: AI 资讯周报的本周关键词改用词云展示
   edges-tasks-status: in_review
   edges-task-priority: none
-name: ai_coding_资讯周报的本周关键词改用词云展示
+name: ai_资讯周报的本周关键词改用词云展示
 description: 本周关键词目前只是一行文字，改用词云展示，让每期重点一眼可见。
 ---
 **背景：**
