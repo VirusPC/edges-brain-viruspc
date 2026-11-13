@@ -91,7 +91,15 @@ test('item titles link to the source and quote blocks are gone', () => {
     if (name === '2026-11-13-ai-news.md') {
       assert.match(body, /^### LLM Arena$/m, name);
       assert.match(body, /^### Artificial Analysis$/m, name);
+      assert.match(body, /^### 模型发布$/m, name);
       assert.doesNotMatch(body, /^#### 整体排名$/m, name);
+      const model = body.split(/^## 二、模型进展$/m)[1].split(/^## 三、/m)[0];
+      const arena = model.indexOf('### LLM Arena');
+      const analysis = model.indexOf('### Artificial Analysis');
+      const releases = model.indexOf('### 模型发布');
+      assert.ok(arena >= 0 && arena < analysis && analysis < releases, name);
+      assert.doesNotMatch(model.slice(analysis, releases), /^#### /m, name);
+      assert.match(model.slice(releases), /^#### \[/m, name);
     } else {
       assert.match(body, /^#### 整体排名$/m, name);
     }

@@ -229,6 +229,7 @@ assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、国内进展/);
 assert.match(newestToc[0], /LLM Arena/);
 assert.match(newestToc[0], /Artificial Analysis/);
+assert.match(newestToc[0], /模型发布/);
 assert.doesNotMatch(newestToc[0], /&lt;|&#x3C;|data-cat/);
 assertCategoryPills(newestIssue, [
   ['研发提效', '授人以鱼不如授人以渔：我对企业级 AI 研发提效的思考与实践'],
@@ -236,6 +237,7 @@ assertCategoryPills(newestIssue, [
 ], [
   /<h3\b[^>]*>\s*LLM Arena\s*<\/h3>/,
   /<h3\b[^>]*>\s*Artificial Analysis\s*<\/h3>/,
+  /<h3\b[^>]*>\s*模型发布\s*<\/h3>/,
 ]);
 
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
