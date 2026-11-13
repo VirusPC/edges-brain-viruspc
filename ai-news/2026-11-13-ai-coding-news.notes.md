@@ -1,0 +1,44 @@
+# 2026-11-13 周报说明
+
+这份文件与 `2026-11-13-ai-coding-news.md` 同目录。站点 /ai-news/ 不展示、不链接。
+
+## 订阅与抓取
+
+- 覆盖窗口 2026-11-06～2026-11-12，生成日 2026-11-13（Asia/Shanghai）。章节顺序与仓库 `skills/managed/weekly-ai-blogs-digest/SKILL.md` 一致（〇薅羊毛 → 本周关键词 → 模型进展 → 项目开源 → 国内进展 → 国际进展），与例程提示一致。
+- `fetch_feeds.py`：46 个源、0 个请求错误、窗口内 218 条（thin 107）。精简 JSON 与全文 JSON、榜单快照写入 [VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data) 的 `issues/2026-11-13/`。
+- 仓库 skill 当前还没有 `--out-full`（对应任务仍在 backlog）。本期全文版由本地补丁脚本在同一次抓取逻辑下另存，不改正文仓里的 skill。
+
+## Arena
+
+窗口内有新榜。`fetch_llm_arena.py --until 2026-11-12` 取到 `leaderboard_publish_date=2026-11-09`（prior=2026-11-08，next=无）。上一期正文用的是 2026-10-28 的图；11-06、11-08 也有榜，但均不是本期应展示的「窗口结束日前最近一份」。
+
+相对上一份可核验快照（2026-11-08）的 Top-15：**无新进入、无落出**，只是名次微调（例如 Claude Opus 4.6 (High) 与 Claude Fable 5.1 (Max) 对调）。因此图中**未标红圈**，渲染时显式传入空 `--highlight`，避免脚本按最低票数启发式误标。本窗口新发布的 Fable 5.2、Mythos 5.2、Gemini 4 Hydrogen、Qwen4-Max 均未进入 11-09 的 Top-15。
+
+相对 2026-10-28（上期正文用图）：Muse Spark 1.1 进入、Claude Opus 5 (Max) 落出；这一变化在 11-06 的榜上已经出现，不属于相对 11-08 的新进入，故不在本期图中标 NEW。
+
+正文图注：榜单发布日 2026-11-09。
+正文图：`llm-arena-top15-2026-11-09-marked.png`（SVG 真源同目录）。
+数据来自 Hugging Face `lmarena-ai/leaderboard-dataset`（config `text_style_control`，overall，full parquet）。
+
+本环境无 `AA_API_KEY` / `ARTIFICIAL_ANALYSIS_API_KEY`，正文不写 Artificial Analysis 小节。
+
+## 薅羊毛
+
+linux.do 福利 RSS 明显截断：当前源 oldest=2026-11-12、newest 含生成日 2026-11-13，`truncated=true`。窗口 11-06～11-11 的社区帖已从当前 RSS 滚出，正文只采用窗口内仍能从该 RSS 核对到的 11-12 条目，并只保留可指向官方页的 AI / Coding 优惠。
+
+入选三条均有官方页：超算互联网 MaaS 特惠、ChatGPT Plus 退役军人一年、Devin for Startups。社区合集帖只作为超算互联网的补充链接。RSS 里大量中转站 / 充值折扣 / 非 AI 日常消费（银行、音乐会员、京东 e 卡等）未写入正文。
+
+未把滚出 RSS 的更早话题（例如监控里见过的其它社区帖）写进正文，以免无法用本期抓取结果核验发布日。
+
+## GitHub Trending
+
+mshibanami/GitHubTrendingRSS 的 daily/all 快照日期为 **2026-11-12**（feed 更新时间 2026-11-12 07:55 UTC），落在窗口最后一天，故正文列出前 5。名次按该 RSS 条目顺序，而不是 `fetch_feeds.py` 去重后的标题排序。Python / TypeScript 分类榜未写入正文。
+
+前 5 为：meta/astryx、ZhuLinsen/daily_stock_analysis、GoogleChrome/modern-web-guidance-src、shadcn/improve、addyosmani/agent-skills。
+
+## 其它截断或未写入
+
+- `aws-ml` 源 truncated（当前源 oldest=2026-11-11），窗口前半的 AWS 博文可能已滚出；正文只用窗口内仍能核对的条目，且只精选 Codex on Bedrock / AgentCore / Web Search。
+- 与上期正文同一 URL 的文章不再重复，例如 LangChain 的 [Agents Are Going Async](https://www.langchain.com/blog/agents-are-going-async) 虽被源标为 11-06，但已出现在 2026-11-06 期。本期改写同系列在窗口内的新文（v0.10 浏览器与异步子 Agent、上下文工程两篇）。
+- 支付宝 SEE Conf 系列多为议程与早鸟票，未单独成条。
+- Anthropic IPO 路演与多篇 OpenAI 客户案例、行业活动，按 skill「侧重 Agent 与产品」未展开。
