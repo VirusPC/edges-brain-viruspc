@@ -37,4 +37,5 @@ format: ordinary
 - [周报缺项写入 notes，Arena 用窗口结束日前最近榜](<project_ai_news_gap_notes_and_arena_window/INDEX.md>) — 写或回改 AI 资讯周报时打开：缺了的小节省略，原因进同名 .notes.md；Arena 用窗口结束日前最近一份榜。
 - [站点页脚 GitHub 指向公开个人大脑仓](<project_site_footer_github_is_brain_repo/INDEX.md>) — 改站点页脚或「本站源码」链接时打开：GitHub 文字链指向 edges\-brain\-viruspc，不是用户主页。
 - [栏目叫「AI 资讯」，稿件文件名用 ai\-news](<project_ai_news_column_name/INDEX.md>) — 写周报、改站点或任务卡时打开：栏目名是「AI 资讯」，稿件是 ai\-news/YYYY\-MM\-DD\-ai\-news.md；导航仍是 AI News，路径仍是 /ai\-news/。
+- [Harbor 用同一批任务加多份 agent 配置切换组件](<project_harbor_agents_list_switches_components/INDEX.md>) — 在 Harbor 做记忆消融或组件开关时打开：同一批 tasks 配多个 agents 即可切换；记忆若在任务环境文件里则需任务变体。
 <!-- edges-entries-local:end -->
