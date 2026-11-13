@@ -20,7 +20,8 @@ that is still on or before that day. Omitting ``--until`` reads ``latest``.
 
     https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset/resolve/main/{config}/{split}-00000-of-00001.parquet
 
-Needs pyarrow (``pip install -r scripts/requirements-leaderboard.txt``).
+Needs pyarrow==17.0.0 (``scripts/requirements-leaderboard.txt``) in a Python 3.12 venv.
+This pin has no cp313 wheel. See the skill section「运行环境」.
 """
 
 from __future__ import annotations
@@ -98,7 +99,7 @@ def rows_from_parquet(payload: bytes, category: str) -> list[dict]:
         import pyarrow.parquet as pq
     except ImportError as exc:
         raise SystemExit(
-            "缺少 pyarrow。先执行: pip install -r scripts/requirements-leaderboard.txt"
+            "缺少 pyarrow。用 Python 3.12 虚拟环境执行: pip install -r scripts/requirements-leaderboard.txt"
         ) from exc
     table = pq.read_table(io.BytesIO(payload))
     data = table.to_pylist()

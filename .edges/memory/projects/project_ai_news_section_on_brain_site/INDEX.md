@@ -1,6 +1,6 @@
 ---
 name: project_ai_news_section_on_brain_site
-description: 把 AI Coding 周报做成可浏览页面时打开：做在脑仓 site/ 的 /ai-news/，不要改 VirusPC/blog。
+description: 把 AI 资讯周报做成可浏览页面时打开：做在脑仓 site/ 的 /ai-news/，不要改 VirusPC/blog。
 metadata:
   edges-title: AI 周报上脑仓 Astro 站，不进 VirusPC/blog
   edges-type: project
@@ -8,10 +8,10 @@ metadata:
   edges-agent-client: cursor
   edges-username: Cursor Agent
   edges-email: cursoragent@cursor.com
-  edges-updated-at: '2026-11-11T13:04:34+00:00'
+  edges-updated-at: '2026-11-13T03:56:36+00:00'
 ---
 
-AI Coding 周报在脑仓 Astro 站的 `/ai-news/` 发布，不进 VirusPC/blog。
+AI 资讯周报在脑仓 Astro 站的 `/ai-news/` 发布，不进 VirusPC/blog。
 
 **Why:**
 2026-11-11 这张可视化任务最初写成了 VirusPC/blog。那个仓是 Jekyll，周报和 Astro 站已经在同一个脑仓里，再同步过去没有必要。用户批准的方案把站点定在脑仓 `site/`。

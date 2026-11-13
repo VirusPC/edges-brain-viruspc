@@ -5,7 +5,8 @@ Input: Arena JSON from fetch_llm_arena.py (items with rank/model/organization/sc
 or a plain ranked list JSON: [{"rank", "model", "organization"?, "score", "votes"?}, ...]
 
 NEW highlights:
-  --highlight NAME (repeatable) OR comma-separated --highlight "A,B"
+  --highlight NAME (repeatable). Commas split names only outside parentheses,
+  so "Claude Fable 5.2 (Max, Default Fallback)" stays one name.
   else auto: lowest --new-count vote models among the plotted top-N (proxy when only one board date).
 
 PNG export tries cairosvg, then rsvg-convert, then matplotlib Agg fallback.
@@ -82,9 +83,12 @@ def render_svg(
     new_models: set[str],
     width: int = 1100,
     row_h: float = 42.0,
+    axis_label: str = "Arena Score",
+    margin_l: int = 320,
+    margin_r: int = 110,
 ) -> str:
     n = len(items)
-    margin_l, margin_r, margin_t, margin_b = 320, 110, 70, 78
+    margin_t, margin_b = 70, 78
     height = int(margin_t + n * row_h + margin_b)
     plot_w = width - margin_l - margin_r
     scores = [float(it["score"]) for it in items]
@@ -143,7 +147,7 @@ def render_svg(
 
     parts.append(
         f'<text x="{margin_l + plot_w/2:.1f}" y="{y1 + 38}" text-anchor="middle" '
-        f'font-family="{FONT_STACK}" font-size="12" fill="#444">Arena Score</text>'
+        f'font-family="{FONT_STACK}" font-size="12" fill="#444">{escape(axis_label)}</text>'
     )
 
     # bars
@@ -257,12 +261,41 @@ def export_png(svg_path: Path, png_path: Path, scale: float = 2.0) -> str:
     )
 
 
+def split_highlight(value: str) -> list[str]:
+    """Split on commas outside parentheses.
+
+    ``Claude Fable 5.2 (Max, Default Fallback)`` stays one name.
+    ``Gemini 4 Carbon (High),Muse Wonder (Max)`` is still two names.
+    """
+    parts: list[str] = []
+    buf: list[str] = []
+    depth = 0
+    for ch in value:
+        if ch == "(":
+            depth += 1
+            buf.append(ch)
+        elif ch == ")":
+            depth = max(0, depth - 1)
+            buf.append(ch)
+        elif ch == "," and depth == 0:
+            piece = "".join(buf).strip()
+            if piece:
+                parts.append(piece)
+            buf = []
+        else:
+            buf.append(ch)
+    piece = "".join(buf).strip()
+    if piece:
+        parts.append(piece)
+    return parts
+
+
 def parse_highlights(values: list[str] | None) -> list[str] | None:
     if not values:
         return None
     out: list[str] = []
-    for v in values:
-        out.extend([p.strip() for p in v.split(",") if p.strip()])
+    for value in values:
+        out.extend(split_highlight(value))
     return out
 
 
@@ -277,11 +310,15 @@ def main(argv: list[str] | None = None) -> int:
         "--highlight",
         action="append",
         default=None,
-        help="Explicit model name(s) to mark NEW (repeat or comma-separated). Disables vote heuristic.",
+        help="Explicit model name(s) to mark NEW. Repeat the flag, or separate names with commas outside parentheses. Disables vote heuristic.",
     )
     p.add_argument("--title", default=None)
     p.add_argument("--subtitle", default=None)
     p.add_argument("--footnote", default=None)
+    p.add_argument("--axis-label", default="Arena Score")
+    p.add_argument("--width", type=int, default=1100)
+    p.add_argument("--margin-l", type=int, default=320)
+    p.add_argument("--margin-r", type=int, default=110)
     p.add_argument("--png-scale", type=float, default=2.0)
     p.add_argument("--no-png", action="store_true")
     args = p.parse_args(argv)
@@ -307,7 +344,17 @@ def main(argv: list[str] | None = None) -> int:
             f"数据集仅有 {pub or '单日'} 一版）"
         )
 
-    svg = render_svg(items, title=title, subtitle=subtitle, footnote=footnote, new_models=new_models)
+    svg = render_svg(
+        items,
+        title=title,
+        subtitle=subtitle,
+        footnote=footnote,
+        new_models=new_models,
+        width=args.width,
+        axis_label=args.axis_label,
+        margin_l=args.margin_l,
+        margin_r=args.margin_r,
+    )
     args.out_svg.parent.mkdir(parents=True, exist_ok=True)
     args.out_svg.write_text(svg, encoding="utf-8")
     print(f"SVG: {args.out_svg}")

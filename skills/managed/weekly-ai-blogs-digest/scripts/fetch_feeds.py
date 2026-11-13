@@ -6,7 +6,8 @@ holds agent-only notes (lane, fallback policy, BestBlogs match, hosts). Sources
 without a usable feed are not in the OPML; this script lists them under
 ``fallbacks`` and does not scrape their HTML.
 
-Install: ``pip install -r requirements.txt`` (feedparser).
+Install: Python 3.12 venv, then ``pip install -r requirements.txt`` (feedparser).
+The skill section「运行环境」也把榜单依赖装进同一个环境。
 
 Examples
 --------
@@ -14,7 +15,7 @@ python3 fetch_feeds.py --check
 python3 fetch_feeds.py --self-test
 python3 fetch_feeds.py --since 2026-10-23 --until 2026-10-29 --out /tmp/ai-coding-feeds.json
 python3 fetch_feeds.py --since 2026-10-23 --until 2026-10-29 \\
-    --compare ../../../../ai-news/2026-10-30-ai-coding-news.md --pretty
+    --compare ../../../../ai-news/2026-10-30-ai-news.md --pretty
 """
 
 from __future__ import annotations
@@ -262,7 +263,7 @@ def parse_feed_bytes(payload: bytes, *, fill_channel_date: bool = False) -> tupl
     try:
         import feedparser
     except ImportError:
-        raise SystemExit("缺少 feedparser。先执行: pip install -r scripts/requirements.txt")
+        raise SystemExit("缺少 feedparser。用 Python 3.12 虚拟环境执行: pip install -r scripts/requirements.txt")
     parsed = feedparser.parse(payload)
     title = ""
     channel_date = None
@@ -789,7 +790,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         import feedparser  # noqa: F401
     except ImportError:
-        print("缺少 feedparser。先执行: pip install -r scripts/requirements.txt", file=sys.stderr)
+        print("缺少 feedparser。用 Python 3.12 虚拟环境执行: pip install -r scripts/requirements.txt", file=sys.stderr)
         return 1
     reports, elapsed_ms = run_fetch(feeds, meta, since, until, args.timeout, args.workers)
     compare = None

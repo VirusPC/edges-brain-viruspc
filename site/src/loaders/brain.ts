@@ -370,7 +370,7 @@ export function aiNewsLoader(): Loader {
           const title = issueTitle(date);
           const windowLabel = formatCoverage(start, end);
           entries.push({
-            id: file.replace(/-ai-coding-news\.md$/, ''),
+            id: file.replace(/-ai-news\.md$/, ''),
             abs,
             sourcePath: `ai-news/${file}`,
             title,
