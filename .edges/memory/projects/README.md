@@ -35,4 +35,5 @@ format: ordinary
 - [自建 Langfuse 已升到 v4.71.0；项目 open\-grokbot 仍在](<project_self_hosted_langfuse_at_v4_71/INDEX.md>) — 谈自建 Langfuse 版本或 open\-grokbot 可观测时打开：截至 2026\-10\-29 已是 v4.71.0（原 v4.38.0）；项目 open\-grokbot 仍在；升因 SDK 6 需 ≥4.59
 - [AI 周报上脑仓 Astro 站，不进 VirusPC/blog](<project_ai_news_section_on_brain_site/INDEX.md>) — 把 AI Coding 周报做成可浏览页面时打开：做在脑仓 site/ 的 /ai\-news/，不要改 VirusPC/blog。
 - [周报缺项写入 notes，Arena 用窗口结束日前最近榜](<project_ai_news_gap_notes_and_arena_window/INDEX.md>) — 写或回改 AI Coding 周报时打开：缺了的小节省略，原因进同名 .notes.md；Arena 用窗口结束日前最近一份榜。
+- [站点页脚 GitHub 指向公开个人大脑仓](<project_site_footer_github_is_brain_repo/INDEX.md>) — 改站点页脚或「本站源码」链接时打开：GitHub 文字链指向 edges\-brain\-viruspc，不是用户主页。
 <!-- edges-entries-local:end -->
