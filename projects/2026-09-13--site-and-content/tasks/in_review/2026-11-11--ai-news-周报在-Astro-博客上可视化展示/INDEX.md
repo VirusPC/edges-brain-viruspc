@@ -9,13 +9,13 @@ name: visualize_ai_news_on_astro_blog
 description: 在脑仓 site/ 的 Astro 站上按期浏览 ai-news 周报，新周报合入 main 后由 Pages 工作流自动发布。
 ---
 
-在脑仓 `site/` 增加顶级栏目 `/ai-news/`，按期浏览全部 AI Coding 周报；不改 VirusPC/blog。
+在脑仓 `site/` 增加顶级栏目 `/ai-news/`，按期浏览全部 AI 资讯周报；不改 VirusPC/blog。
 
 **事实背景：**
-AI Coding 资讯周报每周五由例程生成，以 `ai-news/YYYY-MM-DD-ai-coding-news.md` 存进本仓。Arena 排行图是同目录的 SVG/PNG。目录在 `ai-news/README.md`。2026-11-11 peng cheng 提出想在网站里可视化，并确认用 Astro。开卡时把目标写成了 VirusPC/blog；那个仓是 Jekyll，已否决。
+AI 资讯周报每周五由例程生成，以 `ai-news/YYYY-MM-DD-ai-news.md` 存进本仓。Arena 排行图是同目录的 SVG/PNG。目录在 `ai-news/README.md`。2026-11-11 peng cheng 提出想在网站里可视化，并确认用 Astro。开卡时把目标写成了 VirusPC/blog；那个仓是 Jekyll，已否决。
 - 现状：已有 12 期，覆盖 2026-08-07 到 2026-11-05。从 2026-10-30 起换成固定章节（〇薅羊毛 → 本周关键词 → 模型进展 → 项目开源 → 国内进展 → 国际进展）。更早的期次是平铺文章清单。
 - 非目标：不改周报生成流程和格式，不改 `ai-news/README.md`，不上首页、Archive 和全站 `/rss.xml`。不做卡片版式，不做搜索。不动 VirusPC/blog。
-- 关联：weekly-ai-blogs-digest；Grok Bot 例程「AI Coding 资讯周报」。
+- 关联：weekly-ai-blogs-digest；Grok Bot 例程「AI 资讯周报」。
 
 **Why：**
 周报和 Astro 站在同一个仓，构建时直接读 `ai-news/` 即可，不必再同步到另一个博客仓。

@@ -14,7 +14,7 @@ python3 fetch_feeds.py --check
 python3 fetch_feeds.py --self-test
 python3 fetch_feeds.py --since 2026-10-23 --until 2026-10-29 --out /tmp/ai-coding-feeds.json
 python3 fetch_feeds.py --since 2026-10-23 --until 2026-10-29 \\
-    --compare ../../../../ai-news/2026-10-30-ai-coding-news.md --pretty
+    --compare ../../../../ai-news/2026-10-30-ai-news.md --pretty
 """
 
 from __future__ import annotations
