@@ -13,7 +13,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 ---
 
 <ArticlePage
@@ -21,6 +21,7 @@ const { Content } = await render(post);
   description={post.data.description}
   date={post.data.date}
   source={githubBlob(post.data.sourcePath)}
+  headings={headings}
   wide
 >
   <Content />

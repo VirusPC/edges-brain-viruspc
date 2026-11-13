@@ -268,6 +268,16 @@ h2 {
   top: 1.25rem;
 }
 
+/* Posts already reserve a right gutter for sidenotes. Keep that gutter past the chapter list. */
+body.is-post.has-toc .frame {
+  width: min(calc(55rem + 300px), 100%);
+  padding-right: 300px;
+}
+
+body.is-post.has-toc .sidenote {
+  margin-right: calc(-270px - 12rem - 1.75rem);
+}
+
 .archive-year { margin-top: 2rem; }
 .archive-year:first-child { margin-top: 0; }
 
@@ -477,7 +487,8 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
 
 @media (max-width: 960px) {
   body.is-post .frame,
-  body.has-toc .frame {
+  body.has-toc .frame,
+  body.is-post.has-toc .frame {
     width: min(48rem, 100%);
     padding-right: 1.25rem;
   }
@@ -505,7 +516,8 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
   }
   .post.has-toc .source { order: 4; }
 
-  body.is-post .sidenote {
+  body.is-post .sidenote,
+  body.is-post.has-toc .sidenote {
     float: none;
     clear: none;
     display: none;
