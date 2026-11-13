@@ -288,12 +288,12 @@ for (const rel of [
   assert.equal(chapterToc(fs.readFileSync(path.join(dist, rel), 'utf8')), null, `${rel} has a chapter toc`);
 }
 
-const githubLink = /<footer class="colophon">[\s\S]*?<a href="https:\/\/github\.com\/VirusPC" rel="me noopener">GitHub<\/a>/;
+const githubLink = /<footer class="colophon">[\s\S]*?<a href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc" rel="me noopener">GitHub<\/a>/;
 const navOrder = ['Posts', 'Notes', 'Projects', 'Teaching', 'AI News', 'About'];
 let layoutPages = 0;
 for (const rel of rels.filter((item) => item.endsWith('.html'))) {
   const html = fs.readFileSync(path.join(dist, rel), 'utf8');
-  assert.match(html, githubLink, `${rel} is missing the GitHub profile link`);
+  assert.match(html, githubLink, `${rel} is missing the GitHub repository link`);
   const nav = html.match(/<nav class="nav"[\s\S]*?<\/nav>/);
   if (!nav) continue;
   layoutPages += 1;
