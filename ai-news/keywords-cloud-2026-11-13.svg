@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="987" height="506" viewBox="0 0 987 506">
+<svg xmlns="http://www.w3.org/2000/svg" width="1003" height="482" viewBox="0 0 1003 482">
   <rect width="100%" height="100%" fill="#fffcf7"/>
-  <g transform="translate(488 298)" font-family="Noto Sans CJK SC" font-weight="700">
-    <text x="68" y="-160" text-anchor="middle" dominant-baseline="alphabetic" font-size="49" fill="#b4541f">Fable 5.2</text>
-    <text x="14" y="-105" text-anchor="middle" dominant-baseline="alphabetic" font-size="49" fill="#1c1b19">Gemini 4 Hydrogen</text>
-    <text x="-119" y="-39" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#1c1b19">Devin</text>
-    <text x="-41" y="11" text-anchor="middle" dominant-baseline="alphabetic" font-size="44" fill="#3d3a34">Qwen4</text>
-    <text x="27" y="-43" text-anchor="middle" dominant-baseline="alphabetic" font-size="43" fill="#3d3a34">Codex</text>
-    <text x="-227" y="-160" text-anchor="middle" dominant-baseline="alphabetic" font-size="43" fill="#5c574e">Managed Agents</text>
-    <text x="-253" y="9" text-anchor="middle" dominant-baseline="alphabetic" font-size="43" fill="#5c574e">Mythos 5.2</text>
-    <text x="-251" y="-46" text-anchor="middle" dominant-baseline="alphabetic" font-size="43" fill="#5c574e">Skill</text>
-    <text x="-39" y="67" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#5c574e">Antigravity</text>
-    <text x="-92" y="-218" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">上下文工程</text>
-    <text x="34" y="114" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">Agent memory</text>
-    <text x="142" y="-9" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">Amp</text>
-    <text x="313" y="-48" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">Approve for me</text>
-    <text x="-347" y="-100" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">LangChain</text>
-    <text x="-312" y="-219" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">LongCat-2.5</text>
-    <text x="135" y="-224" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">Qwen Code</text>
-    <text x="-248" y="59" text-anchor="middle" dominant-baseline="alphabetic" font-size="32" fill="#5c574e">数字员工</text>
-    <text x="-142" y="157" text-anchor="middle" dominant-baseline="alphabetic" font-size="32" fill="#5c574e">AgentCore</text>
-    <text x="212" y="33" text-anchor="middle" dominant-baseline="alphabetic" font-size="32" fill="#5c574e">Cursor Projects</text>
+  <g transform="translate(427 310)" font-family="Noto Sans CJK SC" font-weight="700">
+    <text x="68" y="-160" text-anchor="middle" dominant-baseline="alphabetic" font-size="52" fill="#b4541f">多 Agent 编排</text>
+    <text x="-6" y="-90" text-anchor="middle" dominant-baseline="alphabetic" font-size="52" fill="#1c1b19">上下文工程</text>
+    <text x="-119" y="-28" text-anchor="middle" dominant-baseline="alphabetic" font-size="52" fill="#1c1b19">Gemini 4 Carbon</text>
+    <text x="-46" y="27" text-anchor="middle" dominant-baseline="alphabetic" font-size="49" fill="#3d3a34">Claude Fable 5.2</text>
+    <text x="-49" y="-224" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#3d3a34">Agent Skills</text>
+    <text x="319" y="-228" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#5c574e">Gemini 4 Hydrogen</text>
+    <text x="-258" y="-93" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#5c574e">Agent 记忆</text>
+    <text x="-161" y="-153" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#5c574e">Devin</text>
+    <text x="-1" y="74" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#5c574e">Qwen4-Max</text>
+    <text x="-311" y="-151" text-anchor="middle" dominant-baseline="alphabetic" font-size="37" fill="#5c574e">安全扫描</text>
+    <text x="50" y="124" text-anchor="middle" dominant-baseline="alphabetic" font-size="37" fill="#5c574e">自托管</text>
+    <text x="217" y="-27" text-anchor="middle" dominant-baseline="alphabetic" font-size="37" fill="#5c574e">LongCat-2.5</text>
+    <text x="267" y="-84" text-anchor="middle" dominant-baseline="alphabetic" font-size="34" fill="#5c574e">模型级联与路由</text>
+    <text x="342" y="-143" text-anchor="middle" dominant-baseline="alphabetic" font-size="31" fill="#5c574e">浏览器 Agent</text>
+    <text x="-191" y="75" text-anchor="middle" dominant-baseline="alphabetic" font-size="26" fill="#5c574e">研发提效</text>
   </g>
 </svg>
