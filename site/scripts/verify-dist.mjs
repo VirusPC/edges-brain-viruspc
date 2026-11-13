@@ -229,16 +229,39 @@ assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、国内进展/);
 assert.match(newestToc[0], /LLM Arena/);
 assert.match(newestToc[0], /Artificial Analysis/);
+assert.match(newestToc[0], /OpenRouter/);
 assert.match(newestToc[0], /模型发布/);
 assert.doesNotMatch(newestToc[0], /&lt;|&#x3C;|data-cat/);
+const platformOrder = [...newestIssue.matchAll(/<h3\b[^>]*>([^<]*)<\/h3>/g)]
+  .map((match) => match[1].replace(/\s+/g, ' ').trim())
+  .filter((text) => ['LLM Arena', 'Artificial Analysis', 'OpenRouter', '模型发布'].includes(text));
+assert.deepEqual(platformOrder, ['LLM Arena', 'Artificial Analysis', 'OpenRouter', '模型发布']);
+const modelProgress = newestIssue.split(/<h2\b[^>]*>\s*二、模型进展\s*<\/h2>/)[1]?.split(/<h2\b/)[0] ?? '';
+assert.doesNotMatch(
+  modelProgress.split(/<h3\b[^>]*>\s*模型发布\s*<\/h3>/)[0],
+  /<h4\b/,
+  '2026-11-13 rankings have no h4 before 模型发布',
+);
 assertCategoryPills(newestIssue, [
   ['研发提效', '授人以鱼不如授人以渔：我对企业级 AI 研发提效的思考与实践'],
   ['Harness', '研发Loop的上下文优化与多Agent协作实践'],
 ], [
   /<h3\b[^>]*>\s*LLM Arena\s*<\/h3>/,
   /<h3\b[^>]*>\s*Artificial Analysis\s*<\/h3>/,
+  /<h3\b[^>]*>\s*OpenRouter\s*<\/h3>/,
   /<h3\b[^>]*>\s*模型发布\s*<\/h3>/,
 ]);
+for (const alt of [
+  'OpenRouter 本周用量 Top 15，2026-11-13',
+  'OpenRouter 编程用量 Top 15，2026-11-13',
+  'OpenRouter 应用用量 Top 15，2026-11-13',
+]) {
+  const pattern = alt.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const src = newestIssue.match(new RegExp(`<img[^>]*alt="${pattern}"[^>]*src="([^"]+)"`))
+    ?? newestIssue.match(new RegExp(`<img[^>]*src="([^"]+)"[^>]*alt="${pattern}"`));
+  assert.ok(src, `2026-11-13 is missing ${alt}`);
+  exists(src[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0]);
+}
 
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
 assert.match(backfillIssue, /<h1>\s*2026-10-23 AI 资讯\s*<\/h1>/);
