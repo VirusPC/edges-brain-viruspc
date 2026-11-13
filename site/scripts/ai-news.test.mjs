@@ -88,7 +88,13 @@ test('item titles link to the source and quote blocks are gone', () => {
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
     assert.equal(body.includes('原始链接'), false, name);
     assert.match(body, /^#### (?:&lt;[^&]+&gt;)?\[[^\]]+\]\(https?:\/\//m, name);
-    assert.match(body, /^#### 整体排名$/m, name);
+    if (name === '2026-11-13-ai-news.md') {
+      assert.match(body, /^### LLM Arena$/m, name);
+      assert.match(body, /^### Artificial Analysis$/m, name);
+      assert.doesNotMatch(body, /^#### 整体排名$/m, name);
+    } else {
+      assert.match(body, /^#### 整体排名$/m, name);
+    }
   }
 
   const latest = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-news.md'), 'utf8');

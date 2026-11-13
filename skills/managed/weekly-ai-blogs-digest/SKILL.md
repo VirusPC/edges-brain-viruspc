@@ -53,8 +53,8 @@ npm install --prefix scripts
 1. **〇、薅羊毛**来自 OPML 分组「薅羊毛」里的 linux.do 福利 RSS，再加上其它博客里明显是优惠、额度、试用的帖子。只保留和 AI / Coding 相关的（模型额度、API、IDE、开发者订阅、给开发者的云主机等）。银行立减金、电商价保、会员日这类日常消费不写。
 
 2. **模型进展里的榜单**
-   - Artificial Analysis：密钥放在环境变量 `AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`），不要写进命令行或仓库。跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`（写入 ai-news-data 时加 `--limit 0`，保留全部模型）。免费档走 `GET https://artificialanalysis.ai/api/v2/language/models/free`（需翻页；本期是 4 页 / 739 个模型）。完整列表 `/api/v2/language/models` 需 Pro，免费密钥会 403。旧路径 `/api/v2/data/*` 已 410，不要再用。没有密钥或拉不到数据时，这一小节不写，原因写进说明文件。有数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。展示放在「整体排名」里 Arena 图之后：按 `artificial_analysis_intelligence_index` 画 Top-15 横条图（绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)，覆盖标题、轴名「Intelligence Index」和脚注），文件名 `aa-intelligence-top15-YYYY-MM-DD.svg` 与 `-marked.png`（日期用抓取日，UTC+8）。图注只写抓取时间和红圈是谁。红圈圈本周窗口内 `release_date` 新发布、并且出现在这张 Top-15 上的模型，不用名次变化决定红圈。快照写入 VirusPC/ai-news-data 的 `issues/YYYY-MM-DD/aa-language-models.json`，并更新 `manifest.json`；不要把密钥写入快照。免费接口可能缺少 coding / agentic 等字段，限制写进说明文件，不要写进正文。
-   - LLM Arena：用上面的 Python 3.12 环境跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_llm_arena.py --until <窗口结束日> --out /tmp/llm-arena.json`。`--until` 取 `leaderboard_publish_date` ≤ 窗口结束日的最近一份，这份就是本期采用的榜。这不是 RSS，不需要密钥。Arena 官方不提供按周图片存档。发布日与上一期周报正文实际采用的榜相同时，沿用那一期的图，图注写发布日，并加上「较上周无新榜」。发布日更新时，用这份榜重画 Top-N 的 SVG 和 PNG，绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)。图放在「模型进展」开头。图注只写榜单发布日，以及红圈是谁。排名比较和红圈分开：排名比较对照上一期周报正文实际采用的那份榜（发布日和 Top-N）；`prior_publish_date` 只是数据集里紧挨着的上一发布日，上一期正文没采用它时不用它做基准。红圈圈本周窗口内新发布、并且出现在本期这张榜上的模型，用绘图 skill 的 `--highlight` 标出。名次变化写在比较里，不拿来决定红圈。确认不了哪些是本周新发布的模型时，才用该绘图 skill 的默认启发。路径和分割写在 `scripts/fetch_llm_arena.py` 开头：`--until` 读 `full` parquet，不带 `--until` 才读 `latest`。
+   - Artificial Analysis：密钥放在环境变量 `AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`），不要写进命令行或仓库。跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`（写入 ai-news-data 时加 `--limit 0`，保留全部模型）。免费档走 `GET https://artificialanalysis.ai/api/v2/language/models/free`（需翻页；本期是 4 页 / 739 个模型）。完整列表 `/api/v2/language/models` 需 Pro，免费密钥会 403。旧路径 `/api/v2/data/*` 已 410，不要再用。没有密钥或拉不到数据时，这一小节不写，原因写进说明文件。有数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。单独写成「### Artificial Analysis」，紧接在「### LLM Arena」之后、模型发布条目之前，不要和 Arena 放在同一个标题下。没有数据时这一节整节去掉。有数据时：按 `artificial_analysis_intelligence_index` 画 Top-15 横条图（绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)，覆盖标题、轴名「Intelligence Index」和脚注），文件名 `aa-intelligence-top15-YYYY-MM-DD.svg` 与 `-marked.png`（日期用抓取日，UTC+8）。图注只写抓取时间和红圈是谁。红圈圈本周窗口内 `release_date` 新发布、并且出现在这张 Top-15 上的模型，不用名次变化决定红圈。快照写入 VirusPC/ai-news-data 的 `issues/YYYY-MM-DD/aa-language-models.json`，并更新 `manifest.json`；不要把密钥写入快照。免费接口可能缺少 coding / agentic 等字段，限制写进说明文件，不要写进正文。
+   - LLM Arena：用上面的 Python 3.12 环境跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_llm_arena.py --until <窗口结束日> --out /tmp/llm-arena.json`。`--until` 取 `leaderboard_publish_date` ≤ 窗口结束日的最近一份，这份就是本期采用的榜。这不是 RSS，不需要密钥。Arena 官方不提供按周图片存档。发布日与上一期周报正文实际采用的榜相同时，沿用那一期的图，图注写发布日，并加上「较上周无新榜」。发布日更新时，用这份榜重画 Top-N 的 SVG 和 PNG，绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)。图放在「二、模型进展」开头的「### LLM Arena」下，不和 Artificial Analysis 共用标题。图注只写榜单发布日，以及红圈是谁。排名比较和红圈分开：排名比较对照上一期周报正文实际采用的那份榜（发布日和 Top-N）；`prior_publish_date` 只是数据集里紧挨着的上一发布日，上一期正文没采用它时不用它做基准。红圈圈本周窗口内新发布、并且出现在本期这张榜上的模型，用绘图 skill 的 `--highlight` 标出。名次变化写在比较里，不拿来决定红圈。确认不了哪些是本周新发布的模型时，才用该绘图 skill 的默认启发。路径和分割写在 `scripts/fetch_llm_arena.py` 开头：`--until` 读 `full` parquet，不带 `--until` 才读 `latest`。
 
 3. **GitHub Trending**在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，第三方抓页，不是 GitHub 官方 RSS）。周报里只保留 **daily / all 的前 5**，放到「项目开源」开头，并写快照日期。窗口内有可核验快照才列。没有可核验快照就整节省略，原因写进说明文件。
 
@@ -92,9 +92,15 @@ npm install --prefix scripts
 
 ## 二、模型进展
 
-#### 整体排名
+### LLM Arena
 
-先放榜单图。图注写发布日和红圈是谁。红圈是本周窗口内新发布、且出现在本期这张榜上的模型。排名变化另写，对照上一期正文实际采用的榜。和上一期正文采用的是同一发布日时，沿用那一期的图，并写「较上周无新榜」。有 Artificial Analysis 就一并写。再写本窗口值得记的模型发布。
+先放榜单图。图注写发布日和红圈是谁。红圈是本周窗口内新发布、且出现在本期这张榜上的模型。排名变化另写，对照上一期正文实际采用的榜。和上一期正文采用的是同一发布日时，沿用那一期的图，并写「较上周无新榜」。
+
+### Artificial Analysis
+
+有数据就单独放 Intelligence Index 图。图注只写抓取时间和红圈是谁。没有数据就整节去掉。
+
+模型发布用四级标题，写在这两节之后。
 
 ## 三、项目开源
 
@@ -150,7 +156,7 @@ node scripts/render_keyword_cloud.mjs \
 {{短述}}
 ```
 
-标签留在链接外。没有来源 URL 的标题保持纯文字，例如章节标题、「整体排名」、「本周关键词」和纯图标题。
+标签留在链接外。没有来源 URL 的标题保持纯文字，例如章节标题、「LLM Arena」、「Artificial Analysis」、「本周关键词」和纯图标题。
 
 要求：
 
