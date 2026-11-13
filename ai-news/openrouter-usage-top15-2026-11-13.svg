@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="778" viewBox="0 0 1160 778">
+<title>OpenRouter 本周用量 Top 15</title>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="580.0" y="28" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="18" font-weight="700" fill="#222">OpenRouter 本周用量 Top 15</text>
+<text x="580.0" y="50" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#555">2026-11-06 至 2026-11-12（UTC 完整日）</text>
+<line x1="380" y1="70" x2="380" y2="700.0" stroke="#ccc" stroke-width="1"/>
+<line x1="380.0" y1="70" x2="380.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="380.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">0</text>
+<line x1="495.0" y1="70" x2="495.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="495.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">10</text>
+<line x1="610.0" y1="70" x2="610.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="610.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">20</text>
+<line x1="725.0" y1="70" x2="725.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="725.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">30</text>
+<line x1="840.0" y1="70" x2="840.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="840.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">40</text>
+<line x1="955.0" y1="70" x2="955.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="955.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">50</text>
+<line x1="1070.0" y1="70" x2="1070.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="1070.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">60</text>
+<text x="725.0" y="738.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#444">Token 用量（T）</text>
+<text x="368" y="95.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">1. DeepSeek V4.1 Flash 1017</text>
+<rect x="380" y="79.5" width="641.6" height="23.1" rx="3" ry="3" fill="#4C8BF5"/>
+<text x="1029.6" y="95.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">55.8</text>
+<text x="368" y="137.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">2. Hy4</text>
+<rect x="380" y="121.5" width="232.9" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="620.9" y="137.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">20.2</text>
+<text x="368" y="179.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">3. DeepSeek V4.1 Flash</text>
+<rect x="380" y="163.4" width="183.5" height="23.1" rx="3" ry="3" fill="#4C8BF5"/>
+<text x="571.5" y="179.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">16.0</text>
+<text x="368" y="221.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">4. GLM 5.3 Flash</text>
+<rect x="380" y="205.4" width="137.7" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="525.7" y="221.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">12.0</text>
+<text x="368" y="263.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">5. GPT-6 Luna</text>
+<rect x="380" y="247.4" width="85.4" height="23.1" rx="3" ry="3" fill="#10A37F"/>
+<text x="473.4" y="263.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">7.4</text>
+<text x="368" y="305.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">6. Claude Opus 5.5</text>
+<rect x="380" y="289.4" width="78.1" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="466.1" y="305.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">6.8</text>
+<text x="368" y="347.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">7. Step 5 Preview</text>
+<rect x="380" y="331.4" width="77.4" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="465.4" y="347.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">6.7</text>
+<text x="368" y="389.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">8. Kimi K3.1 Pro</text>
+<rect x="380" y="373.4" width="50.4" height="23.1" rx="3" ry="3" fill="#7B68EE"/>
+<text x="438.4" y="389.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">4.4</text>
+<text x="368" y="431.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">9. GPT-6.1 Sol</text>
+<rect x="380" y="415.4" width="48.6" height="23.1" rx="3" ry="3" fill="#10A37F"/>
+<text x="436.6" y="431.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">4.2</text>
+<text x="368" y="473.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">10. GLM 5.3</text>
+<rect x="380" y="457.4" width="44.6" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="432.6" y="473.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">3.9</text>
+<text x="368" y="515.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">11. MiMo-V2.6-Flash</text>
+<rect x="380" y="499.4" width="41.6" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="429.6" y="515.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">3.6</text>
+<text x="368" y="557.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">12. MiniMax M3.1 Flash</text>
+<rect x="380" y="541.5" width="41.4" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="429.4" y="557.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">3.6</text>
+<text x="368" y="599.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">13. Crouton Alpha</text>
+<rect x="380" y="583.5" width="40.6" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="428.6" y="599.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">3.5</text>
+<text x="368" y="641.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">14. DeepSeek V4 Flash 0731</text>
+<rect x="380" y="625.5" width="37.3" height="23.1" rx="3" ry="3" fill="#4C8BF5"/>
+<text x="425.3" y="641.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">3.2</text>
+<text x="368" y="683.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">15. Nemotron 3 Ultra (free)</text>
+<rect x="380" y="667.5" width="36.7" height="23.1" rx="3" ry="3" fill="#888888"/>
+<text x="424.7" y="683.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">3.2</text>
+<rect x="970" y="485.0" width="12" height="12" rx="2" fill="#4C8BF5"/>
+<text x="986" y="495.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">deepseek</text>
+<rect x="970" y="503.0" width="12" height="12" rx="2" fill="#888888"/>
+<text x="986" y="513.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">tencent</text>
+<rect x="970" y="521.0" width="12" height="12" rx="2" fill="#888888"/>
+<text x="986" y="531.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">z-ai</text>
+<rect x="970" y="539.0" width="12" height="12" rx="2" fill="#10A37F"/>
+<text x="986" y="549.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">openai</text>
+<rect x="970" y="557.0" width="12" height="12" rx="2" fill="#E8A87C"/>
+<text x="986" y="567.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">anthropic</text>
+<rect x="970" y="575.0" width="12" height="12" rx="2" fill="#888888"/>
+<text x="986" y="585.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">stepfun</text>
+<rect x="970" y="593.0" width="12" height="12" rx="2" fill="#7B68EE"/>
+<text x="986" y="603.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">moonshot</text>
+<rect x="970" y="611.0" width="12" height="12" rx="2" fill="#888888"/>
+<text x="986" y="621.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">xiaomi</text>
+<rect x="970" y="629.0" width="12" height="12" rx="2" fill="#888888"/>
+<text x="986" y="639.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">minimax</text>
+<rect x="970" y="647.0" width="12" height="12" rx="2" fill="#888888"/>
+<text x="986" y="657.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">stealth</text>
+<rect x="970" y="665.0" width="12" height="12" rx="2" fill="#888888"/>
+<text x="986" y="675.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">nvidia</text>
+</svg>
