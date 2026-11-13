@@ -18,13 +18,21 @@ interface Props {
   badge?: string;
   headings?: Heading[];
   rss?: { title: string; href: string };
+  /** Chapter list uses h2. AI news also lists h3 so each ranking platform is its own entry. */
+  tocDepth?: number;
 }
 
-const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss } = Astro.props;
+const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss, tocDepth = 2 } = Astro.props;
 const iso = date ? formatISODate(date) : '';
-const sections = headings
-  .filter((heading) => heading.depth === 2 && heading.slug && heading.text)
-  .map((heading) => ({ slug: heading.slug, text: heading.text }));
+const sections: { slug: string; text: string; children: { slug: string; text: string }[] }[] = [];
+for (const heading of headings) {
+  if (!heading.slug || !heading.text) continue;
+  if (heading.depth === 2) {
+    sections.push({ slug: heading.slug, text: heading.text, children: [] });
+  } else if (heading.depth === 3 && tocDepth >= 3 && sections.length > 0) {
+    sections[sections.length - 1].children.push({ slug: heading.slug, text: heading.text });
+  }
+}
 ---
 
 <BaseLayout title={title} description={description} wide={wide} withToc rss={rss}>
@@ -35,6 +43,15 @@ const sections = headings
           sections.map((item) => (
             <li>
               <a href={`#${item.slug}`}>{item.text}</a>
+              {item.children.length > 0 ? (
+                <ol>
+                  {item.children.map((child) => (
+                    <li>
+                      <a href={`#${child.slug}`}>{child.text}</a>
+                    </li>
+                  ))}
+                </ol>
+              ) : null}
             </li>
           ))
         }

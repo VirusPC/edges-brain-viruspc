@@ -25,6 +25,7 @@ const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverage
   kicker={`覆盖 ${windowLabel}`}
   badge={issue.data.legacy ? '旧版' : ''}
   headings={headings}
+  tocDepth={3}
   source={githubBlob(issue.data.sourcePath)}
   rss={{ title: 'AI 资讯', href: siteUrl('/ai-news/rss.xml') }}
 >

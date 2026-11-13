@@ -29,12 +29,13 @@ function exists(rel) {
   assert.ok(rels.includes(rel), `missing ${rel}`);
 }
 
-function assertCategoryPills(html, samples) {
+function assertCategoryPills(html, samples, plainHeadings = [/<h4\b(?![^>]*data-cat)[^>]*>\s*整体排名\s*<\/h4>/]) {
   const toc = html.match(/<nav class="toc"[\s\S]*?<\/nav>/);
   assert.ok(toc, 'issue is missing the chapter toc');
   assert.doesNotMatch(toc[0], /&lt;|&#x3C;|data-cat/);
-  const plain = html.match(/<h4\b(?![^>]*data-cat)[^>]*>\s*整体排名\s*<\/h4>/);
-  assert.ok(plain, 'plain heading 整体排名 should stay a heading');
+  for (const pattern of plainHeadings) {
+    assert.match(html, pattern);
+  }
   for (const [label, title] of samples) {
     const heading = html.match(new RegExp(`<h4\\b[^>]*\\bdata-cat="${label}"[^>]*>[\\s\\S]*?<\\/h4>`));
     assert.ok(heading, `missing category pill ${label}`);
@@ -226,10 +227,17 @@ assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、国内进展/);
+assert.match(newestToc[0], /LLM Arena/);
+assert.match(newestToc[0], /Artificial Analysis/);
+assert.match(newestToc[0], /模型发布/);
 assert.doesNotMatch(newestToc[0], /&lt;|&#x3C;|data-cat/);
 assertCategoryPills(newestIssue, [
   ['研发提效', '授人以鱼不如授人以渔：我对企业级 AI 研发提效的思考与实践'],
   ['Harness', '研发Loop的上下文优化与多Agent协作实践'],
+], [
+  /<h3\b[^>]*>\s*LLM Arena\s*<\/h3>/,
+  /<h3\b[^>]*>\s*Artificial Analysis\s*<\/h3>/,
+  /<h3\b[^>]*>\s*模型发布\s*<\/h3>/,
 ]);
 
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
