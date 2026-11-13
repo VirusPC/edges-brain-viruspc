@@ -83,13 +83,18 @@ const grokNote = path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/in
 const grokHtml = fs.readFileSync(grokNote, 'utf8');
 assert.match(grokHtml, /<h1>\s*open-grokbot 全程坑点\s*<\/h1>/);
 assert.doesNotMatch(grokHtml, /<h1>[^<]*2026-10-29/);
+const grokToc = grokHtml.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+assert.ok(grokToc, 'note detail is missing the chapter toc');
+for (const heading of ['背景', '主题', '过程', '结果', '所学', '行动指南', '补充说明']) {
+  assert.match(grokToc[0], new RegExp(heading));
+}
 
 const sampleNote = noteDetails[0];
 assert.ok(sampleNote, 'expected at least one note detail');
 const noteDetail = fs.readFileSync(path.join(dist, sampleNote), 'utf8');
 assert.match(noteDetail, /class="post-head"/);
 assert.match(noteDetail, /class="post-kicker"/);
-assert.match(noteDetail, /class="post"/);
+assert.match(noteDetail, /class="post has-toc"/);
 assert.doesNotMatch(noteDetail, /note-kicker|is-post/);
 const projectDetails = rels.filter(
   (rel) => rel.startsWith('projects/') && rel.endsWith('/index.html') && rel !== 'projects/index.html',
@@ -120,6 +125,10 @@ if (fixtureOn) {
   assert.doesNotMatch(html, /data-footnotes|class="footnotes"/);
   assert.doesNotMatch(html, /skin-notes/);
   assert.match(html, /is-post/);
+  const fixtureToc = html.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+  assert.ok(fixtureToc, 'fixture post is missing the chapter toc');
+  assert.match(fixtureToc[0], /栏外的注/);
+  assert.match(fixtureToc[0], /第二条/);
 } else {
   assert.equal(sample, undefined);
 }
@@ -164,7 +173,7 @@ assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current/);
 assert.match(latestIssue, /IntersectionObserver/);
 assert.match(latestIssue, /is-current/);
 const plainNote = fs.readFileSync(path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/index.html'), 'utf8');
-assert.doesNotMatch(plainNote, /IntersectionObserver/);
+assert.match(plainNote, /IntersectionObserver/);
 assert.doesNotMatch(aiNewsList, /IntersectionObserver/);
 assert.match(latestIssue, /aria-current="page"[^>]*>\s*AI News\s*</);
 assert.match(latestIssue, /较上周无新榜/);
@@ -226,6 +235,58 @@ for (const rel of rels.filter((item) => item.endsWith('.html') || item.endsWith(
 
 const about = fs.readFileSync(path.join(dist, 'about/index.html'), 'utf8');
 assert.match(about, /亲手修订后发表的成稿/);
+
+function chapterToc(html) {
+  return html.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+}
+
+const detailPages = rels.filter((rel) => {
+  if (!rel.endsWith('/index.html')) return false;
+  const [section, ...rest] = rel.split('/');
+  if (!['posts', 'notes', 'projects', 'ai-news'].includes(section)) return false;
+  return rest.join('/') !== 'index.html';
+});
+assert.ok(detailPages.some((rel) => rel.startsWith('notes/')));
+assert.ok(detailPages.some((rel) => rel.startsWith('projects/')));
+assert.ok(detailPages.some((rel) => rel.startsWith('ai-news/')));
+for (const rel of detailPages) {
+  const html = fs.readFileSync(path.join(dist, rel), 'utf8');
+  const nav = chapterToc(html);
+  assert.ok(nav, `${rel} is missing the chapter toc`);
+  assert.match(html, /class="post has-toc"/, `${rel} article layout`);
+  for (const href of nav[0].matchAll(/href="#([^"]*)"/g)) {
+    let id = href[1];
+    try {
+      id = decodeURIComponent(id);
+    } catch {
+      /* keep the raw fragment */
+    }
+    assert.ok(id, `${rel} toc link is missing a fragment`);
+    assert.ok(
+      html.includes(`id="${id}"`) || html.includes(`id="${href[1]}"`),
+      `${rel} toc target #${id} is missing`,
+    );
+  }
+}
+
+const projectToc = chapterToc(
+  fs.readFileSync(path.join(dist, 'projects/2026-11-09--dsh/index.html'), 'utf8'),
+);
+assert.ok(projectToc, 'project detail is missing the chapter toc');
+for (const heading of ['课程', '笔记', '相关']) {
+  assert.match(projectToc[0], new RegExp(heading));
+}
+
+for (const rel of [
+  'index.html',
+  'posts/index.html',
+  'notes/index.html',
+  'projects/index.html',
+  'ai-news/index.html',
+  'about/index.html',
+]) {
+  assert.equal(chapterToc(fs.readFileSync(path.join(dist, rel), 'utf8')), null, `${rel} has a chapter toc`);
+}
 
 const githubLink = /<footer class="colophon">[\s\S]*?<a href="https:\/\/github\.com\/VirusPC" rel="me noopener">GitHub<\/a>/;
 const navOrder = ['Posts', 'Notes', 'Projects', 'Teaching', 'AI News', 'About'];

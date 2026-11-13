@@ -2,7 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatISODate } from '../lib/select.mjs';
 
-interface TocItem {
+interface Heading {
+  depth: number;
   slug: string;
   text: string;
 }
@@ -15,30 +16,30 @@ interface Props {
   wide?: boolean;
   kicker?: string;
   badge?: string;
-  toc?: TocItem[];
+  headings?: Heading[];
   rss?: { title: string; href: string };
 }
 
-const { title, description, date, source, wide = false, kicker = '', badge = '', toc = [], rss } = Astro.props;
+const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss } = Astro.props;
 const iso = date ? formatISODate(date) : '';
-const sections = toc.filter((item) => item.slug && item.text);
+const sections = headings
+  .filter((heading) => heading.depth === 2 && heading.slug && heading.text)
+  .map((heading) => ({ slug: heading.slug, text: heading.text }));
 ---
 
-<BaseLayout title={title} description={description} wide={wide} withToc={sections.length > 0} rss={rss}>
-  <article class:list={['post', sections.length > 0 && 'has-toc']}>
-    {
-      sections.length > 0 ? (
-        <nav class="toc" aria-label="章节">
-          <ol>
-            {sections.map((item) => (
-              <li>
-                <a href={`#${item.slug}`}>{item.text}</a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      ) : null
-    }
+<BaseLayout title={title} description={description} wide={wide} withToc rss={rss}>
+  <article class="post has-toc">
+    <nav class="toc" aria-label="章节">
+      <ol>
+        {
+          sections.map((item) => (
+            <li>
+              <a href={`#${item.slug}`}>{item.text}</a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
     <header class="post-head">
       {
         iso || kicker ? (
@@ -56,3 +57,52 @@ const sections = toc.filter((item) => item.slug && item.text);
     {source ? <p class="source"><a href={source}>Source</a></p> : null}
   </article>
 </BaseLayout>
+
+<script>
+  import { currentSectionIndex } from '../lib/toc-spy.mjs';
+
+  const nav = document.querySelector('nav.toc');
+  if (nav && 'IntersectionObserver' in window) {
+    const items = [];
+    for (const link of nav.querySelectorAll('a[href^="#"]')) {
+      const raw = link.getAttribute('href')?.slice(1) ?? '';
+      let id = raw;
+      try {
+        id = decodeURIComponent(raw);
+      } catch {
+        id = raw;
+      }
+      const section = id ? document.getElementById(id) : null;
+      if (section) items.push({ link, section });
+    }
+
+    if (items.length > 0) {
+      let active = null;
+      const mark = (link) => {
+        if (active === link) return;
+        if (active) {
+          active.classList.remove('is-current');
+          active.removeAttribute('aria-current');
+        }
+        active = link;
+        if (!active) return;
+        active.classList.add('is-current');
+        active.setAttribute('aria-current', 'location');
+      };
+      const update = () => {
+        const line = Math.min(160, window.innerHeight * 0.28);
+        const index = currentSectionIndex(
+          items.map((item) => item.section.getBoundingClientRect().top),
+          line,
+        );
+        mark(index >= 0 ? items[index].link : null);
+      };
+      const observer = new IntersectionObserver(update, {
+        rootMargin: '0px 0px -65% 0px',
+        threshold: [0, 1],
+      });
+      for (const item of items) observer.observe(item.section);
+      update();
+    }
+  }
+</script>

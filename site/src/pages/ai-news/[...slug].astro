@@ -15,9 +15,6 @@ export async function getStaticPaths() {
 
 const { issue } = Astro.props;
 const { Content, headings } = await render(issue);
-const toc = headings
-  .filter((heading) => heading.depth === 2)
-  .map((heading) => ({ slug: heading.slug, text: heading.text }));
 const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverageEnd);
 ---
 
@@ -27,58 +24,9 @@ const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverage
   date={issue.data.date}
   kicker={`覆盖 ${windowLabel}`}
   badge={issue.data.legacy ? '旧版' : ''}
-  toc={toc}
+  headings={headings}
   source={githubBlob(issue.data.sourcePath)}
   rss={{ title: 'AI Coding 资讯', href: siteUrl('/ai-news/rss.xml') }}
 >
   <Content />
 </ArticlePage>
-
-<script>
-  import { currentSectionIndex } from '../../lib/toc-spy.mjs';
-
-  const nav = document.querySelector('nav.toc');
-  if (nav && 'IntersectionObserver' in window) {
-    const items = [];
-    for (const link of nav.querySelectorAll('a[href^="#"]')) {
-      const raw = link.getAttribute('href')?.slice(1) ?? '';
-      let id = raw;
-      try {
-        id = decodeURIComponent(raw);
-      } catch {
-        id = raw;
-      }
-      const section = id ? document.getElementById(id) : null;
-      if (section) items.push({ link, section });
-    }
-
-    if (items.length > 0) {
-      let active = null;
-      const mark = (link) => {
-        if (active === link) return;
-        if (active) {
-          active.classList.remove('is-current');
-          active.removeAttribute('aria-current');
-        }
-        active = link;
-        if (!active) return;
-        active.classList.add('is-current');
-        active.setAttribute('aria-current', 'location');
-      };
-      const update = () => {
-        const line = Math.min(160, window.innerHeight * 0.28);
-        const index = currentSectionIndex(
-          items.map((item) => item.section.getBoundingClientRect().top),
-          line,
-        );
-        mark(index >= 0 ? items[index].link : null);
-      };
-      const observer = new IntersectionObserver(update, {
-        rootMargin: '0px 0px -65% 0px',
-        threshold: [0, 1],
-      });
-      for (const item of items) observer.observe(item.section);
-      update();
-    }
-  }
-</script>
