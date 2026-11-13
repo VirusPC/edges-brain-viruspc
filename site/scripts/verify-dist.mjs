@@ -29,6 +29,20 @@ function exists(rel) {
   assert.ok(rels.includes(rel), `missing ${rel}`);
 }
 
+function assertCategoryPills(html, samples) {
+  const toc = html.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+  assert.ok(toc, 'issue is missing the chapter toc');
+  assert.doesNotMatch(toc[0], /&lt;|&#x3C;|data-cat/);
+  const plain = html.match(/<h4\b(?![^>]*data-cat)[^>]*>\s*整体排名\s*<\/h4>/);
+  assert.ok(plain, 'plain heading 整体排名 should stay a heading');
+  for (const [label, title] of samples) {
+    const heading = html.match(new RegExp(`<h4\\b[^>]*\\bdata-cat="${label}"[^>]*>[\\s\\S]*?<\\/h4>`));
+    assert.ok(heading, `missing category pill ${label}`);
+    assert.match(heading[0], new RegExp(title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.doesNotMatch(heading[0].replace(/<h4\b[^>]*>/, ''), /&lt;|&#x3C;/);
+  }
+}
+
 exists('index.html');
 exists('404.html');
 exists('rss.xml');
@@ -160,7 +174,7 @@ assert.ok(latestToc, 'latest issue is missing the chapter toc');
 for (const heading of ['〇、薅羊毛', '一、本周关键词', '二、模型进展', '三、项目开源', '四、国内进展', '五、国际进展']) {
   assert.match(latestToc[0], new RegExp(heading));
 }
-assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current/);
+assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current|&lt;|&#x3C;|data-cat/);
 assert.match(latestIssue, /IntersectionObserver/);
 assert.match(latestIssue, /is-current/);
 const plainNote = fs.readFileSync(path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/index.html'), 'utf8');
@@ -193,6 +207,21 @@ assert.match(latestIssue, /href="https:\/\/kiroween\.devpost\.com"/);
 assert.match(latestIssue, /href="https:\/\/linux\.do\/t\/topic\/3101137"/);
 assert.match(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
 assert.doesNotMatch(latestIssue, /原始链接/);
+assertCategoryPills(latestIssue, [
+  ['交付闭环', 'OpenAI 收购 Pierre'],
+  ['代码评审', 'Devin Review 2.0'],
+]);
+
+const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
+assert.match(newestIssue, /<h1>\s*2026-11-13 AI Coding 资讯\s*<\/h1>/);
+const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
+assert.match(newestToc[0], /四、国内进展/);
+assert.doesNotMatch(newestToc[0], /&lt;|&#x3C;|data-cat/);
+assertCategoryPills(newestIssue, [
+  ['研发提效', '阿里：对企业级 AI 研发提效的思考与实践'],
+  ['多Agent', '百度：研发 Loop 的上下文优化与多 Agent 协作'],
+]);
 
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
 assert.match(backfillIssue, /<h1>\s*2026-10-23 AI Coding 资讯\s*<\/h1>/);
@@ -210,6 +239,8 @@ assert.match(aiFeed, /<title>AI Coding 资讯<\/title>/);
 assert.match(aiFeed, /<title>2026-11-06 AI Coding 资讯<\/title>/);
 assert.match(aiFeed, /<title>2026-10-30 AI Coding 资讯<\/title>/);
 assert.match(aiFeed, /edges-brain-viruspc\/ai-news\/2026-11-06\//);
+assert.match(aiFeed, /<title>2026-11-13 AI Coding 资讯<\/title>/);
+assert.doesNotMatch(aiFeed, /data-cat|&lt;研发提效&gt;|&lt;交付闭环&gt;/);
 assert.equal((aiFeed.match(/<item>/g) || []).length, aiNewsFiles.length);
 
 assert.match(home, /href="\/edges-brain-viruspc\/ai-news\/"/);

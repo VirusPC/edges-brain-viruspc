@@ -320,6 +320,36 @@ h2 {
 .prose h2 { font-size: 1.35rem; }
 .prose h3 { font-size: 1.12rem; }
 
+.prose :is(h2, h3, h4, h5, h6)[data-cat] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.28rem;
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat] > a {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat]::before {
+  content: attr(data-cat);
+  flex: none;
+  max-width: 100%;
+  padding: 0.12em 0.5em 0.14em;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--note) 14%, var(--note-wash));
+  color: var(--note);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--note) 24%, transparent);
+  font-size: 0.78em;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
 .prose ul, .prose ol { padding-left: 1.3rem; }
 .prose li { margin: 0.2rem 0; }
 .prose li > ul, .prose li > ol { margin-bottom: 0.2rem; }
@@ -525,4 +555,40 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
   .post-list li { grid-template-columns: 1fr; gap: 0.15rem; }
   .issue-list li { grid-template-columns: 1fr; }
   .issue-list time { grid-row: auto; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --paper: #1c1b19;
+    --ink: #f6f1e7;
+    --ink-soft: #ddd4c6;
+    --muted: #b3aa9c;
+    --rule: #3f3b35;
+    --rule-strong: #e4d9c8;
+    /* --note and --note-wash stay, so category chips keep a light ground and theme-colored type. */
+  }
+
+  .prose a {
+    color: color-mix(in srgb, var(--note) 58%, white);
+    text-decoration-color: color-mix(in srgb, var(--note) 45%, transparent);
+  }
+
+  .prose pre,
+  .prose :not(pre) > code {
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+
+  .more {
+    text-decoration-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+
+  body.is-post .sidenote {
+    color: var(--ink-soft);
+  }
+
+  .fn-toggle:checked + .fn-label,
+  body.is-post .fn-toggle:checked + .fn-label + .sidenote {
+    background: color-mix(in srgb, var(--note) 24%, var(--paper));
+  }
 }
