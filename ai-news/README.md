@@ -6,7 +6,7 @@
 
 ## 已归档周报
 
-- [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06～2026-11-12。附 Arena 2026-11-11 快照图。关键词：Claude Fable 5.2、Gemini 4 Hydrogen、多 Agent 编排、Qwen Code 1.0。本期无窗口内 GitHub Trending 快照。
+- [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06～2026-11-12。附 Arena 2026-11-11 快照图。关键词：Claude Fable 5.2、Gemini 4 Hydrogen、多 Agent 编排、Qwen Code 1.0。GitHub Trending 用 2026-11-12 15:55（UTC+8）的 daily / all 前 5。
 - [2026-11-06 AI 资讯](2026-11-06-ai-news.md) — 覆盖 2026-10-30～2026-11-05；按新模版重跑。Arena 复用 2026-10-28 的图（较上周无新榜）。
 - [2026-10-30 AI 资讯](2026-10-30-ai-news.md) — 覆盖 2026-10-23～2026-10-29；按新模版重跑，附 Arena 2026-10-28 快照图。
 - [2026-10-23 AI 资讯](2026-10-23-ai-news.md) — 覆盖 2026-10-16～2026-10-22；2026-11 按订阅重跑。关键词：MiniMax M3.1 Flash，DeepSeek V4.1 Flash。附 Arena 2026-10-22 快照图。
