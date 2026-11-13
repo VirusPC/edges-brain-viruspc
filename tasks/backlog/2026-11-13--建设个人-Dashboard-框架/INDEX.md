@@ -1,7 +1,7 @@
 ---
 metadata:
   edges-type: task
-  edges-updated-at: '2026-11-13T17:37:51.494Z'
+  edges-updated-at: '2026-11-13T18:42:58.724Z'
   edges-title: 建设个人 Dashboard 框架
   edges-tasks-status: backlog
   edges-task-priority: none
@@ -27,3 +27,10 @@ description: 在改造 AI News 可视化之外，先建成一套可复用的个�
 - [Birdie AI Prompt Widget](https://ask.birdie.ai/customer-intelligence/dashboards-and-reporting/dashboard-widgets/ai-prompt-widget)：少见的「每个磁贴一条持久提示词」，但只生成叙述洞察，数据仍来自已有筛选或其他图表。
 
 这次调研没有改框架要覆盖哪些看板、用什么技术栈，也没有补完成标准。
+
+**主题持续追踪：**
+需求尚未实现：框架不仅呈现当前数据，还能按照用户指定主题，持久化追踪相关消息和趋势。
+
+例如学习记忆机制。技术迭代很快，学完 Codex 又出 Claude，之后又有 DSH 等框架，需要自动追踪这些相关更新。
+
+持续收集更新，保留历史并比较趋势；将新消息关联到已有学习笔记和已学内容，帮助识别值得补学的变化，并区分新机制与重复消息。
