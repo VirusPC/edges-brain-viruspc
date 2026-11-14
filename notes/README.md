@@ -37,4 +37,5 @@
 - [2026\-11\-13\-\-anthropic\-agent\-memory\-%E5%9B%9B%E5%B1%82%E4%B8%8E%E5%81%9A%E6%A2%A6/INDEX.md](<2026-11-13--anthropic-agent-memory-%E5%9B%9B%E5%B1%82%E4%B8%8E%E5%81%9A%E6%A2%A6/INDEX.md>)
 - [2026\-11\-13\-\-codex\-%E5%AD%90\-agent\-%E4%B8%8E\-claude\-agent\-teams\-%E5%8F%8A\-multica\-raft/INDEX.md](<2026-11-13--codex-%E5%AD%90-agent-%E4%B8%8E-claude-agent-teams-%E5%8F%8A-multica-raft/INDEX.md>)
 - [2026\-11\-14\-\-%E5%A4%9A\-agent\-%E4%BB%93%E5%BA%93%E4%BF%AE%E6%94%B9%E7%9A%84\-worktree\-%E9%9A%94%E7%A6%BB%E4%B8%8E%E5%86%99%E5%85%A5%E5%89%8D%E6%A0%B8%E9%AA%8C/INDEX.md](<2026-11-14--%E5%A4%9A-agent-%E4%BB%93%E5%BA%93%E4%BF%AE%E6%94%B9%E7%9A%84-worktree-%E9%9A%94%E7%A6%BB%E4%B8%8E%E5%86%99%E5%85%A5%E5%89%8D%E6%A0%B8%E9%AA%8C/INDEX.md>)
+- [2026\-11\-14\-\-coderabbit\-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E8%A7%84%E5%88%99%E6%9C%BA%E5%88%B6/INDEX.md](<2026-11-14--coderabbit-%E4%BB%A3%E7%A0%81%E5%AE%A1%E6%9F%A5%E8%A7%84%E5%88%99%E6%9C%BA%E5%88%B6/INDEX.md>)
 <!-- edges-entries-local:end -->
