@@ -6,6 +6,8 @@ Public homepage: [`index.html`](index.html)（公网 `/teaching/`）。每次交
 
 ## Topics
 
+- [dsh-coding-agent-course](dsh-coding-agent-course) — DSH 源码架构课：公开控制接口与默认执行驱动；按 teach 渐进学习并持久化进度
+
 - [agent-evals](agent-evals) — Anthropic《Demystifying evals for AI agents》概念课（6 课）：task/trial/transcript/outcome、三类 grader、capability vs regression、pass@k / pass^k、读 transcript 与 outcome 归因、框架加速 vs 任务/grader 质量；系统补齐评测方法，不绑定具体项目
 - [changelog](changelog) — write a usable `CHANGELOG.md` for your own projects
 - [cloud-coding-agent](cloud-coding-agent) — 看懂云端 coding agent 产品的架构：以 vercel-labs/coding-agent-template 为教材，讲任务流程、Sandbox 生命周期、预制环境与隔离、Agent CLI、进度回传、密钥与信任边界（6 课）
