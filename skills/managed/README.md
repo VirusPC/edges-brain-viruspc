@@ -15,3 +15,4 @@
 - [weekly-ai-blogs-digest](weekly-ai-blogs-digest/SKILL.md) — 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域各大博客的新文章时使用。订阅真源是可导入阅读器的 OPML，脚本先拉 RSS/Atom，再做 200 字内摘要并按固定模版输出 markdown。
 - [langfuse-memory-ask-audit](langfuse-memory-ask-audit/SKILL.md) — 从自建 Langfuse 抽取 `edges-memory-ask` 相关 traces 的真实工具执行链，汇总启发式模式，并可写入/更新观测用 Dataset。
 - [llm-arena-marked-chart](llm-arena-marked-chart/SKILL.md) — 当需要把 LLM Arena（或同类）排行榜画成带红圈/NEW 标注的 SVG 与 PNG 时使用。输入 Arena JSON 或显式模型名，输出矢量源和导出图。
+- [create-learning-notes](create-learning-notes/SKILL.md) — 边学边记：阅读文章、论文、演讲、视频、书或代码时，生成并持续更新一份分成 Summary（原文讲了什么）和 Comments（我怎么看）的学习笔记。
