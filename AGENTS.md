@@ -18,7 +18,7 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 - 重复批量操作先写可重复执行的脚本，再用脚本执行；迁移与批量修改须可预览、检查冲突并安全重复运行，不逐文件手工重复操作。
 - 本仓公开（`github.com/VirusPC/edges-brain-viruspc`）。凭据、个人信息、未公开 IP、办公文档不入库；内部信息脱敏后再写；截图按「能不能上公开博客」判断。细则见 README 的「隐私与脱敏」。
 - Git：`type: subject`；AI 参与加 `Co-authored-by`；不提交 `.obsidian/workspace.json`；`pull` / `rebase` 加 `--autostash`。
-- 本机修改本仓（commit/push 或改工作树文件）必须通过独立 `git worktree`：每个 Agent/任务一个 worktree + 独立分支；禁止多 Agent 共用同一工作树并行改文件或切分支；同一分支不得挂两个 worktree。Cursor 云端 Agent 等已在独立 clone/环境中的任务视为已隔离，不要求再套本机 worktree；只读查询可不建 worktree。
+- 本机在已有 checkout 上改本仓 tracked 内容之前，先核验 git 顶层与当前路径、`git worktree list`、当前分支和 status 基线：必须是当前任务自己的 worktree 和独立分支；多个 Agent 不得共用同一工作树写入；同一分支不得挂两个 worktree。技能安装、生成索引，以及其他会改 tracked 文件的操作，同样先核验。不满足则停写，先隔离开再写。Cursor 云端 Agent 等已在独立 clone/环境中的任务视为已隔离，不要求再套本机 worktree；只读查询可不建 worktree。全局安装写明目标目录，并确认没有写入本仓 checkout；全局安装不更新仓内 tracked 副本，仓内副本要换版时另开 PR，不在现有目录上覆盖。已有改动保留，不对未知改动执行 clean、reset 或 stash。本仓内容变更走 PR。
 - 这是独立 edges harness 仓库，调用 edges cli 时优先考虑加 --super 参数
 - `posts/` 存放对外博客（将公开发表的成稿），由人仔细维护。AI 不得自动创建、编辑、移动、删除、重构或重写该路径下的任何文件。
 <!-- edges-constraints:end -->
