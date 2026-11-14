@@ -36,6 +36,8 @@
 - [Work Git 权限问题](<_eval_agent_desktop/2026-11-14--work-git-permission.md>)
 - [Work 附件不可读](<_eval_agent_desktop/2026-11-14--work-attachment-unavailable.md>)
 
+- [Work 调用 Finder 失败](<_eval_agent_desktop/2026-11-14--work-finder-open-failed.md>)
+
 ## _eval_ai_product
 
 grok-bot、multi-agent、multica 等产品笔记。
