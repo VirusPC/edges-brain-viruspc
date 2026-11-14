@@ -1,7 +1,7 @@
 ---
 metadata:
   edges-type: task
-  edges-updated-at: '2026-11-13T18:44:49.333Z'
+  edges-updated-at: '2026-11-14T08:12:56.453Z'
   edges-title: 建设个人 Dashboard 框架
   edges-tasks-status: backlog
   edges-task-priority: none
@@ -25,6 +25,7 @@ description: 在改造 AI News 可视化之外，先建成一套可复用的个�
 - [TextQL Playbooks](https://docs.textql.com/core/how-it-works/playbooks)：商业产品里「存下来的提示词按计划重跑」写得最清楚，但输出是邮件 / Slack 报告；它的[看板](https://docs.textql.com/core/how-it-works/dashboards)反而改成刷新执行已发布代码。
 - [Julius Scheduled Runs](https://julius.ai/product/scheduled-runs)：能发布持久交互看板并定时重跑，刷新靠版本化代码，不是提示词连接器。
 - [Birdie AI Prompt Widget](https://ask.birdie.ai/customer-intelligence/dashboards-and-reporting/dashboard-widgets/ai-prompt-widget)：少见的「每个磁贴一条持久提示词」，但只生成叙述洞察，数据仍来自已有筛选或其他图表。
+- [96loveslife/big_model_radar](https://github.com/96loveslife/big_model_radar)：你在 Codex 的 issue 里看到，觉得「有一点点像」想做的东西。它是固定主题的 AI 资讯雷达：GitHub Actions 每天定时抓取 AI CLI 工具与 Agent 生态仓库、GitHub Trending、Hacker News、Anthropic/OpenAI 官网等来源，经大模型生成中英文日报、周报和月报，并发布为 GitHub Issues、Markdown、网页、RSS 和 Telegram，还提供 MCP 查询历史报告；追踪对象通过 `config.yml` 配置。相似处是同一批数据源定时处理后分发到多个出口，可作为「采集 → 大模型总结 → 多渠道发布」以及数据流编排的参考实现。差异是产出是报告而非可切换的 Dashboard；不按用户学习主题关联已有笔记，也不判断哪些是新机制值得补学；来源是固定配置的仓库与站点，不是每个视图由一条提示词驱动。
 
 这次调研没有改框架要覆盖哪些看板、用什么技术栈，也没有补完成标准。
 
