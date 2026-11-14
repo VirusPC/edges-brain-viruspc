@@ -1,0 +1,33 @@
+---
+import { render } from 'astro:content';
+import ArticlePage from '../../components/ArticlePage.astro';
+import { getAiNews } from '../../lib/entries';
+import { formatCoverage } from '../../lib/ai-news.mjs';
+import { githubBlob, siteUrl } from '../../lib/paths';
+
+export async function getStaticPaths() {
+  const issues = await getAiNews();
+  return issues.map((issue) => ({
+    params: { slug: issue.id },
+    props: { issue },
+  }));
+}
+
+const { issue } = Astro.props;
+const { Content, headings } = await render(issue);
+const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverageEnd);
+---
+
+<ArticlePage
+  title={issue.data.title}
+  description={issue.data.description}
+  date={issue.data.date}
+  kicker={`覆盖 ${windowLabel}`}
+  badge={issue.data.legacy ? '旧版' : ''}
+  headings={headings}
+  tocDepth={3}
+  source={githubBlob(issue.data.sourcePath)}
+  rss={{ title: 'AI 资讯', href: siteUrl('/ai-news/rss.xml') }}
+>
+  <Content />
+</ArticlePage>

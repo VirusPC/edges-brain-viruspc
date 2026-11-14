@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="917" height="442" viewBox="0 0 917 442">
+  <rect width="100%" height="100%" fill="#fffcf7"/>
+  <g transform="translate(538 294)" font-family="Noto Sans CJK SC" font-weight="700">
+    <text x="68" y="-160" text-anchor="middle" dominant-baseline="alphabetic" font-size="52" fill="#b4541f">多 Agent 编排</text>
+    <text x="14" y="-93" text-anchor="middle" dominant-baseline="alphabetic" font-size="49" fill="#1c1b19">Claude Fable 5.2</text>
+    <text x="-193" y="-38" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#1c1b19">上下文工程</text>
+    <text x="-41" y="18" text-anchor="middle" dominant-baseline="alphabetic" font-size="43" fill="#3d3a34">Gemini 4 Hydrogen</text>
+    <text x="41" y="-39" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#3d3a34">免费额度</text>
+    <text x="-165" y="-149" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#5c574e">Devin</text>
+    <text x="-349" y="-97" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#5c574e">Qwen Code 1.0</text>
+    <text x="-232" y="-201" text-anchor="middle" dominant-baseline="alphabetic" font-size="40" fill="#5c574e">Qwen4-Max</text>
+    <text x="-63" y="64" text-anchor="middle" dominant-baseline="alphabetic" font-size="34" fill="#5c574e">Gemini 4 Carbon</text>
+    <text x="-333" y="-152" text-anchor="middle" dominant-baseline="alphabetic" font-size="32" fill="#5c574e">LongCat-2.5</text>
+    <text x="89" y="104" text-anchor="middle" dominant-baseline="alphabetic" font-size="31" fill="#5c574e">Kiro</text>
+    <text x="195" y="-27" text-anchor="middle" dominant-baseline="alphabetic" font-size="29" fill="#5c574e">研发提效</text>
+    <text x="280" y="-81" text-anchor="middle" dominant-baseline="alphabetic" font-size="28" fill="#5c574e">决策模型</text>
+    <text x="-344" y="0" text-anchor="middle" dominant-baseline="alphabetic" font-size="26" fill="#5c574e">浏览器 Agent</text>
+    <text x="-15" y="-227" text-anchor="middle" dominant-baseline="alphabetic" font-size="26" fill="#5c574e">自托管 Agent</text>
+  </g>
+</svg>

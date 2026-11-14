@@ -18,6 +18,14 @@ import {
   titleForPost,
 } from '../lib/select.mjs';
 import {
+  coverageWindow,
+  formatCoverage,
+  isLegacyIssue,
+  issueTitle,
+  listAiNewsFiles,
+  summaryLine,
+} from '../lib/ai-news.mjs';
+import {
   fallbackDocumentName,
   listProjectDocuments,
   titleForProject,
@@ -38,6 +46,10 @@ interface Normalized {
   projectId?: string;
   projectTitle?: string;
   projectDate?: string;
+  coverageStart?: string;
+  coverageEnd?: string;
+  summary?: string;
+  legacy?: boolean;
   skipRender?: boolean;
   body: string;
   raw: string;
@@ -94,6 +106,10 @@ async function storeEntries(context: LoaderContext, entries: Normalized[]) {
     if (entry.projectId) rawData.projectId = entry.projectId;
     if (entry.projectTitle) rawData.projectTitle = entry.projectTitle;
     if (entry.projectDate) rawData.projectDate = entry.projectDate;
+    if (entry.coverageStart) rawData.coverageStart = entry.coverageStart;
+    if (entry.coverageEnd) rawData.coverageEnd = entry.coverageEnd;
+    if (entry.summary != null) rawData.summary = entry.summary;
+    if (entry.legacy != null) rawData.legacy = entry.legacy;
     const data = await parseData({
       id: entry.id,
       data: rawData,
@@ -329,6 +345,50 @@ export function projectsLoader(): Loader {
 
       await sync();
       bindWatcher(context.watcher, [projectsRoot], sync, context.logger, state);
+    },
+  };
+}
+
+export function aiNewsLoader(): Loader {
+  const state = { bound: false };
+  return {
+    name: 'brain-ai-news',
+    load: async (context) => {
+      const root = repoRootFrom(context.config.root);
+      const aiNewsRoot = path.join(root, 'ai-news');
+
+      const sync = async () => {
+        const entries: Normalized[] = [];
+        for (const file of listAiNewsFiles(aiNewsRoot)) {
+          const abs = path.join(aiNewsRoot, file);
+          const parsed = readMarkdown(abs);
+          const date = noteDateFromName(file);
+          if (!date) continue;
+          const legacy = isLegacyIssue(parsed.content);
+          const { start, end } = coverageWindow(date);
+          const summary = summaryLine(parsed.content, legacy);
+          const title = issueTitle(date);
+          const windowLabel = formatCoverage(start, end);
+          entries.push({
+            id: file.replace(/-ai-news\.md$/, ''),
+            abs,
+            sourcePath: `ai-news/${file}`,
+            title,
+            date: formatISODate(date),
+            description: summary ? `${windowLabel} · ${summary}` : windowLabel,
+            coverageStart: formatISODate(start),
+            coverageEnd: formatISODate(end),
+            summary,
+            legacy,
+            body: stripMatchingFirstHeading(parsed.content, title),
+            raw: parsed.raw,
+          });
+        }
+        await storeEntries(context, entries);
+      };
+
+      await sync();
+      bindWatcher(context.watcher, [aiNewsRoot], sync, context.logger, state);
     },
   };
 }

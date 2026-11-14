@@ -8,4 +8,6 @@
 - [2026\-09\-09\-\-agent\-clients\-ux/INDEX.md](<2026-09-09--agent-clients-ux/INDEX.md>)
 - [2026\-09\-09\-\-project\-memory/INDEX.md](<2026-09-09--project-memory/INDEX.md>)
 - [2026\-09\-13\-\-site\-and\-content/INDEX.md](<2026-09-13--site-and-content/INDEX.md>)
+- [dsh](<2026-11-09--dsh/INDEX.md>) — DeepSeek Harness（dsh）学习：课程在 `teaching/dsh/`，笔记在本 Project；个人大脑 `--super` 材料面
+- [IT 资产管理](<2026-11-10--it-%E8%B5%84%E4%BA%A7%E7%AE%A1%E7%90%86/INDEX.md>) — 个人 IT 资产的公开索引（主机、存储、电源、外设、云与自建服务、邮箱角色、网格节点）。不含地址、序列号、邮箱和密钥。
 <!-- edges-entries-local:end -->

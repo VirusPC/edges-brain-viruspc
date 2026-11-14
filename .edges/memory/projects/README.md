@@ -26,11 +26,16 @@ format: ordinary
 - [Langfuse 数据在 named volume，停机不丢；down \-v / 擦盘才会丢](<project_langfuse_data_named_volumes_survive_restart/INDEX.md>) — 自建 Langfuse 数据在宿主 Docker named volume；正常停容器或关机不丢；compose down \-v、删 volume 或擦系统盘会丢；查数优先走 Langfuse API 而非直连库。
 - [Grok Bot box 上 Tailscale 重建后可能静默丢失，按台账重装](<project_grok_bot_box_tailscale_silent_loss/INDEX.md>) — Grok Bot 云电脑曾多次出现 Tailscale 装过又丢；再断时先对 IT 台账确认该装，再重装验收，hostname 用 grok\-bot。
 - [Langfuse 标注字段优先级（专用 → metadata → tags → attributes）](<project_langfuse_annotation_fields_priority/INDEX.md>) — 给 Langfuse / OTEL 上报选标注字段时打开：先专用字段，再可过滤的 metadata，再枚举式 tags，其余才挂裸 attributes
-- [harness memory 消融不必日更全量](<project_harness_memory_ablation_cadence/INDEX.md>) — 规划 harness\-memory\-ablation 跑批时打开：题库与 memory 未大变时不要日更全量；大改/发版前跑正式 A/B，全量可周更或按里程碑
+- [Harness 记忆实验的频率与并行约定](<project_harness_memory_ablation_cadence/INDEX.md>) — 规划记忆消融跑批时打开：不必日更全量；真实 harness、题库先对齐；用户要求 trial 并行，资源预检后固定并发并披露时延条件
 - [Pi 沙箱不等于文件系统隔离](<project_pi_sandbox_not_fs_isolation/INDEX.md>) — 在 Pi 或本机 Agent 上跑实验/消融前打开：Pi 自带沙箱主要是本地执行权限，文件系统未真正隔离；要 FS 隔离再套 Docker/干净 worktree 或自托管 E2B
 - [minigtr 公网入口优先 Cloudflare Tunnel](<project_prefer_cloudflare_tunnel_over_nginx_minigtr/INDEX.md>) — 给 minigtr 上自托管 HTTP 服务做公网入口时打开：长期维护优先 Cloudflare Tunnel，不优先单独上 nginx 扛公网
 - [随包 skill 默认一个 edges 总入口，特殊才拆](<project_edges_skill_default_one_entry/INDEX.md>) — 规划或新增 Edges 随包 skill 时打开：默认并进总入口 edges；只有必须单独加载的能力才拆独立 skill，不要按一模块一 skill 拆
 - [合 PR 须经用户审，Agent 不自行 merge](<project_pr_merge_needs_user_review/INDEX.md>) — 准备合入任何 VirusPC PR 前打开：除非用户当轮明确点名要合并，否则只开 PR、保持打开，不要自行 gh pr merge
 - [grill 前先 memory ask，动手前先 html\-plan](<project_grill_memory_ask_then_html_plan/INDEX.md>) — 细化 Edges/脑仓任务卡时打开：先 memory ask，再 grill，达成共识后出中文 html\-plan 并 publish，用户确认后再改代码
 - [自建 Langfuse 已升到 v4.71.0；项目 open\-grokbot 仍在](<project_self_hosted_langfuse_at_v4_71/INDEX.md>) — 谈自建 Langfuse 版本或 open\-grokbot 可观测时打开：截至 2026\-10\-29 已是 v4.71.0（原 v4.38.0）；项目 open\-grokbot 仍在；升因 SDK 6 需 ≥4.59
+- [AI 周报上脑仓 Astro 站，不进 VirusPC/blog](<project_ai_news_section_on_brain_site/INDEX.md>) — 把 AI 资讯周报做成可浏览页面时打开：做在脑仓 site/ 的 /ai\-news/，不要改 VirusPC/blog。
+- [周报缺项写入 notes，Arena 用窗口结束日前最近榜](<project_ai_news_gap_notes_and_arena_window/INDEX.md>) — 写或回改 AI 资讯周报时打开：缺了的小节省略，原因进同名 .notes.md；Arena 用窗口结束日前最近一份榜。
+- [站点页脚 GitHub 指向公开个人大脑仓](<project_site_footer_github_is_brain_repo/INDEX.md>) — 改站点页脚或「本站源码」链接时打开：GitHub 文字链指向 edges\-brain\-viruspc，不是用户主页。
+- [栏目叫「AI 资讯」，稿件文件名用 ai\-news](<project_ai_news_column_name/INDEX.md>) — 写周报、改站点或任务卡时打开：栏目名是「AI 资讯」，稿件是 ai\-news/YYYY\-MM\-DD\-ai\-news.md；导航仍是 AI News，路径仍是 /ai\-news/。
+- [Harbor 用同一批任务加多份 agent 配置切换组件](<project_harbor_agents_list_switches_components/INDEX.md>) — 在 Harbor 做记忆消融或组件开关时打开：同一批 tasks 配多个 agents 即可切换；记忆若在任务环境文件里则需任务变体。
 <!-- edges-entries-local:end -->

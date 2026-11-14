@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="778" viewBox="0 0 1280 778">
+<title>Artificial Analysis Intelligence Index Top 15</title>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="640.0" y="28" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="18" font-weight="700" fill="#222">Artificial Analysis Intelligence Index Top 15</text>
+<text x="640.0" y="50" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#555">抓取 2026-11-13 19:26（UTC+8）· Intelligence Index v5 · 免费接口</text>
+<line x1="400" y1="70" x2="400" y2="700.0" stroke="#ccc" stroke-width="1"/>
+<line x1="400.0" y1="70" x2="400.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="400.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">50</text>
+<line x1="582.5" y1="70" x2="582.5" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="582.5" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">55</text>
+<line x1="765.0" y1="70" x2="765.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="765.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">60</text>
+<line x1="947.5" y1="70" x2="947.5" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="947.5" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">65</text>
+<line x1="1130.0" y1="70" x2="1130.0" y2="700.0" stroke="#eee" stroke-width="1"/>
+<text x="1130.0" y="718.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">70</text>
+<text x="765.0" y="738.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#444">Intelligence Index</text>
+<text x="388" y="95.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">1. Claude Fable 5.2 (Max, Default Fallback)</text>
+<rect x="400" y="79.5" width="532.9" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="940.9" y="95.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">64.6</text>
+<ellipse cx="543.9" cy="91.0" rx="443.9" ry="17.6" fill="none" stroke="#E53935" stroke-width="2.5" opacity="0.95"/>
+<rect x="995.9" y="80.0" width="44" height="22" rx="6" ry="6" fill="#E53935"/>
+<text x="1017.9" y="95.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff">NEW</text>
+<text x="388" y="137.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">2. Claude Fable 5.2 (Xhigh, Default Fallback)</text>
+<rect x="400" y="121.5" width="445.3" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="853.3" y="137.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">62.2</text>
+<ellipse cx="500.2" cy="133.0" rx="400.2" ry="17.6" fill="none" stroke="#E53935" stroke-width="2.5" opacity="0.95"/>
+<rect x="908.3" y="122.0" width="44" height="22" rx="6" ry="6" fill="#E53935"/>
+<text x="930.3" y="137.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff">NEW</text>
+<text x="388" y="179.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">3. Claude Fable 5.2 (High, Default Fallback)</text>
+<rect x="400" y="163.4" width="430.7" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="838.7" y="179.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">61.8</text>
+<ellipse cx="492.8" cy="175.0" rx="392.8" ry="17.6" fill="none" stroke="#E53935" stroke-width="2.5" opacity="0.95"/>
+<rect x="893.7" y="164.0" width="44" height="22" rx="6" ry="6" fill="#E53935"/>
+<text x="915.7" y="179.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff">NEW</text>
+<text x="388" y="221.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">4. Gemini 4 Carbon (High)</text>
+<rect x="400" y="205.4" width="365.0" height="23.1" rx="3" ry="3" fill="#5B9BD5"/>
+<text x="773.0" y="221.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">60.0</text>
+<text x="388" y="263.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">5. Claude Opus 5.5 (Max, Default Fallback)</text>
+<rect x="400" y="247.4" width="332.2" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="740.2" y="263.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">59.1</text>
+<text x="388" y="305.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">6. Gemini 4 Carbon (Medium)</text>
+<rect x="400" y="289.4" width="302.9" height="23.1" rx="3" ry="3" fill="#5B9BD5"/>
+<text x="710.9" y="305.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">58.3</text>
+<text x="388" y="347.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">7. Claude Opus 5.5 (Xhigh, Default Fallback)</text>
+<rect x="400" y="331.4" width="270.1" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="678.1" y="347.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">57.4</text>
+<text x="388" y="389.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">8. GPT-6 Astra (Max)</text>
+<rect x="400" y="373.4" width="251.8" height="23.1" rx="3" ry="3" fill="#10A37F"/>
+<text x="659.8" y="389.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">56.9</text>
+<text x="388" y="431.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">9. Claude Fable 5.2 (Medium, Default Fallback)</text>
+<rect x="400" y="415.4" width="233.6" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="641.6" y="431.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">56.4</text>
+<ellipse cx="394.3" cy="427.0" rx="294.3" ry="17.6" fill="none" stroke="#E53935" stroke-width="2.5" opacity="0.95"/>
+<rect x="696.6" y="416.0" width="44" height="22" rx="6" ry="6" fill="#E53935"/>
+<text x="718.6" y="431.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff">NEW</text>
+<text x="388" y="473.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">10. GPT-6 Astra (Xhigh)</text>
+<rect x="400" y="457.4" width="193.4" height="23.1" rx="3" ry="3" fill="#10A37F"/>
+<text x="601.4" y="473.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">55.3</text>
+<text x="388" y="515.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">11. GPT-6 Astra (High)</text>
+<rect x="400" y="499.4" width="175.2" height="23.1" rx="3" ry="3" fill="#10A37F"/>
+<text x="583.2" y="515.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">54.8</text>
+<text x="388" y="557.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">12. GPT-6.1 Sol (Max)</text>
+<rect x="400" y="541.5" width="167.9" height="23.1" rx="3" ry="3" fill="#10A37F"/>
+<text x="575.9" y="557.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">54.6</text>
+<text x="388" y="599.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">13. Claude Sonnet 5.5 (Max, Default Fallback)</text>
+<rect x="400" y="583.5" width="164.2" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="572.2" y="599.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">54.5</text>
+<text x="388" y="641.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">14. Gemini 4 Carbon (Low)</text>
+<rect x="400" y="625.5" width="153.3" height="23.1" rx="3" ry="3" fill="#5B9BD5"/>
+<text x="561.3" y="641.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">54.2</text>
+<text x="388" y="683.0" text-anchor="end" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" fill="#222">15. Claude Fable 5.2 (Low, Default Fallback)</text>
+<rect x="400" y="667.5" width="142.3" height="23.1" rx="3" ry="3" fill="#E8A87C"/>
+<text x="550.3" y="683.0" text-anchor="start" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="12" font-weight="600" fill="#222">53.9</text>
+<ellipse cx="348.7" cy="679.0" rx="248.7" ry="17.6" fill="none" stroke="#E53935" stroke-width="2.5" opacity="0.95"/>
+<rect x="605.3" y="668.0" width="44" height="22" rx="6" ry="6" fill="#E53935"/>
+<text x="627.3" y="683.0" text-anchor="middle" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff">NEW</text>
+<rect x="1030" y="629.0" width="12" height="12" rx="2" fill="#E8A87C"/>
+<text x="1046" y="639.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">anthropic</text>
+<rect x="1030" y="647.0" width="12" height="12" rx="2" fill="#5B9BD5"/>
+<text x="1046" y="657.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">google</text>
+<rect x="1030" y="665.0" width="12" height="12" rx="2" fill="#10A37F"/>
+<text x="1046" y="675.0" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#333">openai</text>
+<text x="24" y="756" font-family="Noto Sans CJK SC, Noto Sans CJK, DejaVu Sans, Arial, sans-serif" font-size="11" fill="#666">红圈/NEW：本窗口（2026-11-06～2026-11-12）新发布的 Claude Fable 5.2（Max / Xhigh / High / Medium / Low）</text>
+</svg>

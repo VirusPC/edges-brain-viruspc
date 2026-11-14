@@ -1,118 +1,193 @@
 ---
 name: weekly-ai-blogs-digest
-description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域各大博客的新文章时使用此技能。先读 OPML 订阅并用脚本拉 RSS/Atom，再对条目做 200 字内摘要、总结技术风向，并按固定模版输出为 markdown。在以下短语触发："本周 AI 资讯"、"汇总一下 AI 博客"、"weekly AI digest"、"看看这周 AI Coding 有什么新东西"。不要为单篇文章总结（用 summarize-ai-article）或非博客类信源触发。
+description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用此技能。先读 OPML 订阅并用脚本拉 RSS/Atom，再按固定章节精选成 markdown 周报。栏目名是「AI 资讯」。触发短语："本周 AI 资讯"、"AI Coding 资讯"、"汇总一下 AI 博客"、"weekly AI digest"、"看看这周 AI Coding 有什么新东西"。不要为单篇文章总结（用 summarize-ai-article）或非博客类信源单独触发。
 ---
 
 ## 订阅从哪来
 
-博客订阅的真源是 [`feeds/ai-coding-blogs.opml`](feeds/ai-coding-blogs.opml)，阅读器可以直接导入。Agent 用的 `lane`、退路、BestBlogs 对照、Olshansk 抓取源和备注在 [`feeds/ai-coding-blogs.meta.json`](feeds/ai-coding-blogs.meta.json)。维护规则见 [`feeds/README.md`](feeds/README.md)。OPML 不写 `lane`。
+博客订阅的真源是 [`feeds/ai-coding-blogs.opml`](feeds/ai-coding-blogs.opml)，阅读器可以直接导入。Agent 用的退路、对照和备注在 [`feeds/ai-coding-blogs.meta.json`](feeds/ai-coding-blogs.meta.json)。维护规则见 [`feeds/README.md`](feeds/README.md)。
 
-不要再按一份写死的首页 URL 列表逐站爬。OPML 里没有的站，以 meta 的 `fallback` 为准。
+不要再按一份写死的首页网址列表逐站爬。OPML 里没有的站，以 meta 里的退路为准。同一份 OPML 也包含「国内技术团队」「GitHub Trending」和「薅羊毛」。
 
-同一份 OPML 还有分组「国内技术团队」。脚本会和英文博客一起拉。这些文章写进同一份周报，按发布日倒序。其中「千问 AI 平台」订的是 BestBlogs 上的通义实验室微信源，meta 里有对照。
+写周报时**侧重 Agent 与产品**（Agent 产品、编码工具、harness、企业落地）。研究向、红队、纯学术长文不要当作重点，可以不写或一笔带过。不要为了凑篇幅把窗口里每篇文章都铺进去。判断依据是内容，不是 URL 路径。融资、IPO、营收里程碑、定价套餐、厂商自写的客户案例等营销性内容不收，除非其中有具体的技术或产品细节。
+
+## 运行环境
+
+Python 用 3.12。`scripts/requirements-leaderboard.txt` 固定 `pyarrow==17.0.0`，PyPI 上这份没有 cp313 wheel；在 Python 3.13 上 pip 会转去编译源码包并失败。不要为了换解释器而升级 pyarrow。`feedparser==6.0.14` 要求 Python >=3.10，和榜单放在同一个 3.12 环境里。在本 skill 目录：
+
+```bash
+python3.12 -m venv /tmp/weekly-ai-blogs-digest-py312
+/tmp/weekly-ai-blogs-digest-py312/bin/pip install -r scripts/requirements.txt -r scripts/requirements-leaderboard.txt
+```
+
+Debian/Ubuntu 上若提示 ensurepip 不可用，先安装发行版的 `python3.12-venv`，再执行上面的 `venv` 命令。后面的 Python 脚本都用 `/tmp/weekly-ai-blogs-digest-py312/bin/python`。
+
+词云的 `package.json` 在 `scripts/`，不在 skill 根目录。Node 按 `scripts/package.json` 的 `engines` 用 20 或以上。在本 skill 目录：
+
+```bash
+npm install --prefix scripts
+```
 
 ## 任务执行流程
 
-生成日记为 D。覆盖窗口是 D-7 到 D-1（含两端，不含 D）。用户指定了别的日期就用用户的。
+生成日记为 D。覆盖窗口是 D-7 到 D-1（含两端，不含 D）。用户指定了别的日期就用用户的。时间窗必须写进正文，而且要严格遵守。
 
-1. 拉 feed。在本 skill 目录执行：
+1. 在本 skill 目录，用上面的 Python 3.12 环境拉订阅：
 
 ```bash
-pip install -r scripts/requirements.txt
-python3 scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/ai-coding-feeds.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/ai-coding-feeds.json
 ```
 
-日期显式传入，不要依赖跑脚本那台机器的时区。脚本读 OPML 和 meta，下载 feed，按发布日过滤、按链接去重，写出紧凑 JSON。每条有 `title`、`date`、`link`、`summary`、`source`、`lane`、`thin`。`lane` 来自 meta（`product`、`tech`、`mixed` 或 `special`）。`sources[]` 和 `fallbacks[]` 上也有 `lane`。同一链接去重后，留下的那条带着它自己的 `lane`。
+日期要显式传入，不要依赖跑脚本那台机器的时区。
 
-2. 读 JSON，不要把原始 feed 再塞进上下文。
-   - `summary` 够写摘要且 `thin` 为 false：直接用 feed 正文，不要再抓文章页。
-   - `thin` 为 true：feed 正文太短（纯文本短于 280 字）。再抓该 `link` 的文章页，只为补这一篇。
-   - `sources` 里 `truncated` 为 true：feed 最旧一篇仍落在窗口内，早于它的文章可能被 feed 截掉。用该站列表页把窗口早段补上。
-   - `sources` 里 `error` 非空：这一站的 feed 失败，改走 meta 里的退路。
-   - `feedOrigin` 以 `bestblogs-` 开头：这是 BestBlogs 的转换源（RSSHub、XGo.ing 或 Wechat2RSS），不是官网博客。先收 feed 里的条目。官网文章没出现在 JSON 里时，仍按该站 `fallback`（列表页）补。
-   - `feedOrigin` 为 `third-party-scrape-rss` 且 notes 写的是 Olshansk/rss-feeds：这是 GitHub 上按小时抓列表生成的 RSS，不是官网，也不是 GitHub Trending 那几条。先收 feed 里的条目。`fallback` 为 `list-page` 时，官网列表里 feed 没有的文章仍要补。Anthropic Engineering 的条目有时链到 `/research/`，仍算这份 feed。
-   - `fallbacks` 里 `role` 为 `only`：这些站没有可订 feed。按 notes 抓列表页；列表页只有壳、或打不开时，再看 sitemap 枚举链接（不要把「整站同一次生成」的 lastmod 当成发布日）；浏览器是最后一步。`role` 为 `backup` 的站已经有 feed，列表页只补 feed 没覆盖到的官网文章。
-   - meta 的 notes 若写了「feed 会漏文」（目前是 Hugging Face），用该站列表页对标题，只补 JSON 里没有的链接。
-3. 对每一篇新文章写不超过 200 字的一段话摘要。和 AI Coding 相关时，再加一句话，写对研发的落地点或值得研究的方向。
-4. 用全部摘要写「本周风向」，放在文章最前。播客不是逐期来源；只有用户要求，或这一窗口有和 AI / Agent 强相关的一期时，在风向里点名一句并附链接。不要把播客 feed 加进 OPML，也不要为播客跑这个脚本。
-5. 按下面的模版保存 markdown。文章总结先分「产品动态」，再分「技术与工程」；各小节内发布日倒序（新的在前）。链接必须是 feed、列表页、sitemap 或文章页里真实出现的地址；对不上就修，修不了就去掉。
-6. 非博客数据单独成节，放在「本周风向」之后、「文章总结列表」之前。没跑或被跳过的小节不要留空标题。
+2. 读脚本写出的结果来写周报，不要把原始 feed 整份塞进上下文。正文够写摘要，就不要再打开原文；正文太短、某站失败、或 feed 明显被截断时，再用该站列表页或文章页补。链接必须是 feed、列表页、站点地图或文章页里真实出现的地址；对不上就修，修不了就去掉。
+
+3. 优惠、额度、白嫖类只进「〇、薅羊毛」，不要在后面章节再出现一次。
+
+4. 按下面的章节精选成文，不要把窗口内所有文章平铺成清单。条目写短，文风参考既有的 REDoc 演示稿（无文首一级标题，条目用四级标题，有来源的标题直接链到原文）。
+
+5. 跑非博客脚本（见下）。某一项没跑成、或拿不到该期可核验的历史快照，**不要留空标题，也不要拿后来的数据冒充当时，更不要编造**。这一小节直接省略，原因写进同期说明文件。OpenRouter 是一节里的三张图：只省略拉不到的那一张；三张都没有才去掉整节。
 
 ## 非博客数据
 
-博客 OPML 仍是阅读器要导入的订阅真源。下面三项不是博客文章，不要写进「文章总结列表」。
+1. **〇、薅羊毛**来自 OPML 分组「薅羊毛」里的 linux.do 福利 RSS，再加上其它博客里明显是优惠、额度、试用的帖子。只保留和 AI / Coding 相关的（模型额度、API、IDE、开发者订阅、给开发者的云主机等）。银行立减金、电商价保、会员日这类日常消费不写。
 
-1. **GitHub Trending** 已在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，`feedOrigin` 为 `third-party-scrape-rss`）。条目没有发布日，脚本用 channel 的 `pubDate` 当快照日期，并且不按博客窗口裁掉。周报里单独写「GitHub Trending」，注明是第三方抓取、不是 GitHub 官方 RSS。
-2. **Artificial Analysis** 不是 RSS。跑 `python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`。密钥放在环境变量 `AA_API_KEY` 或 `ARTIFICIAL_ANALYSIS_API_KEY`，不要写进命令行或仓库。没有密钥时脚本退出码 0 并写出 `skipped`。展示数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。可选 MCP：`https://mcp.artificialanalysis.ai/mcp`。
-3. **LLM Arena** 没有公开 REST。跑 `python3 scripts/fetch_llm_arena.py --out /tmp/llm-arena.json`。它读 Hugging Face 数据集 `lmarena-ai/leaderboard-dataset`（默认 `text_style_control` / `latest` / `overall`），不是 OPML，不需要密钥。先 `pip install -r scripts/requirements-leaderboard.txt`。要把 Top-N 画成带红圈 / NEW 的 SVG 与 PNG，用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)。
-4. **〇、薅羊毛** 用 OPML 分组「薅羊毛」里的 `https://linux.do/c/welfare.rss`（`feedOrigin` 为 `linux-do-welfare-rss`），再加上其它博客 feed 里明显是优惠、额度、白嫖的帖子。只保留和 AI / Coding 相关的（模型额度、API、IDE、开发者订阅、给开发者的云主机等）。银行立减金、电商价保、会员日这类日常消费不写。写过的帖子不要再出现在「文章总结列表」。
+2. **模型进展里的榜单**
+   - Artificial Analysis：密钥放在环境变量 `AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`），不要写进命令行或仓库。跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json`（写入 ai-news-data 时加 `--limit 0`，保留全部模型）。免费档走 `GET https://artificialanalysis.ai/api/v2/language/models/free`（需翻页；本期是 4 页 / 739 个模型）。完整列表 `/api/v2/language/models` 需 Pro，免费密钥会 403。旧路径 `/api/v2/data/*` 已 410，不要再用。没有密钥或拉不到数据时，这一小节不写，原因写进说明文件。有数据时必须注明来源 [Artificial Analysis](https://artificialanalysis.ai/)。单独写成「### Artificial Analysis」，紧接在「### LLM Arena」之后、「### OpenRouter」之前，不要和 Arena 放在同一个标题下。没有数据时这一节整节去掉。有数据时：按 `artificial_analysis_intelligence_index` 画 Top-15 横条图（绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)，覆盖标题、轴名「Intelligence Index」和脚注），文件名 `aa-intelligence-top15-YYYY-MM-DD.svg` 与 `-marked.png`（日期用抓取日，UTC+8）。图注只写抓取时间和红圈是谁。红圈圈本周窗口内 `release_date` 新发布、并且出现在这张 Top-15 上的模型，不用名次变化决定红圈。快照写入 VirusPC/ai-news-data 的 `issues/YYYY-MM-DD/aa-language-models.json`，并更新 `manifest.json`；不要把密钥写入快照。免费接口可能缺少 coding / agentic 等字段，限制写进说明文件，不要写进正文。
+   - LLM Arena：用上面的 Python 3.12 环境跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_llm_arena.py --until <窗口结束日> --out /tmp/llm-arena.json`。`--until` 取 `leaderboard_publish_date` ≤ 窗口结束日的最近一份，这份就是本期采用的榜。这不是 RSS，不需要密钥。Arena 官方不提供按周图片存档。发布日与上一期周报正文实际采用的榜相同时，沿用那一期的图，图注写发布日，并加上「较上周无新榜」。发布日更新时，用这份榜重画 Top-N 的 SVG 和 PNG，绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)。图放在「二、模型进展」开头的「### LLM Arena」下，不和 Artificial Analysis 共用标题。图注只写榜单发布日，以及红圈是谁。排名比较和红圈分开：排名比较对照上一期周报正文实际采用的那份榜（发布日和 Top-N）；`prior_publish_date` 只是数据集里紧挨着的上一发布日，上一期正文没采用它时不用它做基准。红圈圈本周窗口内新发布、并且出现在本期这张榜上的模型，用绘图 skill 的 `--highlight` 标出。名次变化写在比较里，不拿来决定红圈。确认不了哪些是本周新发布的模型时，才用该绘图 skill 的默认启发。路径和分割写在 `scripts/fetch_llm_arena.py` 开头：`--until` 读 `full` parquet，不带 `--until` 才读 `latest`。
+   - OpenRouter：第三个榜，写成「### OpenRouter」，紧接在「### Artificial Analysis」之后、「### 模型发布」之前。密钥放在环境变量 `OPENROUTER_API_KEY`（请求头 `Authorization: Bearer`），不要写进命令行、仓库、日志或快照。跑 `/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_openrouter.py --since <窗口起> --until <窗口止> --out-dir /tmp/openrouter`。三张主榜有任一失败时脚本退出码为 1，但成功的 JSON 仍会写入；正文按各文件的 `ok` 留图。coding 分类失败只警告，不让整次失败。接口说明见 [Data API](https://openrouter.ai/docs/cookbook/administration/data-api)。数据许可 CC BY 4.0。模型榜引用 “Source: OpenRouter (openrouter.ai/rankings), as of {meta.as_of}.”，应用榜引用 “Source: OpenRouter (openrouter.ai/apps), as of {meta.as_of}.”；转载数据本身时再加上 CC BY 4.0。快照写入 VirusPC/ai-news-data 的 `issues/YYYY-MM-DD/`：`openrouter-rankings-daily.json`、`openrouter-rankings-programming.json`、`openrouter-app-rankings.json`。拉了 coding 分类时再写入 `openrouter-app-rankings-coding.json`，只作说明和数据，不进正文。某一张拉不到就只去掉那一张，三张都拉不到就整节去掉；原因写进说明文件，不要写进正文。三张图直接放在「### OpenRouter」下面，不要用四级标题。
+     - 本周用量：对 `GET /api/v1/datasets/rankings-daily` 显式传 `period=day`，把覆盖窗口的 UTC 完整日（含两端）按 `model_permaslug` 加总。`total_tokens` 就是 `prompt_tokens + completion_tokens`。去掉聚合行 `other`，按 token 取 Top 15。这与官网页 “This Week”（最近 7 个完整 UTC 日）一致。不要用 `period=week` 做这张主榜：它的 `date` 是周一，而且当前周在窗口结束时可能还没过完。相对前 7 个完整 UTC 日的周环比只写说明文件。脚本把该对照放在快照的 `prior_items`，不要写进正文。
+     - 编程用量：`GET /api/v1/datasets/rankings-daily?category=programming&period=week`。这是采样后按周估计的 token 用量，不是质量榜，也不能写成“最适合写代码”。`category` 不能和 `period=day` 一起用。桶日期是该周周一。采用窗口结束日当天或之前已经结束的最近一个周一至周日；周日晚于窗口结束日的桶是未完成周，不用。返回里没有这一周时，改用抓取时已经结束的最近一周。图注必须写这个采样周的起止日期，并写明是 token 用量（周估计）、不是质量排名。
+     - 应用用量：`GET /api/v1/datasets/app-rankings?sort=popular`，`start_date` / `end_date` 与本周用量相同。这是官网页公开应用榜：隐藏和私有应用不计，别名并进主应用。正文不要加 `category=coding`。coding 分类可以另存快照。
+     - 图：绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)，轴名「Token 用量（T）」。文件名是 `openrouter-usage-top15-YYYY-MM-DD.svg`、`openrouter-programming-top15-YYYY-MM-DD.svg`、`openrouter-apps-top15-YYYY-MM-DD.svg`，以及同名 `-marked.png`（日期用抓取日，UTC+8）。红圈只圈覆盖窗口内新发布、并且出现在这张 Top 15 上的模型。没有这样的模型时，`--highlight` 传空（`--highlight ""`）以关掉票数启发，图注写「不圈」。图注只写来源、窗口或采样周，以及圈了谁（或没有可圈的）。只经过 OpenRouter 的流量、Flash 和长上下文把 token 抬高、不同供应商的 tokenizer 不能横比、编程用量是采样估计：这些写进说明文件，不要写进正文。`organization` 用 permaslug 的供应商段，其中 `moonshotai` 写成 `moonshot`，以便沿用绘图脚本已有的配色。
+
+3. **GitHub Trending**在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，第三方抓页，不是 GitHub 官方 RSS）。周报里只保留 **daily / all 的前 5**，放到「项目开源」开头，并写快照日期。窗口内有可核验快照才列。没有可核验快照就整节省略，原因写进说明文件。
 
 ```bash
-python3 scripts/fetch_artificial_analysis.py --out /tmp/aa-language-models.json
-python3 scripts/fetch_llm_arena.py --out /tmp/llm-arena.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --limit 0 --out /tmp/aa-language-models.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_llm_arena.py --until YYYY-MM-DD --out /tmp/llm-arena.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_openrouter.py --since YYYY-MM-DD --until YYYY-MM-DD --out-dir /tmp/openrouter
 ```
 
 ## 输出内容模版
 
-文件名：`ai-news/YYYY-MM-DD-ai-coding-news.md`（日期是生成日 D）。写完后更新 [`ai-news/README.md`](../../../ai-news/README.md) 的索引。
+文件名：`ai-news/YYYY-MM-DD-ai-news.md`（日期是生成日 D）。写完后更新 [`ai-news/README.md`](../../../ai-news/README.md) 的索引。榜单图和 SVG 真源放在同一目录，正文用相对路径引用 PNG。
 
-### 文章整体框架
+说明文件：`ai-news/YYYY-MM-DD-ai-news.notes.md`，与周报同目录。来源细节、密钥缺失、截断或快照缺失的原因写在这里。站点 `/ai-news/` 的列表和正文不展示、不链接这份文件。
+
+栏目名是「AI 资讯」。索引、列表和 RSS 的标题写成 `YYYY-MM-DD AI 资讯`。正文不要写文首一级标题。章节固定为下面这个顺序；某一章确实没有任何可写内容时，整章去掉，不要留空标题。
 
 ```
-# {{yyyy-MM-DD}} AI Coding 资讯
-
-## 本周风向：{{yyyy-MM-DD}}～{{yyyy-MM-DD}}
-{{本周风向}}
-
-## GitHub Trending（快照 {{yyyy-MM-DD}}）
-来源：mshibanami/GitHubTrendingRSS（第三方抓取 GitHub Trending，不是官方 RSS）。
-
-## 模型榜
-### Artificial Analysis
-数据来自 [Artificial Analysis](https://artificialanalysis.ai/)。
-
-### LLM Arena
-来源：Hugging Face 数据集 `lmarena-ai/leaderboard-dataset`（不是 RSS）。
+覆盖窗口：{{yyyy-MM-DD}}～{{yyyy-MM-DD}}（生成日 {{yyyy-MM-DD}}）。
 
 ## 〇、薅羊毛
-来源：linux.do 福利羊毛 RSS，以及博客 feed 里和 AI / Coding 有关的优惠。不含银行立减金、电商价保等日常消费。
 
-## 文章总结列表
+#### [标题](url)
 
-### 产品动态
-{{lane 为 product 的文章，以及 mixed 里判为产品的篇；本小节内发布日倒序}}
+短述。
 
-### 技术与工程
-{{lane 为 tech 的文章，以及 mixed 里判为技术或工程的篇；本小节内发布日倒序}}
+## 一、本周关键词
 
+一行短关键词，作列表摘要和图片 alt。
+
+![一行短关键词](keywords-cloud-YYYY-MM-DD.png)
+
+<!-- keywords-cloud
+[{"word":"短关键词","score":5,"mentions":2,"sources":2}]
+-->
+
+## 二、模型进展
+
+### LLM Arena
+
+先放榜单图。图注写发布日和红圈是谁。红圈是本周窗口内新发布、且出现在本期这张榜上的模型。排名变化另写，对照上一期正文实际采用的榜。和上一期正文采用的是同一发布日时，沿用那一期的图，并写「较上周无新榜」。
+
+### Artificial Analysis
+
+有数据就单独放 Intelligence Index 图。图注只写抓取时间和红圈是谁。没有数据就整节去掉。
+
+### OpenRouter
+
+有数据就在这一节下面直接放图，不要用四级标题。顺序是本周用量、编程用量、应用用量。某一张没有数据就只去掉那一张；三张都没有就整节去掉。图注只写来源、窗口或采样周，以及红圈是谁；没有可圈的模型就写「不圈」。编程用量要写明采样周日期，以及这是 token 用量（周估计）、不是质量榜。
+
+### 模型发布
+
+模型发布用四级标题，只写在这一节下面。这一节与「LLM Arena」「Artificial Analysis」「OpenRouter」同级。没有发布就整节去掉。
+
+## 三、项目开源
+
+#### GitHub Trending（daily / all 前 5）
+
+快照日期。只列前 5。窗口内没有可核验快照时，这一小节不写。后面可再写其它开源项目。
+
+## 四、国内进展
+
+#### &lt;标签&gt;[标题](url)
+
+## 五、国际进展
+
+#### &lt;标签&gt;[标题](url)
 ```
 
-### 单篇文章总结模版
+各章之间可用 `<br/>`。国内 / 国际按主体或主要发生地归类，不按「产品 / 技术」分栏。
+
+### 本周关键词词云
+
+第一行必须是纯文字。它同时是 PNG 的 alt，也是 /ai-news/ 列表页摘要。图片放在这一行下面，不要放到第一行。后面可以继续写短关键词，不要写成「本周风向」那样的长综述。
+
+文件名是 `ai-news/keywords-cloud-YYYY-MM-DD.svg` 与同名 `.png`，日期与周报相同。正文用相对路径引用 PNG，同目录留 SVG。
+
+权重写在章内 `<!-- keywords-cloud ... -->` 的 JSON 数组里。有 `weight` 就直接用（1.0–5.0，保留 1 位小数）。没有 `weight` 时：
+
+```
+mentionPart = min(mentions, 4) / 4 * 5
+sourcePart = min(sources, 3) / 3 * 5
+weight = clamp(round1(0.6 * score + 0.25 * mentionPart + 0.15 * sourcePart), 1, 5)
+```
+
+`score` 是模型给该词的 1–5 分，缺省 1。`mentions` 是本期 `####` 条目里出现该词的条数，关键词章不计，上限 4。`sources` 是这些条目标题链接和短述行内链接的 hostname 数，同一 hostname 只计一次，上限 3。对单条（标题行加短述）用 [`scripts/source_hostnames.mjs`](scripts/source_hostnames.mjs) 的 `sourceHostnames()` 提取；绘图脚本只消费这里写好的数字，有 `weight` 就直接画。字号是 `round(18 + (weight - 1) / 4 * 40)`：权重 1 为 18px，权重 5 为 58px。词全部水平放置。放不下就停，不要静默丢词。
+
+默认配色 `--palette ink-sans`（2026-11-12 从三套样例里选定）：思源黑体粗体，家族名 `Noto Sans CJK SC`，字重 700。底色 `#fffcf7`，最大词 `#b4541f`，其余大词 `#1c1b19`，中小词 `#3d3a34`、`#5c574e`。另两套预设：`serif-earth`（思源宋体，暖褐）、`wenkai-pine`（霞鹜文楷，青绿）。测量和 PNG 用同一个字体文件。找不到该文件就停，不要换别的中文字体。
+
+在本 skill 目录（依赖由上面的 `npm install --prefix scripts` 装进 `scripts/node_modules`）：
+
+```bash
+node scripts/render_keyword_cloud.mjs \
+  --md ../../../ai-news/YYYY-MM-DD-ai-news.md \
+  --out-svg ../../../ai-news/keywords-cloud-YYYY-MM-DD.svg \
+  --out-png ../../../ai-news/keywords-cloud-YYYY-MM-DD.png
+```
+
+换预设或指定字体：`--palette serif-earth`，或 `--font-file <字体文件> --font-family <家族名>`。家族名要和字体文件里的名字一致。PNG 由 `@resvg/resvg-js` 从 SVG 导出。只给新的一期出图；更早各期是否补图另定。
+
+### 单条模版
 
 ```md
-### {{标题}} - {{yyyy-MM-DD}}
+#### {{可选标签}}[{{标题}}]({{url}})
 
-{{一段话内容}}
-
-> 原始链接：{{}}
+{{短述}}
 ```
 
-内容总结要求：
+标签留在链接外。没有来源 URL 的标题保持纯文字，例如章节标题、「LLM Arena」、「Artificial Analysis」、「OpenRouter」、「模型发布」、「本周关键词」和纯图标题。
 
-1. 200 字以内
-2. 一段话内讲完
-3. 如果和 AI Coding 相关，则增加一句话总结对于研发的落地点或值得研究的方向。
+要求：
+
+1. 单条尽量短，不要超过 200 字。
+2. 和 AI Coding / Agent 相关时，用一句话点出对研发的落地点。
+3. 同一主题的多篇合成一条。标题用主链接：按书写顺序，取第一条链接文字不是「社区帖」的来源；来源都是「社区帖」时用第一条。其余链接接在短述末尾，链接文字保持原样。
+4. 已经是列表项、项内自带链接的（如「其他短讯」），把加粗名称做成该项的链接，地址仍留在这项里。
 
 ## 强制要求
 
 1. 网站链接必须真实有效。失效链接须修复或排除。
-2. 文章总结在「产品动态」和「技术与工程」各自按发布日倒序。`lane=product` 进产品动态，`lane=tech` 进技术与工程，`lane=mixed` 按该篇内容归入其中一节。`lane=special` 不进这两节。某一侧本周没有文章时不要留空标题。
-3. 优先用 feed 正文做摘要。只有 `thin`、feed 失败、feed 被截断，或该站在 `fallbacks` 里时，才抓列表页或文章页。
-4. 没有可用原生 feed 时，可以订 Olshansk/rss-feeds 的抓取 RSS（`feedOrigin` 为 `third-party-scrape-rss`）或 BestBlogs 转换源（`bestblogs-rsshub`、`bestblogs-xgo`、`bestblogs-wechat2rss`），写入 OPML，并保留列表页退路。已经有可用原生 feed 的站不要再并一份抓取源。两处都没有命中的站继续只走列表页。
+2. 只写窗口内的文章；生成日当天的内容不属于这一期。
+3. 优先用 feed 正文。只有正文不够、失败或被截断，或该站只能走列表页时，才再抓页面。
+4. 维护订阅时：没有可用原生 feed，可以订公开的抓取 RSS 或 BestBlogs 转换源，并保留列表页退路；已经有可用原生 feed 的站不要再并一份抓取源。研究向的源不要新加进订阅。
+5. 不要编造 Trending 名次或榜单数字。缺了的原因写进说明文件。
 
 ## 参考播客列表（可选信源）
 
-播客不是博客，默认不逐期总结；用户要求时，或本周有和 AI / Agent 强相关的一期时，在「本周风向」里点名一句并附链接。
+播客不是博客，默认不逐期总结；用户要求时，或这一窗口有和 AI / Agent 强相关的一期时，只在「本周关键词」或相关章节点名一句并附链接。不要把播客加进 OPML，也不要为播客跑这个脚本。
 
 ```md
 https://www.latent.space/podcast

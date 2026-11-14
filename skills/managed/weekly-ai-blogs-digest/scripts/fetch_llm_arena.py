@@ -1,15 +1,27 @@
 #!/usr/bin/env python3
-"""Pull the latest LLM Arena overall ranking from a Hugging Face dataset.
+"""Pull LLM Arena overall rankings from a Hugging Face dataset.
 
-This is not an OPML subscription and not a public REST API. Source:
-
-    dataset: lmarena-ai/leaderboard-dataset
-    config:  text_style_control (override with --config text)
-    split:   latest
-    category: overall
-
-No API key. Needs pyarrow (``pip install -r scripts/requirements-leaderboard.txt``).
+This is not an OPML subscription and not a public REST API. No API key.
 License of the dataset is CC-BY-4.0. Cite the dataset, not a scraped arena.ai page.
+
+Dataset: lmarena-ai/leaderboard-dataset
+Default config: text_style_control (override with --config text)
+
+Parquet files on the dataset repo (one file per config):
+
+    latest  {config}/latest-00000-of-00001.parquet
+            only the newest leaderboard_publish_date
+    full    {config}/full-00000-of-00001.parquet
+            every historical publish date in one file
+
+The 2026-11 backfill of older weekly issues used the full file.
+``--until YYYY-MM-DD`` reads ``full`` and keeps the latest publish date
+that is still on or before that day. Omitting ``--until`` reads ``latest``.
+
+    https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset/resolve/main/{config}/{split}-00000-of-00001.parquet
+
+Needs pyarrow==17.0.0 (``scripts/requirements-leaderboard.txt``) in a Python 3.12 venv.
+This pin has no cp313 wheel. See the skill section「运行环境」.
 """
 
 from __future__ import annotations
@@ -17,18 +29,23 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import re
 import sys
 import urllib.request
 
 DATASET = "lmarena-ai/leaderboard-dataset"
 DEFAULT_CONFIG = "text_style_control"
+LATEST_SPLIT = "latest"
+FULL_SPLIT = "full"
 PARQUET = (
     "https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset/"
-    "resolve/main/{config}/latest-00000-of-00001.parquet"
+    "resolve/main/{config}/{split}-00000-of-00001.parquet"
 )
 ATTRIBUTION = (
     "LLM Arena rankings from the Hugging Face dataset "
-    "lmarena-ai/leaderboard-dataset (CC-BY-4.0). Not an RSS/OPML feed."
+    "lmarena-ai/leaderboard-dataset (CC-BY-4.0). Not an RSS/OPML feed. "
+    "Historical boards are the full parquet "
+    "({config}/full-00000-of-00001.parquet), not the latest split."
 )
 USER_AGENT = "edges-weekly-ai-blogs-digest/1.0 (+https://github.com/VirusPC/edges-brain-viruspc)"
 
@@ -62,12 +79,27 @@ def number(value):
         return None
 
 
+def as_iso_date(value) -> str | None:
+    """Normalize a parquet date/datetime/string to YYYY-MM-DD."""
+    if value is None:
+        return None
+    if hasattr(value, "isoformat"):
+        text = value.isoformat()
+    else:
+        text = str(value).strip()
+    if len(text) >= 10 and text[4] == "-" and text[7] == "-":
+        day = text[:10]
+        if day[0:4].isdigit() and day[5:7].isdigit() and day[8:10].isdigit():
+            return day
+    return None
+
+
 def rows_from_parquet(payload: bytes, category: str) -> list[dict]:
     try:
         import pyarrow.parquet as pq
     except ImportError as exc:
         raise SystemExit(
-            "缺少 pyarrow。先执行: pip install -r scripts/requirements-leaderboard.txt"
+            "缺少 pyarrow。用 Python 3.12 虚拟环境执行: pip install -r scripts/requirements-leaderboard.txt"
         ) from exc
     table = pq.read_table(io.BytesIO(payload))
     data = table.to_pylist()
@@ -95,11 +127,44 @@ def rows_from_parquet(payload: bytes, category: str) -> list[dict]:
                 "organization": row.get("organization"),
                 "score": number(score),
                 "votes": votes if isinstance(votes, int) else number(votes),
-                "leaderboard_publish_date": row.get("leaderboard_publish_date"),
+                "leaderboard_publish_date": as_iso_date(row.get("leaderboard_publish_date")),
             }
         )
-    picked.sort(key=lambda item: (item["rank"] is None, item["rank"] if item["rank"] is not None else 10**9))
     return picked
+
+
+def neighbor_dates(dates: list[str], chosen: str) -> tuple[str | None, str | None]:
+    unique = sorted(set(dates))
+    prior = next((day for day in reversed(unique) if day < chosen), None)
+    nxt = next((day for day in unique if day > chosen), None)
+    return prior, nxt
+
+
+def choose_publish_date(dates: list[str], until: str | None) -> str | None:
+    """Latest publish date. With until, the latest date that is still <= until."""
+    unique = sorted({day for day in dates if day})
+    if not unique:
+        return None
+    if until is None:
+        return unique[-1]
+    eligible = [day for day in unique if day <= until]
+    if not eligible:
+        return None
+    return eligible[-1]
+
+
+def select_rows(rows: list[dict], until: str | None, limit: int) -> dict:
+    dates = [row["leaderboard_publish_date"] for row in rows if row.get("leaderboard_publish_date")]
+    chosen = choose_publish_date(dates, until)
+    if chosen is None:
+        return {"chosen": None, "prior": None, "next": None, "items": [], "rows": 0}
+    prior, nxt = neighbor_dates(dates, chosen)
+    kept = [row for row in rows if row.get("leaderboard_publish_date") == chosen]
+    kept.sort(key=lambda item: (item["rank"] is None, item["rank"] if item["rank"] is not None else 10**9))
+    total = len(kept)
+    if limit > 0:
+        kept = kept[:limit]
+    return {"chosen": chosen, "prior": prior, "next": nxt, "items": kept, "rows": total}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -107,39 +172,58 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", default=DEFAULT_CONFIG, choices=("text_style_control", "text"))
     parser.add_argument("--category", default="overall")
     parser.add_argument("--limit", type=int, default=20)
-    parser.add_argument("--timeout", type=int, default=60)
+    parser.add_argument("--timeout", type=int, default=120)
+    parser.add_argument(
+        "--until",
+        metavar="YYYY-MM-DD",
+        help="取 leaderboard_publish_date ≤ 该日的最近一份。读 full parquet，不读 latest。",
+    )
     parser.add_argument("--out")
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args(argv)
-    url = PARQUET.format(config=args.config)
+    if args.until is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.until):
+        print("--until 必须是 YYYY-MM-DD", file=sys.stderr)
+        return 1
+    split = FULL_SPLIT if args.until else LATEST_SPLIT
+    url = PARQUET.format(config=args.config, split=split)
     try:
         payload = download(url, args.timeout)
         rows = rows_from_parquet(payload, args.category)
+        selected = select_rows(rows, args.until, args.limit)
     except SystemExit as exc:
         print(exc, file=sys.stderr)
         return 1
     except Exception as exc:  # noqa: BLE001
         print(f"{type(exc).__name__}: {exc}", file=sys.stderr)
+        print(f"parquet: {url}", file=sys.stderr)
         return 1
-    publish_dates = sorted({row["leaderboard_publish_date"] for row in rows if row.get("leaderboard_publish_date")})
-    kept = rows[: args.limit] if args.limit > 0 else rows
+    if selected["chosen"] is None:
+        if args.until:
+            print(f"full parquet 里没有 publish_date ≤ {args.until} 的 {args.category} 榜。parquet: {url}", file=sys.stderr)
+        else:
+            print(f"parquet 里没有 {args.category} 榜。parquet: {url}", file=sys.stderr)
+        return 1
     result = {
         "source": "Hugging Face dataset",
         "dataset": DATASET,
         "config": args.config,
-        "split": "latest",
+        "split": split,
         "category": args.category,
         "opml": False,
-        "leaderboard_publish_date": publish_dates[-1] if publish_dates else None,
-        "attribution": ATTRIBUTION,
+        "until": args.until,
+        "leaderboard_publish_date": selected["chosen"],
+        "prior_publish_date": selected["prior"],
+        "next_publish_date": selected["next"],
+        "attribution": ATTRIBUTION.format(config=args.config),
         "parquet": url,
-        "rows": len(rows),
-        "items": kept,
+        "rows": selected["rows"],
+        "items": selected["items"],
     }
     emit(result, args.out, args.pretty)
     print(
-        f"ok config={args.config} category={args.category} rows={len(rows)} kept={len(kept)} "
-        f"date={result['leaderboard_publish_date']}",
+        f"ok config={args.config} split={split} category={args.category} rows={selected['rows']} "
+        f"kept={len(selected['items'])} date={selected['chosen']} "
+        f"prior={selected['prior']} next={selected['next']} until={args.until or '-'}",
         file=sys.stderr,
     )
     return 0
