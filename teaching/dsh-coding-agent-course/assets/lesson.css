@@ -1,0 +1,193 @@
+:root {
+  --bg: #faf8f5;
+  --ink: #1a1a1a;
+  --muted: #5c5c5c;
+  --line: #e6e0d6;
+  --accent: #0b5fff;
+  --ok: #0a7a3e;
+  --bad: #b42318;
+  --card: #ffffff;
+  --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 18px; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  line-height: 1.55;
+}
+
+.wrap {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+header.meta {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.75rem;
+}
+
+header.meta a { color: var(--muted); }
+
+h1 {
+  font-size: 1.85rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 2rem 0 0.6rem;
+}
+
+h3 {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 1.4rem 0 0.4rem;
+}
+
+p { margin: 0.65rem 0; }
+
+.lede {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+}
+
+a { color: var(--accent); }
+
+ul, ol { padding-left: 1.2rem; }
+
+li { margin: 0.35rem 0; }
+
+code, .mono {
+  font-family: var(--mono);
+  font-size: 0.88em;
+}
+
+pre {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.note {
+  border-left: 3px solid var(--accent);
+  padding: 0.35rem 0 0.35rem 0.9rem;
+  margin: 1rem 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cite {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.ask-teacher {
+  margin-top: 2.5rem;
+  padding: 1rem 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+}
+
+.ask-teacher strong { display: block; margin-bottom: 0.25rem; }
+
+.quiz {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.quiz .q {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.quiz .choices {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.quiz button.choice {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  text-align: left;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.quiz button.choice:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.quiz button.choice.correct {
+  border-color: var(--ok);
+  background: #e8f6ee;
+}
+
+.quiz button.choice.wrong {
+  border-color: var(--bad);
+  background: #fdecea;
+}
+
+.quiz .feedback {
+  margin-top: 0.75rem;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  min-height: 1.2em;
+}
+
+.quiz .feedback.ok { color: var(--ok); }
+.quiz .feedback.bad { color: var(--bad); }
+
+footer.nav {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+@media print {
+  body { background: white; }
+  .ask-teacher, .quiz { break-inside: avoid; }
+}
+
+.card,fieldset{background:var(--card);border:1px solid var(--line);padding:1.1rem;margin:1.2rem 0;border-radius:8px}label{display:block;margin:.5rem 0}button{padding:.6rem 1rem;cursor:pointer}textarea{width:100%;min-height:100px;font:inherit;padding:.6rem}.flow{display:flex;gap:.6rem;flex-wrap:wrap}.flow span{border:1px solid var(--line);padding:.6rem}nav{margin-bottom:1.5rem}code{overflow-wrap:anywhere}table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--line);padding:.5rem}#result{white-space:pre-wrap}@media print{button{display:none}.wrap{max-width:none;padding:0}fieldset{break-inside:avoid}}
