@@ -40,6 +40,7 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 - [笔记规范](<notes/AGENTS.md>) — 笔记规范入口。
 
 - [skills/managed/weekly\-ai\-blogs\-digest/AGENTS.md](<skills/managed/weekly-ai-blogs-digest/AGENTS.md>) — weekly\-ai\-blogs\-digest 的精选规则与跑周报复盘
+- [桌面 Agent 产品评测](<projects/2026-06-21--Agent产品评测/_eval_agent_desktop/AGENTS.md>) — 每个 eval 点单独一个 Markdown 文件。
 <!-- edges-descendants:end -->
 
 <!-- edges:end -->
