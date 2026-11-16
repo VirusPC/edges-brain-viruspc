@@ -76,7 +76,7 @@
 - `--super` 相关 onboarding skill 文本随 [#118](https://github.com/VirusPC/edges/pull/118) 更新。worktree 硬约束按用户（Grok Bot，2026-11-14 21:12–21:16，北京时间）「memory-init 是不是就不用在写了？」「skill里是不是不用写了」，只留在 init 模板，不在 memory-init / skill 里再写一遍。
 - AI 资讯例程的 skill 本周被反复拿来测试和改版（改名、重跑、换干净 agent），详见下文「AI 资讯」主线。
 
-未收口：独立仓 `AGENTS.md` 写入 `edges-harness` 标记的框架 [#120](https://github.com/VirusPC/edges/pull/120) 仍 open；公开脑已有相关原则重构 backlog 卡（随 [#460](https://github.com/VirusPC/edges-brain-viruspc/pull/460)）。用户（全栈开发专家，2026-11-10 23:57，北京时间）提出 skills「最核心的是讲一些最基础的做什么的原则」，部分已进 feedbacks，原则重构本身未完成。
+未收口：用户本周明确要求补上的 `edges-create-edges` skill，卡已有、正文未写，见建议补充清单。独立仓 `AGENTS.md` 写入 `edges-harness` 标记的框架 [#120](https://github.com/VirusPC/edges/pull/120) 仍 open；公开脑已有相关原则重构 backlog 卡（随 [#460](https://github.com/VirusPC/edges-brain-viruspc/pull/460)）。用户（全栈开发专家，2026-11-10 23:57，北京时间）提出 skills「最核心的是讲一些最基础的做什么的原则」，部分已进 feedbacks，原则重构本身未完成。
 
 **Task**
 
@@ -92,7 +92,7 @@
 
 已落仓：根目录 routines 子作用域骨架（[#500](https://github.com/VirusPC/edges-brain-viruspc/pull/500)）。依据：用户（日复盘，2026-11-15 17:16–17:17，北京时间）要求「routines下建立一个.edges」「根目录 /routines」。上期周复盘 [#450](https://github.com/VirusPC/edges-brain-viruspc/pull/450) 与本周日复盘 7/7 均已合入。
 
-已记卡、未做成：用户（日复盘，2026-11-15 17:18，北京时间）要求「增加复盘的复盘。确保复盘不腐烂。」同日还提出「routines里允许包含skill」（任务记录员，16:09），这是结构想法，未见单独写成的约定正文。
+已记卡、未做成：用户（日复盘，2026-11-15 17:18，北京时间）要求「增加复盘的复盘。确保复盘不腐烂。」卡已有，例程正文未写，见建议补充清单。同日还提出「routines里允许包含skill」（任务记录员，16:09），这是结构想法，当场未拍板，未见单独写成的约定正文。
 
 **Note**
 
@@ -233,11 +233,11 @@ Teaching / DSH / ACP：公开脑 [#452](https://github.com/VirusPC/edges-brain-v
 
 1. **建设个人 Dashboard 框架，并用同一思路重构 AI 资讯。** 用户（Grok Bot，2026-11-14 00:05）要求「用做dashboard 的思路做ai news。分数据层和可视化层，模型榜单也支持通过下拉菜单切换而不是平铺等等」；01:22「更进一步的，我想建设personal dashboard 框架」；02:40「甚至可以按照指定主题，持久化追踪消息和趋势。」02:44 提到「可能需要简单版的dify、n8n这种数据流编排工具」。对应 [#483](https://github.com/VirusPC/edges-brain-viruspc/pull/483)、[#482](https://github.com/VirusPC/edges-brain-viruspc/pull/482)、[#484](https://github.com/VirusPC/edges-brain-viruspc/pull/484)、[#485](https://github.com/VirusPC/edges-brain-viruspc/pull/485)、[#489](https://github.com/VirusPC/edges-brain-viruspc/pull/489)。本周只记下任务卡和调研，框架本身和分层重构都还没做成。
 
-2. **把根目录 `edges/` 收成全仓信噪比最高的认知目录，并落地 `edges-create-edges`。** 用户（Grok Bot，2026-11-15 16:03）要求「用于记录一个个观点、洞察、判断、决策性质的内容……skill要求内容格式：一句话 + 解释。」后补「参考资料」，22:46「这将是全仓库信噪比最高的地方」。对应 [#497](https://github.com/VirusPC/edges-brain-viruspc/pull/497)、[#503](https://github.com/VirusPC/edges-brain-viruspc/pull/503)、仍 open 的 [#504](https://github.com/VirusPC/edges-brain-viruspc/pull/504)。卡面完成标准（初始化、skill、历史内容迁出、README 改定位）采集时均未勾完，仓库里也还没有 `edges-create-edges` skill。
+2. **把根目录 `edges/` 收成全仓信噪比最高的认知目录，并落地 `edges-create-edges`。** 用户（Grok Bot，2026-11-15 16:03）要求「用于记录一个个观点、洞察、判断、决策性质的内容……skill要求内容格式：一句话 + 解释。」后补「参考资料」，22:46「这将是全仓库信噪比最高的地方」。对应 [#497](https://github.com/VirusPC/edges-brain-viruspc/pull/497)、[#503](https://github.com/VirusPC/edges-brain-viruspc/pull/503)、仍 open 的 [#504](https://github.com/VirusPC/edges-brain-viruspc/pull/504)。卡面完成标准（初始化、skill、历史内容迁出、README 改定位）采集时均未勾完，仓库里也还没有 `edges-create-edges` skill。缺的 skill 正文已列入建议补充清单。
 
 3. **建立产物之间自动流转的 dream 机制。** 用户（Grok Bot，2026-11-15 16:33）要求「处理各种产物之间自动流转管理。本质是做一种dream机制，从memory、notes等提取edges提升个人认知、生成posts对外展示获取反馈等。最高优先级。」对应 [#499](https://github.com/VirusPC/edges-brain-viruspc/pull/499)。本周只有概念和一张 urgent 卡，没有设计方案和实现；卡面写明依赖 `edges/` 格式和 `edges-create-edges` 先定下来。
 
-4. **增加「复盘的复盘」，让发现的 badcase 能做 eval 和回归。** 用户（日复盘，2026-11-15 17:18）要求「增加复盘的复盘。确保复盘不腐烂。发现的badcase要能够eval和回归到」，并举 AI 资讯漏收重要文章为例。卡已随 [#500](https://github.com/VirusPC/edges-brain-viruspc/pull/500) 记入 routines 子作用域，但评测集、回归流程和例程正文都还没有。这与上期三条结转项对象不同，故不挤占「下次做什么」名额。
+4. **增加「复盘的复盘」，让发现的 badcase 能做 eval 和回归。** 用户（日复盘，2026-11-15 17:18）要求「增加复盘的复盘。确保复盘不腐烂。发现的badcase要能够eval和回归到」，并举 AI 资讯漏收重要文章为例。卡已随 [#500](https://github.com/VirusPC/edges-brain-viruspc/pull/500) 记入 routines 子作用域，但评测集、回归流程和例程正文都还没有。缺的例程正文已列入建议补充清单。这与上期三条结转项对象不同，故不挤占「下次做什么」名额。
 
 5. **给个人大脑单独做一份 tasks 看板页。** 用户（日复盘，2026-11-15 17:44–17:48）指出「现在部署的tasks页，其实是edges框架的，不是edges大脑的」「记录任务卡先」。对应 [#501](https://github.com/VirusPC/edges-brain-viruspc/pull/501)。本周只留下 backlog 卡，没有改部署。
 
@@ -245,7 +245,7 @@ Teaching / DSH / ACP：公开脑 [#452](https://github.com/VirusPC/edges-brain-v
 
 ## 建议补充内容清单
 
-按 2026-11-16 反馈，下面三条是从本周会话与仓库里新挖出的、该沉淀却还没有写成模块正文的候选。已开出且卡面写全的任务不在这里再抬一遍，见「展望」。**待你确认后再落库**，本复盘不自行写入。本次未读到 Langfuse trace。
+按 2026-11-16 反馈，下面这些是从本周会话与仓库里新挖出的、该沉淀却还没有写成模块正文的候选。已经开出、且卡面写全的任务，缺的如果是 skill / routine 等模块正文，仍单独列出，不因为有卡就省略。**待你确认后再落库**，本复盘不自行写入。本次未读到 Langfuse trace。
 
 ### Note：编码 Agent 的本机记忆与子目录 `AGENTS.md` 对照（本周新挖，未落仓）
 
@@ -276,6 +276,27 @@ Teaching / DSH / ACP：公开脑 [#452](https://github.com/VirusPC/edges-brain-v
 - **为什么值得补：** 缺的不是「要重构 skill」这张卡，而是那条原则的可确认文本。不先写出来给你点头，#120 和相关 skill 很难按同一条原则收口，也容易再滑回 if-else。
 - **不补代价：** 继续只剩一张「设计未定稿」的卡和一条元原则 feedback。下次再改 onboarding / CLI / `--super` 时，还要从 11-10 的长对话里重听一遍。
 - **处理结果：** **待你确认后再落库**。先写出待确认的原则正文，请你点头或改写；不要把助手在 00:15 的复述当成已生效的硬约束，也不要未确认就改 CLI。
+
+
+### Skill：`edges-create-edges`（本周已给出格式，skill 正文未写）
+
+- **是什么：** 写出 `edges-create-edges` skill 正文：把观点、洞察、判断、决策写成一篇篇精简条目，格式为「一句话 + 解释 + 参考资料」，并初始化该目录的 `.edges`。
+- **建议去处：** 按用户原话，放在公开脑根目录 `edges/.edges/` 下；与已有任务卡 [#497](https://github.com/VirusPC/edges-brain-viruspc/pull/497)、[#503](https://github.com/VirusPC/edges-brain-viruspc/pull/503)、仍 open 的 [#504](https://github.com/VirusPC/edges-brain-viruspc/pull/504) 对齐，不要再开同名卡。缺的是 skill 正文，不是又一张卡。
+- **对话依据：** 用户（Grok Bot，2026-11-15 16:03，北京时间）「个人大脑根目录里，起一个文件夹吧，叫做edges，用于记录一个个观点、洞察、判断、决策性质的内容。每个点占一篇内容，保持精简。初始化好.edges，并在.edges里补充一个skill：edges-create-edges，skill要求内容格式：一句话 + 解释 。」随后改成先记任务卡，并确认用已有「认知优势」目录。20:46 补充格式要加「参考资料」。22:46「这将是全仓库信噪比最高的地方」。
+- **仓库依据：** 三张相关卡已落，但采集时 main 上没有已落地的 `edges-create-edges` skill；卡面完成标准（`.edges` 初始化、skill 正文、历史内容迁出、README 改定位）均未勾完。
+- **为什么值得补：** 用户当场给出了目录、skill 名和正文格式。只开卡不等于模块已沉淀；后面 dream 产物流转也依赖这个格式先定下来。
+- **不补代价：** 之后往 `edges/` 里写条目没有统一 skill 可遵循，格式会再次漂移，[#499](https://github.com/VirusPC/edges-brain-viruspc/pull/499) 的 dream 机制也会继续空转。
+- **处理结果：** **待你确认后再落库**。确认后按已有卡面和原话写 skill 正文，不新开卡。
+
+### Routine：「复盘的复盘」例程正文尚未写成（已记卡）
+
+- **是什么：** 把「复盘的复盘」写成例程定义：何时跑、回看什么、发现的 badcase 如何进入 eval 和回归（例如 AI 资讯漏收重要文章），而不只留一张任务卡。
+- **建议去处：** 公开脑 routines 子作用域（骨架已随 [#500](https://github.com/VirusPC/edges-brain-viruspc/pull/500) 落下），可与已有日 / 周复盘例程并列，或挂进现有复盘例程。已有卡 `routines/.edges/tasks/backlog/2026-11-15--增加复盘的复盘让-badcase-能-eval-和回归/`。缺的是例程正文，不是再开一张卡。
+- **对话依据：** 用户（日复盘，2026-11-15 17:18，北京时间）「然后记录个任务：增加复盘的复盘。确保复盘不腐烂。发现的badcase要能够eval和回归到。例如，之前发现ai news routine 忽略了重要的 claude research 下的 memory 文章。」原话先要求「记录个任务」，例程形态（独立例程还是挂在现有日 / 周复盘里）仍待你确认。
+- **仓库依据：** 卡已记入，但采集时没有对应的例程 `INDEX.md` / Skill / 日程，也没有评测集或回归流程。
+- **为什么值得补：** 这是对复盘例程自身质量的要求。没有例程正文和回归机制，就还是靠下次人工发现同一类遗漏。
+- **不补代价：** 以后只能继续用周复盘人工发现同一类 rotten case。
+- **处理结果：** **待你确认后再落库**。先确认例程形态，再写定义；不自动挤掉「下次做什么」的三条结转名额。
 
 
 ### 框架拆仓卡仍 in_progress（与公开脑 done 不一致）
@@ -350,13 +371,9 @@ Teaching / DSH / ACP：公开脑 [#452](https://github.com/VirusPC/edges-brain-v
 - **不补代价：** 把已改道且已发版的工作当成缺口。
 - **处理结果：** **已改道完成**。不列入下次做什么。
 
-### 「复盘的复盘」与 badcase 回归（本周新提出，已记卡，未做成）
+### 「复盘的复盘」与 badcase 回归（已提升为 Routine 候选）
 
-- **是什么：** 用户（日复盘，2026-11-15 17:18，北京时间）要求「增加复盘的复盘。确保复盘不腐烂。发现的badcase要能够eval和回归到」，并举 AI 资讯例程漏掉重要文章为例。
-- **建议去处：** 已按用户要求记任务卡；是否做成仍待后续。
-- **为什么值得补：** 这是对复盘例程自身质量的要求，和「建议 3 的空标准反复结转」是同一类腐烂风险。
-- **不补代价：** 以后只能继续用周复盘人工发现同一类遗漏。
-- **处理结果：** **已记卡，未完成**。不自动挤掉下次做什么的三条结转名额，是否升为下期必做由你定。
+- 同上文 Routine 候选。此处不再重复。卡已有、例程正文未写，待你确认后再落库。
 
 
 ### 周复盘要盘点沉淀、挖新模块，并展望未来（本周反馈，已写入例程）
