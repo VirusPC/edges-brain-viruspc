@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 3 课 · Timers</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0003-timers.html" aria-current="page">第 3 课 · Timers</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+</nav>
+
+
+<h1>Timers</h1>
+<p class="subtitle">让 Agent 能主动醒来：timer 自己不开 run，由 scheduler 到期后写成 inbox 里的事件。</p>
+<p class="meta">第 3 课 · 约 10 分钟 · 主来源：<a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>看到一个提醒，能判断它是 follow-up 还是 schedule。你能按顺序说出 scheduler 的三步，也知道 timer 必须放在独立存储里、自己并不会开 run；选用 durable execution engine 时，到期后仍要先写入 inbox。</p>
+</div>
+
+<h2>和 inbox 在一起，Agent 才能主动醒来</h2>
+<p>timers 和 event inbox 一起，让 always-on agent 能够主动行动，而不只是等人来叫。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+
+<h2>两类 timer：follow-up 和 schedule</h2>
+<p>timer 一般分成两类。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+<div class="cards">
+  <div class="card">
+    <h3>follow-up</h3>
+    <p>这是 Agent 给自己设下的期限，例如过一会儿去看有没有回音。它是一次性的。到期以后，应当被标成完成。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+  </div>
+  <div class="card">
+    <h3>schedule</h3>
+    <p>这是按已知节奏重复发生的任务，例如每天一份通讯。follow-up 和 schedule 可以采用相近的结构，但 schedule 还需要记录自己的重复规则。到期以后，应当把下次时间改到下一回。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+  </div>
+</div>
+
+<h2>放在独立存储里，自己不开 run</h2>
+<p>timer 住在自己的耐用存储里，通常是另一张数据库表，和 inbox 分开。inbox 只应存放已经能做的事件。还没到期的提醒，不该提前挤进 inbox。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+<p><strong>timer 自己不会开一次 run。</strong> 真正去「开火」的，是 scheduler。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+
+<h2>scheduler 每一轮的三步</h2>
+<p>scheduler 通常是一个后台服务。它按固定间隔查看这份存储，并把已经到期的项开火。每一轮按下面三步走。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+<ol class="flow">
+  <li><span class="step-title">找出已到期的 timer</span>扫描存储，找到那些已经到时间的项。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></li>
+  <li><span class="step-title">按类别更新</span>follow-up 应当被标成完成；schedule 应当把到期时间改到下一次。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></li>
+  <li><span class="step-title">写入 inbox 并叫醒 worker</span>把对应事件加进 inbox，再叫醒 worker。之后的路，就和第 2 课一样：由唯一的 worker 取出并开 run。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></li>
+</ol>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 210" role="img" aria-label="scheduler 扫描独立的 timer 存储，更新后再写入 event inbox">
+  <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/></marker></defs>
+  <style>.bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}.bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}.bx3{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}.t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}.s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}.ln{stroke:#a3341f;stroke-width:1.5;fill:none;marker-end:url(#a3)}.n{font:700 11px "Noto Sans CJK SC",sans-serif;fill:#a3341f}</style>
+  <rect class="bx2" x="16" y="50" width="170" height="100" rx="4"/><text class="t" x="28" y="84">timer 存储</text><text class="s" x="28" y="104">独立于 inbox</text><text class="s" x="28" y="122">follow-up / schedule</text>
+  <rect class="bx" x="246" y="50" width="200" height="100" rx="4"/><text class="t" x="258" y="80">scheduler</text><text class="s" x="258" y="100">① 找出到期项</text><text class="s" x="258" y="118">② 按类别更新</text>
+  <rect class="bx3" x="506" y="50" width="198" height="100" rx="4"/><text class="t" x="518" y="84">event inbox</text><text class="s" x="518" y="104">③ 写入并叫醒 worker</text><text class="s" x="518" y="122">timer 自己不开 run</text>
+  <path class="ln" d="M186,100 L246,100"/><path class="ln" d="M446,100 L506,100"/>
+  <text class="n" x="188" y="86">扫描</text>
+</svg>
+<figcaption>图 1　timer 待在独立存储里。scheduler 到期后先更新，再写入 inbox；它不会绕过 inbox 去直接开 run。</figcaption>
+</figure>
+
+<h2>自建服务，或 durable execution engine</h2>
+<p>至于 scheduler 本身，原文给了两种做法：你可以自建一个后台服务，也可以使用 durable execution engine。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+<p>无论选哪一种，到期之后的那一步都没有变：把事件写入 inbox，并叫醒 worker。不要把 durable execution engine 理解成可以绕过 inbox、直接去叫 Agent。那是课里需要标明的推断禁区——原文只把它写成实现 scheduler 的选项。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></p>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「timer 和 inbox 一起，让 Agent 能主动醒来。它分成 follow-up 和 schedule：前者是给自己设的一次性期限，到期后标成完成；后者按已知节奏重复，到期后把时间改到下一回。timer 放在独立的耐用存储里，因为 inbox 只放已经能做的事件。timer 自己不开 run。scheduler 按固定间隔扫描：找出到期的，按类别更新，再写入 inbox 并叫醒 worker。scheduler 可以自建，也可以用 durable execution engine，但到期后仍然要先进入 inbox。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先唤回第 2 课的「唯一 worker」，后面四题练习本课。</p>
+<div class="quiz" data-quiz-id="0003-timers">
+<script type="application/json">{"questions":[{"q":"合上第 2 课来回想：关于同一个 event inbox 上的 worker，原文怎么说？","options":["一个 inbox 同一时间只应有一个在工作的 worker，以免两次 run 互相覆盖","一个 inbox 同一时间应当拉起多个在工作的 worker，以免那些到达事件排起长队","一个 inbox 不必再设在工作的 worker，写入之后应直接叫模型，以免多一层转发","一个 inbox 只在白天保留在工作的 worker，夜间改由调度器直接开跑，以免错过"],"answer":0,"explain":"原文要求一个 inbox 同一时间只有一个在工作的 worker，以免两次 run 做重复劳动或互相覆盖。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Event inbox</a>。"},{"q":"follow-up 和 schedule 的区别，哪一句最符合原文？","options":["follow-up 是给自己设的一次性期限；schedule 是按已知节奏重复发生的任务","follow-up 是按已知节奏重复的任务；schedule 是给自己设下的一次性的期限","follow-up 与 schedule 都还是已能做的事件；区别只在要不要去叫醒执行者","follow-up 与 schedule 都会自己去开跑；区别只在要不要把结果写入待发表"],"answer":0,"explain":"原文把 timer 分成两类：follow-up 是 Agent 给自己设的期限，例如过一会儿去看有没有回音；schedule 是按已知节奏重复发生的任务，例如每天一份通讯。它们都先待在独立存储里，自己并不会开 run。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Timers</a>。"},{"q":"timer 应当放在哪里，以及它会不会自己开 run？","options":["timer 放在独立的耐用存储里，自己并不开 run；inbox 只放已经能做的事件","timer 应当直接放进 inbox 里排队，好让 worker 到期前就把准备做完","timer 到期时由自己直接开一次 run，不必再写成 inbox 里的事件以免耽误","timer 必须和 inbox 共用同一张表，好让 worker 与调度器抢同一件事"],"answer":0,"explain":"原文把 timer 放在独立的耐用存储里，通常是另一张表，和 inbox 分开。inbox 只应存放已经能做的事件。timer 自己不会开 run。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Timers</a>。"},{"q":"scheduler 每一轮应当按什么顺序做事？","options":["先找出已到期的 timer：follow-up 标成完成，schedule 改到下一回，再写入 inbox 并叫醒 worker","先跳过已到期的 timer：follow-up 不去改动，schedule 也不改期，直接绕过 inbox 去叫醒 worker","先通知用户再处理 timer：follow-up 全部完成，schedule 也全部完成，再写入 inbox 叫醒 worker","先把未到期的 timer 推进：follow-up 先排队，schedule 也先排队，再从 inbox 拉起多个 worker"],"answer":0,"explain":"原文把 scheduler 的每一轮写成三步：扫描存储并找出已到期的 timer；按类别更新（follow-up 标成完成，schedule 把到期时间改到下一次）；再把事件写入 inbox 并叫醒 worker。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Timers</a>。"},{"q":"关于 durable execution engine，哪一句符合原文？","options":["scheduler 可以自建后台服务，也可改用 durable execution engine，但到期后仍要写入 inbox","一旦改用 durable execution engine，scheduler 就可以绕过 inbox，到期后直接去叫模型开跑","durable execution engine 用来代替 memory，这样进度就不必再写成独立文件，也不必经过 inbox","durable execution engine 用来代替 outbox，这样消息就不必再经过投递服务，也不必经过 inbox"],"answer":0,"explain":"原文只把 durable execution engine 写成实现 scheduler 的一种可选方式，与自建后台服务并列。到期之后仍然要把事件写入 inbox 并叫醒 worker，而不是绕过 inbox 去直接开 run。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Timers</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 里的 <strong>Timers</strong> 一节。请把「每一轮的三步」在纸上按 1、2、3 写一遍，并注明 follow-up 和 schedule 在第 2 步里分别被怎样更新。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>两类 timer 还分不清、想对照原文把三步再走一遍，或者想问 durable execution engine 在原文里到底管到哪一步，都可以直接问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：看 <a href="../reference/glossary.html">术语表</a> 里 timer、follow-up、schedule、scheduler 四条，以及 <a href="../reference/cycle-cheatsheet.html">循环速查</a> 里 timers 那张卡片。</p>
+
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0002-event-inbox.html">上一课 · Event inbox</a>
+  <a class="next" href="0004-memory.html">下一课 · Memory</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品。
+</footer>
+</main>
+</body>
+</html>
