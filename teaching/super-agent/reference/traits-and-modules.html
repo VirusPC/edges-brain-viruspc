@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>特征与模块速查 · Super-agent 设计探索</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/traits-and-modules.html" aria-current="page">特征与模块速查</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+</nav>
+
+<h1>特征与模块速查</h1>
+<p class="subtitle">一页纸看完四个基础特征和五个模块。打印或存在手机上，合上原文前扫一遍。</p>
+
+<div class="box warn">
+  <span class="box-title">文章的性质</span>
+  <p>这是面向工程实践的架构思路探讨，并非对 DeepSeek Harness 现有产品功能的介绍。「3 到 5 个活跃 Session」是观察，不是定律。单任务上限取决于模型能力，多任务上限取决于人的注意力。</p>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3>一句话</h3>
+    <p>Super-agent 是能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体，以及支撑它的系统架构。单个 ReAct Loop 撑不住四个特征，五个模块构成基本框架。</p>
+  </div>
+</div>
+
+<h2>四个基础特征</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>特征</th><th>原文里的意思</th></tr>
+</thead>
+<tbody>
+<tr><td>连续</td><td>在熟悉的工作界面里交互，感觉始终只有一个 Agent，不必去想信息在哪个 Session 里</td></tr>
+<tr><td>高效</td><td>响应快，并能并行、高质量地完成多个复杂任务；不必等上一件做完再接受新指令</td></tr>
+<tr><td>主动</td><td>持续观察环境事件并推进值得处理的事项；不需要介入时保持安静</td></tr>
+<tr><td>持久</td><td>始终在线、直接接入真实工作环境，遇到异常能自动恢复</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>五个模块</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>模块</th><th>章节</th><th>在框架里指向什么</th></tr>
+</thead>
+<tbody>
+<tr><td>双层架构</td><td>第 2 节</td><td>兼顾连续交互与高效并发</td></tr>
+<tr><td>事件驱动</td><td>第 3 节</td><td>实现主动响应</td></tr>
+<tr><td>面向人的交互</td><td>第 4 节</td><td>在交互过程中同时做到连续与高效</td></tr>
+<tr><td>计算、状态与环境的分离</td><td>第 5 节</td><td>与 Watchdog 一起，实现跨设备的持久在线与异常自愈</td></tr>
+<tr><td>Watchdog</td><td>第 6 节</td><td>与上一模块一起，实现跨设备的持久在线与异常自愈</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>回到 <a href="../index.html">目录</a> · 查 <a href="glossary.html">术语表</a> · 看 <a href="architecture-cheatsheet.html">架构速查</a></p>
+<p>课程：<a href="../lessons/0001-four-traits-and-five-modules.html">第 1 课</a> · <a href="../lessons/0002-two-layer-router-and-worker.html">第 2 课</a> · <a href="../lessons/0003-event-filtering-and-routing.html">第 3 课</a> · <a href="../lessons/0004-context-and-speculative-execution.html">第 4 课</a> · <a href="../lessons/0005-human-facing-interaction.html">第 5 课</a> · <a href="../lessons/0006-compute-state-and-environment.html">第 6 课</a> · <a href="../lessons/0007-watchdog.html">第 7 课</a> · <a href="../lessons/0008-experiments-and-open-questions.html">第 8 课</a> · <a href="../lessons/0009-cumulative-review.html">第 9 课</a></p>
+
+<footer class="foot">
+  压缩自 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>。
+  需要时可以简单对照 <a href="https://claude.com/resources/articles/building-always-on-agents">Building always-on agents</a>，但不要按对比课来用这页。
+</footer>
+</main>
+</body>
+</html>

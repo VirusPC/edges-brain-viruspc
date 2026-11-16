@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 课 · 双层架构：Router 与 Worker</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0002-two-layer-router-and-worker.html" aria-current="page">第 2 课 · 双层架构：Router 与 Worker</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/traits-and-modules.html">特征与模块速查</a>
+</nav>
+
+<h1>双层架构：Router 与 Worker</h1>
+<p class="subtitle">第 1 课只记下「双层架构兼顾连续与高效」。这一课进入第 2 节：连续性与吞吐量为什么互相拉扯，以及 Router 层和 Worker 层怎样把这两件事拆开。</p>
+<p class="meta">第 2 课 · 约 10 分钟 · 主来源：<a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>（第 2 节）</p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>能讲清：把所有事件塞进同一个 Session、或每条事件都新开 Session，会分别伤到什么；原文怎样把「维护全局连续性」和「高并发执行」拆到 Router 层与 Worker 层；为什么 Router 不亲自做具体任务、Worker 不直接对用户说话；以及为什么 Session 应是实现细节，而不是用户要管理的东西。</p>
+</div>
+
+<h2>连续性与吞吐量，没法在同一层里两头占满</h2>
+<p>要同时实现跨信道的连续交互与多任务的高效并发，系统在底层会话组织上面临连续性与吞吐量之间的根本权衡。原文把两条极端路径都写出来了。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2 节</a></p>
+<p>如果每条事件都交给同一个 Session 处理，上下文最连续，但受限于单个 ReAct Loop 串行执行的速度上限，任务完成耗时长、吞吐低，而且多任务的中间细节混杂在一起，也会影响完成效果。</p>
+<p>反过来，如果每条事件都直接新开独立的 Session 去处理，并发吞吐最高；可一旦任务之间并不完全独立，缺少全局上下文会让各个 Session 的结果彼此割裂，同时多个 Session 各自向用户响应，也会造成交互混乱。</p>
+<p>为了兼顾这两头，原文把「维护全局连续性」与「高并发执行」拆到两个不同的层级中：由常驻的 Router 层统一承接人类交互与全局协调，由上下文隔离的 Worker 层并发执行具体任务。</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 230" role="img" aria-label="Router 层统一负责路由与对外交互，多个 Worker Session 隔离并发执行任务">
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .bx3{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+  </style>
+  <rect class="bx" x="16" y="16" width="130" height="70" rx="4"/>
+  <text class="t" x="28" y="44">人类交互</text>
+  <text class="s" x="28" y="64">IM、GitHub 等入口</text>
+  <rect class="bx3" x="200" y="16" width="320" height="70" rx="4"/>
+  <text class="t" x="214" y="44">Router 层（常驻）</text>
+  <text class="s" x="214" y="64">交互、分派、全局协调；不执行具体任务</text>
+  <rect class="bx2" x="16" y="130" width="210" height="80" rx="4"/>
+  <text class="t" x="28" y="158">Worker A</text>
+  <text class="s" x="28" y="178">隔离上下文 · 完整工具</text>
+  <text class="s" x="28" y="196">向 Router 汇报，不直接对用户说</text>
+  <rect class="bx2" x="255" y="130" width="210" height="80" rx="4"/>
+  <text class="t" x="267" y="158">Worker B</text>
+  <text class="s" x="267" y="178">与 A 并发，互不阻塞</text>
+  <text class="s" x="267" y="196">通常不与其他 Worker 直连</text>
+  <rect class="bx2" x="494" y="130" width="210" height="80" rx="4"/>
+  <text class="t" x="506" y="158">Worker C</text>
+  <text class="s" x="506" y="178">内部仍可再有 Subagent</text>
+  <text class="s" x="506" y="196">对 Router 层保持透明</text>
+</svg>
+<figcaption>图 1　双层架构：用户侧始终面对同一个 Super-agent；底下由 Router 层维持连续，由多个 Worker 隔离并发地执行任务。</figcaption>
+</figure>
+
+<p>通过这一双层架构，系统在底层接管了上下文管理与并发执行，从而在用户侧淡化了 Session 的存在，使用户面对的始终是同一个 Super-agent。原文的判断是：让用户手动管理 Session，在很大程度上是从底层 LLM API 延续下来的设计惯性；Session 应当是系统的实现细节，而不应是用户的认知负担。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2 节</a></p>
+<p>把产品形态与底层 Session 解耦之后，面向用户的项目管理便不再受 Session 的限制，向用户暴露怎样的交互与任务管理方式成为了一个独立的产品问题。原文把这个问题留到后面再讨论，本课先记住「先解耦」这一步。</p>
+<p>这里的「双层」是逻辑上的职责划分，每一层在实现上都不必局限于单个 Session，而是可以有各自的内部结构。</p>
+
+<h2>Router 层：常驻，但不当成万能工头</h2>
+<p>Router 层是常驻的全局路由层，负责承接所有入口的人类交互。所有跨任务的信息与决策都在 Router 层中汇总，由它充当全局的序点、协调点和记忆。为了避免这一全局节点成为系统的性能瓶颈，Router 层在设计上不直接执行具体任务，只负责人类交互与任务分派，甚至可以不配备 Bash 工具。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2.1 节</a></p>
+<p class="with-side">这种「一个中心节点分派多个执行节点」的结构，表面上看与常见的 Agent Team 相似，但侧重点不同。常见的 Agent Team 主要用于单个复杂任务内部的步骤拆解与角色协作，Team Lead 往往需要深入理解任务细节、规划子任务并高频协调各个成员。而在 Super-agent 中，Router 层只处理任务之间的高层关联与分派，无需介入单任务内部的拆解。反过来，如果通过提示词约束一个 Agent Team 的主会话不亲自执行具体任务，只负责对外交互并把不同任务分派给各成员独立推进，那么它也可以视为这种双层架构。原文还写：从他们的实践来看，Router 层的任务常常没有想象中复杂，使用较轻量的模型往往就能兼顾速度与效果。
+<span class="side">不要把 Router 理解成「更强的工头」。它故意做得更轻，好把具体执行留给 Worker。</span>
+</p>
+<p>在内部实现上，Router 层同样不必局限于单个 Session，甚至部分逻辑未必需要调用 LLM。作者选择了最直接的做法：用单个常驻 LLM Session 作为 Router 层的核心实现，并发现它并没有表面看起来那么容易成为吞吐瓶颈。原因是：上一轮推理期间到达的环境事件（原文称为 Trigger，第 3 节再展开）会积压下来，在下一轮一并处理，形成批处理；合并处理的额外开销很小。事件流平稳时，Trigger 逐条进入，单次响应延迟较低；事件密集涌入、开始排队时，积压的多条 Trigger 会自动合并进下一次 LLM 调用。Router 层每步通常是长输入、短输出，把积压事件合并进一次调用，会在 Prefill 阶段并行计算，单次请求耗时的增长远慢于批处理大小。因此在一定范围内，积压越多，单个决定分摊的推理时间越低；上限取决于上下文长度，以及模型在一轮中能准确处理多少条 Trigger。</p>
+<p>定量结果留到第 8 课。加上后文的订阅、直通和链式召回，原文认为单个常驻 Router Session 在他们当时的团队规模下已经够用。当规模进一步扩大、单个会话确实不够时，Router 层内部也可以做成多层过滤，或水平切分为多个会话。切分越细，并发吞吐量越高，分片之间的记忆与上下文连续性就越低。在全局记忆问题被解决之前，这一权衡始终存在。具体何时切分，原文在第 8 节仍列为开放问题，本课不提前给答案。</p>
+
+<h2>Worker 层：隔离执行，汇报而不直接对用户说</h2>
+<p>Worker 层由负责具体执行的会话组成。各个 Worker 彼此上下文隔离，挂载完整的执行工具，在独立上下文中专注完成单一任务。由于 Worker Session 直接决定任务结果与代码质量，通常需要配置能力最强的模型。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2.2 节</a></p>
+<p>Worker 不会直接与人类交互，其推理过程和工具调用不会直接输出到外部信道，而是向 Router 层汇报状态，由 Router 层统一向用户回复。这样既保障并发度与交付质量，又避免多个会话各自回复带来的混乱。</p>
+<p>多任务并发时，各个 Worker 独立推进任务，同层 Worker 之间通常也不需要直接通信。多个 Worker 在具体执行中的冲突，往往出现在同一个 Pull Request 等共享工作环境中；只要它们都订阅了对应的 Thread，就会收到相同的事件通知，从而有机会自行发现和解决冲突。少数跨任务协同则由 Router 层中转。订阅与 Thread 的细节在第 3 课展开，这里先记住：冲突不必先靠 Worker 两两通信来解决。</p>
+<p>与 Router 层类似，每个 Worker Session 在内部也不必局限于单个会话：执行复杂单任务时，Worker 内部可以再创建 Subagent，也可以本身就是一个 Agent Team，这些对上层的 Router 层保持透明。这一结构既适用于代码协作（同时推进多个独立的问题复现、Pull Request 评审与特性开发而互不阻塞），也适用于个人助手：界面上通常只有一个聊天页来维持交互连续，底层却可以为每个话题分别分派 Worker，并行推进任务、起草回复。</p>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「要同时做到跨信道连续和多任务高效，把所有事件塞进同一个 Session，上下文最连续，但单个 ReAct Loop 串行执行会拖慢吞吐，细节也会混杂；每条事件都新开 Session，吞吐最高，但任务并不完全独立时结果会割裂，多个 Session 分别回复也会乱。原文把维护全局连续性交给常驻的 Router 层，把高并发执行交给上下文隔离的 Worker 层。Router 层承接所有入口的人类交互，充当全局的序点、协调点和记忆，但不直接执行具体任务，甚至可以不配备 Bash 工具；它和常见 Agent Team 的 Team Lead 不同，只处理任务之间的高层关联与分派。作者用单个常驻 LLM Session 做 Router 的核心，并靠上一轮推理期间积压的事件在下一轮合并处理，来缓解吞吐压力。Worker 挂载完整工具、用更强的模型专注单一任务，不直接对用户说话，只向 Router 汇报，由 Router 统一回复。双层是逻辑划分，每一层都不必只有一个 Session。对用户来说，Session 应是实现细节，而不应是认知负担。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先回想第 1 课，后面几题再进入这一课。</p>
+<div class="quiz" data-quiz-id="0002-two-layer-router-and-worker">
+<script type="application/json">{"questions":[{"q":"合上第 1 课来回想：四个基础特征里，「高效」在原文中的意思最接近哪一句？","options":["在熟悉界面中交互，感觉始终只有一个 Agent，不必想信息在哪个 Session","交互响应迅速，并能并行、高质量地完成多个复杂任务，不必等上一件做完再接受新的指令","不必等用户逐条下达指令，能持续观察环境事件并主动推进值得处理的事项，否则保持安静","始终在线、直接接入用户真实的工作环境，并且在长期运行中遇到异常时能够自动完成恢复"],"answer":1,"explain":"「高效」同时包含交互响应迅速，以及并行、高质量地完成多个复杂任务；不必等上一件做完再接受新指令。其余三项分别是连续、主动、持久。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"为了兼顾连续性与吞吐量，原文把什么拆到两个不同的层级？","options":["把维护全局连续性交给常驻的 Router 层，把高并发执行交给上下文隔离的 Worker 层","把维护全局连续性交给隔离的 Worker 层，把高并发执行交给常驻的 Router 层去完成","把所有任务都合并进同一个常驻 Session，不再区分 Router 层和 Worker 层","把所有事件都直接新开独立 Session 去处理，不再保留那个常驻的 Router 层来协调"],"answer":0,"explain":"原文把「维护全局连续性」与「高并发执行」拆开：由常驻的 Router 层统一承接人类交互与全局协调，由上下文隔离的 Worker 层并发执行具体任务。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 2 节</a>。"},{"q":"关于 Router 层的职责，哪一句最符合原文？","options":["Router 层不直接执行具体任务，只负责人类交互与任务分派，甚至可以不配备 Bash 工具","Router 层应当亲自执行全部具体任务，并深入拆解每一步细节，因此必须配备最完整的执行工具","Router 层不直接执行具体任务，但仍要深入规划每个 Worker 内部的子步骤并高频协调","Router 层应当亲自执行具体任务，只有在任务失败之后才把剩余工作再分派给各 Worker"],"answer":0,"explain":"为避免全局节点成为性能瓶颈，Router 层在设计上不直接执行具体任务，只负责人类交互与任务分派，甚至可以不配备 Bash 工具。这和常见 Agent Team 里 Team Lead 深入任务细节、高频协调是不同的侧重点。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 2.1 节</a>。"},{"q":"Worker 层怎样对待对外交互？","options":["Worker 不直接与人类交互，推理和工具调用不直接输出到外部信道，而向 Router 汇报并由它统一回复","Worker 应当直接与人类交互，把推理过程和工具调用原样输出到外部信道，而不再经过 Router 层转发","Worker 不直接与人类交互，但仍把推理过程和工具调用原样输出到外部信道，以便用户逐步跟踪完整的执行过程","Worker 应当直接与人类交互，只把最终结论发给用户，同时向其他 Worker 逐条同步全部执行过程细节"],"answer":0,"explain":"Worker 不会直接与人类交互，其推理过程和工具调用不会直接输出到外部信道，而是向 Router 层汇报状态，由 Router 层统一向用户回复。同层 Worker 之间通常也不需要直接通信。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 2.2 节</a>。"},{"q":"关于「双层」和 Session，哪一句最符合原文？","options":["双层是逻辑上的职责划分，每一层不必局限于单个 Session；Session 应是实现细节，不应成为用户的认知负担","双层要求每一层都只能实现为单个 Session；只有把 Session 直接暴露给用户，连续性才真正地能够得到保证","双层是逻辑上的职责划分，每一层不必局限于单个 Session；但用户仍必须亲自去选择并管理好每一个 Session","双层要求每一层都只能实现为单个 Session；用户不必管理 Session，是因为底层被禁止再去创建任何新的会话"],"answer":0,"explain":"原文写：「双层」是逻辑上的职责划分，每一层在实现上都不必局限于单个 Session。系统在底层接管上下文管理与并发执行，从而在用户侧淡化 Session 的存在；Session 应当是系统的实现细节，而不应是用户的认知负担。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 2 节</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://www.bilibili.com/opus/1265361021143351318">Super-agent 设计探索</a>的第 2 节，包括 2.1 和 2.2。读的时候先抓住那组权衡，再分别看 Router「不执行」和 Worker「不对用户直说」这两条约束。批处理的数字和第 8 节的扩展问题，这一课先不必记。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>Router 和 Agent Team 的差别还容易混、想把「Session 是实现细节」再用自己的例子讲一遍，或者想先跳到事件怎样进入这两层，都可以直接问我。</p>
+</div>
+
+<p>下一步可看 <a href="../reference/glossary.html">术语表</a> 里本课新出现的词。准备好了就进入 <a href="0003-event-filtering-and-routing.html">第 3 课 · 事件过滤与路由</a>。</p>
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0001-four-traits-and-five-modules.html">上一课 · 四个特征与五个模块</a>
+  <a class="next" href="0003-event-filtering-and-routing.html">下一课 · 事件过滤与路由</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文为准。
+  本课不进入第 3 节的过滤与路由细节，也不提前给出第 8 节里如何扩展双层架构的答案。
+</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>术语表 · Super-agent 设计探索</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../reference/glossary.html" aria-current="page">术语表</a>
+  <a href="../reference/traits-and-modules.html">特征与模块速查</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+</nav>
+
+<h1>术语表</h1>
+<p class="subtitle">这门课的「统一说法」。之后每一课都只用这里的词；同一个东西不换着叫。</p>
+<p>规则：这些词保持英文或原文写法——Super-agent、Session、ReAct Loop、Router、Worker、Trigger、Thread、Watchdog、Inline、Spill、BYOM、A2A。其他尽量用平常的中文。定义只说「它是什么」，一两句话。术语按第一次被展开的那一课标注；等你测验过关后再按表现修订。</p>
+
+<h2>第 1 课引入</h2>
+<dl class="glossary">
+<dt>Super-agent</dt>
+<dd>一种能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体，以及支撑它的系统架构。它不是 DeepSeek Harness 现成产品功能的名字。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a><span class="avoid">把 Super-agent 当成一个产品开关；把它说成「一个永不结束的 Session」</span></dd>
+<dt>Session</dt>
+<dd>现有主流 Agent 仍以它为基本工作单位，不同 Session 彼此独立。在 Super-agent 里，它应当是系统的实现细节，而不应是用户的认知负担。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1、第 2 节</a><span class="avoid">让用户继续亲手管理每一个 Session；把 Session 和 Super-agent 当成同一个东西</span></dd>
+<dt>连续</dt>
+<dd>四个基础特征之一：用户在 IM、GitHub 评论等熟悉界面与它交互，感觉始终只存在一个 Agent，不必去想某条信息在哪个 Session 里。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a><span class="avoid">把连续理解成「一个 Session 永远不要停」</span></dd>
+<dt>高效</dt>
+<dd>四个基础特征之一：交互响应迅速，同时能并行、高质量地完成多个复杂任务；无需等上一件完成，就能接受下一条指令。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a><span class="avoid">只把高效记成「回复很快」，漏掉多任务并行</span></dd>
+<dt>主动</dt>
+<dd>四个基础特征之一：不必等用户逐条下达指令，能持续观察环境事件并主动推进值得处理的事项；不需要介入时则保持安静。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a><span class="avoid">漏记「不需要时保持安静」；把主动理解成不停发消息</span></dd>
+<dt>持久</dt>
+<dd>四个基础特征之一：始终在线、直接接入用户真实的工作环境，并在长期运行中遇到异常时自动恢复。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a><span class="avoid">只记「一直开着」，漏记接入真实环境和异常恢复</span></dd>
+<dt>ReAct Loop</dt>
+<dd>模型推理与工具调用交替进行的循环。原文认为，单个 ReAct Loop 无法同时支持上述四个特征。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a><span class="avoid">以为再做一个永不中断的单循环就能得到 Super-agent</span></dd>
+</dl>
+
+<h2>第 2 课引入</h2>
+<dl class="glossary">
+<dt>双层架构</dt>
+<dd>把「维护全局连续性」交给常驻的 Router 层，把「高并发执行」交给上下文隔离的 Worker 层。这是逻辑上的职责划分，每一层不必局限于单个 Session。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2 节</a><span class="avoid">把双层理解成每层只能有一个 Session</span></dd>
+<dt>Router 层</dt>
+<dd>常驻的全局路由层，承接所有入口的人类交互，充当全局的序点、协调点和记忆。它不直接执行具体任务，只负责交互与分派，甚至可以不配备 Bash 工具。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2.1 节</a><span class="avoid">把 Router 当成深入拆解单任务的 Team Lead；让 Router 亲自执行具体工作</span></dd>
+<dt>Worker 层</dt>
+<dd>彼此上下文隔离、挂载完整执行工具、专注单一任务的执行会话。通常配置更强的模型；不直接与人类交互，向 Router 层汇报后再统一回复。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2.2 节</a><span class="avoid">让 Worker 直接对外部信道输出推理过程；要求同层 Worker 必须两两通信</span></dd>
+<dt>序点</dt>
+<dd>原文给 Router 层的位置之一：跨任务的信息与决策在这里汇总，形成全局的顺序与协调点。英文写作 Sequence Point。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 2.1 节</a><span class="avoid">把序点理解成又一个执行 Worker</span></dd>
+</dl>
+
+<h2>第 3 课引入</h2>
+<dl class="glossary">
+<dt>Trigger</dt>
+<dd>环境中的半结构化事件，如群聊消息、邮件与日程提醒、代码审查评论、CI 运行结果。它是驱动 Super-agent 的主要输入，而不再是人在 Session 里逐条键入的提示词。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3 节</a><span class="avoid">把 Trigger 理解成模型自己生成的计划；仍把键入提示词当成主要驱动</span></dd>
+<dt>Thread</dt>
+<dd>同一个 GitHub Pull Request、同一个 IM 话题或同一封往来邮件串下的连续事件所构成的事件流。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.2 节</a><span class="avoid">把 Thread 和单个 Trigger、单个 Session 混成一个词</span></dd>
+<dt>程序层策略</dt>
+<dd>事件过滤的 Fast Path：按来源、群组、白名单等确定性条件，在调用大模型之前用代码筛除大部分无关消息。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.1 节</a><span class="avoid">对每个事件都先叫大模型，再让程序层事后记账</span></dd>
+<dt>语义层策略</dt>
+<dd>事件过滤的 Slow Path：通过程序层的候选事件交给 LLM，按用提示词编写的策略判断是否行动。它也是面向人的自然语言扩展点。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.1 节</a><span class="avoid">把语义层理解成不能再用提示词增删规则的固定代码</span></dd>
+<dt>订阅</dt>
+<dd>Worker 在由某条 Thread 的初始事件创建后，直接订阅该 Thread。订阅是多对多的：一个 Worker 可订多个 Thread，一个 Thread 也可被多个 Worker 订阅。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.2 节</a><span class="avoid">把订阅理解成一对一独占</span></dd>
+<dt>直通</dt>
+<dd>已订阅的 Fast Path：同一 Thread 下的后续事件由程序直接发给已订阅的 Worker，无需 Router 层再次调用工具转发。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.2 节</a><span class="avoid">以为直通之后 Router 就不能再观测这些事件</span></dd>
+</dl>
+
+<h2>第 4 课引入</h2>
+<dl class="glossary">
+<dt>Inline</dt>
+<dd>把近期很可能用到的信息直接内联进当前上下文窗口，以省去额外的工具调用往返。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.3 节</a><span class="avoid">把 Inline 理解成把全部历史一次性塞进窗口；与 Spill 对调</span></dd>
+<dt>Spill</dt>
+<dd>把超出窗口预算或低频使用的完整信息留在上下文窗口之外，仅在窗口内保留引用或摘要，供模型按需读取。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.3 节</a><span class="avoid">与 Inline 对调；以为 Spill 就是丢掉信息、不再提供续读入口</span></dd>
+<dt>链式召回</dt>
+<dd>为 Trigger、Thread、Worker Session 等对象赋予唯一 ID，注入时内联关联对象的 ID，构成引用图；每次召回仍遵循 Inline &amp; Spill，从而沿引用关系按需多跳展开上下文。英文写作 Chain of Recall。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.3 节</a><span class="avoid">用把全部历史写入 Router 窗口来代替链式召回</span></dd>
+<dt>投机执行</dt>
+<dd>在还不确定结果是否会被采用时，根据环境信号在后台提前尝试；有价值就交付，没有价值就丢弃。英文写作 Speculative Execution。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.4 节</a><span class="avoid">把后台尝试的中间结果一律立即交付；以为必须先逐条请示才能开始尝试</span></dd>
+</dl>
+
+<h2>第 5 课引入</h2>
+<dl class="glossary">
+<dt>异步 ReAct Loop</dt>
+<dd>把耗时的命令与子任务从同步的 run() 改为 start() 和 stop()：调用后立即返回已启动，完成后结果作为新事件进入会话，期间仍可响应新输入。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 4.1 节</a><span class="avoid">以为改成 start() 后仍须等工具彻底结束才能响应新输入</span></dd>
+<dt>全双工交互</dt>
+<dd>前台对话响应与后台任务执行解耦后的交互方式，使会话不必等待上一个命令完成就能接受新指令。相对的是一问一答的半双工。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 4.1 节</a><span class="avoid">把全双工理解成「把工具本身变快」</span></dd>
+</dl>
+
+<h2>第 6 课引入</h2>
+<dl class="glossary">
+<dt>存算分离</dt>
+<dd>原文用来解开「计算、状态、执行环境绑在同一台设备上」的思路，分两步进行：先分开无状态计算与持久化状态，再让执行环境留在原地。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5 节</a><span class="avoid">把三件事的解耦合成一步，或以为迁到云端就必须把环境一起搬走</span></dd>
+<dt>daemon</dt>
+<dd>部署在端侧、不保存会话状态的轻量程序，只负责执行命令并返回结果，用来按需接入留在原地的执行环境。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5.2 节</a><span class="avoid">让端侧 daemon 保存 Session；把它理解成又一个云端沙箱</span></dd>
+<dt>脑手分离</dt>
+<dd>Anthropic 提出的说法：让 harness（脑）保持无状态，会话日志放在 harness 之外，并通过统一接口按需接入执行环境（手）。原文认为第 5.2 节的思路与它一致，但场景不同。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5.2 节</a> <a class="src" href="https://www.anthropic.com/research/managed-agents">Anthropic · Scaling Managed Agents</a><span class="avoid">把两篇文章写成完全同一套场景；用那一篇改写本篇的两步解耦</span></dd>
+<dt>BYOM</dt>
+<dd>Bring Your Own Machine：把用户日常使用的开发机或个人电脑接入云端 Agent。原文用它说明：这里首先要接入可能间歇在线、带有未提交修改和本地凭据的个人机器。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5.2 节</a><span class="avoid">把 BYOM 理解成必须放弃本地环境、迁往云端工作</span></dd>
+</dl>
+
+<h2>第 7 课引入</h2>
+<dl class="glossary">
+<dt>Watchdog</dt>
+<dd>放在主系统之外的独立 Agent Session，用定时消息驱动，构成外部 Control Loop。它既处理基础设施故障，也判断 Worker 是否有实质进展、方向是否偏离，并可用自然语言询问、在线修正主系统。章节标题写作 Watch Dog，本课统一用 Watchdog。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 6 节</a><span class="avoid">把它做成主系统内部的附属线程；以为只做进程存活探测就够</span></dd>
+<dt>Control Loop</dt>
+<dd>主系统之外独立的外部控制回路。原文认为，持久在线的分布式系统很难仅靠主系统内部逻辑保证长期可靠运行，因此需要它。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 6 节</a><span class="avoid">把 Control Loop 理解成主系统内部的又一段普通逻辑</span></dd>
+</dl>
+
+<h2>第 8 课引入</h2>
+<dl class="glossary">
+<dt>A2A</dt>
+<dd>Agent 间通信。原文用来指多个彼此隔离的 Super-agent 实例之间的跨边界协同，并写明不特指某个协议；如何安全、可靠地实现，仍是开放问题。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 8.3 节</a><span class="avoid">把它理解成某个已经选定的标准协议；以为原文已经给出完成态方案</span></dd>
+</dl>
+
+<footer class="foot">
+  定义压缩自 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文。
+  「脑手分离」的对照出处见 <a href="https://www.anthropic.com/research/managed-agents">Scaling Managed Agents: Decoupling the brain from the hands</a>。
+  随着你测验过关，定义会被改短，而不是另起一条。
+</footer>
+</main>
+</body>
+</html>

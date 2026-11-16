@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 课 · 面向人的交互</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0005-human-facing-interaction.html" aria-current="page">第 5 课 · 面向人的交互</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+</nav>
+<h1>面向人的交互</h1>
+<p class="subtitle">双层架构保证了跨信道连续，但交互还要同时做到连续与高效：用异步 ReAct Loop 解开阻塞，再用匹配信道的输出避免过载。</p>
+<p class="meta">第 5 课 · 约 10 分钟 · 主来源：<a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>（第 4 节）</p>
+
+<div class="box win"><span class="box-title">学完这一课，你能做到</span>
+<p>能讲清：第 2 课的双层架构已经在上下文上保证跨信道连续，但交互还要同时做到连续与高效；经典同步 run() 怎样把前台对话堵住；异步的 start() 和 stop() 怎样把前台响应和后台执行拆开；以及 IM 与 GitHub、邮件、文档为什么不能用同一套输出习惯。</p></div>
+
+<h2>连续和高效，还要落在交互上</h2>
+<p>第 2 节的双层架构从上下文层面保证了跨信道的连续，但要在实际的人机交互体验中同时做到连续与高效，还需要在交互方式与交互渠道上解决两个问题：一是如何通过异步 ReAct Loop 消除后台耗时操作对前台对话的阻塞，使会话无需等待上一个命令或任务完成即可随时接受新指令；二是当交互发生在用户熟悉的不同工作信道时，如何让系统的输出方式匹配对应信道的带宽与人的使用习惯。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 4 节</a></p>
+
+<h2>从半双工到全双工</h2>
+<p>在经典的 ReAct Loop 中，模型发起一次同步的 run() 工具调用后，循环会阻塞，直到工具执行完毕并返回最终结果，在此期间会话无法响应任何新的用户输入。要消除这一阻塞，需要把对话从一问一答的半双工模式转变为全双工模式。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 4.1 节</a></p>
+<p>为此，原文把耗时的命令与子任务工具调用改为异步的 start() 和 stop()，构成异步 ReAct Loop。模型调用 start() 后立即收到「已启动」的返回，循环不再等待该工具；在后台工具执行完成后，系统再将最终结果作为一条新的事件消息投递进会话；同时，模型也可以根据上下文调用 stop()，主动终止执行时间过长的后台命令。</p>
+<p>由此，前台对话响应与后台任务执行得以解耦，Agent 在后台运行耗时任务的同时也能响应人类输入。新输入在当前推理步结束后即被处理，不必等待后台工具完成。</p>
+<p>原文补充了一句产品事实：这一异步任务机制已经在 DeepSeek Harness 中实现，但尚未默认开启。课里只如实记下这句话，不把它展开成产品配置说明。</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 170" role="img" aria-label="经典 ReAct Loop 会阻塞；异步 start 立即返回，后台完成后再作为新事件进入会话">
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+  </style>
+  <rect class="bx" x="16" y="20" width="330" height="120" rx="4"/>
+  <text class="t" x="28" y="48">经典 ReAct Loop</text>
+  <text class="s" x="28" y="72">调用同步的 run() 后循环阻塞</text>
+  <text class="s" x="28" y="92">直到工具返回最终结果</text>
+  <text class="s" x="28" y="112">期间无法响应任何新输入</text>
+  <rect class="bx2" x="374" y="20" width="330" height="120" rx="4"/>
+  <text class="t" x="386" y="48">异步 ReAct Loop</text>
+  <text class="s" x="386" y="72">start() 立即返回「已启动」</text>
+  <text class="s" x="386" y="92">完成后结果作为新事件进入</text>
+  <text class="s" x="386" y="112">后台执行时仍可响应新消息</text>
+</svg>
+<figcaption>图 1　全双工的关键不是把工具变快，而是让前台对话不必等后台工具做完。</figcaption>
+</figure>
+
+<h2>输出要匹配信道的带宽和习惯</h2>
+<p>不同工作信道具有不同的信息密度与交互习惯，系统的输出需要与之匹配。如果把面向单人终端的交互方式直接搬入群聊，把冗长的推理过程与密集的工具调用原样输出，在多人协作中极易造成信息过载。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 4.2 节</a></p>
+<p>双层架构已经解决了其中一部分问题：具体任务中冗长的推理过程和密集的工具调用都被隔离在 Worker Session 内部，不会直接输出到外部信道，而由 Router 层统一负责对外交互。在此基础上，系统还需要接入用户日常使用的各类工作环境，并通过提示词针对不同信道定制交互规范：</p>
+<ul>
+<li><strong>IM 等即时通讯信道</strong>：侧重低打扰的轻量沟通，像人类同事一样只在需要决策或验收时发送通知，只问直接问题、给简短结论。原文验证过的一条简单有效的硬性规定，是单次回复不超过 100 词。</li>
+<li><strong>GitHub、邮件与文档等异步信道</strong>：侧重结构化、高信息密度的异步交付，例如在创建或更新 Pull Request 时按项目规范撰写完整的问题背景、改动说明与验证结果，或在个人助手场景下直接起草结构化的邮件与文档摘要。</li>
+</ul>
+
+<div class="box interview"><span class="box-title">合上原文，60 秒这样讲</span>
+<p>「双层架构已经让用户侧始终面对同一个 Super-agent，但交互还要同时做到连续和高效。经典 ReAct Loop 里，同步的 run() 会把循环堵住，工具没返回前会话无法响应新输入。原文把耗时调用改成异步的 start() 和 stop()：start() 立即返回已启动，完成后结果作为新事件进入会话，必要时也可以 stop() 掉拖得太久的命令。这样前台对话和后台执行就拆开了，新输入在当前推理步结束后就能处理。输出还要匹配信道：IM 里低打扰、短结论，原文验证过单次回复不超过 100 词；GitHub、邮件和文档里则要结构化、高密度地交付。Worker 的长推理本来就不会直接打到外部信道上。」</p></div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先回想 Worker 为什么不对用户直说，后面进入本课。</p>
+
+<div class="quiz" data-quiz-id="0005-human-facing-interaction">
+<script type="application/json">{"questions":[{"q":"合上前面的课来回想：Worker 层怎样对待对外交互？","options":["Worker 不直接与人类交互，推理和工具调用不直接输出到外部信道，而向 Router 汇报并由它统一回复","Worker 应当直接与人类交互，把推理过程和工具调用原样输出到外部信道，而不再经过 Router 层转发","Worker 不直接与人类交互，但仍把推理过程和工具调用原样输出到外部信道，以便用户逐步跟踪完整的执行过程","Worker 应当直接与人类交互，只把最终结论发给用户，同时向其他 Worker 逐条同步全部执行过程细节"],"answer":0,"explain":"Worker 不直接与人类交互，推理和工具调用不直接输出到外部信道，而向 Router 汇报并由它统一回复。第 4 节正是在这个前提下，继续解决交互过程中的阻塞和信道匹配。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 2.2 节</a>。"},{"q":"为了让会话不必等待上一个命令完成就能接受新指令，原文怎样改 ReAct Loop？","options":["应把同步的 run() 改为 start() 和 stop()：立即返回已启动，完成后结果作为新事件进入，期间仍可响应新输入","应把同步的 run() 继续保留、不用 start() 和 stop()：必须等工具彻底结束后，会话才可以响应任何一条新输入","应把同步的 run() 改为 start() 和 stop()：但仍须等工具彻底结束后，会话才又可以开始响应任何一条新的输入","应把同步的 run() 继续保留，并再开 start() 和 stop()：同一工具同时跑两次，以免该会话再被长时间地阻塞住"],"answer":0,"explain":"经典 ReAct Loop 里，同步的 run() 会阻塞到工具返回，期间无法响应新输入。原文把耗时的命令与子任务改为异步的 start() 和 stop()：start() 立即返回已启动，完成后结果作为新事件投递进会话；模型也可以用 stop() 终止过长的后台命令。新输入在当前推理步结束后即被处理，不必等待后台工具完成。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 4.1 节</a>。"},{"q":"不同工作信道上，原文主张怎样匹配输出方式？","options":["即时信道侧重低打扰，单次回复不超过 100 词；异步信道侧重结构化、高信息密度的书面化交付","即时信道应向外输出完整的推理过程和密集工具调用；异步信道则把单次回复严格限制在 100 词","即时信道侧重低打扰，单次回复不超过 100 词；异步信道也必须同样遵守不得超过 100 词","即时信道应向外输出完整的推理过程和密集工具调用；异步信道也要把逐步推理原样写入以免遗漏信息"],"answer":0,"explain":"IM 等即时通讯信道侧重低打扰的轻量沟通，像同事一样只在需要决策或验收时通知，原文验证过一条简单有效的硬性规定：单次回复不超过 100 词。GitHub、邮件与文档等异步信道侧重结构化、高信息密度的异步交付，例如按项目规范写完整的 PR 说明。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 4.2 节</a>。"}]}</script>
+</div>
+
+<div class="box read"><span class="box-title">本课推荐精读的一手资料</span>
+<p><a href="https://www.bilibili.com/opus/1265361021143351318">Super-agent 设计探索</a>的第 4 节，包括 4.1 和 4.2。读 4.1 时对照图 1，分清「工具还在跑」和「会话还能不能说话」；读 4.2 时记住两条信道各侧重什么，不要把 100 词那条规定套到 PR 和邮件上。</p></div>
+<div class="box ask"><span class="box-title">有不懂的，直接问我</span>
+<p>全双工和「当前推理步结束后再处理新输入」还容易混、想把 start() / stop() 的往返再画一遍，都可以直接问我。</p></div>
+<p>准备好了就进入 <a href="0006-compute-state-and-environment.html">第 6 课 · 计算、状态与环境的分离</a>。</p>
+
+<nav class="lesson-nav" aria-label="相邻课程">  <a class="prev" href="0004-context-and-speculative-execution.html">上一课 · 上下文组织与提前行动</a>  <a class="next" href="0006-compute-state-and-environment.html">下一课 · 计算、状态与环境的分离</a></nav>
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">说法以 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文为准。延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 6 课 · 计算、状态与环境的分离</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0006-compute-state-and-environment.html" aria-current="page">第 6 课 · 计算、状态与环境的分离</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+</nav>
+<h1>计算、状态与环境的分离</h1>
+<p class="subtitle">「持久」要先解开计算、状态与环境的绑定：计算上云且无状态，状态进数据库，执行环境留在原地，用轻量 daemon 按需接入。</p>
+<p class="meta">第 6 课 · 约 10 分钟 · 主来源：<a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>（第 5 节）</p>
+
+<div class="box win"><span class="box-title">学完这一课，你能做到</span>
+<p>能讲清：本地 Agent 怎样把计算、状态和环境绑在同一台设备上，以及这会怎样破坏「持久」；第一层解耦如何把无状态计算和持久化状态分开；第二层解耦为什么让执行环境留在原地、只在端侧放一个不保存会话状态的 daemon；以及原文自己怎样写下与 Anthropic「脑手分离」的一致和场景区别。</p></div>
+
+<h2>三件事绑在同一台设备上，就谈不上持久</h2>
+<p>现有的本地 Agent 默认将推进 Agent Loop 的计算、需要持久保存的会话状态，以及代码仓库与本地工具链等执行环境绑定在同一台设备上。一旦设备休眠或离线，Agent 就会停止运行，且无法访问其他设备上的环境。要让 Super-agent 做到持久在线并灵活接入各类真实工作环境，原文借鉴计算机系统中存算分离的思想，分两步解耦这三者的绑定。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5 节</a></p>
+
+<h2>第一步：计算做成无状态，状态放到数据库</h2>
+<p>推进 Agent Loop 的计算可以做成无状态的，需要持久保存的是会话状态。因此，第一层解耦是将推进 Agent Loop 的计算放入云端无状态的弹性计算容器中，而将 Session 等持久化状态存入数据库。无状态计算容器可以水平扩展、重启或替换，会话与任务的连续性则由持久化存储保障，从而使 Agent 摆脱单台本地设备的生命周期限制，实现云端持久在线。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5.1 节</a></p>
+
+<h2>第二步：环境留在原地，用轻量 daemon 按需接入</h2>
+<p>在 Agent Loop 与会话状态常驻云端后，进一步的问题是如何访问任务所需的执行环境。模型工作所需的上下文，很大一部分要通过工具调用从代码仓库、本地文件、依赖服务等执行环境中获取；从这个意义上说，广义的上下文也包含了执行环境本身。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5.2 节</a></p>
+<p>围绕这一问题，原文写了两种常见思路，并说明为什么不够好。一种是在云端启动沙箱、拉取代码并尝试重建和同步环境，但由于真实工作环境往往包含未提交的本地修改、私有凭据、内网服务依赖以及特定的硬件或工具链，同步这样的环境不仅成本很高，还容易出现信息遗漏；另一种是直接要求用户放弃本地环境、迁往云端工作，但对很多用户来说迁移成本过高。</p>
+<p>既然难以复制和同步的是环境本身，就不必让执行环境跟着 Agent Loop 上云。第二层解耦是让 Agent Loop 在云端运行，而让重状态的执行环境留在原地，仅在端侧部署一个不保存会话状态的轻量 daemon，它只负责执行命令与返回结果。相当于把执行环境留在云端之外，由 Agent 按需读取其中的上下文。</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 200" role="img" aria-label="Agent Loop 与持久化状态在云端分离，并通过端侧 daemon 按需接入执行环境">
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .bx3{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+  </style>
+  <rect class="bx3" x="16" y="20" width="230" height="80" rx="4"/>
+  <text class="t" x="28" y="48">云端 Agent Loop</text>
+  <text class="s" x="28" y="68">无状态的弹性计算容器</text>
+  <rect class="bx2" x="260" y="20" width="200" height="80" rx="4"/>
+  <text class="t" x="272" y="48">持久化状态</text>
+  <text class="s" x="272" y="68">Session 等存入数据库</text>
+  <rect class="bx" x="480" y="20" width="224" height="80" rx="4"/>
+  <text class="t" x="492" y="48">端侧轻量 daemon</text>
+  <text class="s" x="492" y="68">不保存会话状态</text>
+  <rect class="bx" x="200" y="120" width="320" height="64" rx="4"/>
+  <text class="t" x="212" y="146">执行环境留在原地</text>
+  <text class="s" x="212" y="166">个人机器、云端托管或按需环境</text>
+</svg>
+<figcaption>图 1　两步解耦：计算与状态在云端分开；执行环境不跟着上云，只通过不保存会话状态的 daemon 按需接入。</figcaption>
+</figure>
+
+<h2>原文自己写下的对照：脑手分离，但场景不同</h2>
+<p>原文写：这一思路与 Anthropic 提出的「脑手分离」一致，同样让 harness 保持无状态，把会话日志存放在 harness 之外，并通过统一接口按需接入执行环境。两者的区别在于场景。Anthropic 那篇文章描述的是托管服务，主要讨论按需创建的沙箱和客户 VPC；这里首先要接入的是用户日常使用、可能间歇在线的个人机器，上面有未提交的修改和本地凭据。因此，这种设计既支持 BYOM（Bring Your Own Machine），即把用户日常使用的开发机或个人电脑接入云端 Agent，也支持接入云端托管机器或按需创建的计算环境。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 5.2 节</a> <a class="src" href="https://www.anthropic.com/research/managed-agents">Anthropic · Scaling Managed Agents: Decoupling the brain from the hands</a></p>
+<p>由此，一个 Agent 不再受限于单台机器，而是可以在不同的执行设备之间切换，根据任务需要选择环境来执行命令并获取环境中的上下文。它甚至能够支持间歇在线的设备：例如在用户的某台个人设备重新上线后，再由云端 Agent 自动触发并完成需要在该设备上执行的任务。</p>
+<p>本课只按原文记下这一对照和区别，不把它扩展成一门对比课。第 5 节也还没有解决长期运行中的异常自愈，那是下一课 Watchdog 的任务。</p>
+
+<div class="box interview"><span class="box-title">合上原文，60 秒这样讲</span>
+<p>「要支撑「持久」，先得解开本地 Agent 把三件事绑在同一台设备上的做法：推进 Agent Loop 的计算、要持久保存的会话状态，以及代码仓库和工具链等执行环境。设备一休眠或离线，Agent 就停了，也到不了别的设备上的环境。原文分两步做存算分离。第一步，计算放进云端无状态的弹性容器，Session 等状态存进数据库，连续性由存储来保障。第二步，不要把难以复制的执行环境跟着上云——在云端重建沙箱容易遗漏未提交修改、私有凭据和内网依赖，强迫用户迁到云端成本又太高。于是 Agent Loop 在云端跑，环境留在原地，端侧只放一个不保存会话状态的轻量 daemon，负责执行命令并返回结果。原文说这与 Anthropic 的「脑手分离」一致，但场景不同：那边是托管服务里的沙箱和客户 VPC，这里首先要接可能间歇在线的个人机器，所以既支持 BYOM，也支持云端或按需环境。」</p></div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先回想「持久」的含义，后面进入本课的两步解耦。</p>
+
+<div class="quiz" data-quiz-id="0006-compute-state-and-environment">
+<script type="application/json">{"questions":[{"q":"合上第 1 课来回想：四个基础特征里，「持久」在原文中的意思最接近哪一句？","options":["在熟悉界面中交互，感觉始终只有一个 Agent，不必想信息在哪个 Session","交互响应迅速，并能并行、高质量地完成多个复杂任务，不必等上一件做完再接受新的指令","不必等用户逐条下达指令，能持续观察环境事件并主动推进值得处理的事项，否则保持安静","始终在线、直接接入用户真实的工作环境，并且在长期运行中遇到异常时能够自动完成恢复"],"answer":3,"explain":"「持久」是始终在线、直接接入用户真实的工作环境，并在长期运行中遇到异常时自动恢复。第 5 节先解决前半：让 Agent 摆脱单机生命周期、接入真实环境；异常自愈留到第 6 节的 Watchdog。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节与第 5 节</a>。"},{"q":"现有本地 Agent 默认把哪三件事绑在同一台设备上？这会带来什么问题？","options":["现有本地 Agent 默认把计算、持久化状态和执行环境绑在同一台设备上，设备离线就会停止运行","现有本地 Agent 默认已把计算放到云端，只把持久化状态和执行环境仍绑在同一台设备之上运行","现有本地 Agent 默认已把状态存进数据库，只把计算和执行环境继续绑在同一台本地设备上运行","现有本地 Agent 默认已把执行环境迁到云端，只把计算和持久化状态继续绑在同一台设备上运行"],"answer":0,"explain":"原文写：现有的本地 Agent 默认将推进 Agent Loop 的计算、需要持久保存的会话状态，以及代码仓库与本地工具链等执行环境绑定在同一台设备上。一旦设备休眠或离线，Agent 就会停止运行，且无法访问其他设备上的环境。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 5 节</a>。"},{"q":"原文说的第一层解耦，是怎样分开计算与状态的？","options":["第一步：把 Agent Loop 的计算放入云端无状态弹性容器，把 Session 等状态存入云端数据库","第一步：把 Agent Loop 的计算和 Session 等状态一起放入云端无状态弹性容器里面完整保存","第一步：把 Agent Loop 的计算放入本地常驻进程，把 Session 等状态存入同一台设备的磁盘","第一步：把 Agent Loop 的计算和执行环境一并迁入云端容器，把 Session 状态留在本地磁盘"],"answer":0,"explain":"推进 Agent Loop 的计算可以做成无状态的，需要持久保存的是会话状态。因此第一层解耦是把计算放入云端无状态的弹性计算容器，把 Session 等持久化状态存入数据库。容器可以水平扩展、重启或替换，连续性由持久化存储保障。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 5.1 节</a>。"},{"q":"原文说的第二层解耦，是怎样处理执行环境的？","options":["第二步：Agent Loop 在云端运行，执行环境留在原地，端侧只放不保存会话状态的轻量 daemon，按需执行并返回结果","第二步：Agent Loop 在云端运行，执行环境完整复制并同步到云端沙箱，端侧也不再保留任何本地仓库、凭据及未提交的修改","第二步：Agent Loop 仍在本地运行，执行环境全部迁到云端，端侧只放不保存会话状态的轻量 daemon 用来对外展示","第二步：Agent Loop 仍在本地运行，并要求用户完全放弃本地环境、迁往云端工作，好让执行环境与计算重新绑在同一处运行"],"answer":0,"explain":"难以复制和同步的是环境本身，就不必让执行环境跟着 Agent Loop 上云。第二层解耦是让 Agent Loop 在云端运行，重状态的执行环境留在原地，仅在端侧部署一个不保存会话状态的轻量 daemon，只负责执行命令与返回结果。原文明确比较了另两种常见思路——在云端重建沙箱，或要求用户迁往云端工作——并指出它们成本高或容易遗漏。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 5.2 节</a>。"},{"q":"原文怎样写出这一设计与 Anthropic「脑手分离」的关系？","options":["原文认为这与 Anthropic 的「脑手分离」一致，但场景不同：那边是托管服务、按需沙箱和客户 VPC，这里先接入可能间歇在线的个人机器","原文认为这与 Anthropic 的「脑手分离」完全相同，因此也应先把个人机器环境全部迁到云端沙箱与客户 VPC，再按托管服务方式接入使用","原文认为这与 Anthropic 的「脑手分离」并不一致，因为它反对 harness 无状态，也反对把会话日志存放在 harness 之外","原文认为这与 Anthropic 的「脑手分离」只是名称相近，文中并未写出二者的任何一致之处，也还完全没有比较个人机器与托管服务场景的区别"],"answer":0,"explain":"原文写：这一思路与 Anthropic 提出的「脑手分离」一致，同样让 harness 保持无状态，把会话日志存放在 harness 之外，并通过统一接口按需接入执行环境。两者的区别在于场景：那篇文章描述的是托管服务，主要讨论按需创建的沙箱和客户 VPC；这里首先要接入的是用户日常使用、可能间歇在线的个人机器，上面有未提交的修改和本地凭据。因此这种设计既支持 BYOM，也支持接入云端托管或按需创建的环境。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 5.2 节</a>；Anthropic 原文是 <a href=\"https://www.anthropic.com/research/managed-agents\">Scaling Managed Agents: Decoupling the brain from the hands</a>。不要用那篇文章改写本篇的两步解耦。"}]}</script>
+</div>
+
+<div class="box read"><span class="box-title">本课推荐精读的一手资料</span>
+<p><a href="https://www.bilibili.com/opus/1265361021143351318">Super-agent 设计探索</a>的第 5 节，包括 5.1 和 5.2。读到「脑手分离」那一段时，先在纸上写出原文自己列出的「一致」和「场景不同」，再按需打开 <a href="https://www.anthropic.com/research/managed-agents">Anthropic 的 managed agents 文章</a> 做对照。不要用那一篇改写本篇的两步解耦。</p></div>
+<div class="box ask"><span class="box-title">有不懂的，直接问我</span>
+<p>两步解耦还容易并成一步、daemon「不保存会话状态」是什么意思、或者想把 BYOM 和间歇在线的设备再举一个例子，都可以直接问我。</p></div>
+<p>准备好了就进入 <a href="0007-watchdog.html">第 7 课 · Watchdog</a>。</p>
+
+<nav class="lesson-nav" aria-label="相邻课程">  <a class="prev" href="0005-human-facing-interaction.html">上一课 · 面向人的交互</a>  <a class="next" href="0007-watchdog.html">下一课 · Watchdog</a></nav>
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">说法以 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文为准。延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。</footer>
+</main>
+</body>
+</html>

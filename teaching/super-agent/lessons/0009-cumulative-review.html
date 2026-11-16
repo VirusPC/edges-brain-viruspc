@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 9 课 · 总复习</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0009-cumulative-review.html" aria-current="page">第 9 课 · 总复习</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+</nav>
+<h1>总复习</h1>
+<p class="subtitle">不看原文，把四个特征、五个模块和一条典型路径讲出来，并用交错情景检验前面几课是不是还记得住。</p>
+<p class="meta">第 9 课 · 约 10 分钟 · 主来源：<a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>（第 1–9 节总复习）</p>
+
+<div class="box win"><span class="box-title">学完这一课，你能做到</span>
+<p>不看原文，也能用自己的话把四个特征、五个模块和一条典型路径讲出来；碰到跨信道改方案、已订阅事件到达、设备重新上线这类情景，知道原文会把它们放在哪一层；并且仍然把第 8 节的问题留作开放问题。</p></div>
+
+<h2>先凭记忆把骨架画出来</h2>
+<p>先不要往回翻目录。用一张纸写出：四个基础特征各自的原文含义，五个模块的名字和职责指向，然后补上一条事件从 Trigger 到用户看到回复的路径。写完再对照答案。</p>
+<div class="self-check" data-check-id="architecture-draw">
+  <div class="self-check-prompt">
+    <p>请写出：<strong>四个特征</strong>、<strong>五个模块</strong>，以及<strong>一条事件的大致路径</strong>（从进入系统到用户收到回复）。</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <p><strong>四个特征：</strong>连续——在熟悉界面里感觉始终只有一个 Agent，不必去想信息在哪个 Session 里；高效——响应快，并能并行、高质量完成多个复杂任务，不必等上一件做完再接受新指令；主动——持续观察环境事件并推进值得处理的事项，不需要时保持安静；持久——始终在线、接入真实工作环境，异常时能自动恢复。</p>
+    <p><strong>五个模块：</strong>双层架构兼顾连续与高效；事件驱动实现主动；面向人的交互让连续和高效落在交互体验上；计算、状态与环境的分离，与 Watchdog 一起支撑跨设备的持久在线与异常自愈。</p>
+    <p><strong>一条路径：</strong>环境事件作为 Trigger 进入，先经程序层再经语义层过滤；尚未订阅的新事件由 Router 分派并创建 Worker、建立 Thread 订阅，已订阅的后续事件直通 Worker。Worker 在隔离上下文中执行，必要时用 Inline &amp; Spill 和链式召回取上下文，也可以在后台投机执行。Worker 不直接对用户说话，而向 Router 汇报，由 Router 按信道习惯回复。计算在云端无状态运行，状态在数据库，执行环境经端侧 daemon 按需接入；Watchdog 在主系统外定期检查基础设施和任务进展。</p>
+  </div>
+</div>
+
+<h2>交错练习：三条情景</h2>
+<p>下面每条都先自己答，再对照。它们穿插了前面几课，不是按章节顺序出现的。</p>
+
+<div class="self-check" data-check-id="scenario-im-github">
+  <div class="self-check-prompt">
+    <h3>情景 A　先在 IM 里说用方案 A，随后在 GitHub Pull Request 评论里改成方案 B</h3>
+    <p>这主要在考验四个特征里的哪一个？用户需不需要自己去想「方案 A 记在哪个 Session 里」？</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <p>这是原文用来说明「连续」的例子：用户在熟悉的不同工作界面里交互，感觉始终只有一个 Agent，不必去想某条信息在哪个 Session 的上下文里。它能理解并调整执行方向。实现上，这依赖 Router 层维持跨信道的全局连续，而不是让用户手动切换 Session。这个例子在原文里属于内部实例，用来说明形态，不是产品功能介绍。</p>
+  </div>
+</div>
+
+<div class="self-check" data-check-id="scenario-passthrough">
+  <div class="self-check-prompt">
+    <h3>情景 B　某个 GitHub Pull Request 已经有一个 Worker 在跟，又来了一条新的评审评论</h3>
+    <p>这条新评论会先到 Router 再转发，还是直通 Worker？Router 还能不能看到它？</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <p>同一 PR 下的连续事件构成一条 Thread。Worker 已经订阅之后，后续事件由程序直通该 Worker，无需 Router 再次调用工具转发。Router 仍可观测全部事件以掌握全局状态，但只负责分派尚未被订阅的新事件。若这条评论超出了当前任务范围，Worker 也可以取消订阅或交回 Router 重新分派。输出侧，Worker 仍把关键结论汇报给 Router，由 Router 统一回复。</p>
+  </div>
+</div>
+
+<div class="self-check" data-check-id="scenario-device-back">
+  <div class="self-check-prompt">
+    <h3>情景 C　用户的某台个人电脑刚才离线，现在重新上线了，上面还有未提交的修改</h3>
+    <p>按第 5 节的设计，云端的 Agent Loop 停没停？要在这台机器上执行的任务，怎样才能继续？</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <p>计算和会话状态已经在云端分开存放，所以一台个人设备离线，并不等于 Agent Loop 停止。执行环境留在原地，通过不保存会话状态的轻量 daemon 按需接入。原文写：它甚至能够支持间歇在线的设备，例如在用户的某台个人设备重新上线后，再由云端 Agent 自动触发并完成需要在该设备上执行的任务。未提交的修改正是环境留在原地、而不是强行同步到云端沙箱的原因之一。安全与信任前提仍是第 8.4 节的开放问题，不要把「设备重新上线就能继续」讲成安全问题已经解决。</p>
+  </div>
+</div>
+
+<h2>回想练习</h2>
+<p>下面六题从第 1 课到第 8 课里抽出来交错排列。先凭记忆作答。</p>
+
+<div class="quiz" data-quiz-id="0009-cumulative-review">
+<script type="application/json">{"questions":[{"q":"原文把 Super-agent 定义成什么？","options":["能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体，以及专门用来支撑这一形态的那套系统架构","DeepSeek Harness 已经对外发布的正式产品功能，用来在同一个会话里自动完成全部开发任务","一个永不结束的单一 Session，把用户所有并行任务都塞进同一份上下文里集中处理并且还一直保持运行","只适用于现有的个人助手场景的一种正式产品形态，在软件开发等商业场景里并不被原文作者本人视为真正有价值"],"answer":0,"explain":"原文的定义是：打破 Agent 与单次手动会话的绑定，使它成为能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体；并把这种形态及其系统架构称为 Super-agent。它不是现成产品功能，也不是把所有任务塞进一个永不结束的 Session。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"四个基础特征里，「连续」在原文中的意思最接近哪一句？","options":["在熟悉界面中交互，感觉始终只有一个 Agent，不必想信息在哪个 Session","交互响应迅速，并能并行、高质量地完成多个复杂任务，不必等上一件做完再接受新的指令","不必等用户逐条下达指令，能持续观察环境事件并主动推进值得处理的事项，否则保持安静","始终在线、直接接入用户真实的工作环境，并且在长期运行中遇到异常时能够自动完成恢复"],"answer":0,"explain":"「连续」指用户在熟悉的工作界面里感觉始终只有一个 Agent，不必去想某条信息在哪个 Session 里。后面三项分别是高效、主动、持久的原文含义，不要和连续换着记。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"为了兼顾连续性与吞吐量，原文把什么拆到两个不同的层级？","options":["把维护全局连续性交给常驻的 Router 层，把高并发执行交给上下文隔离的 Worker 层","把维护全局连续性交给隔离的 Worker 层，把高并发执行交给常驻的 Router 层去完成","把所有任务都合并进同一个常驻 Session，不再区分 Router 层和 Worker 层","把所有事件都直接新开独立 Session 去处理，不再保留那个常驻的 Router 层来协调"],"answer":0,"explain":"原文把「维护全局连续性」与「高并发执行」拆开：由常驻的 Router 层统一承接人类交互与全局协调，由上下文隔离的 Worker 层并发执行具体任务。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 2 节</a>。"},{"q":"Worker 订阅某个 Thread 之后，后续事件应走哪条路径？","options":["已订阅 Thread 的后续事件由程序直通对应 Worker；Router 仍可观测全部事件，但只分派尚未被订阅的新事件","已订阅 Thread 的后续事件仍须先经 Router 转发；尚未订阅的新事件才由程序直接发给某一个空闲的 Worker","已订阅 Thread 的后续事件由程序直通对应 Worker；Router 不再观测这些事件，以免重复处理 Thread","已订阅 Thread 的后续事件仍须先经 Router 转发；Router 也不再观测未订阅事件，以免自己再成为性能瓶颈"],"answer":0,"explain":"已订阅（Fast Path）：同一 Thread 下的后续事件由程序直通已订阅的 Worker，无需 Router 层再次调用工具转发。未订阅（Slow Path）：Router 层仍可观测所有事件以掌握全局状态，但仅负责判断和分派尚未被订阅的新事件。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 3.2 节</a>。"},{"q":"原文说的第二层解耦，是怎样处理执行环境的？","options":["第二步：Agent Loop 在云端运行，执行环境留在原地，端侧只放不保存会话状态的轻量 daemon，按需执行并返回结果","第二步：Agent Loop 在云端运行，执行环境完整复制并同步到云端沙箱，端侧也不再保留任何本地仓库、凭据及未提交的修改","第二步：Agent Loop 仍在本地运行，执行环境全部迁到云端，端侧只放不保存会话状态的轻量 daemon 用来对外展示","第二步：Agent Loop 仍在本地运行，并要求用户完全放弃本地环境、迁往云端工作，好让执行环境与计算重新绑在同一处运行"],"answer":0,"explain":"难以复制和同步的是环境本身，就不必让执行环境跟着 Agent Loop 上云。第二层解耦是让 Agent Loop 在云端运行，重状态的执行环境留在原地，仅在端侧部署一个不保存会话状态的轻量 daemon，只负责执行命令与返回结果。原文明确比较了另两种常见思路——在云端重建沙箱，或要求用户迁往云端工作——并指出它们成本高或容易遗漏。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 5.2 节</a>。"},{"q":"对第 8 节列出的那些问题，课里应采取什么态度？","options":["第 8 节列出的扩展、协作、A2A、安全与隐私问题仍是开放问题，原文没有给出已经完成的标准答案，课里也不编造方案","第 8 节列出的扩展、协作、A2A、安全与隐私问题都已全部解决，原文已经给出可落地的标准答案，课里便应当写成定论","第 8 节列出的扩展、协作、A2A、安全与隐私问题仍是开放问题，但安全问题已经给出完成态方案，课里便应当写成定论","第 8 节列出的扩展、协作、A2A、安全与隐私问题都已全部解决，只是作者仍把它们写成开放问题，课里也可当成定论了"],"answer":0,"explain":"第 8 节把双层架构的扩展、脱离 Session 后的协作、上下文边界与 A2A、以及安全与隐私都明确写成仍需解决的问题。原文没有给出完成态的答案，课里也不编造方案。尤其是安全与隐私：原文写明，如果没有很好的办法解决，Super-agent 只有在很小且可信的范围才能工作。 见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 8 节</a>。"}]}</script>
+</div>
+
+<div class="box read"><span class="box-title">本课推荐精读的一手资料</span>
+<p>把 <a href="https://www.bilibili.com/opus/1265361021143351318">Super-agent 设计探索</a> 再通读一遍，重点看第 1 节的骨架、第 2 至第 6 节每个模块的那一两句约束，以及第 7、第 8 节的限度和开放问题。速查页可以一起看：<a href="../reference/traits-and-modules.html">特征与模块速查</a>、<a href="../reference/architecture-cheatsheet.html">架构速查</a>、<a href="../reference/glossary.html">术语表</a>。</p></div>
+<div class="box ask"><span class="box-title">有不懂的，直接问我</span>
+<p>哪一条路径还画不顺、哪条情景想再练一遍，或者想用自己的工作场景复述四个特征，都可以直接问我。我是你这门课的老师。</p></div>
+<div class="box interview"><span class="box-title">学完九课之后</span>
+<p>你现在应当能不看原文，讲清 Super-agent 是一种跨会话、跨任务的连续实体及其架构，四个特征和五个模块各指什么，以及这篇文章是架构探讨、不是产品介绍。第 8 节仍然开放。若要对照 Anthropic 的 always-on 或「脑手分离」，只在真正有帮助时点一下，不要把这门课改成对比课。下一步若要映射到某个产品，需要另开任务，不在这九课里。</p></div>
+
+<nav class="lesson-nav" aria-label="相邻课程">  <a class="prev" href="0008-experiments-and-open-questions.html">上一课 · 初步实验与开放问题</a></nav>
+<script src="../assets/quiz.js" defer></script>
+<script src="../assets/self-check.js" defer></script>
+<footer class="foot">说法以 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文为准。延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。</footer>
+</main>
+</body>
+</html>

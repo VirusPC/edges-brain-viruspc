@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>架构速查 · Super-agent 设计探索</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/traits-and-modules.html">特征与模块速查</a>
+  <a href="../reference/architecture-cheatsheet.html" aria-current="page">架构速查</a>
+</nav>
+
+<h1>架构速查</h1>
+<p class="subtitle">一页纸收拢第 2 至第 8 节的机制、实验限度和开放问题。适合在第 5 课之后使用。</p>
+
+<h2>一条事件怎么走</h2>
+<ol class="flow">
+  <li>环境事件作为 Trigger 进入，先经程序层策略（Fast Path）再经语义层策略（Slow Path）过滤。</li>
+  <li>尚未订阅的新事件由 Router 层冷启动：创建 Worker，并让它订阅对应 Thread。</li>
+  <li>同一 Thread 的后续事件由程序直通已订阅的 Worker。订阅是多对多的。Router 仍可观测全部事件，但只分派未订阅的新事件。</li>
+  <li>向模型注入上下文时，把窗口当作 Cache：从 ID 和摘要开始，按局部性 Inline，超出则 Spill。需要时沿引用图做链式召回。</li>
+  <li>可以投机执行：后台先尝试，有价值就交付，没有就丢弃；不需要时保持安静。</li>
+  <li>Worker 不直接对用户说话。Router 按信道习惯回复：IM 低打扰、单次不超过 100 词；GitHub、邮件、文档侧重结构化交付。异步 start() / stop() 让前台不必等后台工具完成。</li>
+  <li>计算在云端无状态运行，状态在数据库，执行环境留在原地，经不保存会话状态的 daemon 按需接入。Watchdog 在主系统外定期检查基础设施和任务进展。</li>
+</ol>
+
+<h2>各节关键约束</h2>
+<div class="cards">
+  <div class="card">
+    <h3>双层架构</h3>
+    <ul>
+      <li>同一个 Session 最连续，但吞吐受单个 ReAct Loop 串行限制；每条事件都新开 Session 则吞吐高，却容易割裂、回复混乱。</li>
+      <li>Router 不执行具体任务；Worker 不对用户直说。</li>
+      <li>Session 是实现细节，不应成为用户的认知负担。</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>计算 / 状态 / 环境</h3>
+    <ul>
+      <li>不要把这三件事绑在同一台设备上。</li>
+      <li>云端重建沙箱或强迫用户迁云，都不是原文推荐的主路径。</li>
+      <li>与 Anthropic「脑手分离」一致，但场景不同：这里首先接可能间歇在线的个人机器，支持 BYOM。</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Watchdog</h3>
+    <ul>
+      <li>放在主系统之外，用定时消息驱动。</li>
+      <li>既看基础设施，也看任务进展。</li>
+      <li>可以询问，也可以在线修正主系统（增删提示词、调整触发规则）。</li>
+    </ul>
+  </div>
+</div>
+
+<h2>实验限度（第 7 节）</h2>
+<ul>
+  <li>合成负载、简化环境，结果只作初步参考；测的是调度与协作，不是单任务编码。</li>
+  <li>Super-agent：p50 12.4 分钟，p95 15.7 分钟。中性提示的单 Session + Subagent：五次都未调用 Subagent，p95 29.5 分钟。</li>
+  <li>去掉直通：完成时间基本一致；Router 决定约增 30%，读缓存 token 约增 37%。直通在该负载下主要省开销，不是提速。</li>
+  <li>批处理：到达加快时，单个决定分摊的推理时间可以下降。</li>
+</ul>
+
+<h2>开放问题（第 8 节，保持开放）</h2>
+<ul>
+  <li>如何扩展双层架构（切分、Worker 直连、长程记忆）。</li>
+  <li>脱离 Session 之后如何呈现任务、如何中途协作。</li>
+  <li>如何划分上下文边界，以及不特指某协议的 A2A。</li>
+  <li>如何保障安全与隐私：解决不好，就只能在很小且可信的范围工作。不要把这一条写成已经完成。</li>
+</ul>
+
+<p>回到 <a href="../index.html">目录</a> · 查 <a href="glossary.html">术语表</a> · 看 <a href="traits-and-modules.html">特征与模块速查</a></p>
+
+<footer class="foot">
+  压缩自 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>。
+  不编造第 8 节没有给出的答案。
+</footer>
+</main>
+</body>
+</html>
