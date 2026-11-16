@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 4 课 · Memory</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0004-memory.html" aria-current="page">第 4 课 · Memory</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+</nav>
+
+
+<h1>Memory</h1>
+<p class="subtitle">只存查不回来的东西：用独立的耐用存储，接住多次互不相连的 run 之间的连续性。</p>
+<p class="meta">第 4 课 · 约 10 分钟 · 主来源：<a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>看到一条信息，能判断该写入 memory，还是只存一个指针。你能说出四类记忆在开头怎样加载，能分清新 session 和已有 session 开头装进上下文的东西有何不同，也知道 session 太长时 compact 或新开都会丢细节，所以途中要把该留的写下来。</p>
+</div>
+
+<h2>它也要有自己的耐用存储</h2>
+<p>always-on agent 会跨过许多次互不相连的 run 工作，要靠 memory 来保持连续。和 event inbox、timers 一样，memory 应当有自己的存储。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></p>
+<p>原文举了产品里的例子：Claude Code 的 auto memory，以及 Messages API 的 memory tool，都表现为一目录文件。对 always-on agent 来说，这些目录应当映射到耐用存储，通常是数据库或对象存储。这样，记忆才能比 worker 活得更久。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></p>
+
+<h2>只存查不回来的东西</h2>
+<p>一条经验规则是：memory 只应保存 Agent 再也查不回来的东西。如果某件事已经住在别的系统里，例如问题跟踪，你应当存一个指针，而不是再拷一份。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></p>
+
+<h2>四类记忆</h2>
+<p>原文把 always-on agent 应当保存的记忆分成四类。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>类型</th><th>保存什么</th><th>开头怎样加载</th></tr></thead>
+<tbody>
+<tr><td>user instructions</td><td>用户关于 Agent 该怎样行事的说明。因为用户不总在场，这些说明必须能带到下一次。</td><td>单独放在一个文件里，每次 run 开头都加载。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></td></tr>
+<tr><td>user notes</td><td>Agent 学到的关于用户的事，例如角色、偏好，或用户给过的纠正。</td><td>可以从一个文件开始，变多后拆成许多小文件；后一种情况下，开头只加载索引，需要细节时再把个别文件拉进上下文。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></td></tr>
+<tr><td>past messages</td><td>已经对用户说过的话，用来避免把同一件事再说一遍。</td><td>可以单独成一个每次开头都加载的文件，也可以由 worker 载入最近几条。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></td></tr>
+<tr><td>task progress</td><td>每个进行中的任务一份进度，写清已经做完什么、还剩什么，好让新的 run 接着上次。</td><td>和 user notes 一样，开头通常只加载索引，需要时再拉个别文件。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></td></tr>
+</tbody>
+</table>
+</div>
+<p>以上说的，都是在一次 run 里面写下的记忆。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></p>
+
+<h2>dreaming：点到即可</h2>
+<p class="with-side">原文还提到，你可以再加上 dreaming：在 run 之外回顾过去的 session，用来整理 memory。它可以替换过时的条目，并找出只在许多次 run 里才看得出来的模式。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a>
+<span class="side">原文把细节指向另一篇 <a href="https://www.anthropic.com/research/components-of-agent-memory">The components of agent memory</a>。那是补充阅读，本课不展开。</span></p>
+
+<h2>上下文里的 overhead</h2>
+<p>在开始做任何工作之前，Agent 会先加载 system prompt、工具定义，以及 memory 文件。这一层初始的 context overhead 会出现在每一次 run 里，所以应当保持精瘦，并用 prompt caching 来降低成本。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a></p>
+<p>新 session 开头只有这一层 context overhead，加上触发这次 run 的事件。已有 session 则还会带回先前各次 run 里的消息和工具调用。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a></p>
+<p>如果一份 session 变得太长，你可以 compact 较旧的消息，也可以新开一份 session。两种做法都会丢掉细节，所以需要留下来的东西，应当在途中就写入 memory。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a></p>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「memory 要有自己的耐用存储，并且比 worker 活得更久。规则是只存查不回来的东西；已在别的系统里的，存指针。四类是：user instructions，每次开头都加载；user notes 和 task progress，变多后开头通常只加载索引；past messages，避免把说过的话再讲一遍。每次 run 开头还有 context overhead，要保持精瘦并用 prompt caching。新 session 只有这一层加上触发事件，已有 session 还会带回先前的消息和工具调用。session 太长就 compact 或新开，两种都会丢细节，所以途中要把该留的写入 memory。dreaming 是在 run 之外整理记忆，本课只记这个名字。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先唤回第 3 课的 timer 路径，后面四题练习本课。</p>
+<div class="quiz" data-quiz-id="0004-memory">
+<script type="application/json">{"questions":[{"q":"合上第 3 课来回想：一条已经到期的 timer，会怎样变成一次 run？","options":["timer 自己不会开 run；由 scheduler 到期后写成 inbox 里的事件，然后再去叫醒 worker","timer 到期时会自己开 run；scheduler 不必写入 inbox，到期提醒也不再去叫醒那个 worker","timer 到期时先通知用户；scheduler 再决定要不要让 worker 从 inbox 里开一次新的 run","timer 和 worker 是同一个服务；scheduler 既扫描到期项，又直接叫模型，inbox 只作旁观备份"],"answer":0,"explain":"原文写得很清楚：timer 自己不会开 run。scheduler 到期后把事件写入 inbox，并叫醒 worker。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Timers</a>。"},{"q":"关于 memory 应当保存什么，哪一句最符合原文？","options":["memory 只应保存查不回来的东西；已在别的系统里的，例如问题跟踪，应当只存一个指针","memory 应当把外部系统里的记录再拷一份进来；已在别的系统里的，不要用指针代替拷贝","memory 只应保存当前会话记录；已在别的系统里的，也要整份写入，而不是只存一个指针","memory 只应保存系统提示和工具定义；已在别的系统里的，不必带到下一次，不必存指针"],"answer":0,"explain":"原文的经验规则是：memory 只应保存 Agent 查不回来的东西。如果某件事已经在别的系统里，例如问题跟踪，应当存一个指针，而不是再拷一份。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Memory</a>。"},{"q":"四类记忆在每次 run 开头应当怎样加载？","options":["user instructions 每次开头都加载；user notes 和 task progress 变多后，开头通常只加载索引","user instructions 变多后只加载索引；user notes 和 task progress 每次开头都必须要整份加载","user instructions 只在用户在场时加载；user notes 和 task progress 则每次开头都要整份加载","user instructions 可以整份省略不加载；user notes 和 task progress 也只在结束前才加载索引"],"answer":0,"explain":"user instructions 要单独放在一个文件里，每次 run 开头都加载，因为用户不总在场。user notes 和 task progress 都可以从一份文件开始，变多后拆成许多小文件，开头通常只加载索引，需要细节时再把个别文件拉进上下文。past messages 可以每次加载一个文件，也可以由 worker 载入最近几条。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Memory</a>。"},{"q":"新 session 和已有 session，在开头装进上下文的东西有什么不同？","options":["新 session 只有 context overhead 加上触发事件；已有 session 还会带回先前的消息和工具调用","新 session 会带回先前的消息和工具调用；已有 session 反而只有 context overhead 和触发事件","新 session 与已有 session 开头都只有触发事件；context overhead 要等第一次工具调用后再加载","新 session 与已有 session 开头都带回全部历史；context overhead 只在压缩失败以后才会再出现"],"answer":0,"explain":"每次 run 开头都要先装上 context overhead：system prompt、工具定义和 memory 文件。新 session 只有这一层加上触发事件；已有 session 还会带回先前 run 里的消息和工具调用。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Inside the context window</a>。"},{"q":"session 太长时，原文怎么说？","options":["session 太长时可以 compact 旧消息，或新开一份；两种都会丢细节，所以途中要把该留的写入 memory","session 太长时只需 compact 一次即可；细节不会丢失，所以途中都不必再把那些重要内容写入 memory","session 太长时必须立刻新开一份；原文禁止 compact，以免把旧消息里的细节全部压缩后写入到 memory","session 太长时只在当次工作里整理；这样 compact 和新开都不必考虑，途中也就不必再去写入 memory"],"answer":0,"explain":"原文给出两种办法：把较旧的消息 compact，或者新开一份 session。两种做法都会丢掉细节，所以需要留下来的东西，应当在途中就写入 memory。开头的 context overhead 要保持精瘦，并用 prompt caching 降低成本。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Inside the context window</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 里的 <strong>Memory</strong> 与 <strong>Inside the context window</strong> 两节。读的时候用一张纸列出四类记忆，并注明各自在开头加载整份还是只加载索引。dreaming 若想继续读，再看补充文章 <a href="https://www.anthropic.com/research/components-of-agent-memory">The components of agent memory</a>，不必并进本课。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>指针和拷贝还分不清、想对照原文把四类记忆再走一遍，或者想问 compact 会丢掉哪些细节，都可以直接问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：看 <a href="../reference/glossary.html">术语表</a> 里四类记忆和 context overhead，以及 <a href="../reference/cycle-cheatsheet.html">循环速查</a> 里 memory 那张卡片。</p>
+
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0003-timers.html">上一课 · Timers</a>
+  <a class="next" href="0005-permissions.html">下一课 · Permissions</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品。
+</footer>
+</main>
+</body>
+</html>

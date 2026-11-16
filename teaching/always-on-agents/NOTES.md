@@ -28,17 +28,17 @@
 
 1. 睡醒循环与五个原语（已完成，`lessons/0001-sleep-wake-cycle-and-five-primitives.html`）
    整体循环与五个原语；一个事件如何走完一圈；deferred tool call 的完整往返。
-2. Event inbox（未写）
+2. Event inbox（已完成，`lessons/0002-event-inbox.html`）
    为什么要有一个持久化的事件队列，为什么同一时间只能有一个 worker，以及怎么批量处理事件。也覆盖快速确认、中途又来事件的三种处理。
-3. Timers（未写）
+3. Timers（已完成，`lessons/0003-timers.html`）
    follow-up 和 schedule 的区别，以及 scheduler 是怎么把一个计时器变成一个事件的。
-4. Memory（未写）
+4. Memory（已完成，`lessons/0004-memory.html`）
    只存查不回来的东西；四类记忆；context 开销与 compaction（session 过长时 compact 或新开）。
-5. Permissions（未写）
+5. Permissions（已完成，`lessons/0005-permissions.html`）
    credential proxy、auto mode，以及 deferred tool call 的完整来回。
-6. Outbox（未写）
+6. Outbox（已完成，`lessons/0006-outbox.html`）
    一次 run 的三种结束方式；什么时候真的需要 outbox；该发多少消息、为什么开始时要克制。
-7. 总复习（未写）
+7. 总复习（已完成，`lessons/0007-cumulative-review.html`）
    不看原文，把整个循环画出来讲一遍，并且穿插前面几节的内容做混合练习。
 
 dreaming 若要学，另开一课并改用 agent memory 原文，不并进这 7 课。
@@ -46,3 +46,5 @@ dreaming 若要学，另开一课并改用 agent memory 原文，不并进这 7 
 ## 学习记录
 - 还没有 learning-records：等用户报测验分或追问后再写第一条。
 - 2026-11-16：用户询问共几节后，确认 7 课大纲，并要求将工作区放入个人大脑 `teaching/always-on-agents/`。
+- 2026-11-16：用户要求把第 2–7 课依次做完并补进同一 PR。已写完 7 课，新增 `assets/self-check.js`（对照答案组件）和 `reference/scenario-cards.html`。仍不写 learning-records。
+- 原文未单独规定「到期的 follow-up 是否必须续上旧 session」：只明确把用户答复这类接着先前工作的事件写成续上已有 session，其余通常新开。课里在第 7 课和第 3 课都不做额外推断。

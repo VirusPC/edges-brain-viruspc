@@ -10,14 +10,14 @@
 <main class="page">
 <nav class="crumbs">
   <a href="../index.html">目录</a>
-  <a href="../lessons/0001-sleep-wake-cycle-and-five-primitives.html">第 1 课 · 睡醒循环与五个原语</a>
   <a href="../reference/glossary.html" aria-current="page">术语表</a>
   <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+  <a href="../reference/scenario-cards.html">情景速查</a>
 </nav>
 
 <h1>术语表</h1>
 <p class="subtitle">这门课的「统一说法」。之后每一课都只用这里的词；同一个东西不换着叫。</p>
-<p>规则：这些词保持英文——Agent、run、session、event inbox、worker、handler、timer、scheduler、memory、outbox、dispatcher、deferred tool call、auto mode、credential proxy。其他尽量用平常的中文。定义只说「它是什么」，一两句话。术语目前是「第 1 课引入」状态，等你测验过关后再按表现修订。</p>
+<p>规则：这些词保持英文——Agent、run、session、event inbox、worker、handler、timer、scheduler、memory、outbox、dispatcher、deferred tool call、auto mode、credential proxy。其他尽量用平常的中文。定义只说「它是什么」，一两句话。术语按第一次被展开的那一课标注；等你测验过关后再按表现修订。</p>
 
 <h2>循环</h2>
 <dl class="glossary">
@@ -79,6 +79,19 @@
 <dd>一种让 Agent 不必每次都等人点头的权限方式。Claude Code 里用 classifier 审查较高风险的动作，并挡住判定为危险的，好让模型改走更安全的路；最重要的决定仍要人看。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a><span class="avoid">把 auto mode 说成可以代替人做最重要的决定</span></dd>
 <dt>deferred tool call</dt>
 <dd>把一次工具调用先挂起，等人补充说明或批准。这次 run 结束，session 保存在调用做到一半的地方；用户的答复作为事件回到 inbox，新的 run 再接着这份 session。等待期间 worker 仍可处理别的事件。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a><span class="avoid">让当前 run 一直挂着空等；丢掉 session 再从头来</span></dd>
+</dl>
+
+<h2>第 3、4、6 课展开的词</h2>
+<p>这些词在第 1 课已经露面，下面按后来各课的展开写成独立条目。</p>
+<dl class="glossary">
+<dt>durable execution engine</dt>
+<dd>实现 scheduler 的一种可选方式，与自建后台服务并列。到期后仍然要把事件写入 inbox 并叫醒 worker，而不是绕过 inbox 去直接开 run。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a><span class="avoid">把它理解成可以代替 inbox 或直接叫 Agent 的一层</span></dd>
+<dt>prompt caching</dt>
+<dd>用来降低每次 run 都要装上的那一层 context overhead 的成本。原文建议在保持这层精瘦的同时使用它。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a><span class="avoid">把它当成可以随便把全部记忆整份塞进上下文的理由</span></dd>
+<dt>compact</dt>
+<dd>在一份 session 变得太长时，压缩较旧消息的一种做法。另一种做法是新开一份 session。两种都会丢掉细节，所以需要留下来的东西应当在途中写入 memory。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a><span class="avoid">以为 compact 不会丢细节；把 compact 和 dreaming 当成同一件事</span></dd>
+<dt>send 工具</dt>
+<dd>把消息直接送给用户的一种工具。多数 always-on agent 用它就够；只有需要控制发送节奏，或从投递错误里恢复时，才值得再做一份正式的 outbox。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a><span class="avoid">以为每个 always-on agent 都必须先做正式 outbox</span></dd>
 </dl>
 
 <footer class="foot">

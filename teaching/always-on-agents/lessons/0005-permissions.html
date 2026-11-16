@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 课 · Permissions</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0005-permissions.html" aria-current="page">第 5 课 · Permissions</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+</nav>
+
+
+<h1>Permissions</h1>
+<p class="subtitle">无人值守却握着访问权：凭证走环境外的 proxy，危险动作可拦住，要人拍板时把一次调用完整往返。</p>
+<p class="meta">第 5 课 · 约 10 分钟 · 主来源：<a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>能画出一次 deferred tool call 的完整往返：结束这次 run 并保存 session，请求交给用户，答复回到 inbox，新 run 接着原来的 session。你还能说明凭证为什么走环境外的 credential proxy，auto mode 怎样拦住危险动作、却不能代替人做最重要的决定，以及等待期间 worker 为什么不会被堵住。</p>
+</div>
+
+<h2>这里的风险最高</h2>
+<p>原文把 permissions 写成 always-on agent 风险最高的地方。一次 run 握着用户的访问权，而且本来就是在无人值守时运行。每一次工具调用，都要决定：自己继续、把它拦住，还是等待批准。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></p>
+<p>permissions 所用的组件，和其他 Agent 是同一套。原文着重写了三件：credential store、auto mode，以及 deferred tool calls。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></p>
+
+<h2>凭证走环境外的 credential proxy</h2>
+<p>always-on agent 常常需要敏感的用户凭证，例如密码或访问令牌，才能把事情做完。原文推荐的做法，是把一个 proxy 放在 Agent 环境外面，给外发请求补上真实凭证。Agent 发出的请求本身不带凭证，由这个 proxy 在转发前注入。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></p>
+<p>本课沿用术语表里的说法，把这种模式叫做 credential proxy。原文这一节的标题是 credential store，两种叫法指的是同一套「钥匙不进 Agent 环境」的安排。</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 180" role="img" aria-label="Agent 发出不带凭证的请求，环境外的 proxy 注入真实凭证后再转发">
+  <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/></marker></defs>
+  <style>.bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}.bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}.t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}.s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}.ln{stroke:#a3341f;stroke-width:1.5;fill:none;marker-end:url(#a5)}.n{font:700 11px "Noto Sans CJK SC",sans-serif;fill:#a3341f}</style>
+  <rect class="bx" x="16" y="40" width="200" height="100" rx="4"/><text class="t" x="28" y="78">Agent 的环境</text><text class="s" x="28" y="98">发出请求，不带凭证</text><text class="s" x="28" y="116">钥匙不放在这里</text>
+  <rect class="bx2" x="276" y="40" width="200" height="100" rx="4"/><text class="t" x="288" y="78">credential proxy</text><text class="s" x="288" y="98">在环境外面</text><text class="s" x="288" y="116">转发前注入真实凭证</text>
+  <rect class="bx" x="536" y="40" width="168" height="100" rx="4"/><text class="t" x="548" y="86">外部服务</text><text class="s" x="548" y="106">收到带凭证的请求</text>
+  <path class="ln" d="M216,90 L276,90"/><path class="ln" d="M476,90 L536,90"/>
+  <text class="n" x="220" y="76">无凭证</text><text class="n" x="478" y="76">补上后再转发</text>
+</svg>
+<figcaption>图 1　推荐做法：proxy 在 Agent 环境外面。请求先不带凭证发出，由 proxy 注入后再转发。</figcaption>
+</figure>
+
+<h2>auto mode：能拦住危险动作，不能代替最重要的决定</h2>
+<p>always-on agent 应当能够在不必每次都等人点头的情况下工作。原文用 Claude Code 里的 auto mode 作为一个已经处理过的例子。auto mode 使用 classifier 审查较高风险的动作，并挡住那些被判定为危险的，好让模型改走更安全的路。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></p>
+<p>即便如此，最重要的决定仍然需要人来看。不要把 auto mode 说成可以代替人做那些决定。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></p>
+
+<h2>deferred tool call 是一次完整往返</h2>
+<p>在 Claude Code 里，一个 hook 可以先推迟一次工具调用，等待用户补充说明。同一模式也适用于 always-on agent：在采取某些行动之前，它可能需要澄清或批准。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></p>
+<ol class="flow">
+  <li><span class="step-title">这次 run 结束，session 保存在调用做到一半的地方</span>调用被推迟时，并不是让当前这次 run 一直挂着空等。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></li>
+  <li><span class="step-title">请求交给用户</span>原文举的例子是一张可交互的卡片，例如用 MCP Apps 来做。这是原文里的示例，不是本课要求你实现的产品形态。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></li>
+  <li><span class="step-title">答复作为事件回到 inbox</span>用户的回答不会直接灌进一个还在空等的 run，而是先回到 event inbox。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></li>
+  <li><span class="step-title">新的 run 接着原来的 session，并带上用户的输入</span>因为这是接着先前工作的答复，它会续上那份已经保存的 session。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a> 第 2 课里「用户答复续上已有 session」的规则，在这里再次用上。</li>
+</ol>
+<p><strong>等待期间，worker 仍可拾起别的事件，所以 Agent 不会被堵住。</strong> <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></p>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「permissions 是 always-on 风险最高的地方：一次 run 握着用户的访问权，而且无人值守。每次工具调用要决定自己继续、拦住，还是等人批准。凭证走环境外的 credential proxy，Agent 发出的请求本身不带钥匙。auto mode 用 classifier 审查较高风险的动作并挡住危险的，但最重要的决定仍要人看。需要澄清或批准时，用 deferred tool call：结束这次 run 并保存 session，请求交给用户，答复作为事件回到 inbox，新的 run 接着原来的 session。等待期间 worker 仍可处理别的事件。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先唤回第 4 课的 memory 规则，后面四题练习本课。</p>
+<div class="quiz" data-quiz-id="0005-permissions">
+<script type="application/json">{"questions":[{"q":"合上第 4 课来回想：关于 memory 应当保存什么，哪一句最符合原文？","options":["只保存那些查不回来的东西；四类是 user instructions、user notes、past messages、task progress","要把外部的系统做全量拷贝；四类是 user instructions、user notes、past messages、task progress","只存下查不回来的东西；四类是 system prompt、tool definitions、past messages、task progress","只存查不回来的东西；四类是 user instructions、user notes、past messages、tool definitions"],"answer":0,"explain":"原文的规则是：memory 只应保存 Agent 查不回来的东西；已经在别的系统里的，存一个指针。四类是 user instructions、user notes、past messages、task progress。system prompt 和工具定义属于每次 run 开头的 context overhead。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Memory</a>。"},{"q":"关于凭证应当放在哪里，原文推荐的做法是什么？","options":["把 proxy 放在 Agent 环境外面，给外发请求补上真实凭证；Agent 发出的请求本身不带凭证","把真实凭证放进 Agent 自己的环境，让它取出并贴到请求上；Agent 不必再经过外面的 proxy","让 Agent 把真实凭证写进记忆文件，每次开头都要整份加载；Agent 就可以省掉外面的 proxy","让投递服务在送信时顺便附上那些真实凭证，答复就能带着钥匙回来；Agent 不必再经过外面的 proxy"],"answer":0,"explain":"原文在 credential store 一节里推荐的模式，是把一个 proxy 放在 Agent 环境外面，给外发请求补上真实凭证。Agent 发出的请求不带凭证，由这个 proxy 在转发前注入。本课把这种做法叫做 credential proxy。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Permissions</a>。"},{"q":"关于 auto mode，哪一句最符合原文？","options":["auto mode 用 classifier 审查较高风险的动作并挡住判定为危险的；最重要的决定仍要人看","auto mode 可以代替人做最重要的那些决定；classifier 只在用户恰好在场时才需要再看一眼","auto mode 只负责给请求补上凭证，并不审查动作是否危险；classifier 也不能用来挡住操作","auto mode 一旦开启，所有工具调用都必须等人批准；classifier 只用来决定通知哪一位用户"],"answer":0,"explain":"原文以 Claude Code 的 auto mode 为例：它用 classifier 审查较高风险的动作，并挡住判定为危险的，好让模型改走更安全的路。但最重要的决定，仍然需要人来看。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Permissions</a>。"},{"q":"一次 deferred tool call 的完整往返，哪一条符合原文？","options":["本次 run 结束并保存 session；请求交给用户；答复回到 inbox；新 run 接着原来的 session","本次 run 挂起并且一直空等着用户；请求交给用户；答复回到 inbox；新 run 另开一份全新的 session","本次 run 结束并丢掉整份 session；请求交给用户；答复回到 inbox；新 run 把整件工作全部从头再做","本次 run 结束并保存 session；跳过对用户的批准询问；同一 run 里继续往下；立刻再去调用原来的那项工具"],"answer":0,"explain":"调用被推迟时，这次 run 结束，session 保存在调用做到一半的地方；请求交给用户；对方的答复作为事件回到 inbox；这个事件开一次新的 run，并接着那份已保存的 session。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Permissions · Deferred tool calls</a>。"},{"q":"等待用户答复一次 deferred tool call 期间，worker 应当怎样？","options":["等待答复期间，worker 仍可拾起 inbox 里别的那些事件，不会因为这次推迟而被堵住了","等待答复期间，worker 必须空等这次调用，inbox 里新到的事件都要等到答复后再去处理","等待答复期间，入口应拒绝新的外来事件，以免它们在没有 worker 时从 inbox 里丢失","等待答复期间，调度器这时应停止扫描到期项，以免那些新事件在同一 inbox 里和答复一起抢跑"],"answer":0,"explain":"原文写：等待推迟的调用得到答复期间，worker 仍可拾起别的事件，因此 Agent 不会被堵住。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Permissions · Deferred tool calls</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 里的 <strong>Permissions</strong> 一节，尤其是 Deferred tool calls 那段。读的时候按「结束并保存 → 交给用户 → 回到 inbox → 续上 session」在纸上画一个往返圈，并注明等待期间 worker 仍可工作。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>credential proxy 和「把钥匙放进环境」还分不清、想把 deferred tool call 对照原文再走一遍，或者想问 auto mode 拦下来之后模型会怎样改路，都可以直接问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：看 <a href="../reference/glossary.html">术语表</a> 里 credential proxy、auto mode、deferred tool call，以及 <a href="../reference/cycle-cheatsheet.html">循环速查</a> 里那张往返卡片。</p>
+
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0004-memory.html">上一课 · Memory</a>
+  <a class="next" href="0006-outbox.html">下一课 · Outbox</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品。
+</footer>
+</main>
+</body>
+</html>

@@ -309,3 +309,52 @@ figure.scroll svg { min-width: 640px; }
 @media print { figure.scroll svg { min-width: 0; } .scroll-hint { display: none !important; } }
 td a.src, .card a.src { white-space: normal; word-break: break-all; }
 td code { word-break: break-word; }
+
+
+/* ---------- 相邻课程导航 ---------- */
+nav.lesson-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .6rem 1.2rem;
+  margin: 2.2rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: .88rem;
+  max-width: 100%;
+}
+nav.lesson-nav a { color: var(--accent); }
+nav.lesson-nav .next { margin-left: auto; }
+
+/* ---------- 自检 / 对照答案（总复习等可复用） ---------- */
+.self-check {
+  border: 1px solid var(--rule);
+  background: #fffffb;
+  padding: 1rem 1.1rem 1.1rem;
+  margin: 1.2rem 0;
+}
+.self-check-prompt h3 { margin: 0 0 .4rem; font-size: 1.05rem; }
+.self-check-prompt p:last-child { margin-bottom: .8rem; }
+.self-check-toggle {
+  font-family: var(--sans);
+  font-size: .85rem;
+  padding: .4rem 1rem;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  border-radius: 3px;
+}
+.self-check-toggle:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.self-check-answer {
+  display: none;
+  margin-top: 1rem;
+  padding-top: .8rem;
+  border-top: 1px dashed var(--rule);
+}
+.self-check.is-open .self-check-answer { display: block; }
+.self-check.is-open .self-check-toggle { border-color: var(--blue); color: var(--blue); }
+@media print {
+  .self-check-toggle { display: none !important; }
+  .self-check-answer { display: block !important; }
+}

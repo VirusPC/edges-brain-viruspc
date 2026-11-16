@@ -10,9 +10,9 @@
 <main class="page">
 <nav class="crumbs">
   <a href="../index.html">目录</a>
-  <a href="../lessons/0001-sleep-wake-cycle-and-five-primitives.html">第 1 课 · 睡醒循环与五个原语</a>
   <a href="../reference/glossary.html">术语表</a>
   <a href="../reference/cycle-cheatsheet.html" aria-current="page">循环速查</a>
+  <a href="../reference/scenario-cards.html">情景速查</a>
 </nav>
 
 <h1>循环速查</h1>
@@ -90,6 +90,7 @@
       <li>中途又来事件：推到下一次 run、并进当前 run，或打断重来（原文未推荐哪一种）。</li>
       <li>把积压的待办事件批次合并，例如连续几条用户消息合成一次 run。</li>
       <li>建议先一人一个 inbox；要更多并行再拆。</li>
+      <li>按来源给出的唯一标识去重；关系型数据库很适合，每条事件作为新行追加。</li>
     </ul>
   </div>
   <div class="card">
@@ -97,6 +98,7 @@
     <ul>
       <li>和 inbox 分库存：inbox 只放已经能做的事件。</li>
       <li>scheduler 每轮：扫描到期的 → follow-up 标完成 / schedule 改到下一回 → 写入 inbox 并叫醒 worker。</li>
+      <li>scheduler 可以自建，也可以用 durable execution engine；到期后仍要写入 inbox。</li>
     </ul>
   </div>
   <div class="card">
@@ -124,7 +126,8 @@
 <h2>60 秒骨架</h2>
 <p>always-on 是体验，不是进程一直醒着。一次 run：inbox 里的事件叫醒唯一的 worker，在新的或已有的 session 里读 memory、在 permissions 内行动、再更新 memory，然后可能写入 outbox。timer 到期也是先变成 inbox 里的事件。要人批准时，结束这次 run 并保存 session，等答复作为新事件再续上。每次 run 都很短，循环可以一直转。</p>
 
-<p>回到 <a href="../lessons/0001-sleep-wake-cycle-and-five-primitives.html">第 1 课</a> · 查 <a href="glossary.html">术语表</a></p>
+<p>回到 <a href="../index.html">目录</a> · 查 <a href="glossary.html">术语表</a> · 看 <a href="scenario-cards.html">情景速查</a></p>
+<p>课程：<a href="../lessons/0001-sleep-wake-cycle-and-five-primitives.html">第 1 课</a> · <a href="../lessons/0002-event-inbox.html">第 2 课</a> · <a href="../lessons/0003-timers.html">第 3 课</a> · <a href="../lessons/0004-memory.html">第 4 课</a> · <a href="../lessons/0005-permissions.html">第 5 课</a> · <a href="../lessons/0006-outbox.html">第 6 课</a> · <a href="../lessons/0007-cumulative-review.html">第 7 课</a></p>
 
 <footer class="foot">
   压缩自 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a>。

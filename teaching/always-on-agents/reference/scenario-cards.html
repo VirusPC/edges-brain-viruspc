@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>情景速查 · Building always-on agents</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+  <a href="../reference/scenario-cards.html" aria-current="page">情景速查</a>
+</nav>
+
+<h1>情景速查</h1>
+<p class="subtitle">把三个交错情景压成一页，方便和第 7 课对照。原文没有写明的地方会标明，不编造偏好。</p>
+
+<div class="card" style="margin:1rem 0;max-width:var(--measure)">
+  <h3>情景 A　一次 run 做到一半，新的 webhook 到了</h3>
+  <ul>
+    <li>webhook 先由 handler 很快确认，并写入 event inbox，而不是直接去叫 Agent。</li>
+    <li>同一 inbox 不能再起一个在工作的 worker 来抢跑。</li>
+    <li>中途到来的事件有三种处理：推到下一次 run、并进当前这次，或打断重来。原文把三种并列，没有推荐哪一种。</li>
+    <li>webhook 属于「其余事件」，通常新开一份 session。</li>
+    <li>当前这次尚未结束的 run，仍按原计划读写 memory，并在结束时才可能写入 outbox。新 webhook 在被某一次 run 拾起之前，还不会动 memory 或 outbox。</li>
+  </ul>
+  <p><a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+</div>
+
+<div class="card" style="margin:1rem 0;max-width:var(--measure)">
+  <h3>情景 B　用户答复了一次 deferred tool call</h3>
+  <ul>
+    <li>当时那次 run 已经结束，并不是一直挂着空等。session 保存在调用做到一半的地方。</li>
+    <li>用户答复作为事件回到 event inbox，并开一次新的 run，接着那份已保存的 session。</li>
+    <li>等待期间，worker 仍可拾起 inbox 里别的事件，Agent 不会被堵住。</li>
+    <li>当初把请求交给用户时，可以经过 outbox，也可以直接显示在界面上；原文把两条都写成可以。</li>
+  </ul>
+  <p><a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions / Outbox</a></p>
+</div>
+
+<div class="card" style="margin:1rem 0;max-width:var(--measure)">
+  <h3>情景 C　一条 follow-up 到期了</h3>
+  <ul>
+    <li>timer 自己不会开 run。scheduler 找出这条已到期的 follow-up，把它标成完成，再把事件写入 inbox 并叫醒 worker。</li>
+    <li>随后仍由唯一的 worker 取出事件并开 run。</li>
+    <li>这次 run 是否续上旧 session：原文只明确把「用户答复」这类接着先前工作的事件写成续上已有 session，其余通常新开。到期的 follow-up 没有被单独写成必须续上旧 session，这里不做额外推断。</li>
+    <li>新学到的用户偏好属于 user notes，应当写入 memory；已在别的系统里的事项则只存指针。</li>
+    <li>若决定暂时不打扰用户，属于三种结束方式里的「这次什么也不必送」。</li>
+  </ul>
+  <p><a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers / Event inbox / Memory / Outbox</a></p>
+</div>
+
+<p>回到 <a href="../index.html">目录</a> · <a href="../lessons/0007-cumulative-review.html">第 7 课</a> · <a href="cycle-cheatsheet.html">循环速查</a> · <a href="glossary.html">术语表</a></p>
+
+<footer class="foot">
+  压缩自 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a>。
+  不编造原文没有的推荐；「中途来事件」的三种处理，以及到期 follow-up 是否续上旧 session，均按原文已写明的范围处理。
+</footer>
+</main>
+</body>
+</html>
