@@ -50,6 +50,57 @@
    - 框架 [`harness-模块插件化`](https://github.com/VirusPC/edges/blob/main/.edges/projects/2026-09-09--edges-extensions/tasks/backlog/2026-10-21--harness-模块插件化/INDEX.md)：仍写「完成标准与动作细节待 grill-with-docs」「细节 grill 后补」；未见「以 ADR 0046 为准」。
    附带事实（不改变「没做成」）：框架 [#118](https://github.com/VirusPC/edges/pull/118) 改过 ADR 0046 文本（`--super` 材料面修复，+1 / -1），但插件化卡本身未被更新。对话层：用户本周确有 grill（全栈开发专家 11-10「`/grill-with-docs`」；Grok Bot 11-11 / 11-12「开始grill」），但谈的是 `--super` 语义和 AI 资讯改版，**未见**「去给上述 backlog 补一句完成标准」或「插件化对齐 ADR 0046」的原话，也未见叫停本条。
 
+
+### 本周沉淀：Memory / Skill / Task / Routine / Note / Project
+
+按 2026-11-16 对话反馈，把这六类从发版和开卡叙述里抽出来单独盘点。后面各主线仍保留原话与发版过程；同一条目若已在本节归类，后文不再重复展开。
+
+**Memory（硬约束、feedback、可复用结论）**
+
+已落仓：
+- 写入前必须先有独立 worktree：用户（Grok Bot，2026-11-14 19:15，北京时间）要求「加一个笔记，以及记忆」，公开脑记入 [#493](https://github.com/VirusPC/edges-brain-viruspc/pull/493)；随后收成框架 init 模板，只在新建 Git 根 `AGENTS.md` 时写入，已有文件不回填（[#127](https://github.com/VirusPC/edges/pull/127)、[#128](https://github.com/VirusPC/edges/pull/128) / `0.6.1`）。
+- 个人大脑优先加 `--super`：用户（DIY Coding Agent，2026-11-09 16:58–17:05，北京时间）把约定收成 `AGENTS.md` 里一句硬约束；框架侧解析修复随 `0.5.7` 发出（[#118](https://github.com/VirusPC/edges/pull/118)、[#119](https://github.com/VirusPC/edges/pull/119)）。
+- 公开脑 `.edges/memory/feedbacks/` 本周写入 3 条可读条目（[#460](https://github.com/VirusPC/edges-brain-viruspc/pull/460)、[#465](https://github.com/VirusPC/edges-brain-viruspc/pull/465)、[#472](https://github.com/VirusPC/edges-brain-viruspc/pull/472)）：`feedback_write_core_principles_specific_first`、`feedback_rerun_means_full_rerun_with_current_skill`、`feedback_user_decisions_are_hard_requirements_not_options`。
+- 日复盘记 Task 的判定改成「重要且后续可能用到」，不要求用户口头说「记个 Task」（[#495](https://github.com/VirusPC/edges-brain-viruspc/pull/495)）。
+- 框架记下分层记忆适用边界，并开了沉淀成本评估卡（[#121](https://github.com/VirusPC/edges/pull/121)）。
+
+未收口：上期点名的 `feedback_retro_comments_in_separate_file` 仍只在框架仓；拆仓卡状态仍不一致，见上期建议验收第 1 条。
+
+**Skill**
+
+已落仓：
+- 笔记 / 任务技能按 CLI 动作改名为 `edges-create-notes` / `edges-create-tasks`，旧名删掉，随 `0.6.0` 发布（框架 [#125](https://github.com/VirusPC/edges/pull/125)、[#126](https://github.com/VirusPC/edges/pull/126)）。公开脑 [#492](https://github.com/VirusPC/edges-brain-viruspc/pull/492)（`create-learning-notes`）关闭未合入，是改道不是放弃，依据见下文对话。
+- `--super` 相关 onboarding skill 文本随 [#118](https://github.com/VirusPC/edges/pull/118) 更新。worktree 硬约束按用户（Grok Bot，2026-11-14 21:12–21:16，北京时间）「memory-init 是不是就不用在写了？」「skill里是不是不用写了」，只留在 init 模板，不在 memory-init / skill 里再写一遍。
+- AI 资讯例程的 skill 本周被反复拿来测试和改版（改名、重跑、换干净 agent），详见下文「AI 资讯」主线。
+
+未收口：独立仓 `AGENTS.md` 写入 `edges-harness` 标记的框架 [#120](https://github.com/VirusPC/edges/pull/120) 仍 open；公开脑已有相关原则重构 backlog 卡（随 [#460](https://github.com/VirusPC/edges-brain-viruspc/pull/460)）。用户（全栈开发专家，2026-11-10 23:57，北京时间）提出 skills「最核心的是讲一些最基础的做什么的原则」，部分已进 feedbacks，原则重构本身未完成。
+
+**Task**
+
+本周以「新开卡」为主，未观察到这些新卡从 backlog 推到 done。
+
+公开脑新卡（多数在仓库根 `projects/` 或 `tasks/`，少数在 `.edges/tasks/backlog`）包括：AI News 上站与改版相关（[#461](https://github.com/VirusPC/edges-brain-viruspc/pull/461)、[#464](https://github.com/VirusPC/edges-brain-viruspc/pull/464)、[#467](https://github.com/VirusPC/edges-brain-viruspc/pull/467)、[#476](https://github.com/VirusPC/edges-brain-viruspc/pull/476)、[#482](https://github.com/VirusPC/edges-brain-viruspc/pull/482)、[#483](https://github.com/VirusPC/edges-brain-viruspc/pull/483)）、个人 Dashboard 框架及调研（[#484](https://github.com/VirusPC/edges-brain-viruspc/pull/484)、[#485](https://github.com/VirusPC/edges-brain-viruspc/pull/485)）、学习异步 Agent（[#486](https://github.com/VirusPC/edges-brain-viruspc/pull/486)）、big_model_radar（[#489](https://github.com/VirusPC/edges-brain-viruspc/pull/489)）、改造认知目录 `edges/`（[#497](https://github.com/VirusPC/edges-brain-viruspc/pull/497)）、dream 机制（[#499](https://github.com/VirusPC/edges-brain-viruspc/pull/499)）、个人大脑独立 tasks 看板页（[#501](https://github.com/VirusPC/edges-brain-viruspc/pull/501)）、新条目格式「一句话 + 解释 + 参考资料」（[#503](https://github.com/VirusPC/edges-brain-viruspc/pull/503)）。采集时仍 open：[#504](https://github.com/VirusPC/edges-brain-viruspc/pull/504)（`edges/` 定位为全仓信噪比最高处）、人审中的 [#498](https://github.com/VirusPC/edges-brain-viruspc/pull/498)。公开脑 `.edges/tasks/` 采集时 backlog 16、in_progress 1、done 1（done 卡日期在窗前）。
+
+框架新卡：官方 OCI 镜像（[#124](https://github.com/VirusPC/edges/pull/124)）、`.edges` 下支持自定义材料类别（[#130](https://github.com/VirusPC/edges/pull/130)，高优）、分层记忆沉淀成本（[#121](https://github.com/VirusPC/edges/pull/121)）。上期点名的六张「grill 后补」卡仍无完成标准，见上期建议验收第 3 条。
+
+私密脑本周出现 `.edges/tasks/`（backlog 1 张卡），公开正文只记结构。
+
+**Routine**
+
+已落仓：根目录 routines 子作用域骨架（[#500](https://github.com/VirusPC/edges-brain-viruspc/pull/500)）。依据：用户（日复盘，2026-11-15 17:16–17:17，北京时间）要求「routines下建立一个.edges」「根目录 /routines」。上期周复盘 [#450](https://github.com/VirusPC/edges-brain-viruspc/pull/450) 与本周日复盘 7/7 均已合入。
+
+已记卡、未做成：用户（日复盘，2026-11-15 17:18，北京时间）要求「增加复盘的复盘。确保复盘不腐烂。」同日还提出「routines里允许包含skill」（任务记录员，16:09），这是结构想法，未见单独写成的约定正文。
+
+**Note**
+
+已落仓：OpenViking 记忆机制分析（[#457](https://github.com/VirusPC/edges-brain-viruspc/pull/457)）；learning Project 下的 DSH SDK 与 ACP 调研笔记（[#453](https://github.com/VirusPC/edges-brain-viruspc/pull/453)、[#454](https://github.com/VirusPC/edges-brain-viruspc/pull/454)），以及后续 DSH 源码课程与 Coding Agent 调研（[#488](https://github.com/VirusPC/edges-brain-viruspc/pull/488)）；benchmark 论证与评审笔记（[#451](https://github.com/VirusPC/edges-brain-viruspc/pull/451)）；桌面评测与 Work 调用 Finder（[#490](https://github.com/VirusPC/edges-brain-viruspc/pull/490)、[#491](https://github.com/VirusPC/edges-brain-viruspc/pull/491)）；agent-infra 登记时附带两篇对话笔记（[#502](https://github.com/VirusPC/edges-brain-viruspc/pull/502)）；worktree 核验笔记（[#493](https://github.com/VirusPC/edges-brain-viruspc/pull/493)，与 Memory 同条）。周报缺项改记 notes 是 AI 资讯流程改动（[#468](https://github.com/VirusPC/edges-brain-viruspc/pull/468)）。另有至少 1 条敏感调研已在私密脑开 PR（[#13](https://github.com/VirusPC/edges-brain-viruspc-private/pull/13)），公开正文不写主题。
+
+**Project**
+
+已落仓：Teaching 课与笔记归入同名 Project（[#452](https://github.com/VirusPC/edges-brain-viruspc/pull/452)、[#455](https://github.com/VirusPC/edges-brain-viruspc/pull/455) 等）；IT 资产管理公开索引（[#459](https://github.com/VirusPC/edges-brain-viruspc/pull/459)）；AI 研发流程优化（[#494](https://github.com/VirusPC/edges-brain-viruspc/pull/494)）；agent-infra 登记为正式 Project（[#502](https://github.com/VirusPC/edges-brain-viruspc/pull/502)）。个人大脑 Project 应建在根目录 `projects/`，由 `--super` 约定与 [#118](https://github.com/VirusPC/edges/pull/118) 的解析修复支撑。
+
+说明：[#484](https://github.com/VirusPC/edges-brain-viruspc/pull/484)、[#485](https://github.com/VirusPC/edges-brain-viruspc/pull/485) 记的是「建设个人 Dashboard 框架」任务卡，采集时未看到把它登记为正式 Project 的合入，故放在 Task，不记入本类。
+
 ### 本周仓库主线（无事先周目标下的实际产出）
 
 #### 框架发版：`@viruspc/edges` 0.5.7 / 0.6.0 / 0.6.1，Publish 三次全绿
@@ -91,6 +142,8 @@ Frozen install 窗内 **31/31** 成功。框架 Deploy、公开脑 Bugbot 窗内
 **对话依据（Grok Bot，北京时间）：** 用户 11-10「ok我暂停了。你来接手，重跑最近2周」；11-12「再记录todo，优化整个ai news的排版」，并完成一轮说明移出正文的决定；11-13「AI Coding 资讯改名 Agent资讯吧」，以及「我希望完全重跑，看下skill效果」「我说了多少遍，这是skill测试，肯定换个干净的agent重跑啊」。11-14 又记新卡：「用做dashboard 的思路做ai news」（[#483](https://github.com/VirusPC/edges-brain-viruspc/pull/483)、[#482](https://github.com/VirusPC/edges-brain-viruspc/pull/482)），并「更进一步的，我想建设personal dashboard 框架」（[#484](https://github.com/VirusPC/edges-brain-viruspc/pull/484)、[#485](https://github.com/VirusPC/edges-brain-viruspc/pull/485)）。
 
 #### 教学、新 Project，以及大量新开 backlog 卡
+
+按类型的完整盘点见上文「本周沉淀」。这里只补对话依据，并保留未做成的观察。
 
 Teaching / DSH / ACP：公开脑 [#452](https://github.com/VirusPC/edges-brain-viruspc/pull/452)、[#453](https://github.com/VirusPC/edges-brain-viruspc/pull/453)、[#454](https://github.com/VirusPC/edges-brain-viruspc/pull/454)、[#455](https://github.com/VirusPC/edges-brain-viruspc/pull/455)、[#488](https://github.com/VirusPC/edges-brain-viruspc/pull/488)。OpenViking 记忆机制笔记：[#457](https://github.com/VirusPC/edges-brain-viruspc/pull/457)。新公开索引 / 项目：IT 资产管理 [#459](https://github.com/VirusPC/edges-brain-viruspc/pull/459)，AI 研发流程优化 [#494](https://github.com/VirusPC/edges-brain-viruspc/pull/494)，agent-infra 登记为正式 Project [#502](https://github.com/VirusPC/edges-brain-viruspc/pull/502)。
 
@@ -146,6 +199,10 @@ Teaching / DSH / ACP：公开脑 [#452](https://github.com/VirusPC/edges-brain-v
 ### ADR 0053 仍停在「文档已合、实测未做」
 
 卡面原文仍写未发包、未合并、七层与 E1–E4 未实测；`edges-updated-at` 未进入本周窗。本周 onboarding 相关合入是 [#118](https://github.com/VirusPC/edges/pull/118) 的 `--super` 解析修复，不是该卡要求的客户端实测。是否升为下期必做仍由你定，不自动挤掉上列三条结转名额。
+
+### 本周沉淀的重心在记笔记、建 Project 和开卡，可复用规则只落了几条
+
+依据见「本周沉淀」。Memory / Skill 侧当场落仓的是 `--super`、worktree 硬约束，以及笔记 / 任务技能改名。Task 侧几乎都是新开 backlog，没有看到推进 done。这是盘点结果，不是对「该不该先开卡」的评价。
 
 ### 该保持的
 
@@ -247,6 +304,15 @@ Teaching / DSH / ACP：公开脑 [#452](https://github.com/VirusPC/edges-brain-v
 - **为什么值得补：** 这是对复盘例程自身质量的要求，和「建议 3 的空标准反复结转」是同一类腐烂风险。
 - **不补代价：** 以后只能继续用周复盘人工发现同一类遗漏。
 - **处理结果：** **已记卡，未完成**。不自动挤掉下次做什么的三条结转名额，是否升为下期必做由你定。
+
+
+### 周复盘要单独强调 memory / skill / task / routine / note / project 沉淀（本周反馈，已写入例程）
+
+- **是什么：** 用户（周复盘，2026-11-16 12:34–12:35，北京时间）要求周复盘「应该强调下沉淀memory、skill、task、routine 等等」，随后补上「note  project」。
+- **建议去处：** 例程 Skill（`.edges/routines/weekly-retrospective/SKILL.md`）与 `retrospectives/weekly/README.md` 的「实际怎样」；本期正文已按此加「本周沉淀」节。
+- **为什么值得补：** 否则这六类会继续被埋在发版和开卡数量下面，复盘看不到「这周到底沉淀了什么」。
+- **不补代价：** 下期仍可能只报吞吐，漏掉记忆、技能、任务、例程、笔记、项目的结构盘点。
+- **处理结果：** **已写入本期正文**，并随本 PR 写入例程 Skill 与周复盘 README（合入后对下期生效）。
 
 ### 上期清单中仍有效、本周未再作为必做推进（不新开下次做什么名额）
 
