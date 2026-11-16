@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 7 课 · Watchdog</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0007-watchdog.html" aria-current="page">第 7 课 · Watchdog</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+</nav>
+<h1>Watchdog</h1>
+<p class="subtitle">存算分离还不够：要在主系统之外用独立的 Watchdog Session 构成外部 Control Loop，既看基础设施，也看任务进展。</p>
+<p class="meta">第 7 课 · 约 10 分钟 · 主来源：<a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>（第 6 节）</p>
+
+<div class="box win"><span class="box-title">学完这一课，你能做到</span>
+<p>能讲清：为什么只有第 5 节的存算分离还不够；为什么进程存活探测挡不住「模型空转或偏离目标」这类异常；Watchdog 为什么要放在主系统之外、用定时消息驱动；以及它怎样同时照看基础设施和任务进展，并允许维护者用自然语言询问、在线修正主系统。</p></div>
+
+<h2>持久在线，还差一条外部控制回路</h2>
+<p>要实现持久在线，除了第 5 节的存算分离，还需要让系统在长期运行中能从异常中自动恢复。原文的判断是：持久在线的分布式系统很难仅靠主系统内部逻辑保证长期可靠运行，需要在主系统之外引入独立的外部控制回路，即 Control Loop。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 6 节</a></p>
+
+<h2>进程还在，不等于任务仍有进展</h2>
+<p>同时，在 Agent 系统中，仅靠传统的进程存活探测或监控脚本是不够的，因为许多异常并非进程崩溃，而是模型在执行中陷入无效循环或偏离目标。因此，长期运行的 Agent 系统不仅需要监控基础设施的存活，还需要监控任务本身的进展。</p>
+
+<h2>独立的 Watchdog Session</h2>
+<p>原文的做法是：在主系统外部配置一个独立的 Watchdog Session，用定时消息驱动它，构成外部的 Control Loop。章节标题写成 Watch Dog，正文里多用 Watchdog Session；本课统一用 Watchdog。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 6 节</a></p>
+<p>Watchdog 除了处理接口报错、状态恢复失败等基础设施故障，还会由模型判断各个 Worker 是否有实质进展、方向是否偏离整体目标。发现异常时及时介入修复，遇到外部偶发故障则持续复查直至恢复正常。</p>
+<p>由于 Watchdog 本身也是一个具备完整工具能力的 Agent Session，维护者可以用自然语言向它询问故障原因，也可以让它在线修正主系统的行为，例如增删提示词、调整触发规则。</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 170" role="img" aria-label="主系统外的 Watchdog Session 由定时消息驱动，同时照看基础设施和任务进展">
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx3{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+  </style>
+  <rect class="bx" x="16" y="30" width="300" height="110" rx="4"/>
+  <text class="t" x="28" y="58">主系统</text>
+  <text class="s" x="28" y="80">Router、Worker、Agent Loop</text>
+  <text class="s" x="28" y="100">很难只靠内部逻辑保证长期可靠</text>
+  <rect class="bx3" x="400" y="30" width="304" height="110" rx="4"/>
+  <text class="t" x="412" y="58">Watchdog Session</text>
+  <text class="s" x="412" y="80">主系统之外 · 定时消息驱动</text>
+  <text class="s" x="412" y="100">看基础设施，也看任务进展</text>
+  <text class="s" x="412" y="120">可询问，也可在线修正主系统</text>
+</svg>
+<figcaption>图 1　Watchdog 是主系统外的独立 Session，构成外部 Control Loop；不是附属在 Router 里的内部线程。</figcaption>
+</figure>
+
+<div class="box interview"><span class="box-title">合上原文，60 秒这样讲</span>
+<p>「第 5 节的存算分离让 Agent 摆脱了单台设备的生命周期，但要实现持久在线，还得能在长期运行里从异常中自动恢复。这类系统很难只靠主系统内部逻辑一直可靠，所以要在主系统之外引入独立的外部 Control Loop。只做进程存活探测不够，因为很多异常不是进程崩溃，而是模型陷入无效循环或偏离目标。于是原文在主系统外放了一个独立的 Watchdog Session，用定时消息驱动它。它既处理接口报错、状态恢复失败这类基础设施故障，也用模型判断 Worker 有没有实质进展、方向有没有偏离；发现异常就介入，碰到偶发外部故障就持续复查直到恢复。因为它本身也是具备完整工具能力的 Agent Session，维护者可以用自然语言问它为什么出故障，也可以让它在线增删提示词、调整触发规则。」</p></div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。先接上第 5 节还留下的缺口，再进入 Watchdog 本身。</p>
+
+<div class="quiz" data-quiz-id="0007-watchdog">
+<script type="application/json">{"questions":[{"q":"第 5 节的存算分离完成之后，原文认为还缺什么才能做到持久在线？","options":["第 5 节的存算分离让 Agent 摆脱单机生命周期，但仍需在主系统之外引入独立的外部控制回路，才能从长期异常中自动恢复","第 5 节的存算分离让 Agent 摆脱单机生命周期，因此能在主系统之内取消独立的外部控制回路，就能从长期异常中自动恢复","第 5 节的存算分离让 Agent 摆脱单机生命周期，但仍需在主系统之内引入独立的内部控制回路，才能从长期异常中自动恢复","第 5 节的存算分离让 Agent 摆脱单机生命周期，因此须把 Watchdog 并入该主进程，才能从长期异常中自动恢复"],"answer":0,"explain":"原文写：要实现持久在线，除了第 5 节的存算分离，还需要让系统在长期运行中能从异常中自动恢复。持久在线的分布式系统很难仅靠主系统内部逻辑保证长期可靠运行，需要在主系统之外引入独立的外部控制回路。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 6 节</a>。"},{"q":"为什么长期运行的 Agent 系统不能只靠进程存活探测或监控脚本？","options":["许多异常并非进程崩溃，而是模型陷入无效循环或偏离目标，因此既要监控基础设施存活，也要监控任务本身的进展","许多异常都为进程崩溃，不是模型陷入无效循环或偏离目标，因此只要监控基础设施存活，不必监控任务本身的进展","许多异常并非进程崩溃，而是模型陷入无效循环或偏离目标，因此只要监控基础设施存活，不必监控任务本身的进展","许多异常都是进程崩溃，不是模型陷入无效循环或偏离目标，因此既要监控基础设施存活，也要监控任务本身的进展"],"answer":0,"explain":"原文写：仅靠传统的进程存活探测或监控脚本是不够的，因为许多异常并非进程崩溃，而是模型在执行中陷入无效循环或偏离目标。因此不仅需要监控基础设施的存活，还需要监控任务本身的进展。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 6 节</a>。"},{"q":"原文中的 Watchdog 应怎样放置和驱动？","options":["在主系统之外放独立 Watchdog Session，用定时消息驱动，构成外部 Control Loop","在主系统之内放附属 Watchdog Session，用完成事件驱动，构成内部 Control Loop","在主系统之外放独立 Watchdog Session，崩溃后人工启动，构成外部 Control Loop","在主系统之内放附属 Watchdog Session，用定时消息驱动，取代外部 Control Loop"],"answer":0,"explain":"原文的做法是：在主系统外部配置一个独立的 Watchdog Session，用定时消息驱动它，构成外部的 Control Loop。它不是主系统内部的附属线程，也不是等崩溃后再由人来启动。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 6 节</a>。"},{"q":"Watchdog 在原文里要做哪些事？","options":["既处理接口报错、状态恢复失败等基础设施故障，也由模型判断 Worker 是否有实质进展、方向是否偏离，并可在线修正主系统行为","既处理接口报错、状态恢复失败等基础设施故障，也不让它判断 Worker 是否有实质进展、方向是否偏离，亦不在线修正主系统行为","只把接口报错、状态恢复失败等基础设施交脚本，不由模型判断 Worker 是否有实质进展、方向是否偏离，并可在线修正主系统行为","既处理接口报错、状态恢复失败等基础设施故障，也由模型判断 Worker 是否有实质进展、方向是否偏离，但不增删提示或触发规则"],"answer":0,"explain":"Watchdog 除了处理接口报错、状态恢复失败等基础设施故障，还会由模型判断各个 Worker 是否有实质进展、方向是否偏离整体目标。发现异常时及时介入修复，遇到外部偶发故障则持续复查直至恢复正常。因为它本身也是具备完整工具能力的 Agent Session，维护者可以用自然语言询问故障原因，也可以让它在线修正主系统行为，例如增删提示词、调整触发规则。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 6 节</a>。"}]}</script>
+</div>
+
+<div class="box read"><span class="box-title">本课推荐精读的一手资料</span>
+<p><a href="https://www.bilibili.com/opus/1265361021143351318">Super-agent 设计探索</a>的第 6 节。这一节不长，读的时候抓住三句话：要有外部 Control Loop；既看基础设施也看任务进展；Watchdog 本身是可以对话、可以改主系统的 Agent Session。</p></div>
+<div class="box ask"><span class="box-title">有不懂的，直接问我</span>
+<p>「外部控制回路」和普通监控脚本的差别还不够清楚，或者想把「方向偏离」再用一个例子讲一遍，都可以直接问我。</p></div>
+<p>准备好了就进入 <a href="0008-experiments-and-open-questions.html">第 8 课 · 初步实验与开放问题</a>。</p>
+
+<nav class="lesson-nav" aria-label="相邻课程">  <a class="prev" href="0006-compute-state-and-environment.html">上一课 · 计算、状态与环境的分离</a>  <a class="next" href="0008-experiments-and-open-questions.html">下一课 · 初步实验与开放问题</a></nav>
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">说法以 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文为准。延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。</footer>
+</main>
+</body>
+</html>
