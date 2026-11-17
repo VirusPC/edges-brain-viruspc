@@ -146,3 +146,55 @@ skill 的名字和描述每个会话都在，读 `SKILL.md` 的正文也不因 C
 - 官方配置：[Config reference](https://learn.chatgpt.com/docs/config-file/config-reference) — `features.code_mode` 标注 under development，默认关闭。
 - 省 token 的出处（都不是 Codex 官方的开/关对比）：[Anthropic](https://www.anthropic.com/research/code-execution-with-mcp)（150k→2k，-98.7%，挑选场景）、[Cloudflare](https://blog.cloudflare.com/code-mode-mcp/)（约 2500 端点，1.17M→约 1000）、[Bifrost](https://docs.getbifrost.ai/mcp/code-mode)（96 / 251 / 508 个工具）、[AIMultiple](https://aimultiple.com/code-execution-with-mcp)（总 token -77.4%，输出 +120%，延迟 +7%）、[openai/codex#35050](https://github.com/openai/codex/issues/35050)、[openai/codex#41450](https://github.com/openai/codex/issues/41450)。
 - 源码位置（`46f5a1d`）：`codex-rs/code-mode-runtime/src/runtime/globals.rs`（`install_globals`、`build_tools_object`）、`codex-rs/code-mode-runtime/src/runtime/callbacks.rs`（`tool_callback`）、`code-mode-protocol/src/description.rs`（`normalize_code_mode_identifier`、`EXEC_DESCRIPTION_TEMPLATE`）。
+
+## PTC / Code Mode 的技术难点
+
+本章是后续逐个深挖的索引，每个难点作为独立小节，后续追问时在对应小节下补充。
+
+### 沙箱安全
+
+执行模型现写的代码要可靠隔离。Codex 每次 exec 用全新的 V8 isolate，并移除 `console`、`WebAssembly`、`SharedArrayBuffer`、`Atomics`。里面没有文件系统和网络，能力只能经 `tools` 回到宿主。难点是隔离和启动开销怎么平衡。
+
+### 调用转发与权限一致
+
+脚本里的每一次调用都回到宿主，走同一套沙箱、审批和 MCP 链路，不能因为是代码里的调用就绕过去。还要处理异步 Promise、并发、超时，以及需要审批时把执行挂起。长时运行和只交回一部分输出，靠 `yield_control` / `wait` 这一类机制。
+
+### 工具到代码 API 的映射
+
+MCP 的 JSON Schema 要转成 TypeScript 类型。工具名要收成合法的 JavaScript 标识符，并避免互相冲突：这件事由 `normalize_code_mode_identifier` 做，MCP 工具保留 `mcp__server__` 前缀。返回值的形态也要有约定。类型声明不能太长，否则会把省下的 token 吃回去。收住长度的办法包括类型渲染预算、把 deferred 工具折叠起来，以及按需调用 `tool_search`。
+
+### 让模型真的用且用对（最难）
+
+模型要自己判断哪些调用彼此独立、可以并行，哪些有依赖、必须串行。实测里它经常不写脚本，或者一次只调一个工具，见 [openai/codex#35050](https://github.com/openai/codex/issues/35050) 和 [#41450](https://github.com/openai/codex/issues/41450)，效果不稳定。目前只能靠工具描述做软引导、按模型调整提示词，或者强制打开 `code_mode_only`。
+
+### 出错处理与可观测性
+
+脚本中途失败时，要把已经完成的调用、报错和部分结果清楚地交回模型，否则模型只能整段重试。中间结果不进上下文，既是省 token 的优点，也让排障变难，所以还需要额外的日志，以及用 `max_output_tokens` 截断输出。
+
+### 状态与副作用
+
+跨一次次 exec 的共享靠 `store` / `load`。还要处理没有 `await` 的 Promise，以及带副作用的调用并发时的顺序和幂等。一般只把只读调用放进批量并行。
+
+### 衡量收益
+
+省不省 token，取决于工具数量和任务形态。工具少、步骤简单时，输出 token 可能增加，延迟也可能变高。要下结论需要对照实验。社区里的数据大多来自单个场景。
+
+沙箱、转发、类型映射有现成方案；真正难的是让模型稳定写出该并行并行、该串行串行、只回传必要结果的脚本，并能量化效果。
+
+## 附：V8 isolate 是什么，为什么不直接 node script.js
+
+V8 是 Chrome 和 Node 使用的 JavaScript 引擎。isolate 是 V8 里面一块完全独立的 JavaScript 运行环境：有自己的堆和全局对象，彼此不能直接访问。它们待在同一个进程里，启动是毫秒级，比容器或虚拟机轻得多。Chrome 用它隔离网页，Cloudflare Workers 的多租户也用它。
+
+isolate 是语言层的隔离，不是操作系统一级的隔离。要防 V8 自身的漏洞，通常还要在外面再套一层进程沙箱。
+
+V8 本身只有 C++ API（`v8::Isolate`）。Codex 在 Rust 里通过 `rusty_v8` 绑定它。Node 里最接近的是 npm 包 `isolated-vm`：可以限制内存和超时，并且只注入指定的函数。`worker_threads` 里每个 Worker 有独立的 isolate 和自己的线程，但默认能用 `fs`、`net` 和 `require`；它是并发工具，不是沙箱。`vm` 模块只是在同一个 isolate 里新建一个 context，官方明确写明它不是安全机制。Deno，以及 Cloudflare 的 `workerd`，也是现成的 isolate 运行时。
+
+| 跑法 | 形态 | 默认能做什么 | 隔离 | 启动 |
+| --- | --- | --- | --- | --- |
+| `node script.js` | 完整进程 | `fs`、`net`、`child_process`、环境变量都有，权限等同当前用户 | 靠操作系统 | 几十毫秒 |
+| `worker_threads` | 同进程里的新线程，加上独立 isolate | 堆是独立的，但能力默认全开，包括 `fs`、`net`、`require` | 用来并发，不是沙箱 | — |
+| 裸 isolate | 同进程里只剩 JavaScript 语言能力 | 连 `console` 都没有；唯一出口是宿主注入的 `tools.xxx()` | 每次调用经宿主审批，可限制内存和超时 | 毫秒级 |
+
+模型写出的代码不可信。用 `node` 去跑，等于把这台电脑交给这段代码：它若读到带恶意指令的网页，就可能写出读取 `~/.ssh` 再 `fetch` 发出去，或者执行 `rm -rf`。Codex 原来按次工具调用做的审批和沙箱也会被绕过，宿主看不见。裸 isolate 里本来就没有 `fs`、`fetch`、`require`，代码只能通过 `tools` 请宿主代办。审批、沙箱和日志都还在，同时仍然可以用代码把多次调用串起来，少掉往返的 token。附带的好处是：每次 exec 都是全新环境，可以限制内存和超时来防死循环，跑完即弃，没有状态残留。
+
+一句话：`node` 是「代码能做一切」，isolate 是「代码只能请求宿主替它做事，宿主说了算」。
