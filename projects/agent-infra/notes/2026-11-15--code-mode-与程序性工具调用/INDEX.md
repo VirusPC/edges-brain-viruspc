@@ -74,5 +74,6 @@ MCP 和 Code Mode 叠在一起时，容易被看成“一种新协议”。实�
 
 - 原始材料：Grok Bot 与 peng cheng 的对话，时间范围 2026-11-15 20:20–20:26（Asia/Shanghai）；前置讨论 Pi 加入 MCP 的原因见姊妹笔记。
 - 相关笔记：[MCP 与 CLI 的选型](../2026-11-15--mcp-与-cli-的选型/INDEX.md) — 同一场对话里关于何时用 MCP、何时用 CLI，以及 Pi 为何在有 shell 的情况下仍加入 MCP。
+- 相关笔记：[Codex 的 Code Mode](../2026-11-17--codex-的-code-mode/INDEX.md) — Codex CLI 怎么开 Code Mode、公开来源里的省 token 数字、tools 如何注入，以及模型何时写脚本。
 - 相关笔记：[Anthropic Agent Memory 四层与做梦](../../../../notes/2026-11-13--anthropic-agent-memory-四层与做梦/INDEX.md) — 此前对 Anthropic 做梦机制的笔记，与本篇的 Code Mode 不是同一件事。
 - 官方与原始文章：[Code Mode: the better way to use MCP](https://blog.cloudflare.com/code-mode/)、[Programmatic tool calling](https://platform.claude.com/docs/en/agents-and-tools/tool-use/programmatic-tool-calling)、Earendil [“You Said No MCP!”](https://earendil.com/posts/you-said-no-mcp/)。
