@@ -143,6 +143,7 @@ skill 的名字和描述每个会话都在，读 `SKILL.md` 的正文也不因 C
 
 - 原始材料：2026-11-17 peng cheng 与 Grok Bot 的对话。源码核对点为 openai/codex `main` `46f5a1d`（2026-11-17）。曝光面见 commit [`51c9ed6d4f6665faa6c443dfa10a8460fd0edbdd`](https://github.com/openai/codex/commit/51c9ed6d4f6665faa6c443dfa10a8460fd0edbdd)。
 - 相关笔记：[Code Mode 与程序性工具调用](../2026-11-15--code-mode-与程序性工具调用/INDEX.md) — 名称从哪来、程序性工具调用和 Pi 的 `codemode` 各指什么，以及 MCP 与 Code Mode 的分工。本篇只写 Codex 的实现。
+- 相关笔记：[编码 Agent 的 Goal 机制](../2026-11-17--编码-agent-的-goal-机制/INDEX.md) — 同一天以 `/goal` 为对象，对照续跑、完成判定和兜底。本篇只写 Code Mode。
 - 官方配置：[Config reference](https://learn.chatgpt.com/docs/config-file/config-reference) — `features.code_mode` 标注 under development，默认关闭。
 - 省 token 的出处（都不是 Codex 官方的开/关对比）：[Anthropic](https://www.anthropic.com/research/code-execution-with-mcp)（150k→2k，-98.7%，挑选场景）、[Cloudflare](https://blog.cloudflare.com/code-mode-mcp/)（约 2500 端点，1.17M→约 1000）、[Bifrost](https://docs.getbifrost.ai/mcp/code-mode)（96 / 251 / 508 个工具）、[AIMultiple](https://aimultiple.com/code-execution-with-mcp)（总 token -77.4%，输出 +120%，延迟 +7%）、[openai/codex#35050](https://github.com/openai/codex/issues/35050)、[openai/codex#41450](https://github.com/openai/codex/issues/41450)。
 - 源码位置（`46f5a1d`）：`codex-rs/code-mode-runtime/src/runtime/globals.rs`（`install_globals`、`build_tools_object`）、`codex-rs/code-mode-runtime/src/runtime/callbacks.rs`（`tool_callback`）、`code-mode-protocol/src/description.rs`（`normalize_code_mode_identifier`、`EXEC_DESCRIPTION_TEMPLATE`）。
