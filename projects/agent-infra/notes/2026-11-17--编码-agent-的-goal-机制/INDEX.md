@@ -297,7 +297,7 @@ Only use status "blocked" when the same blocking condition has repeated for at l
 
 续跑 prompt 节选（`goalService.ts:144-163`）：做完有边界的一片就正常结束回合，不要调用 `UpdateGoal`。只有全部要求做完、该跑的验证过了、没有下一步，才 `complete`。非终局阻塞要同一条件连续 3 个 goal 回合。不可能、不安全、自相矛盾可以当轮 `blocked`。
 
-宿主（`updateGoalTool.ts:64-76`）：`complete` 调 `markComplete`，`blocked` 调 `markBlocked`。两者都要求当前是 active（`goalService.ts:451`、`464`），然后改状态并 `stopTurn: true`。没有 3 轮计数器。
+宿主（`updateGoalTool.ts:64-76`）：`complete` 调 `markComplete`，`blocked` 调 `markBlocked`。两者都要求当前是 active（`goalService.ts:451`、`464`），然后改状态并 `stopTurn: true`。没有 3 轮计数器。续跑怎么接回主循环、和通用 Stop hook 差在哪，见「Kimi 续跑机制深挖」。这里不重复。
 
 ### pi
 
@@ -331,7 +331,7 @@ while :; do cat PROMPT.md | claude-code ; done
 
 官方插件的 help 把示意循环写成了 `cat PROMPT.md | claude-code --continue`（`commands/help.md:15-17`），和原文不一致。插件真正执行的路径也不是这个 shell：README 写循环发生在当前会话里，Stop hook 拦住退出，把同一段 prompt 喂回去（`README.md:27`，`stop-hook.sh:179-188`）。
 
-dsh 的 goal 续跑是同会话 `followup`。README 写明：不 spawn 新 agent，不 fork 会话前缀，不做 Ralph 式独立尝试，那件事属于插件层（`goal-round-driver/README.md:108-126`）。压缩会把旧 round 挡住，续跑本身不另开会话。同仓库的实验工具 `dsh-tool-ralph` 才是每轮一个全新子会话，父对话和上一个子会话都不带过去，只交一份有界结构化报告，工作区是长期记忆（`packages/experimental/tool-ralph/src/index.ts:180-184`）。
+dsh 的 goal 续跑是同会话 `followup`。准确出处是 `packages/goal/goal-round-driver/README.zh.md` 第 126 行：「只在同一会话执行——此包有意不 spawn 新 agent、不 fork 会话前缀，也不实现 Ralph 风格的独立尝试；该工作流属于单独的插件层。」这里的插件层就是实验工具 `dsh-tool-ralph`：每轮一个全新子会话，父对话和上一个子会话都不带过去，只交一份有界结构化报告，工作区是长期记忆（`packages/experimental/tool-ralph/src/index.ts:180-184`）。压缩会把旧 round 挡住，goal 续跑本身不另开会话。英文 README 同段在 `goal-round-driver/README.md:126`。
 
 Codex 续跑是同一条 thread 的 `start_turn_if_idle`，不新开线程，也不在续跑时裁掉历史。压缩是会话自己的机制；用户目标说明在压缩边界另留一份，超长目标在这份证据里整段省略。fork 会复制目标快照，但是另一条路径，而且非临时 exec fork 可以推迟续跑。
 
@@ -351,7 +351,7 @@ Kimi 续跑是同一个 loop 再提交一条用户消息。提醒可以从完整
 4. 原版在产品外面。外层 shell 看不到目标状态，用户没法在产品里暂停、恢复、改目标，界面也不显示进度。`/goal` 把状态、审批、权限、恢复和计费放进宿主。
 5. 自动化风险。原版常和跳过审批的无人值守一起用。上面几家设目标都不改权限模式。
 
-Ralph 没有被换掉。它适合超长、可以按文件切块的批量任务，例如按清单改很多文件：干净的上下文是优点。它仍以插件或实验工具存在。dsh 的 goal README 明确不做这条，实验包里另有实现。
+Ralph 没有被换掉。它适合超长、可以按文件切块的批量任务，例如按清单改很多文件：干净的上下文是优点。它仍以插件或实验工具存在。dsh 的 goal 包在 `README.zh.md:126` 把 Ralph 风格的独立尝试划给单独的插件层，该层就是 `dsh-tool-ralph`。
 
 一句话：各家拿走自动续跑，把清空上下文和暗号判定换成同会话续跑和结构化判定，并加上宿主刹车。
 
@@ -359,7 +359,7 @@ Ralph 没有被换掉。它适合超长、可以按文件切块的批量任务�
 
 - Geoffrey Huntley，[Ralph Wiggum as a "software engineer"](https://ghuntley.com/ralph/)（2025-07-14）。纯形式就是上面的 bash 循环。
 - Anthropic 官方插件 [ralph-loop README](https://github.com/anthropics/claude-plugins-official/blob/fd30cee3ecd5a8ee772733c5d20c0f2bae2da2f0/plugins/ralph-loop/README.md) 引用这句话，并写明自己改成当前会话里的 Stop hook。
-- dsh [goal-round-driver README](https://github.com/deepseek-ai/deepseek-harness/blob/39163dd30f703a79079e2d2446545cff3c453738/packages/goal/goal-round-driver/README.md) 写不做 Ralph 式独立尝试。[工具目录里的 `ralph`](https://github.com/deepseek-ai/deepseek-harness/blob/39163dd30f703a79079e2d2446545cff3c453738/docs/tool-catalog.md) 写：每轮全新子会话，普通的长期同会话工作用 goal。
+- dsh [goal-round-driver README.zh.md 第 126 行](https://github.com/deepseek-ai/deepseek-harness/blob/39163dd30f703a79079e2d2446545cff3c453738/packages/goal/goal-round-driver/README.zh.md)：「只在同一会话执行——此包有意不 spawn 新 agent、不 fork 会话前缀，也不实现 Ralph 风格的独立尝试；该工作流属于单独的插件层。」插件层即 [dsh-tool-ralph](https://github.com/deepseek-ai/deepseek-harness/blob/39163dd30f703a79079e2d2446545cff3c453738/docs/tool-catalog.md)。
 - Claude Code 的 `/goal` 文档没有提到 Ralph。Codex 这次检出的 goal 代码里没有 Ralph 这个词。Kimi 的循环配置里有一个字段名 `maxRalphIterations`（`configSection.ts:16`），旁边没有解释它和 Ralph 技法的关系，所以不把它当成表态。
 
 ## 设计取舍
@@ -367,7 +367,7 @@ Ralph 没有被换掉。它适合超长、可以按文件切块的批量任务�
 1. 自评还是独立评估。自评便宜，而且看得到工作区里的真实文件；容易提前报完成，或卡住了还在空转。各家用很长的 completion audit 压这件事。Claude 的独立判官不容易自己骗自己，但只看对话、看不到文件，于是「证据必须出现在对话里」变成写条件的人的负担。
 2. 规则写在 prompt 里还是写进代码。Codex 那些高消耗事故都出在 prompt 挡不住调度器。dsh 把 blocked 门槛、谁能改状态、恢复后不自动续跑写进代码，是最直接的回应。
 3. 预算放在宿主还是放进语义。Codex 和 Kimi 由宿主计 token、轮数或时间，到点强制收尾。Claude 只能写进条件，让评估器判，结果不确定。
-4. 同会话续跑还是每次新会话。原生 `/goal` 都是同会话，靠压缩。Ralph 式新会话加文件系统传状态，留在插件或实验工具。dsh 的 goal README 写明 goal 不做。
+4. 同会话续跑还是每次新会话。原生 `/goal` 都是同会话，靠压缩。Ralph 式新会话加文件系统传状态，留在插件或实验工具。dsh 的 `goal-round-driver/README.zh.md:126` 写明这个包不做 Ralph 风格的独立尝试，该工作流属于单独的插件层，即 `dsh-tool-ralph`。
 5. 安全。目标文本都当不可信数据：Codex 用 `Untrusted`，Kimi 用 `<untrusted_objective>`。设目标都不改审批策略。
 
 ## 为什么模型没有 delete_goal
@@ -435,6 +435,133 @@ Codex 自 0.128.0 起有 Goals，这个版本号来自 cookbook 搜索摘要，�
 `features.goals` 的默认开关、4000 字上限、`goals_1.sqlite` 路径、exec fork 推迟续跑、`extension.rs:423` 的注释，本轮没有重开那些文件。
 
 社区仓库里是否流行 `progress.md` 这个文件名，本轮没有另查。Huntley 原文用的是 `fix_plan.md`。
+
+## Kimi 续跑机制深挖
+
+本节只读 [MoonshotAI/kimi-code@2931c7efd542a7cb2486faec0fc35bc2fde0f533](https://github.com/MoonshotAI/kimi-code/commit/2931c7efd542a7cb2486faec0fc35bc2fde0f533)。行号以这次检出为准。完成判定的对照仍在「模型怎么判断完成」，这里补续跑怎么接进主循环。
+
+### 续跑不走 Stop hook
+
+goal 模块在主 agent 上订阅主循环的 `TurnEnded`（`goalService.ts:1268`）。回调在 `1215-1219` 行，把事件交给 `handleTurnEnded`，失败则 `settleGoalAfterContinuationFailure`。
+
+`handleTurnEnded`（`645-678`）的顺序比「先处理一切异常」更细：
+
+1. 若这回合是「恢复时循环还在跑、等它结束再续」的 `resumeContinuation`，并且原因是 `cancelled`：目标不是这个 active goal 就返回；预算到了就返回；否则 `launchContinuationTurn` 并返回（`652-659`）。这是恢复路径，不是下面的异常结算。
+2. 这回合没有 goal id 就返回（`661`）。
+3. 若不是「单轮步数到顶」，且原因是 `blocked`、`cancelled` 或 `failed`，调用 `settleAbnormalTurn` 后返回（`662-670`）。`settleAbnormalTurn`（`707-724`）里：`blocked` 记成被 `UserPromptSubmit` hook 拦住；`cancelled` 调用 `pauseOnInterrupt`；`failed` 按错误前缀暂停。
+4. 若这是目标的起始回合，给轮数加一（`672`）。
+5. 状态不是这个 active goal 就返回（`674-675`）。
+6. `blockIfBudgetReached` 非空就返回（`676`）。
+7. 否则 `launchContinuationTurn`（`677`）。
+
+`launchContinuationTurn`（`749-781`）先确认目标仍 active，并且没有已经排队的 `pendingContinuation`。然后用 `IAgentLoopService.submit` 往同一个主循环提交一条用户消息。`origin` 是 `system_trigger` / `goal_continuation`（`105-108`）。
+
+```ts
+const { id } = loop.submit({
+  role: 'user',
+  content: message.content,
+  attributes: { origin: message.origin },
+});
+```
+
+`loop.submit` 进的是 `inbox.normal`，不是 Stop hook 用的 `inbox.notify`。邮箱的 `submit` 把消息推进 `normal`（`packages/core/src/loop/loop-actor.ts:155-159`）。服务层在循环还在、且不在 quiescence 时直接 `this.loop.submit`；否则先放进 `pendingSubmissions`（`loopService.ts:907-915`）。
+
+### 和通用 Stop hook 的差别
+
+通用 Stop hook 在 `agentExternalHooksService.ts` 的 `registerLoopHooks`（`264-288`）。它挂在 `onDidFinishStep`，并且先 `await next()`。然后若 `finishReason` 是 `tool_calls` 或 `filtered`，或者 `snapshot().hasPendingRequests`，直接返回。否则 `runStop`（`437-448`）。`stopHookContinuationUsed` 已经是 true 就不再跑脚本；跑完若有 `reason`，把标志设为 true，并 `loop.notify` 一条 `origin` 为 `stop_hook` 的用户消息。`TurnEnded` 时把这个标志清掉（`414-415`），所以一轮里 Stop 续跑只用一次。
+
+`loop.notify` 进的是 `inbox.notify`（`loop-actor.ts:162-166`）。新回合只在循环 `idle`、没有挂起、也没有未完成的工具完成时才会从邮箱取消息（`canSchedule`，`566-568`）。`take()` 优先拿 `inbox.normal`，没有才拿 `notify`（`222-239`）。因此 Stop hook 的 `reason` 不会插回当前 step：当前回合结束后，它成为下一次 `schedule()` 拉起的回合，`trigger` 是 `notify`。若一步本来还要因为工具调用继续、而邮箱里已经有 notify，`finalizeStep` 会把这一步收成 `done`、原因 `notify`，从而结束当前回合（`1845-1855`）。Stop 脚本自己不会在 `tool_calls` 时运行，这条是别的 notify 来源碰到的。
+
+goal 的 `submit` 进 `inbox.normal`，同样要等当前回合结束、循环空闲后才起下一回合。效果上，两者都是「这一轮停了，再喂一条用户消息让模型接着做」。goal 靠目标状态决定喂不喂，Stop hook 靠用户配置的脚本决定喂不喂。和 Claude `/goal` 的差别仍是谁判完成：Kimi 是主模型自己调 `UpdateGoal`；Claude 是另一个小模型看对话。
+
+队列里 `normal` 和 `notify` 谁先被取，上面只读了 `take()` 的优先顺序。`steer` 把 `normal` 挪进 `notify`、`promptOnly`、脱离的工具完成再 `queue` 进 notify，这些交错没有逐行追完。
+
+### 时序
+
+`turn.ended` 记在 `finishTurn` 里（`loop-actor.ts:1873`）。记完才把 phase 改成 `idle`，然后 `schedule()`（`1877-1884`）。goal 的 `submit` 若发生在这次 `schedule` 之前，消息已经在 `inbox.normal` 里，随后这次 `schedule` 就能把它拉起来；若循环当时还在跑，`canSchedule` 为假，消息留在邮箱，等空闲再起。`launchContinuationTurn` 用 `pendingContinuation` 挡住重复提交，并用 `promptHandle` 的 `launched` / `completion` 记下回合 id、结束时清掉这笔排队（`771-781`）。`canLaunchContinuation`（`784-788`）要求没有 `liveTurnId`、没有 `pendingContinuation`，并且循环快照是 `idle` 且没有 pending。它用在用户恢复目标时（`396-398`），`handleTurnEnded` 本身不调用它。
+
+### 流程
+
+```mermaid
+flowchart TD
+  A[用户消息或 goal_continuation] --> B[inbox.normal]
+  B --> C[循环 idle 时 schedule 起新回合]
+  C --> D[step]
+  D --> E{finishReason 是 tool_calls 或 filtered 或还有 pending?}
+  E -->|是| F[不跑 Stop 脚本]
+  E -->|否| G[runStop]
+  G --> H{本回合还没用过且脚本返回 reason?}
+  H -->|是| I[loop.notify 进入 inbox.notify]
+  H -->|否| J[回合结束 turn.ended]
+  F --> J
+  I --> J
+  J --> K[goal 的 handleTurnEnded]
+  K --> L{无目标或异常或非 active 或预算到了或已有排队?}
+  L -->|是| M[暂停或 blocked 或直接返回]
+  L -->|否| N[submit 回 inbox.normal]
+  N --> B
+  I --> O[当前回合结束后再起 trigger 为 notify 的回合]
+```
+
+### 续跑提示原文
+
+`GOAL_CONTINUATION_PROMPT`（`goalService.ts:136-165`）：
+
+```text
+Continue working toward the active goal.
+Keep the self-audit brief. Do not explore unrelated interpretations once the goal can be
+decided. If the objective is simple, already answered, impossible, unsafe, or contradictory,
+do not run another goal turn. Explain briefly if useful, then call UpdateGoal with `complete`
+or `blocked` in the same turn. Otherwise, weigh the objective and any completion criteria
+against the work done so far, choose one bounded, useful slice of work, and use the existing
+conversation context and your tools. Do not try to finish a broad goal in one turn unless the
+whole goal is genuinely small. Most goal turns should not call UpdateGoal: after completing a
+useful slice, if material work remains, end the turn normally without calling UpdateGoal so
+the runtime can continue the goal in the next turn. Call UpdateGoal with `complete` only when
+all required work is done, any stated validation has passed, and there is no useful next
+action. Completion audit: before calling `complete`, verify the current state against the
+actual objective and every explicit requirement. Treat weak or indirect evidence as not
+complete. Do not mark complete after only producing a plan, summary, first pass, or partial
+result. Do not mark complete merely because a budget is nearly exhausted or you want to stop.
+Blocked audit: do not call UpdateGoal with `blocked` the first time you hit a blocker. Use
+`blocked` only for a genuine impasse: an external condition, required user input, missing
+credentials or permissions, or a persistent technical failure. For those non-terminal
+blockers, the same blocking condition must repeat for at least 3 consecutive goal turns before
+you call `blocked`, counting the original/user-triggered turn and automatic continuations.
+If a previously blocked goal is resumed, treat the resumed run as a fresh blocked audit.
+Exception: if the objective itself is impossible, unsafe, or contradictory, call UpdateGoal
+with `blocked` in the same turn; do not run more goal turns just to satisfy the audit. Do not
+use `blocked` because the work is large, hard, slow, uncertain, incomplete, still needs
+validation, would benefit from clarification, or needs more goal turns. Once the 3-turn
+threshold is met and you cannot make meaningful progress without user input or an
+external-state change, call UpdateGoal with `blocked`; do not keep reporting the blocker while
+leaving the goal active. Do not ask the user for input unless a real blocker prevents progress.
+```
+
+分段要点：
+
+- 继续做当前目标。能当轮判定的简单、已完成、不可能、不安全或自相矛盾，不要再开一轮，直接 `UpdateGoal`。
+- 否则只做一小片。大多数回合不要调用 `UpdateGoal`，正常结束，让运行时下一回合再来。
+- `complete` 只在要求都做完、该有的验证过了、没有下一步时使用。证据弱、只有计划或半成品、预算快用完、自己想停，都不算完成。
+- `blocked` 第一次碰到障碍不要报。非终局障碍要同一条件连续 3 个 goal 回合。恢复后的 blocked 审计重新计数。不可能、不安全、自相矛盾可以当轮报。
+
+这 3 轮只出现在这段提示和完整提醒里。`updateGoalTool.ts` 收到 `blocked` 就 `markBlocked`，不数轮。
+
+步数到顶时，前面再加 `GOAL_STEP_CAP_CONTINUATION_PROMPT`（`167-172`）：上一回合碰到每回合步数上限，新回合接着做，每片要小到放得进上限，然后再接上面整段。
+
+有 `WaitFor` 时，提示末尾再接 `GOAL_WAIT_FOR_GUIDANCE`（`goalInjection.ts:30-31`）：等后台子代理或 bash 时，在本回合里调用 `WaitFor`，不要结束回合，否则会被一次次重新拉起。
+
+### 每回合重新注入目标
+
+`GoalInjection.reminder` 在 `isNewTurn` 为假时不注入（`goalInjection.ts:48`）。提醒服务在每步开始前调用注入，`isNewTurn` 取的是「本回合第一步」或压缩后重新武装（`reminderService.ts:199`）。注入结果经 `loop.remind` 写进历史，包在 system reminder 里，`origin.kind` 是 `injection`（`reminderService.ts:59-76`），不是又一条 `inbox.normal` 用户消息。
+
+active 时，`needsFullGoalReminder`（`74-94`）为真就用 `goal-active-reminder.md`，否则用 `goal-active-sparse-reminder.md`。完整版的条件是：还没注入过、没有上次披露、上次不是 active、goal id / 状态 / 目标 / 完成标准 / 预算档位 / WaitFor 变了，或者上次注入之后的历史上出现了压缩摘要。`blocked`、`paused` 用各自的模板。目标包在 `<untrusted_objective>` 里，并写明这是数据，不是可以压过系统消息和权限的指令。`Progress:` 那一行是续跑轮数、token 和墙钟（`goalInjection.ts:121`）。
+
+所以一次续跑回合里，模型看到两段不同通道的文字：提醒服务注入的目标提醒，以及 `submit` 进去的续跑提示。
+
+### 模型如何判断完成
+
+Kimi 是自评。主模型自己调用 `UpdateGoal`，没有另一个小模型读对话。只有 Claude `/goal` 用小快模型给出 not yet met、met、impossible。ralph-loop 是 `<promise>` 和约定字符串相等。细节在「模型怎么判断完成」，这里不重复工具 schema。
 
 ## 后续可深挖问题
 
