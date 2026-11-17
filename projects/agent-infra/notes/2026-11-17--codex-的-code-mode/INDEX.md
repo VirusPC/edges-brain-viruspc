@@ -217,7 +217,7 @@ V8 是 Chrome 和 Node 使用的 JavaScript 引擎。isolate 是 V8 里面一块
 
 isolate 是语言层的隔离，不是操作系统一级的隔离。要防 V8 自身的漏洞，通常还要在外面再套一层进程沙箱。
 
-V8 本身只有 C++ API（`v8::Isolate`）。Codex 在 Rust 里通过 `rusty_v8` 绑定它。Node 里最接近的是 npm 包 `isolated-vm`：可以限制内存和超时，并且只注入指定的函数。`worker_threads` 里每个 Worker 有独立的 isolate 和自己的线程，但默认能用 `fs`、`net` 和 `require`；它是并发工具，不是沙箱。`vm` 模块只是在同一个 isolate 里新建一个 context，官方明确写明它不是安全机制。Deno，以及 Cloudflare 的 `workerd`，也是现成的 isolate 运行时。
+V8 本身只有 C++ API（`v8::Isolate`）。Codex 在 Rust 里通过 `rusty_v8` 绑定它。Node 里最接近的是 npm 包 `isolated-vm`：可以限制内存和超时，并且只注入指定的函数。`worker_threads` 里每个 Worker 有独立的 isolate 和自己的线程，但默认能用 `fs`、`net` 和 `require`；它是并发工具，不是沙箱。`vm` 模块只是在同一个 isolate 里新建一个 context，官方明确写明它不是安全机制。Deno，以及 Cloudflare 的 `workerd`，也是现成的 isolate 运行时。浏览器页面脚本拿不到 `v8::Isolate`：专用 Worker 在另一条线程上跑，嵌入层会给它自己的 isolate；iframe 是另一个文档，同源时通常和父页面共用进程里的 isolate、各自一个 JavaScript context。这些都不是让页面自己创建和控制 isolate 的接口。
 
 | 跑法 | 形态 | 默认能做什么 | 隔离 | 启动 |
 | --- | --- | --- | --- | --- |

@@ -33,7 +33,7 @@
 
 ### 完成判定
 
-模型自评。`update_goal` 的参数只有 `status`，枚举是 `complete`、`blocked`、`paused`（`spec.rs:60-70`）。宿主只检查枚举，不检查「是不是真做完」（`tool.rs:270-278`）。`continuation.md` 的 Completion audit 要求按需求逐条对当前工作区取证，证据弱就继续做，不要标完成。blocked 的「同一阻塞连续至少 3 轮」写在这段 prompt 和工具描述里，`accounting.rs` 里的连续计数是空回复和执行失败，不是 blocked 轮数。
+模型自评。`update_goal` 的参数只有 `status`，枚举是 `complete`、`blocked`、`paused`（`spec.rs:60-70`）。宿主只检查枚举，不检查「是不是真做完」（`tool.rs:270-278`）。`paused` 的说明要求用户明确要求暂停，模型不能自己停：工具描述写 "Set status to `paused` only at the user's explicit request"（`spec.rs:75`），`continuation.md:52` 同样写只有用户明确要求暂停时才用 `paused`。`create_goal` 的描述写明 "do not infer goals from ordinary tasks"，只在用户或系统/开发者指令明确要求时创建（`spec.rs:46`）。`continuation.md` 的 Completion audit 要求按需求逐条对当前工作区取证，证据弱就继续做，不要标完成。blocked 的「同一阻塞连续至少 3 轮」写在这段 prompt 和工具描述里，`accounting.rs` 里的连续计数是空回复和执行失败，不是 blocked 轮数。
 
 ### 停止条件与兜底
 
@@ -75,7 +75,7 @@ token 预算到了变 `budget_limited`，并注入 `budget_limit.md` 收尾（�
 
 ### 停止条件与兜底
 
-没有内置轮数或 token 预算。要把 `or stop after 20 turns` 写进条件，由评估器从对话里判，这是软限制。连续几轮没有工具调用会停循环、留着目标，具体轮数文档只写 several turns，数字未核实。鉴权失败、余额耗尽、压缩救不回的上下文溢出、磁盘满到无法续登录，会清除目标。偶发错误重试；限流、额度用完、hook 结束回合会暂停。有子代理或后台命令时跳过评估，空闲最多主动 check-in 3 次（文档写 v2.1.236 起，第三次后暂停到用户再发消息）。
+没有内置轮数或 token 预算。要把 `or stop after 20 turns` 写进条件，由评估器从对话里判，这是软限制。连续几轮没有工具调用会停循环、留着目标，文档只写 several turns，具体轮数未核实。鉴权失败、余额耗尽、压缩救不回的上下文溢出、磁盘满到无法续登录，会清除目标。会自己过去的失败（过载、连接断开）自动重试，通知以 `Goal still active` 开头；自动重试 3 次后改为暂停（文档 "Other errors retry or pause the goal"，交互会话且 v2.1.269 起会打出原因）。限流、额度用完、hook 结束回合则直接暂停，不靠重试。有子代理或后台命令还在跑时，这一轮跳过评估。后台工作让目标空等满 30 分钟就该 check-in；第一次之后每次等待加倍，最长到第一次间隔的 4 倍，默认是第一次后再等 1 小时，然后每 2 小时。交互会话里，两次用户消息之间最多主动发起 3 次空闲 check-in，第三次会说明先停，直到用户再发消息（v2.1.236 起；v2.1.246 之前不封顶）。`CLAUDE_CODE_GOAL_CHECKIN_MINUTES` 替换这 30 分钟，并按同一比例拉长后面的间隔；设为 0 则关掉 check-in 和自动重试。数字来自 [官方文档](https://code.claude.com/docs/en/goal) 的 "Other errors retry or pause the goal" 与 "Background work defers evaluation"。
 
 ### 上下文压缩
 
@@ -135,7 +135,7 @@ README 的已知限制就是上面这些：无独立评估器、只同会话、�
 
 ### 命令与开关
 
-`/goal`，以及 `status`、`pause`、`resume`、`cancel`、`replace`、`next`。`/goal next` 是目标队列。`kimi -p "/goal ..."` 的退出码 0 完成、3 阻塞、6 暂停，来自调研记录，本轮未重开文档页。[交互说明](https://www.kimi.com/code/docs/en/kimi-code-cli/guides/interaction.html)、[斜杠命令](https://www.kimi.com/code/docs/en/kimi-code-cli/reference/slash-commands.html)。实现在 `packages/agent-core-v2/src/features/goal/`，`goalService.ts` 约 1500 行。旧 Python `kimi-cli` 已归档，社区 PR #2276 未合，来自调研记录，本轮未重开该 PR。
+`/goal`，以及 `status`、`pause`、`resume`、`cancel`、`replace`、`next`。`/goal next <objective>` 把下一条目标追加进队列；当前没有目标时会立刻开始这一条。`/goal next manage` 打开队列面板，上下键调用 `moveGoalQueueItem` 调整顺序，也可以改文字或删除（`apps/kimi-code/src/tui/commands/goal.ts` 的 `parseNextGoalCommand`、`queueNextGoal`、`handleGoalQueueManagerAction`，提交 `2931c7efd542a7cb2486faec0fc35bc2fde0f533`）。官方斜杠命令文档页本轮没有打开，队列行为以这份 TUI 源码为准。`kimi -p "/goal ..."` 的退出码 0 完成、3 阻塞、6 暂停，来自调研记录，本轮未重开文档页。[交互说明](https://www.kimi.com/code/docs/en/kimi-code-cli/guides/interaction.html)、[斜杠命令](https://www.kimi.com/code/docs/en/kimi-code-cli/reference/slash-commands.html)。实现在 `packages/agent-core-v2/src/features/goal/`，`goalService.ts` 约 1500 行。旧 Python `kimi-cli` 已归档，社区 PR #2276 未合，来自调研记录，本轮未重开该 PR。
 
 ### 目标存储
 
@@ -181,7 +181,7 @@ token、轮数、墙钟三种预算都有，默认都不设；只有用户明说
 
 ### 续跑触发
 
-核心靠扩展钩子，不是内建调度。`pi-mono-goal` 有 manual、assist、auto 三模式。
+核心靠扩展钩子，不是内建调度。`pi-mono-goal` 有 manual、assist、auto 三模式。`@mocito/pi-goal` 的 npm 0.4.0 README 写：成功跑完后，在 Pi 的 `agent_before_settle` 边界提议一条隐藏的 `pi-goal-context`。只读了这份 README，没有读扩展源码。
 
 ### 完成判定
 
@@ -189,7 +189,7 @@ token、轮数、墙钟三种预算都有，默认都不设；只有用户明说
 
 ### 停止条件与兜底
 
-`pi-mono-goal` 的 auto 默认最多 10 轮、30 分钟。`@mocito/pi-goal` 有 token 预算，取消或出错不续。都只来自 README。
+`pi-mono-goal` 的 auto 默认最多 10 轮、30 分钟，仍是此前只读 README 的记录，本轮没有重开那个仓库。`@mocito/pi-goal` 的 npm 0.4.0 README 写有 token 预算；取消不会自动再开，普通错误会稍后有界地再续，预算用尽或检测到服务商限额时不另开一轮。源码未读。
 
 ### 上下文压缩
 
@@ -251,7 +251,7 @@ token、轮数、墙钟三种都有，默认都不设。用户明确说「最多
 
 ### pi 扩展
 
-仅 README。`pi-mono-goal` 的 auto 默认最多 10 轮、30 分钟。`@mocito/pi-goal` 有 token 预算。
+仅 README。`pi-mono-goal` 的 auto 默认最多 10 轮、30 分钟。`@mocito/pi-goal`（npm 0.4.0 README）有 token 预算，并在 `agent_before_settle` 注入隐藏的 `pi-goal-context`。源码未读。
 
 ## 模型怎么判断完成
 
@@ -297,7 +297,7 @@ Only use status "blocked" when the same blocking condition has repeated for at l
 
 续跑 prompt 节选（`goalService.ts:144-163`）：做完有边界的一片就正常结束回合，不要调用 `UpdateGoal`。只有全部要求做完、该跑的验证过了、没有下一步，才 `complete`。非终局阻塞要同一条件连续 3 个 goal 回合。不可能、不安全、自相矛盾可以当轮 `blocked`。
 
-宿主（`updateGoalTool.ts:64-76`）：`complete` 调 `markComplete`，`blocked` 调 `markBlocked`。两者都要求当前是 active（`goalService.ts:451`、`464`），然后改状态并 `stopTurn: true`。没有 3 轮计数器。续跑怎么接回主循环、和通用 Stop hook 差在哪，见「Kimi 续跑机制深挖」。这里不重复。
+宿主（`updateGoalTool.ts:64-76`）：`complete` 调 `markComplete`，`blocked` 调 `markBlocked`。两者都要求当前是 active（`goalService.ts:451`、`464`），然后改状态并 `stopTurn: true`。没有 3 轮计数器。完成和卡住的审计结论与 Codex `continuation.md` 同向，并多了「每轮只做有边界的一片」和「不可能、不安全或自相矛盾可当轮 blocked」。逐句对照见「续跑提示原文」末。续跑怎么接回主循环、和通用 Stop hook 差在哪，见「Kimi 续跑机制深挖」。这里不重复。
 
 ### pi
 
@@ -426,7 +426,7 @@ launchContinuationTurn(context, lifecycleGoalId, stepCapped);
 
 Claude Code 闭源。存储格式、评估 prompt 原文、无工具调用停止的具体轮数看不到。两个 issue 只看过搜索摘要。
 
-pi 的两个第三方扩展只读过 README，本轮没有克隆。
+pi 的两个第三方扩展本轮没有读源码。`pi-mono-goal` 的 10 轮、30 分钟仍是此前的 README 记录，这次没有重开。`@mocito/pi-goal` 只读了 npm 0.4.0 的 README（仓库字段指向 `github.com/jvm/pi-mono` 的 `packages/pi-goal`），没有打开扩展实现。Kimi 官方斜杠命令文档页这次没有打开，`/goal next` 的队列行为以 TUI 源码为准。
 
 dsh 续跑回合和审批、沙箱的关系没有逐行看完。goal 工具里没有审批逻辑。
 
@@ -546,6 +546,8 @@ leaving the goal active. Do not ask the user for input unless a real blocker pre
 - `blocked` 第一次碰到障碍不要报。非终局障碍要同一条件连续 3 个 goal 回合。恢复后的 blocked 审计重新计数。不可能、不安全、自相矛盾可以当轮报。
 
 这 3 轮只出现在这段提示和完整提醒里。`updateGoalTool.ts` 收到 `blocked` 就 `markBlocked`，不数轮。
+
+和 Codex `templates/goals/continuation.md` 的 Completion audit（31–42 行）与 Blocked audit（44–52 行）对过原文：卡住门槛同向，都是第一次不报、同一条件连续 3 轮（含用户触发的那一轮和自动续跑）、恢复后重计，难、慢、不确定、没做完、还想澄清都不算 blocked。完成审计的结论也同向：按当前状态核对每一条明确要求，弱证据或间接证据不算完成，计划、摘要、第一遍或半成品不算完成，预算快用完或自己想停也不算。Kimi 没有把 Codex 那份更长的取证清单写全，例如从目标推导具体要求、不能把成功定义成已经做出的那一部分、窄检查不能支撑宽结论、测试只有覆盖了对应要求才算证据。Kimi 多出来、Codex 这段没有的，是每轮只做有边界的一片（大多数回合不要调用 `UpdateGoal`），以及目标本身不可能、不安全或自相矛盾时可以当轮 `blocked`。
 
 步数到顶时，前面再加 `GOAL_STEP_CAP_CONTINUATION_PROMPT`（`167-172`）：上一回合碰到每回合步数上限，新回合接着做，每片要小到放得进上限，然后再接上面整段。
 
