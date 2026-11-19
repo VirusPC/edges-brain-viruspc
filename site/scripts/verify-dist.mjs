@@ -60,7 +60,10 @@ assert.match(home, /recent-posts/);
 assert.match(home, /recent-notes/);
 assert.match(home, /recent-projects/);
 assert.match(home, /class="post-list"/);
-assert.match(home, />open-grokbot 全程坑点</);
+const recentNotes = home.match(/<section class="home-notes[\s\S]*?<\/section>/)?.[0] ?? '';
+assert.match(recentNotes, /<time datetime="\d{4}-\d{2}-\d{2}">/);
+assert.match(recentNotes, /<a href="[^"]+\/notes\/[^"]+">[^<]+<\/a>/);
+assert.doesNotMatch(recentNotes, />\d{4}-\d{2}-\d{2}--/);
 assert.doesNotMatch(home, /class="dash"|entry-list|note-kicker/);
 assert.match(home, /Projects/);
 
