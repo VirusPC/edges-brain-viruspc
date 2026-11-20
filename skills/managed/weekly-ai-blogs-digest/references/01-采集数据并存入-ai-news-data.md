@@ -8,7 +8,7 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `feeds.json` | `fetch_feeds.py --out` 的全文。`summary` 不截断。一份文件，不再另存截断版。 |
+| `feeds.json` | `fetch_feeds.py --out` 的全文，就是 feed 给出的正文，不截断，也不打开文章页去补。一份文件，不再另存截断版。`thin` 表示这条不足 280 字或为空，原样保留。 |
 | `feeds.index.json` | `--index-out`。只有标题、日期、链接、来源、`thin` 和开头约 400 字。选文只读这一份。 |
 | `github-trending.json` | 从同一次抓取里抽出 `github-trending-daily-all` 的全文。`fetch_feeds.py` 会按日期和标题重排，所以数组顺序不是榜上名次。其它 Trending 分类只留在 `feeds.json`。 |
 | `aa-language-models.json` | Artificial Analysis 免费接口全量精简字段。 |
@@ -58,5 +58,7 @@ $PY scripts/fetch_openrouter.py --since YYYY-MM-DD --until YYYY-MM-DD \
 ```
 
 模型发布 facts 在有 OpenRouter 与 AA 快照之后整理进 `model-releases.json`。价格先用发布原文，否则用 OpenRouter 官方提供商；速度用 endpoints 的 `latency_last_30m.p50` 和 `throughput_last_30m.p50`；智力指数用 AA 免费接口。缺的写「暂无」。
+
+相信这份订阅。采集不因为正文偏短去打开文章页。feed 里是简介，快照里就记简介。
 
 抓完更新 `manifest.json` 的 `files` 和说明。提交到 ai-news-data 并开 PR，不合并。撰写步骤等这份快照在分支上可读之后再开始。

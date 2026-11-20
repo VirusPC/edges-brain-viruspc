@@ -4,7 +4,8 @@
 OPML is the subscription source of truth. ``feeds/ai-coding-blogs.meta.json``
 holds agent-only notes (lane, fallback policy, BestBlogs match, hosts). Sources
 without a usable feed are not in the OPML; this script lists them under
-``fallbacks`` and does not scrape their HTML.
+``fallbacks`` and does not scrape their HTML. A short feed body stays short:
+this script never opens the article page to fill it in.
 
 Install: Python 3.12 venv, then ``pip install -r requirements.txt`` (feedparser).
 The skill section「运行环境」也把榜单依赖装进同一个环境。
@@ -41,7 +42,7 @@ DEFAULT_OPML = ROOT / "feeds" / "ai-coding-blogs.opml"
 DEFAULT_META = ROOT / "feeds" / "ai-coding-blogs.meta.json"
 
 USER_AGENT = "edges-weekly-ai-blogs-digest/1.0 (+https://github.com/VirusPC/edges-brain-viruspc)"
-THIN_CHARS = 280
+THIN_CHARS = 280  # 只标记 feed 正文偏短，不触发文章页补抓
 PREVIEW_CHARS = 400
 DEFAULT_TIMEOUT = 40
 DEFAULT_WORKERS = 6

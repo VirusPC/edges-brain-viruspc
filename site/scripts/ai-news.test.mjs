@@ -136,6 +136,7 @@ test('item titles link to the source and quote blocks are gone', () => {
         assert.equal(links.length, 1, `merged article: ${item.slice(0, 80)}`);
         const details = item.match(/<details class="article-more">[\s\S]*?<\/details>/g) || [];
         if (details.length === 0) {
+          assert.match(item, /订阅源里只有这些/);
           unread += 1;
           continue;
         }
@@ -146,8 +147,9 @@ test('item titles link to the source and quote blocks are gone', () => {
         }
         folded += 1;
       }
-      assert.equal(folded, 33);
-      assert.equal(unread, 0);
+      assert.equal(folded, 30);
+      assert.equal(unread, 3);
+      assert.equal((selected.match(/订阅源里只有这些/g) || []).length, 3);
       assert.doesNotMatch(selected, /微信原文这次没打开|这次没打开原文/);
     }
   }
