@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import fs from 'node:fs';
 import {
   categoriesPresent,
   filterChips,
+  isFilterStuck,
   itemMatches,
   nextFilter,
   parseFilter,
@@ -62,6 +64,23 @@ test('search keeps unrelated params and drops the filter when cleared', () => {
   assert.equal(toSearch({ kind: 'cat', value: '产品' }, ''), '?cat=%E4%BA%A7%E5%93%81');
   assert.equal(toSearch({ kind: 'tag', value: 'DeepSeek' }, '?from=share'), '?from=share&tag=DeepSeek');
   assert.equal(toSearch({ kind: 'all' }, '?cat=%E4%BA%A7%E5%93%81&from=share'), '?from=share');
+});
+
+test('a stuck filter should return to the chapter, a resting one should not', () => {
+  assert.equal(isFilterStuck(0, 0), true);
+  assert.equal(isFilterStuck(1, 0), true);
+  assert.equal(isFilterStuck(48, 0), false);
+  assert.equal(isFilterStuck(12, 16), true);
+});
+
+test('the filter sticks inside the chapter and becomes one scrolling row on a phone', () => {
+  const css = fs.readFileSync(new URL('../src/styles/ai-news-filter.css', import.meta.url), 'utf8');
+  assert.match(css, /\.ai-news-selected\s*\{[^}]*display:\s*flow-root/);
+  assert.match(css, /position:\s*sticky/);
+  assert.match(css, /top:\s*var\(--ai-news-filter-top,\s*0px\)/);
+  assert.match(css, /background:\s*var\(--paper\)/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*flex-wrap:\s*nowrap/);
+  assert.match(css, /overflow-x:\s*auto/);
 });
 
 test('a category hides other sections and a free tag matches that tag only', () => {

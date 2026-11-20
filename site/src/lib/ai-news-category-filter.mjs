@@ -49,6 +49,11 @@ export function toSearch(filter, currentSearch = '') {
   return text ? `?${text}` : '';
 }
 
+/** True when a sticky bar is pinned to its top offset, not sitting in normal flow. */
+export function isFilterStuck(barTop, stickyTop, tolerance = 2) {
+  return barTop <= stickyTop + tolerance;
+}
+
 export function itemMatches(item, filter) {
   if (!filter || filter.kind === 'all') return true;
   if (filter.kind === 'cat') return item.cat === filter.value;
@@ -63,6 +68,26 @@ export function sectionPlan(sections, filter) {
     return { id: section.id, show, items };
   });
   return { any: planned.some((section) => section.items.some((item) => item.show)), sections: planned };
+}
+
+function encloseChapter(heading) {
+  const wrapper = heading.ownerDocument.createElement('div');
+  wrapper.className = 'ai-news-selected';
+  const nodes = [];
+  let cursor = heading.nextElementSibling;
+  while (cursor && cursor.tagName !== 'H2') {
+    nodes.push(cursor);
+    cursor = cursor.nextElementSibling;
+  }
+  heading.after(wrapper);
+  for (const node of nodes) wrapper.append(node);
+  return wrapper;
+}
+
+function stickyOffset(view, bar) {
+  const top = view.getComputedStyle(bar).top;
+  const value = Number.parseFloat(top);
+  return Number.isFinite(value) ? value : 0;
 }
 
 function textOf(node) {
@@ -169,12 +194,14 @@ export function mountCategoryFilter(doc) {
   bar.className = 'ai-news-filter';
   bar.setAttribute('role', 'group');
   bar.setAttribute('aria-label', '筛选精选文章');
+  const row = doc.createElement('div');
+  row.className = 'ai-news-filter-row';
   const all = doc.createElement('button');
   all.type = 'button';
   all.className = 'ai-news-filter-all';
   all.dataset.filter = 'all';
   all.textContent = '全部';
-  bar.append(all);
+  row.append(all);
   for (const name of present) {
     const button = doc.createElement('button');
     button.type = 'button';
@@ -182,15 +209,17 @@ export function mountCategoryFilter(doc) {
     button.dataset.filter = 'cat';
     button.dataset.cat = name;
     button.textContent = name;
-    bar.append(button);
+    row.append(button);
   }
+  bar.append(row);
   const status = doc.createElement('p');
   status.className = 'ai-news-filter-status';
   status.hidden = true;
   status.textContent = '没有匹配的条目';
   bar.append(status);
 
-  chapter.heading.after(bar);
+  const wrapper = encloseChapter(chapter.heading);
+  wrapper.prepend(bar);
 
   let filter = parseFilter(doc.defaultView?.location?.search || '');
 
@@ -214,9 +243,12 @@ export function mountCategoryFilter(doc) {
   };
 
   const choose = (action) => {
+    const view = doc.defaultView;
+    const stuck = view ? isFilterStuck(bar.getBoundingClientRect().top, stickyOffset(view, bar)) : false;
     filter = nextFilter(filter, action);
     write(filter, false);
     render();
+    if (stuck) chapter.heading.scrollIntoView({ block: 'start' });
   };
 
   bar.addEventListener('click', (event) => {
