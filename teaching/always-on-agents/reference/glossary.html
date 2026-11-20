@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>术语表 · Building always-on agents</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../reference/glossary.html" aria-current="page">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+  <a href="../reference/scenario-cards.html">情景速查</a>
+</nav>
+
+<h1>术语表</h1>
+<p class="subtitle">这门课的「统一说法」。之后每一课都只用这里的词；同一个东西不换着叫。</p>
+<p>规则：这些词保持英文——Agent、run、session、event inbox、worker、handler、timer、scheduler、memory、outbox、dispatcher、deferred tool call、auto mode、credential proxy。其他尽量用平常的中文。定义只说「它是什么」，一两句话。术语按第一次被展开的那一课标注；等你测验过关后再按表现修订。</p>
+
+<h2>循环</h2>
+<dl class="glossary">
+<dt>always-on agent</dt>
+<dd>一种对用户显得一直在、会自己决定何时行动、并能跨多次 session 管住上下文的 Agent。底下并不是进程一直醒着，而是睡了再醒的循环。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · The cycle behind the always-on agent</a><span class="avoid">常驻进程、一直在跑的模型、24 小时不间断推理</span></dd>
+<dt>run</dt>
+<dd>Agent 醒来后的一段工作：收到一个事件，把活做完，再把这次发生的事存下来。做完就睡回去。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · The cycle</a><span class="avoid">把 run 叫成 session；一次「开机」</span></dd>
+<dt>session</dt>
+<dd>一份消息和工具调用的 transcript。一次 run 发生在一份 session 里：接着先前工作的事件（例如用户答复）会续上已有 session，其余通常新开一份。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · The cycle / Event inbox</a><span class="avoid">把 session 叫成一次醒来；聊天窗口（太泛）</span></dd>
+</dl>
+
+<h2>五个原语</h2>
+<dl class="glossary">
+<dt>event inbox</dt>
+<dd>一份耐用的待办事件列表（通常是一张表）。所有来源先把事件写进来，再由 worker 取出，而不是直接去叫 Agent。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a><span class="avoid">让每个来源直接调用 Agent；把 inbox 说成「就是消息队列」而不提要记录状态、可去重</span></dd>
+<dt>handler</dt>
+<dd>接收外来事件并写入 event inbox 的入口，通常是一个 HTTP 接口。它应当很快确认收到；更深的检查放到这次 run 里做。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a><span class="avoid">把 handler 和 worker 当成同一个东西</span></dd>
+<dt>worker</dt>
+<dd>从 event inbox 里读取待办事件、开一次 run、等它结束再把对应事件标成完成的后台服务。一个 inbox 同一时间只应有一个在工作的 worker。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a><span class="avoid">多个 worker 同时抢同一个 inbox；把 worker 叫成 Agent 本身</span></dd>
+<dt>timer</dt>
+<dd>存在独立耐用存储里、还没到期的提醒。分成两类：follow-up（Agent 给自己设的截止期限）和 schedule（已知节奏的重复任务）。timer 自己不会开 run。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a><span class="avoid">把还没到期的 timer 直接丢进 inbox；说 timer 会自己叫醒 Agent</span></dd>
+<dt>follow-up</dt>
+<dd>一类 timer：Agent 给自己设下的一次性期限，例如过一会儿去看有没有回音。到期后被标成完成，并写成 inbox 里的事件。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a><span class="avoid">和 schedule 混称「定时任务」</span></dd>
+<dt>schedule</dt>
+<dd>一类 timer：按已知节奏重复发生的任务，例如每天一份通讯。到期后要把下次时间改到下一回。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a><span class="avoid">和 follow-up 混称</span></dd>
+<dt>scheduler</dt>
+<dd>按固定间隔查看 timer 存储的后台服务：找出已到期的，按类别更新，再把事件写入 inbox 并叫醒 worker。可以用自建服务，也可用 durable execution engine。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a><span class="avoid">让 scheduler 直接开 run、绕过 inbox</span></dd>
+<dt>memory</dt>
+<dd>独立于 inbox 和 timer 的耐用存储，用来在多次互不相连的 run 之间保持连续。只应存放 Agent 查不回来的东西；已在别的系统里的，存一个指针。在产品里常表现为一目录文件，映射到数据库或对象存储，从而比 worker 活得更久。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a><span class="avoid">把外部系统整份镜像进来；把 memory 和 session 的 transcript 当成同一份东西</span></dd>
+<dt>permissions</dt>
+<dd>无人值守时约束 Agent 行动的那一层。每次工具调用都要决定：自己继续、拦住，还是等人批准。原文把它写成 always-on 风险最高的地方。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a><span class="avoid">把 permissions 理解成「只开一个总开关」</span></dd>
+<dt>outbox</dt>
+<dd>一份待发出消息的表，和 event inbox 相对。需要控制发送节奏、或从投递错误里恢复时才值得单独做；多数情况一个 send 工具就够。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a><span class="avoid">把逐步推理全部推给用户；把正式 outbox 讲成和 inbox 一样必不可少</span></dd>
+<dt>dispatcher</dt>
+<dd>读取 outbox 里待发消息、决定交哪些、再送给用户的后台服务。相当于 inbox 一侧的 worker。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a><span class="avoid">把 dispatcher 和 worker 当成同一个进程角色而不加区分</span></dd>
+</dl>
+
+<h2>记忆里的四类，以及上下文</h2>
+<dl class="glossary">
+<dt>user instructions</dt>
+<dd>用户关于 Agent 该怎么行事的说明。单独放在一个文件里，每次 run 开头都加载。因为用户不总在场，这些说明必须能带到下一次。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a><span class="avoid">和 user notes 混在一个「备忘录」里不加区分</span></dd>
+<dt>user notes</dt>
+<dd>Agent 学到的关于用户的事，例如角色、偏好、以及用户给过的纠正。可以从一个文件开始，变多后拆成许多小文件，每次开头只加载索引。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a><span class="avoid">和 user instructions 混称</span></dd>
+<dt>past messages</dt>
+<dd>Agent 已经对用户说过的话，用来避免重复。可以单独成一个每次加载的文件，也可以由 worker 载入最近几条。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a><span class="avoid">把整份 session transcript 都叫成 past messages</span></dd>
+<dt>task progress</dt>
+<dd>每个进行中的任务一份进度文件，写清已经做完什么、还剩什么，好让新的 run 接着上次继续。和 user notes 一样，开头通常只加载索引。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a><span class="avoid">只把进度留在当前 session 的上下文里</span></dd>
+<dt>context overhead</dt>
+<dd>每次 run 开始时就要载入的那一层：system prompt、工具定义、以及 memory 文件。新 session 开头只有这一层加上触发事件；已有 session 还会带回先前 run 里的消息和工具调用。应当保持精瘦，并用 prompt caching 降低成本。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a><span class="avoid">每次把全部记忆文件一股脑塞进上下文</span></dd>
+<dt>dreaming</dt>
+<dd>在 run 之外回顾过去的 session，用来整理 memory：替换过时条目，并找出只在许多次 run 里才看得出来的模式。本课只记这个名字，不展开。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a> <a class="src" href="https://www.anthropic.com/research/components-of-agent-memory">补充 · The components of agent memory</a><span class="avoid">把 dreaming 讲成本课必须实现的步骤</span></dd>
+</dl>
+
+<h2>权限与往返</h2>
+<dl class="glossary">
+<dt>credential proxy</dt>
+<dd>原文在 credential store 一节里推荐的做法：把一个 proxy 放在 Agent 环境外面，给外发请求补上真实凭证。Agent 发出的请求不带凭证。本课用这个词指代该模式。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a><span class="avoid">把密码或令牌放进 Agent 环境；把「credential store」理解成让 Agent 自己保管钥匙</span></dd>
+<dt>auto mode</dt>
+<dd>一种让 Agent 不必每次都等人点头的权限方式。Claude Code 里用 classifier 审查较高风险的动作，并挡住判定为危险的，好让模型改走更安全的路；最重要的决定仍要人看。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a><span class="avoid">把 auto mode 说成可以代替人做最重要的决定</span></dd>
+<dt>deferred tool call</dt>
+<dd>把一次工具调用先挂起，等人补充说明或批准。这次 run 结束，session 保存在调用做到一半的地方；用户的答复作为事件回到 inbox，新的 run 再接着这份 session。等待期间 worker 仍可处理别的事件。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a><span class="avoid">让当前 run 一直挂着空等；丢掉 session 再从头来</span></dd>
+</dl>
+
+<h2>第 3、4、6 课展开的词</h2>
+<p>这些词在第 1 课已经露面，下面按后来各课的展开写成独立条目。</p>
+<dl class="glossary">
+<dt>durable execution engine</dt>
+<dd>实现 scheduler 的一种可选方式，与自建后台服务并列。到期后仍然要把事件写入 inbox 并叫醒 worker，而不是绕过 inbox 去直接开 run。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a><span class="avoid">把它理解成可以代替 inbox 或直接叫 Agent 的一层</span></dd>
+<dt>prompt caching</dt>
+<dd>用来降低每次 run 都要装上的那一层 context overhead 的成本。原文建议在保持这层精瘦的同时使用它。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a><span class="avoid">把它当成可以随便把全部记忆整份塞进上下文的理由</span></dd>
+<dt>compact</dt>
+<dd>在一份 session 变得太长时，压缩较旧消息的一种做法。另一种做法是新开一份 session。两种都会丢掉细节，所以需要留下来的东西应当在途中写入 memory。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Inside the context window</a><span class="avoid">以为 compact 不会丢细节；把 compact 和 dreaming 当成同一件事</span></dd>
+<dt>send 工具</dt>
+<dd>把消息直接送给用户的一种工具。多数 always-on agent 用它就够；只有需要控制发送节奏，或从投递错误里恢复时，才值得再做一份正式的 outbox。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a><span class="avoid">以为每个 always-on agent 都必须先做正式 outbox</span></dd>
+</dl>
+
+<footer class="foot">
+  定义压缩自 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a>。
+  dreaming 的展开见 <a href="https://www.anthropic.com/research/components-of-agent-memory">The components of agent memory</a>，本课不深挖。
+  随着你测验过关，定义会被改短，而不是另起一条。
+</footer>
+</main>
+</body>
+</html>

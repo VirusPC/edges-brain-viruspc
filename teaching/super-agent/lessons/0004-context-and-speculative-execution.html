@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 4 课 · 上下文组织与提前行动</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0004-context-and-speculative-execution.html" aria-current="page">第 4 课 · 上下文组织与提前行动</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/architecture-cheatsheet.html">架构速查</a>
+</nav>
+<h1>上下文组织与提前行动</h1>
+<p class="subtitle">事件经过过滤与路由、进入目标 Session 之后，还要决定往上下文窗口里放多少信息，以及要不要根据环境信号在后台先动起来。这是原文第 3 节的后两个问题。</p>
+<p class="meta">第 4 课 · 约 10 分钟 · 主来源：<a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>（第 3.3–3.4 节）</p>
+<div class="box win"><span class="box-title">学完这一课，你能做到</span>
+<p>能讲清：为什么浪费上下文窗口就是浪费模型的智能；Inline 和 Spill 分别是什么，以及怎样从最少信息开始、按局部性逐步内联、超出就 Spill；链式召回怎样沿引用图按需展开；投机执行为什么可以先做后取舍，以及「有价值就交付，没有价值就丢弃」这条原则。</p></div>
+<h2>上下文窗口要当 Cache 来管</h2>
+<p>事件经过过滤与路由、进入目标 Session 后，下一个问题是应当向模型的上下文窗口注入多少信息。由于系统输入从有限的人类提示词，转向了环境持续产生的半结构化事件，工具调用与事件注入的结构设计变得更加重要。注入过多会挤占窗口、稀释模型注意力，注入过少又会迫使模型反复调用工具读取，增加执行步数。原文的判断是：浪费上下文窗口，就是浪费模型的智能。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.3 节</a></p>
+<p>为此，可以把有限的上下文窗口当作 Cache 来管理。原文借用编译优化与计算机系统中的概念，把上下文注入归纳为两个基本操作：</p>
+<ul>
+<li><strong>Inline</strong>：把近期很可能用到的信息直接内联进当前上下文窗口，以省去额外的工具调用往返。</li>
+<li><strong>Spill</strong>：把超出窗口预算或低频使用的完整信息留在上下文窗口之外，仅在窗口内保留引用或摘要，供模型按需读取。</li>
+</ul>
+<p>再结合局部性，就可以用 Inline &amp; Spill 逐步优化事件注入和工具调用。原文给出的顺序是：最初只提供当前对象的 ID 和内容摘要；再把近期很可能用到的信息逐步 Inline，先附上紧密关联对象的 ID，再附带时空相邻的内容，例如内容前 50 字、IM 消息的前后相邻消息与所回复的消息，或代码评论所在评审讨论中的相邻评论；对无法全部 Inline 的长内容设定较小的长度上限，将超出部分 Spill 到窗口之外。一种简单直接的做法，是截断超出部分并保留续读入口，模型需要完整内容时再调用工具读取。</p>
+<h2>链式召回：按需沿着引用往下走</h2>
+<p>在大量后续事件直通 Worker、且系统在长期运行中累积了许多历史任务后，Router 层既不能把所有任务的全量历史都放入自己的上下文窗口，又需要在用户跨信道提起某个旧任务时找回上下文。把 Inline &amp; Spill 一致地应用到系统中的各类对象后，就得到一种按需展开的多跳检索机制，即链式召回。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.3 节</a></p>
+<p>具体来说，系统为 Trigger、Thread 和 Worker Session 等对象赋予唯一 ID，并在注入时内联紧密关联对象的 ID，使这些对象在底层构成一张引用图。由于每一次调用工具召回的对象本身同样遵循 Inline &amp; Spill，其返回结果中又会内联下一跳关联对象的摘要与 ID，模型便可以从当前事件出发，顺着引用关系逐步按需召回上下文。例如从一条当前消息读取所在 Thread，再从 Thread 内联的 ID 追踪到相关的 Worker Session，进而找到该 Worker 关联的另一个代码评审 Thread。</p>
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 160" role="img" aria-label="链式召回：每次召回的对象都内联下一跳关联对象的 ID，可沿引用关系逐跳展开上下文">
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+  </style>
+  <rect class="bx" x="16" y="36" width="150" height="80" rx="4"/>
+  <text class="t" x="28" y="66">当前消息</text>
+  <text class="s" x="28" y="88">内联所在 Thread ID</text>
+  <rect class="bx2" x="196" y="36" width="160" height="80" rx="4"/>
+  <text class="t" x="208" y="66">Thread</text>
+  <text class="s" x="208" y="88">内联相关 Worker ID</text>
+  <rect class="bx2" x="386" y="36" width="150" height="80" rx="4"/>
+  <text class="t" x="398" y="66">Worker Session</text>
+  <text class="s" x="398" y="88">再内联其他 Thread</text>
+  <rect class="bx" x="566" y="36" width="138" height="80" rx="4"/>
+  <text class="t" x="578" y="66">另一条 Thread</text>
+  <text class="s" x="578" y="88">例如代码评审</text>
+</svg>
+<figcaption>图 1　链式召回：每次召回都只带上下一跳的摘要和 ID，而不是把全部历史一次性塞进窗口。</figcaption>
+</figure>
+<h2>投机执行：先在后台尝试，有价值再交付</h2>
+<p>借鉴计算机系统中的投机执行思想，Agent 可以在还不确定结果是否会被采用时，根据环境信号在后台提前尝试，通过消耗额外的后台算力来减少人类的等待与介入成本。结果有价值就交付，没有价值就丢弃。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 3.4 节</a></p>
+<p>在个人助手场景下，当收到一封会议邀约邮件或待办消息时，Agent 可以先在后台核对日程冲突、搜集相关背景资料并备好回复草稿，待用户过目后即可直接确认发出。在研发协作场景下同样如此。原文举了他们在公司 DeepSeek Harness 内部用户群中配置的一条「静默复现并修复」策略：当群里有人反馈问题或讨论改动方案时，Agent 先在后台尝试复现并寻找修复方案，只有在确认问题并找到简单的修复方案后，才会把结果交付给用户，否则全程保持安静。配图说明里还写到：群内还在讨论解决方案时，Super-agent 已在后台提交了修复 Pull Request。这仍是原文内部实例中的例子，不是产品功能介绍。</p>
+<div class="box interview"><span class="box-title">合上原文，60 秒这样讲</span>
+<p>「事件进了目标 Session 之后，还要决定往窗口里放多少信息。放多了会挤占注意力，放少了又会逼模型反复读。原文把上下文窗口当作 Cache：Inline 是把近期很可能用到的信息直接放进窗口，少打一轮工具；Spill 是把超出预算或很少用的完整信息留在窗外，只留引用或摘要。做法是从最少信息开始，先给 ID 和摘要，再按局部性逐步内联关联对象和相邻内容，超出上限就截断并留下续读入口。大量后续事件直通 Worker 之后，Router 既不能装下全部历史，又要在用户跨信道提起旧任务时找回上下文，于是把同一套 Inline &amp; Spill 用到 Trigger、Thread、Worker Session 等对象上，做成沿引用图按需展开的链式召回。此外，还可以投机执行：还不确定结果会不会被采用时，先根据环境信号在后台尝试，有价值就交付，没有就丢弃；不需要介入时保持安静。」</p></div>
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先回想第 3 课的路由，后面进入本课。</p>
+<div class="quiz" data-quiz-id="0004-context-and-speculative-execution">
+<script type="application/json">{"questions":[{"q":"合上第 3 课来回想：Worker 订阅某个 Thread 之后，后续事件应走哪条路径？","options":["已订阅 Thread 的后续事件由程序直通对应 Worker；Router 仍可观测全部事件，但只分派尚未被订阅的新事件","已订阅 Thread 的后续事件仍须先经 Router 转发；尚未订阅的新事件才由程序直接发给某一个空闲的 Worker","已订阅 Thread 的后续事件由程序直通对应 Worker；Router 不再观测这些事件，以免重复处理 Thread","已订阅 Thread 的后续事件仍须先经 Router 转发；Router 也不再观测未订阅事件，以免自己再成为性能瓶颈"],"answer":0,"explain":"已订阅的后续事件由程序直通 Worker；Router 仍可观测全部事件，但只分派尚未被订阅的新事件。正因大量后续事件会直通 Worker，Router 才更不能把所有任务的全量历史都放进自己的窗口，这才引出本课的链式召回。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 3.2–3.3 节</a>。"},{"q":"原文把有限的上下文窗口当作 Cache 来管理时，Inline 和 Spill 分别指什么？","options":["Inline 把近期很可能用到的信息直接内联进窗口以省去工具往返；Spill 把超出预算或低频的完整信息留在窗外，只留引用或摘要","Spill 把近期很可能用到的信息直接内联进窗口以省去工具往返；Inline 把超出预算或低频的完整信息留在窗外，只留引用或摘要","Inline 把全部历史完整写入窗口以免再调用工具；Spill 把当前 Trigger 的全文都留在窗外，只保留一个空的占位标题","Spill 把全部历史完整写入窗口以免再调用工具；Inline 把当前 Trigger 的全文都留在窗外，只保留一个空的占位标题"],"answer":0,"explain":"Inline 是把近期很可能用到的信息直接内联进当前上下文窗口，以省去额外的工具调用往返。Spill 是把超出窗口预算或低频使用的完整信息留在窗口之外，仅在窗口内保留引用或摘要，供模型按需读取。不要把这两个词对调，也不要把 Inline 理解成把全部历史一股脑塞进去。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 3.3 节</a>。"},{"q":"原文所说的链式召回，核心做法是什么？","options":["为 Trigger、Thread、Worker Session 等对象赋予唯一 ID，注入时内联关联对象的 ID，沿引用关系按需多跳展开上下文","为 Trigger、Thread、Worker Session 等对象赋予唯一 ID，但禁止再去调用工具，只准使用当前窗口里已经写完的全部全文","为 Trigger、Thread、Worker Session 等对象赋予唯一 ID，并把全部历史一次塞进 Router 窗口以免丢失先前信息","为 Trigger、Thread、Worker Session 等对象赋予唯一 ID，并把 Worker 的历史回抄至 Router 以免丢失"],"answer":0,"explain":"系统为 Trigger、Thread 和 Worker Session 等对象赋予唯一 ID，并在注入时内联紧密关联对象的 ID，使这些对象构成一张引用图。每一次召回的对象同样遵循 Inline &amp; Spill，返回结果里又会内联下一跳的摘要与 ID，模型便可以从当前事件出发，顺着引用关系按需展开上下文。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 3.3 节</a>。"},{"q":"原文把投机执行用在 Agent 上时，关键原则是哪一句？","options":["在还不确定结果是否会被采用时，根据环境信号在后台提前尝试；有价值就交付，没有价值就直接丢弃","在还不确定结果是否会被采用时，必须先向用户逐条确认，然后才能在后台开始尝试任何一项相关行动","只要环境里出现了新的事件，就必须把后台尝试的全部中间结果立即交付给用户，并且不能再中途丢弃","只要环境里出现了新的事件，就必须停止所有后台尝试，改等用户下达指令以后再重新开始完整地执行"],"answer":0,"explain":"借鉴投机执行：Agent 可以在还不确定结果是否会被采用时，根据环境信号在后台提前尝试，用额外的后台算力换取更少的等待与介入。结果有价值就交付，没有价值就丢弃。内部「静默复现并修复」策略也是先在后台尝试，只有确认问题并找到简单修复后才交付，否则保持安静。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 3.4 节</a>。"}]}</script>
+</div>
+<div class="box read"><span class="box-title">本课推荐精读的一手资料</span>
+<p><a href="https://www.bilibili.com/opus/1265361021143351318">Super-agent 设计探索</a>的第 3.3 节和第 3.4 节。读 3.3 时按「从最少信息开始 → Inline 关联信息 → 超出则 Spill → 链式召回」这条顺序在纸上点一遍；读 3.4 时只抓住「有价值就交付，没有价值就丢弃」。</p></div>
+<div class="box ask"><span class="box-title">有不懂的，直接问我</span>
+<p>Inline 和 Spill 还容易对调、想用一条群聊消息把链式召回走两跳，或者想讨论「静默修复」什么时候该保持安静，都可以直接问我。</p></div>
+<p>准备好了就进入 <a href="0005-human-facing-interaction.html">第 5 课 · 面向人的交互</a>。</p>
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0003-event-filtering-and-routing.html">上一课 · 事件过滤与路由</a>
+  <a class="next" href="0005-human-facing-interaction.html">下一课 · 面向人的交互</a>
+</nav>
+<script src="../assets/quiz.js" defer></script>
+<footer class="foot">说法以 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文为准。本课不进入第 4 节的全双工与多信道交互。</footer>
+</main>
+</body>
+</html>

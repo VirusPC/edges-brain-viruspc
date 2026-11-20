@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 课 · 睡醒循环与五个原语</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0001-sleep-wake-cycle-and-five-primitives.html" aria-current="page">第 1 课 · 睡醒循环与五个原语</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+</nav>
+
+<h1>睡醒循环与五个原语</h1>
+<p class="subtitle">always-on 只是用户体验：Agent 大半时间在睡，一次 run 怎么经过五个原语再睡回去。</p>
+<p class="meta">第 1 课 · 约 10 分钟 · 主来源：<a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>不看原文，用 60 秒讲清：Agent 大半时间在睡；每次醒来是一次 run，发生在一份 session 里；事件先进入 event inbox，再由 worker 开跑。你还能一眼说出五个原语各自挡住什么失败，画出一次 deferred tool call 的往返，并记得 memory 只存查不回来的东西，以及那四类记忆。这是吃透这篇原文的骨架。</p>
+</div>
+
+<h2>always-on 只是体验</h2>
+<p>原文开头就把「一直开着」说成体验，而不是运行方式：<em>An always-on agent is not actually “always on.” This is just a description of the user experience.</em> 真正发生的是：Agent 大半时间在睡，偶尔醒来干一段活，再睡回去。循环可以一直转，用户才觉得它一直在。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · The cycle behind the always-on agent</a></p>
+<p class="with-side">这类 Agent 仍然走和其他 Agent 相同的核心循环。不一样的是周围的架构：由一组原语决定它何时醒来、两次 run 之间留下什么、以及做完的结果怎样到达用户。原文把这种形态概括成 stateful 且 proactive：能跨多次 session 管住上下文，也能在没有人盯着的时候行动。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文开篇</a>
+<span class="side">底下的模型循环并没有换一套。换的是叫醒它、记住它、约束它、把结果送出去的那一层。</span>
+</p>
+
+<h2>run 和 session</h2>
+<p>每一次醒来干活，叫做一次 <strong>run</strong>：Agent 收到一个事件，把活做完，再把这次发生的事存下来。run 发生在一份 <strong>session</strong> 里。session 是消息和工具调用的 transcript。run 一结束，Agent 就睡回去，这个循环再重复：睡、醒、存、再睡。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · The cycle behind the always-on agent</a></p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 200" role="img" aria-label="Agent 睡着，被事件叫醒做一次 run，存下发生的事，再睡回去">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/>
+    </marker>
+  </defs>
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .t{font:700 14px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:12px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+    .m{font:11px Menlo,monospace;fill:#2c5d8a}
+    .ln{stroke:#a3341f;stroke-width:1.6;fill:none;marker-end:url(#ah)}
+    .n{font:700 12px "Noto Sans CJK SC",sans-serif;fill:#a3341f}
+  </style>
+  <rect class="bx" x="16" y="50" width="150" height="90" rx="4"/>
+  <text class="t" x="30" y="84">睡着</text>
+  <text class="s" x="30" y="108">大半时间都在这里</text>
+
+  <rect class="bx2" x="260" y="36" width="200" height="118" rx="4"/>
+  <text class="t" x="274" y="64">一次 run</text>
+  <text class="s" x="274" y="86">收到事件，把活做完</text>
+  <text class="s" x="274" y="106">再把发生的事存下来</text>
+  <text class="m" x="274" y="130">发生在一份 session 里</text>
+
+  <rect class="bx" x="554" y="50" width="150" height="90" rx="4"/>
+  <text class="t" x="568" y="84">再睡回去</text>
+  <text class="s" x="568" y="108">循环可以一直转</text>
+
+  <path class="ln" d="M166,95 L258,95"/>
+  <text class="n" x="170" y="82">① 事件唤醒</text>
+  <path class="ln" d="M460,95 L552,95"/>
+  <text class="n" x="468" y="82">② 做完并保存</text>
+</svg>
+<figcaption>图 1　always-on 不是进程一直醒着。每次醒来是一次短的 run，发生在一份 session 里；做完就睡，循环继续。</figcaption>
+</figure>
+
+<p>怎么决定续上旧 session 还是新开一份？原文写得很具体：<em>Events that continue earlier work, such as a reply from the user, resume an existing session, while everything else starts a new session.</em> 也就是说，用户答复这类「接着先前工作」的事件会续上已有 session；其余通常新开。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+
+<h2>五个原语一眼看完</h2>
+<p>围着这个循环的，是五个核心原语：event inbox、timers、memory、permissions、outbox。先记住各自挡住什么，再看一个事件怎么把它们串起来。</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>原语</th><th>挡住什么，或原文给它的位置</th></tr>
+</thead>
+<tbody>
+<tr><td>event inbox</td><td>来源若直接叫 Agent：同时到达的事件会争出两次 run；崩溃可能把事件弄丢。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></td></tr>
+<tr><td>timers</td><td>和 inbox 一起，让 Agent 能主动醒来。timer 自己不开 run；未到期的事也不该进 inbox，因为 inbox 只放已经能做的事件。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></td></tr>
+<tr><td>memory</td><td>接住多次互不相连的 run 之间的连续性。规则是只存查不回来的东西；已在别的系统里的，存指针。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></td></tr>
+<tr><td>permissions</td><td>原文说这里风险最高：一次 run 握着用户的访问权，而且本来就是无人值守。每次工具调用要决定自己继续、拦住，还是等人批准。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></td></tr>
+<tr><td>outbox</td><td>后台工作不把逐步推理全推给用户，只给结果和少量细节。正式 outbox 用于控制发送节奏，以及从投递错误里恢复；多数情况一个 send 工具就够。发太多会吵，发太少会漏。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>一个事件怎么走完一圈</h2>
+<p>原文在「How everything fits together」里把协作写成下面这条路径。你可以按这个顺序在图 2 上指。</p>
+<ol class="flow">
+  <li><span class="step-title">事件先进入 event inbox</span>
+    来源可能是用户消息、webhook、后台任务，或到期的 timer。不要让来源直接叫 Agent。handler 把事件写入这份耐用列表，并叫醒 worker。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+  <li><span class="step-title">唯一的 worker 开一次 run</span>
+    一个 inbox 同一时间只应有一个在工作的 worker，以免两次 run 互相覆盖。worker 读出待办，在新的或已有的 session 里叫醒 Agent，等这次 run 结束，再把对应事件标成完成。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox / How everything fits together</a></li>
+  <li><span class="step-title">先读 memory，在 permissions 内行动，再写回 memory</span>
+    开头先加载 context overhead（system prompt、工具定义、memory 文件）作为基线。行动时走 credential proxy，必要时用 auto mode 拦住危险动作，或用 deferred tool call 请人拍板。学到的东西写回 memory。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory / Permissions</a></li>
+  <li><span class="step-title">run 以三种方式之一结束</span>
+    把一条消息推进 outbox；判断这次什么也不必送；或发出一次 deferred tool call。若写入了 outbox，由 dispatcher 决定交哪些给用户。用户若答复，答复再作为事件回到 inbox。一次 run 也可以给自己设一个 timer，到期后同样先变成 inbox 里的事件。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox / How everything fits together</a></li>
+</ol>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 430" role="img" aria-label="一个事件从来源进入 event inbox，经 worker 打开 run，读写 memory，经过 permissions，再经 outbox 回到用户">
+  <defs>
+    <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/>
+    </marker>
+    <marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2c5d8a"/>
+    </marker>
+  </defs>
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .bx3{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+    .m{font:10px Menlo,monospace;fill:#2c5d8a}
+    .ln{stroke:#a3341f;stroke-width:1.5;fill:none;marker-end:url(#ah2)}
+    .lb{stroke:#2c5d8a;stroke-width:1.4;fill:none;marker-end:url(#ahb);stroke-dasharray:5 3}
+    .n{font:700 11px "Noto Sans CJK SC",sans-serif;fill:#a3341f}
+    .nb{font:700 11px "Noto Sans CJK SC",sans-serif;fill:#2c5d8a}
+  </style>
+
+  <rect class="bx" x="16" y="16" width="150" height="58" rx="4"/>
+  <text class="t" x="28" y="40">用户消息</text>
+  <text class="s" x="28" y="58">答复会续上 session</text>
+
+  <rect class="bx" x="186" y="16" width="170" height="58" rx="4"/>
+  <text class="t" x="198" y="40">webhook / 后台任务</text>
+  <text class="s" x="198" y="58">通常新开 session</text>
+
+  <rect class="bx2" x="520" y="16" width="184" height="58" rx="4"/>
+  <text class="t" x="532" y="40">timer 到期</text>
+  <text class="s" x="532" y="58">scheduler 写入 inbox</text>
+
+  <rect class="bx3" x="186" y="110" width="348" height="70" rx="4"/>
+  <text class="t" x="200" y="136">event inbox</text>
+  <text class="s" x="200" y="156">handler 写入 · worker 读取（同时只有一个）</text>
+  <text class="m" x="200" y="172">耐用列表，是真相来源</text>
+
+  <rect class="bx" x="16" y="220" width="150" height="80" rx="4"/>
+  <text class="t" x="28" y="246">memory</text>
+  <text class="s" x="28" y="266">开头读，结束写</text>
+  <text class="s" x="28" y="282">只存查不回来的</text>
+
+  <rect class="bx2" x="216" y="214" width="288" height="92" rx="4"/>
+  <text class="t" x="230" y="240">一次 run</text>
+  <text class="m" x="230" y="260">在新的或已有的 session 里</text>
+  <text class="s" x="230" y="280">读 memory → 行动 → 更新 memory</text>
+
+  <rect class="bx" x="554" y="220" width="150" height="80" rx="4"/>
+  <text class="t" x="566" y="246">permissions</text>
+  <text class="s" x="566" y="266">继续 / 拦住 / 推迟</text>
+  <text class="s" x="566" y="282">凭证走 proxy</text>
+
+  <rect class="bx3" x="80" y="348" width="160" height="58" rx="4"/>
+  <text class="t" x="92" y="372">outbox</text>
+  <text class="s" x="92" y="390">可选；控制节奏</text>
+
+  <rect class="bx" x="280" y="348" width="150" height="58" rx="4"/>
+  <text class="t" x="292" y="372">dispatcher</text>
+  <text class="s" x="292" y="390">决定交哪些</text>
+
+  <rect class="bx" x="490" y="348" width="150" height="58" rx="4"/>
+  <text class="t" x="502" y="372">用户</text>
+  <text class="s" x="502" y="390">得到结果，而非全过程</text>
+
+  <path class="ln" d="M91,74 L91,100 L186,100 L186,110"/>
+  <path class="ln" d="M271,74 L271,110"/>
+  <path class="ln" d="M612,74 L612,100 L534,100 L534,110"/>
+  <text class="n" x="16" y="98">① 先写入</text>
+
+  <path class="ln" d="M360,180 L360,214"/>
+  <text class="n" x="372" y="202">② worker 开 run</text>
+
+  <path class="ln" d="M216,260 L166,260"/>
+  <path class="ln" d="M504,260 L554,260"/>
+
+  <path class="ln" d="M300,306 L160,306 L160,348"/>
+  <text class="n" x="168" y="328">③ 可写入</text>
+  <path class="ln" d="M240,377 L280,377"/>
+  <path class="ln" d="M430,377 L490,377"/>
+
+  <path class="lb" d="M640,377 L680,377 L680,145 L534,145"/>
+  <text class="nb" x="548" y="200">④ 答复回到 inbox</text>
+
+  <path class="lb" d="M504,230 L612,230 L612,74"/>
+  <text class="nb" x="430" y="218">run 可设 timer</text>
+</svg>
+<figcaption>图 2　一个事件走完一圈：所有来源先进入 event inbox；唯一的 worker 开 run；Agent 读写 memory、在 permissions 内行动；结果经 outbox 到达用户。虚线是回来的路：用户答复再进 inbox，run 也可给自己设 timer。</figcaption>
+</figure>
+
+<h3>这一圈里必须先记住的三处细节</h3>
+<p class="with-side"><strong>memory 只存查不回来的东西。</strong> 四类是：user instructions（单独文件，每次开头都加载，因为用户不总在场）；user notes（角色、偏好、纠正，变多后拆文件，开头只加载索引）；past messages（避免把已经说过的话再讲一遍）；task progress（每个进行中的任务一份进度，新 run 接着上次）。已有 session 还会带回先前 run 里的消息和工具调用；新 session 只有 context overhead 加上触发事件。session 太长就 compact 或新开，两种都会丢细节，所以途中要把该留的写入 memory。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory / Inside the context window</a>
+<span class="side">原文还提到 dreaming：在 run 之外回顾过去的 session，整理 memory。本课不展开，补充阅读见 <a href="https://www.anthropic.com/research/components-of-agent-memory">The components of agent memory</a>。</span>
+</p>
+<p><strong>deferred tool call 是一次完整往返，不是把当前 run 挂着空等。</strong> 调用被推迟时，这次 run 结束，session 保存在调用做到一半的地方；请求交给用户；答复作为事件回到 inbox；新的 run 接着原来的 session。等待期间，worker 仍可拾起别的事件。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions · Deferred tool calls</a></p>
+<p><strong>inbox 是真相来源，worker 要尽快确认、且同时只有一个。</strong> handler 应很快确认收到（有些 webhook 会把慢响应当成失败）；提示词注入这类更深的检查放到 run 里做。worker 醒来应先从 inbox 拉最新待办——这样它若中途死了，新的 worker 可以拿同一事件重试。积压的事件可以批次合并。run 做到一半又来了新事件，原文并列了三种处理：推到下一次、并进当前这次，或打断重来，没有推荐哪一种。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「这篇原文说，always-on 只是用户体验，不是进程一直醒着。Agent 大半时间在睡。一次醒来叫做 run：收到事件，把活做完，把这次发生的事存下来，再睡回去。run 发生在一份 session 里，也就是消息和工具调用的 transcript。用户答复会续上已有 session，别的事件通常新开一份。围着这个循环的是五个原语。所有来源先写进 event inbox，由唯一的 worker 取出并开 run，这样才不会同时抢跑，崩溃时也不容易把事件弄丢。timer 自己不开 run，由 scheduler 到期后写成 inbox 里的事件，Agent 才能主动跟进，未到期的事也不会提前挤进 inbox。memory 只存查不回来的东西，用来跨多次断裂的 run 保持连续，分成 user instructions、user notes、past messages 和 task progress。permissions 处理无人值守时的风险：凭证走环境外的 credential proxy，危险动作可用 auto mode 拦住，要人拍板时用 deferred tool call——结束这次 run 并保存 session，等人的答复作为新事件再续上。outbox 把结果交给用户，而不是把逐步推理全推过去；正式的 outbox 主要用于控制节奏和从投递错误里恢复。每次 run 都很短，循环可以一直转，这才让人觉得它一直在。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。凭记忆作答，答完会立刻告诉你对错和出处。</p>
+<div class="quiz" data-quiz-id="0001-sleep-wake-cycle-and-five-primitives">
+<script type="application/json">{"questions": [{"q": "一次 run 从醒来到再睡，下面哪一条顺序符合原文「How everything fits together」？", "options": ["inbox 接到事件 → worker 开 run → 读 memory → 在 permissions 内行动 → 更新 memory → 才可写入 outbox", "inbox 接到事件 → 随即先写 outbox → worker 开 run → 读 memory → 在 permissions 内行动 → 更新 memory", "worker 先开 run → 读 memory → inbox 接到事件 → 在 permissions 内行动 → 更新 memory → 可写入 outbox", "inbox 接到事件 → worker 开 run → 随即写入 outbox → 读 memory → 在 permissions 内行动 → 更新 memory"], "answer": 0, "explain": "原文把一圈写成：每次 run 都从 inbox 里的事件开始；worker 拾起事件，在新的或已有的 session 里叫醒 Agent；Agent 先读 memory 作为基线，在 permissions 内行动，再把学到的写入 memory；结束后才可能把一行推进 outbox，由 dispatcher 交给用户。outbox 不是开头的一步。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · How everything fits together</a>。"}, {"q": "如果每个事件源都直接去叫 Agent，而不经过 event inbox，原文指出的失败是什么？", "options": ["两个事件同时到达时会争着开出两次 run，一旦崩溃也可能把事件整件都弄丢", "到期 follow-up 无人处理，固定 schedule 也会全部停摆", "跨过多次断裂的 run 会对不上已有进度，对用户说过的话又可能被再说一遍", "在无人值守时会越权采取行动，真实凭证也还会直接暴露在 Agent 环境里"], "answer": 0, "explain": "原文明确举了两种失败：两个事件同时到达会启动互相竞争的 run；崩溃可能把事件完全弄丢。所以所有来源先写入 inbox，再由 worker 取出。后面三个选项分别更接近 timers、memory、permissions 要处理的问题，不是 inbox 这一节写的失败。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Event inbox</a>。"}, {"q": "关于 memory，哪一句最符合原文？", "options": ["只保存那些查不回来的东西；四类是 user instructions、user notes、past messages、task progress", "要把外部的系统做全量拷贝；四类是 user instructions、user notes、past messages、task progress", "只存下查不回来的东西；四类是 system prompt、tool definitions、past messages、task progress", "只存查不回来的东西；四类是 user instructions、user notes、past messages、tool definitions"], "answer": 0, "explain": "原文的规则是：memory 只应保存 Agent 查不回来的东西；已经在别的系统里的，存一个指针。四类是 user instructions、user notes、past messages、task progress。system prompt 和工具定义属于每次 run 开头的 context overhead，不是这四类记忆。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Memory</a>。"}, {"q": "一次 deferred tool call 的完整往返，哪一条符合原文？", "options": ["本次 run 结束并保存 session；请求交给用户；答复回到 inbox；新 run 接着原来的 session", "本次 run 挂起并且一直空等着用户；请求交给用户；答复回到 inbox；新 run 另开一份全新的 session", "本次 run 结束并丢掉整份 session；请求交给用户；答复回到 inbox；新 run 把整件工作全部从头再做", "本次 run 结束并保存 session；跳过对用户的批准询问；同一 run 里继续往下；立刻再去调用原来的那项工具"], "answer": 0, "explain": "调用被推迟时，这次 run 结束，session 保存在调用做到一半的地方；请求交给用户；对方的答复作为事件回到 inbox；这个事件开一次新的 run，并接着那份已保存的 session。等待期间 worker 仍可处理别的事件，所以不是当前 run 一直挂着空等，也不是丢掉 session 从头来。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Permissions · Deferred tool calls</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 里的 <strong>The cycle behind the always-on agent</strong> 与 <strong>How everything fits together</strong> 两节。读的时候对照图 1 和图 2：每看到 run、session、inbox、timer、memory、permissions、outbox 其中一个词，就在图上指一下它属于哪一段。五个原语的分节可以当作速查，不必一次记牢全部最佳实践。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>哪一步没看明白、哪个词不熟、想对照原文练一遍 60 秒复述，或者想先挖 inbox、timer、memory 里的某一段，都可以直接在对话里问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：把 <a href="../reference/glossary.html">术语表</a> 和 <a href="../reference/cycle-cheatsheet.html">循环速查</a> 存到手机上。速查页是循环、五个原语和关键实践的压缩版，适合打印。准备好了就进入 <a href="0002-event-inbox.html">第 2 课 · Event inbox</a>。</p>
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <span></span>
+  <a class="next" href="0002-event-inbox.html">下一课 · Event inbox</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品，也不展开 dreaming。
+</footer>
+</main>
+</body>
+</html>

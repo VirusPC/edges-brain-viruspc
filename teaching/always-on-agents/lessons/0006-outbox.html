@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 6 课 · Outbox</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0006-outbox.html" aria-current="page">第 6 课 · Outbox</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+</nav>
+
+
+<h1>Outbox</h1>
+<p class="subtitle">后台把结果交给用户，而不是把逐步推理全部推过去。多数情况一个 send 工具就够；要控制节奏或从错误里恢复时，再做正式 outbox。</p>
+<p class="meta">第 6 课 · 约 10 分钟 · 主来源：<a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>看到一次已经做完的 run，能判断它属于三种结束方式中的哪一种。你能说明什么时候一个 send 工具就够、什么时候才值得做正式 outbox，也知道 dispatcher 做什么，以及消息该先偏安静，再用 evals 找平衡。</p>
+</div>
+
+<h2>后台给出结果，而不是全过程</h2>
+<p>多数普通 Agent 会把回复随着生成过程流式推给用户，让人跟着看模型怎样推理、调用工具、写下答案。always-on agent 则把大部分工作放在后台。用户得到的是结果，加上少量细节，而不是完整的逐步拆解。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></p>
+
+<h2>一次 run 的三种结束方式</h2>
+<p>一次 run 可以用下面三种方式之一结束。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></p>
+<ol class="flow">
+  <li><span class="step-title">把一条消息写入 outbox</span>准备把结果交给用户。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></li>
+  <li><span class="step-title">判断这次什么也不必送</span>不是每一次醒来都必须打扰用户。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></li>
+  <li><span class="step-title">发出一次 deferred tool call</span>请人批准，或请人再补一句。第 5 课已经走完这条往返。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></li>
+</ol>
+
+<h2>send 工具，还是正式 outbox</h2>
+<p>多数 always-on agent 用一个 send 工具就够：它把消息直接送给用户。只有在你想控制发送的节奏，或让 Agent 能从投递错误里恢复时，才需要一份正式的 outbox。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></p>
+<p>正式 outbox 是一张待发消息表，和 event inbox 相对。对面还有一个 dispatcher，通常是一个后台服务，和 inbox 一侧的 worker 相对。dispatcher 读取待发消息，决定交哪些，再送给用户。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></p>
+<p>一次 deferred tool call 提出的请求，既可以经过 outbox，也可以直接显示在界面上。原文把这两种都写成可以，并没有规定必须走哪一条。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 200" role="img" aria-label="一次 run 三种结束：写入 outbox、什么也不送，或发出 deferred tool call">
+  <defs><marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/></marker></defs>
+  <style>.bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}.bx2{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}.bx3{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}.t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}.s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}.ln{stroke:#a3341f;stroke-width:1.5;fill:none;marker-end:url(#a6)}.n{font:700 11px "Noto Sans CJK SC",sans-serif;fill:#a3341f}</style>
+  <rect class="bx3" x="260" y="16" width="200" height="64" rx="4"/><text class="t" x="272" y="42">一次 run 结束</text><text class="s" x="272" y="60">三种方式之一</text>
+  <rect class="bx2" x="16" y="120" width="200" height="64" rx="4"/><text class="t" x="28" y="146">写入 outbox</text><text class="s" x="28" y="164">dispatcher 决定交哪些</text>
+  <rect class="bx" x="260" y="120" width="200" height="64" rx="4"/><text class="t" x="272" y="146">什么也不必送</text><text class="s" x="272" y="164">不必每次都打扰用户</text>
+  <rect class="bx" x="504" y="120" width="200" height="64" rx="4"/><text class="t" x="516" y="146">deferred tool call</text><text class="s" x="516" y="164">请人批准或补一句</text>
+  <path class="ln" d="M300,80 L116,120"/><path class="ln" d="M360,80 L360,120"/><path class="ln" d="M420,80 L604,120"/>
+</svg>
+<figcaption>图 1　一次 run 用三种方式之一结束。写入正式 outbox 之后，由 dispatcher 决定交哪些给用户。</figcaption>
+</figure>
+
+<h2>该发多少：先偏安静，再用 evals 找平衡</h2>
+<p>投递之外，还要调整 Agent 发送消息的数量。发太多会变得吵闹；发太少又会漏掉用户需要知道的事。原文建议用 evals 来找到平衡。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></p>
+<p>实际中，更好的做法是让 Agent 先偏安静，再逐渐多获得一些用户的注意。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></p>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「always-on 把大部分工作放在后台，用户看到的是结果和少量细节，而不是逐步推理。一次 run 有三种结束方式：写入 outbox、判断什么也不必送，或发出 deferred tool call。多数情况一个直接送达的 send 工具就够；只有需要控制节奏，或从投递错误里恢复时，才做正式 outbox。正式 outbox 和 dispatcher，分别相当于 inbox 和 worker。deferred tool call 的请求可以走 outbox，也可以直接出现在界面上。发太多会吵，发太少会漏，用 evals 找平衡，并且先偏安静。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先唤回第 5 课的 deferred tool call，后面四题练习本课。</p>
+<div class="quiz" data-quiz-id="0006-outbox">
+<script type="application/json">{"questions":[{"q":"合上第 5 课来回想：一次 deferred tool call 会怎样影响正在工作的 worker？","options":["deferred tool call 会结束这次 run 并保存 session；等待期间 worker 仍可继续处理 inbox 里别的事件","deferred tool call 会让这次 run 一直挂着空等 session；等待期间 worker 不得处理 inbox 里别的事件","deferred tool call 会丢掉当前这次 run 的 session；等待期间 worker 必须拒绝 inbox 里的所有新事件","deferred tool call 会绕过 inbox 让新 run 续上 session；等待期间 worker 必须停止处理任何别的事件"],"answer":0,"explain":"调用被推迟时，这次 run 结束，session 被保存。等待用户答复期间，worker 仍可拾起 inbox 里别的事件，Agent 不会被堵住。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Permissions · Deferred tool calls</a>。"},{"q":"一次 run 可以怎样结束？","options":["一次 run 可以写入 outbox、判断这次什么也不必送，或发出 deferred tool call 来请人批准或补一句","一次 run 必须以流式输出全部推理来结束，否则无法确认 outbox 与 deferred tool call 有没有发生","一次 run 必须同时写入 outbox 并发出 deferred tool call，否则投递服务就没有资格把消息送出去了","一次 run 只能在用户在场时结束，否则 outbox 与 deferred tool call 都要等到下次有人盯着再处理"],"answer":0,"explain":"原文把一次 run 的结束写成三种可能：把一条消息写入 outbox；判断这次什么也不必送；或发出一次 deferred tool call，请人批准或补一句。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Outbox</a>。"},{"q":"什么时候才需要一份正式的 outbox？","options":["多数情况一个直接送达的 send 工具就够；需要控制节奏或从投递错误里恢复时，才做正式 outbox","每个此类系统都必须先做正式 outbox；send 工具只适合用来把逐步推理流式展示给用户的那些情况","正式 outbox 用来代替收件列表，send 工具用来代替执行者；这样事件就不必再写成耐用待办列表","send 工具和正式 outbox 不能同时使用；一旦选了 send 工具，投递服务必须改去扫描列表"],"answer":0,"explain":"原文写：多数 always-on agent 用一个直接把消息送给用户的 send 工具就够。只有在你想控制发送节奏，或让 Agent 能从投递错误里恢复时，才需要一份正式的 outbox。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Outbox</a>。"},{"q":"dispatcher 在正式 outbox 里做什么？","options":["dispatcher 读取 outbox 里的待发消息，决定交哪些再送给用户；它相当于 inbox 一侧的 worker","dispatcher 读取 inbox 里那些待办事件，决定开哪一次再叫模型；它要绕过 outbox 不用 worker","dispatcher 读取 memory 里的进度文件，决定加载哪些索引写回；它要绕过 outbox 也不用 inbox","dispatcher 读取 timer 里已到期的项目，决定哪些该开火并开跑；它要绕过 inbox 也不经 outbox"],"answer":0,"explain":"正式 outbox 是一张待发消息表，和 event inbox 相对。dispatcher 通常是一个后台服务，和 inbox 一侧的 worker 相对：它读取待发消息，决定交哪些，再送给用户。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Outbox</a>。"},{"q":"关于该发多少消息给用户，原文怎么说？","options":["发太多会吵，发太少会漏掉用户该知道的事；应用 evals 找平衡，实际中最好先偏安静再逐渐多获得注意","发得越多越好，这样用户才知道后台一直在工作；evals 只用来检查凭证，应当和消息条数分开来做评估了","发得越少越好，最好一次也不要发出去；只要做了正式投递表，evals 和安静起步就都不必再去纳入考虑了","消息条数应固定成每次只发一条，不必做 evals；先偏吵一些，再按照用户的那些投诉把频率慢慢地降下来"],"answer":0,"explain":"原文说：发太多会变得吵闹，发太少又会漏掉用户需要知道的事。它建议用 evals 来找到平衡。实际中，最好先让 Agent 偏安静，再逐渐多获得一些用户的注意。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Outbox</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 里的 <strong>Outbox</strong> 一节。请把「三种结束方式」和「何时才需要正式 outbox」两句话抄下来，合上后再背一遍。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>send 工具和正式 outbox 还分不清、想问 deferred tool call 的请求为什么可以不走 outbox，或者想讨论 evals 在这里评估的是什么，都可以直接问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：看 <a href="../reference/glossary.html">术语表</a> 里 outbox 和 dispatcher，以及 <a href="../reference/cycle-cheatsheet.html">循环速查</a>。下一课会把整条循环再练一遍。</p>
+
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0005-permissions.html">上一课 · Permissions</a>
+  <a class="next" href="0007-cumulative-review.html">下一课 · 总复习</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品。
+</footer>
+</main>
+</body>
+</html>

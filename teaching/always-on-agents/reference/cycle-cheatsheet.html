@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>循环速查 · Building always-on agents</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html" aria-current="page">循环速查</a>
+  <a href="../reference/scenario-cards.html">情景速查</a>
+</nav>
+
+<h1>循环速查</h1>
+<p class="subtitle">一页纸看完睡醒循环、五个原语和关键实践。打印或存在手机上，合上原文前扫一遍。</p>
+
+<div class="cards">
+  <div class="card">
+    <h3>一句话</h3>
+    <p>always-on 只是用户体验。Agent 大半时间在睡；每次醒来是一次 run，发生在一份 session 里。事件进 inbox，worker 开 run，读 memory、在 permissions 内行动、再更新 memory，必要时把结果交给 outbox。循环一直转，才显得它一直在。</p>
+  </div>
+  <div class="card">
+    <h3>run 和 session</h3>
+    <p><strong>run</strong>：收到事件 → 做完活 → 把这次发生的事存下来 → 睡回去。</p>
+    <p><strong>session</strong>：消息和工具调用的 transcript。用户答复这类「接着先前工作」的事件续上已有 session，其余通常新开一份。</p>
+  </div>
+  <div class="card">
+    <h3>一次 run 怎么结束</h3>
+    <ul>
+      <li>把一条消息推进 outbox；</li>
+      <li>判断这次什么也不必送；</li>
+      <li>用 deferred tool call 请人批准或补一句。</li>
+    </ul>
+  </div>
+</div>
+
+<h2>五个原语</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>原语</th><th>是什么</th><th>挡住什么 / 原文给它的位置</th><th>怎么协作</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td>event inbox</td>
+  <td>耐用的事件列表 + handler 写入 + worker 读取</td>
+  <td>来源直接叫 Agent 时：同时到达会争出两次 run；崩溃会把事件弄丢</td>
+  <td>所有来源（含到期的 timer、用户答复）都先写进来，再由唯一的 worker 开 run</td>
+</tr>
+<tr>
+  <td>timers</td>
+  <td>独立存储里的 follow-up 或 schedule；scheduler 到期才开火</td>
+  <td>让 Agent 能主动醒来；未到期的事不进 inbox（inbox 只放已经能做的）</td>
+  <td>scheduler 更新 timer 后，把事件写入 inbox 并叫醒 worker。timer 自己不开 run</td>
+</tr>
+<tr>
+  <td>memory</td>
+  <td>独立耐用存储，常是映射到数据库或对象存储的文件目录，比 worker 活得更久</td>
+  <td>多次互不相连的 run 对不上连续性；不该把外部系统里查得到的东西再存一份</td>
+  <td>run 开头读取作为基线，结束前写入新学到的。只存查不回来的东西，否则存指针</td>
+</tr>
+<tr>
+  <td>permissions</td>
+  <td>每次工具调用：自己继续、拦住，或等人批准</td>
+  <td>无人值守却握着用户的访问权：凭证进了 Agent 环境，或危险动作没人拦</td>
+  <td>凭证走环境外的 credential proxy；较高风险动作可用 auto mode 的 classifier；要人拍板时用 deferred tool call</td>
+</tr>
+<tr>
+  <td>outbox</td>
+  <td>待发消息表 + dispatcher（可选；多数情况一个 send 工具就够）</td>
+  <td>需要控制节奏或从投递错误里恢复；发太多会吵，发太少会漏掉用户该知道的事</td>
+  <td>run 结束后把行推进去，dispatcher 决定交哪些。先偏安静，再用 evals 找到平衡</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h2>关键实践（原文）</h2>
+<div class="cards">
+  <div class="card">
+    <h3>event inbox</h3>
+    <ul>
+      <li>handler 很快确认收到；提示词注入这类深检查放到 run 里做。</li>
+      <li>inbox 是真相来源：worker 醒来先拉最新待办。中途死了，新 worker 可以拿同一事件重试。</li>
+      <li>同一时间只有一个在工作的 worker。</li>
+      <li>中途又来事件：推到下一次 run、并进当前 run，或打断重来（原文未推荐哪一种）。</li>
+      <li>把积压的待办事件批次合并，例如连续几条用户消息合成一次 run。</li>
+      <li>建议先一人一个 inbox；要更多并行再拆。</li>
+      <li>按来源给出的唯一标识去重；关系型数据库很适合，每条事件作为新行追加。</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>timers</h3>
+    <ul>
+      <li>和 inbox 分库存：inbox 只放已经能做的事件。</li>
+      <li>scheduler 每轮：扫描到期的 → follow-up 标完成 / schedule 改到下一回 → 写入 inbox 并叫醒 worker。</li>
+      <li>scheduler 可以自建，也可以用 durable execution engine；到期后仍要写入 inbox。</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>memory 四类</h3>
+    <ul>
+      <li>user instructions：单独文件，每次 run 开头都加载。</li>
+      <li>user notes：角色、偏好、纠正；变多后拆文件，开头只加载索引。</li>
+      <li>past messages：避免重复已经对用户说过的话。</li>
+      <li>task progress：每个进行中的任务一份进度，新 run 接着上次。</li>
+    </ul>
+    <p>新 session 只有 context overhead（system prompt、工具定义、memory 文件）加上触发事件；已有 session 还带回先前的消息和工具调用。session 太长就 compact 或新开——两种都会丢细节，所以途中要把该留的写入 memory。开头保持精瘦，并用 prompt caching。</p>
+  </div>
+  <div class="card">
+    <h3>deferred tool call 往返</h3>
+    <ol>
+      <li>这次 run 结束，session 保存在调用做到一半的地方。</li>
+      <li>请求交给用户（例如一张可交互的卡片）。</li>
+      <li>答复作为事件回到 inbox。</li>
+      <li>新的 run 接着原来的 session，带上用户的输入。</li>
+    </ol>
+    <p>等待期间，worker 仍可拾起别的事件，Agent 不会被堵住。</p>
+  </div>
+</div>
+
+<h2>60 秒骨架</h2>
+<p>always-on 是体验，不是进程一直醒着。一次 run：inbox 里的事件叫醒唯一的 worker，在新的或已有的 session 里读 memory、在 permissions 内行动、再更新 memory，然后可能写入 outbox。timer 到期也是先变成 inbox 里的事件。要人批准时，结束这次 run 并保存 session，等答复作为新事件再续上。每次 run 都很短，循环可以一直转。</p>
+
+<p>回到 <a href="../index.html">目录</a> · 查 <a href="glossary.html">术语表</a> · 看 <a href="scenario-cards.html">情景速查</a></p>
+<p>课程：<a href="../lessons/0001-sleep-wake-cycle-and-five-primitives.html">第 1 课</a> · <a href="../lessons/0002-event-inbox.html">第 2 课</a> · <a href="../lessons/0003-timers.html">第 3 课</a> · <a href="../lessons/0004-memory.html">第 4 课</a> · <a href="../lessons/0005-permissions.html">第 5 课</a> · <a href="../lessons/0006-outbox.html">第 6 课</a> · <a href="../lessons/0007-cumulative-review.html">第 7 课</a></p>
+
+<footer class="foot">
+  压缩自 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a>。
+  不编造原文没有的推荐；「中途来事件」的三种处理原文只是并列。
+</footer>
+</main>
+</body>
+</html>

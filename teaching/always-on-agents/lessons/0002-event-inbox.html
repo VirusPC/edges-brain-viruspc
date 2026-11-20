@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 课 · Event inbox</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0002-event-inbox.html" aria-current="page">第 2 课 · Event inbox</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+</nav>
+
+
+<h1>Event inbox</h1>
+<p class="subtitle">先挡住争跑和丢事件：所有来源写入一份耐用列表，再由唯一的 worker 取出并开 run。</p>
+<p class="meta">第 2 课 · 约 10 分钟 · 主来源：<a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>看到一个新事件，能分清 handler 该立刻做什么、worker 该做什么。你能说出「来源直接叫 Agent」会挡住的两种失败，能判断该续上已有 session 还是新开一份，也能列出 run 中途又来事件时的三种处理，并且不编造原文没有的偏好。</p>
+</div>
+
+<h2>为什么不能让来源直接叫 Agent</h2>
+<p>多数普通 Agent 只在用户发来一条消息时才跑。always-on agent 则可能被许多类事件叫醒，包括 webhook、预定任务和后台作业。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+<p>一种诱人的做法，是让每个事件源直接去叫 Agent。原文指出这样会有几种失败。它举了两个例子：两个事件同时到达，会启动互相竞争的 run；一旦崩溃，还可能把事件整件弄丢。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+
+<h2>三件套：耐用列表、handler、worker</h2>
+<p>所以所有来源不要直接叫 Agent，而是先把事件送到 event inbox，再由 worker 取出。原文把最简单的形态写成三件事： <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+<ol class="flow">
+  <li><span class="step-title">一份耐用的事件列表</span>通常是一张数据库表。inbox 还应当跟踪每条事件的状态。事件可以按来源给出的唯一标识去重。关系型数据库很适合做 inbox，每条事件作为新行追加。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+  <li><span class="step-title">一个 handler</span>通常是一个 HTTP 接口，负责把事件写入这份列表。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+  <li><span class="step-title">一个 worker</span>通常是一个后台服务，负责从列表里读取待办。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+</ol>
+<p class="with-side">新事件到来时，handler 把它写入 inbox，并叫醒 worker。worker 读出待办，开一次 run，把事件交给 Agent 循环，等这次 run 结束，再把对应事件标成完成。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a>
+<span class="side">原文建议先从「一人一个 inbox」起步；若需要更多并行，再继续拆分。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></span></p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 220" role="img" aria-label="事件源经 handler 写入 event inbox，再由唯一的 worker 开一次 run">
+  <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a3341f"/></marker></defs>
+  <style>.bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}.bx2{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}.bx3{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}.t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}.s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}.ln{stroke:#a3341f;stroke-width:1.5;fill:none;marker-end:url(#a2)}.n{font:700 11px "Noto Sans CJK SC",sans-serif;fill:#a3341f}</style>
+  <rect class="bx" x="16" y="70" width="130" height="80" rx="4"/><text class="t" x="28" y="102">事件源</text><text class="s" x="28" y="122">消息 / webhook</text>
+  <rect class="bx" x="186" y="70" width="130" height="80" rx="4"/><text class="t" x="198" y="102">handler</text><text class="s" x="198" y="122">写入并很快确认</text>
+  <rect class="bx2" x="356" y="62" width="160" height="96" rx="4"/><text class="t" x="368" y="92">event inbox</text><text class="s" x="368" y="112">耐用列表，记状态</text><text class="s" x="368" y="130">可按来源标识去重</text>
+  <rect class="bx3" x="556" y="70" width="148" height="80" rx="4"/><text class="t" x="568" y="102">唯一的 worker</text><text class="s" x="568" y="122">读待办，开一次 run</text>
+  <path class="ln" d="M146,110 L186,110"/><path class="ln" d="M316,110 L356,110"/><path class="ln" d="M516,110 L556,110"/>
+  <text class="n" x="150" y="96">① 先写入</text><text class="n" x="400" y="48">② 真相来源</text>
+</svg>
+<figcaption>图 1　来源先经过 handler 进入 event inbox；同一时间只有一个 worker 从这份列表取出事件并开 run。</figcaption>
+</figure>
+
+<h2>四条最佳实践</h2>
+<p>实现细节会变复杂，原文给了几条应当先记住的做法。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+<h3>handler 要很快确认收到</h3>
+<p>有些来源，例如 webhook 提供方，会把慢响应当成失败。handler 仍可以做一些轻量检查，但更深的验证，例如检查提示词注入，应当放到这次 run 里做。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+<h3>inbox 是真相来源</h3>
+<p>worker 被叫醒时，应当先从 inbox 拉最新的事件。这样，如果 worker 在一次 run 做到一半时死掉，新的 worker 可以拾起同一条事件再试。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+<h3>同一时间只有一个在工作的 worker</h3>
+<p>一个 inbox 同一时间只应有一个在工作的 worker。这样可以避免两次 run 做重复的劳动，或互相覆盖。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+<p>若新事件在一次 run 做到一半时到来，原文并列了三种处理：把它推到下一次 run，把它并进当前这次 run，或者打断并重来。原文没有推荐其中一种，课里也不编造偏好。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+<h3>把待办事件批次合并</h3>
+<p>worker 应当把积压的待办事件批次合在一起。例如用户连续发来好几条消息，worker 可以把它们合并成一次 run，这样 Agent 只需回复一次。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+
+<h2>续上 session，还是新开一份</h2>
+<p>怎样决定续上旧 session 还是新开一份？原文写得很具体：接着先前工作的事件，例如用户的答复，会续上已有 session；其余通常新开一份。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></p>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「always-on agent 会被许多类事件叫醒，不要让来源直接去叫它：同时到达会争出两次 run，崩溃还可能把事件弄丢。所有来源先经过 handler，写入一份会记状态、可按来源标识去重的耐用 inbox。handler 要很快确认收到，深检查放到 run 里做。inbox 是真相来源，worker 醒来先拉最新待办；它若中途死了，新的 worker 可以拿同一事件再试。一个 inbox 同一时间只有一个在工作的 worker。中途又来事件时，可以推到下一次、并进当前这次，或打断重来，原文把三种并列，没有推荐哪一种。积压的待办可以批次合并。用户答复这类接着先前工作的事件续上已有 session，其余通常新开一份。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。第一题先唤回第 1 课，后面四题练习本课。答完会立刻告诉你对错和出处。</p>
+<div class="quiz" data-quiz-id="0002-event-inbox">
+<script type="application/json">{"questions":[{"q":"合上第 1 课来回想：原文说 always-on 首先描述的是什么？","options":["用户体验上显得一直在；Agent 大半时间在睡，醒来做一次短的 run，再睡回去。","模型进程必须一直醒着；worker 也不允许在两次 run 之间把状态写入存储里。","inbox 必须不停地轮询模型；否则未到期的 timer 就会从存储里整件都丢失。","outbox 必须实时流式输出推理；否则用户就无法判断这次 run 是否还在做事。"],"answer":0,"explain":"原文开头就把 always-on 写成用户体验，而不是运行方式：Agent 大半时间在睡，偶尔醒来做一次 run，再睡回去。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · The cycle behind the always-on agent</a>。"},{"q":"如果每个事件源都直接去叫 Agent，而不经过 event inbox，原文指出的失败是什么？","options":["两个事件同时到达时会争着开出两次 run，一旦崩溃也可能把事件整件都弄丢","到期 follow-up 无人处理，固定 schedule 也会全部停摆","跨过多次断裂的 run 会对不上已有进度，对用户说过的话又可能被再说一遍","在无人值守时会越权采取行动，真实凭证也还会直接暴露在 Agent 环境里"],"answer":0,"explain":"原文明确举了两种失败：两个事件同时到达会启动互相竞争的 run；崩溃可能把事件完全弄丢。所以所有来源先写入 inbox，再由 worker 取出。后面三个选项分别更接近 timers、memory、permissions 要处理的问题。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Event inbox</a>。"},{"q":"新事件到达时，handler 应当怎样做？","options":["很快确认收到并把事件写入 inbox，提示词注入这类深检查放到这次 run 里再做","先做完提示词注入再确认并写入 inbox，这类深检查必须放到这次 run 之前做完","把外来事件直接交给模型去开这次 run，确认可以较慢，inbox 留给稍后补写即可","先并行拉起多个执行者再写入 inbox，随后再决定要不要为这次 run 保留该事件"],"answer":0,"explain":"原文要求 handler 很快确认收到，因为有些来源（例如 webhook 提供方）会把慢响应当成失败。handler 仍可做轻量检查，但提示词注入这类更深的验证应放到这次 run 里做。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Event inbox</a>。"},{"q":"一个 inbox 正在跑一次 run 时又来了新事件，原文怎么说？","options":["可以推到下一次、并进当前这次，或打断重来；原文只把三种并列，没有推荐其中一种","必须打断当前这次并立刻重来再做；原文把这一种写成唯一正确且不可替换的处理办法","必须并进当前这次和旧事件一起处理；原文禁止留到下一次，以免把这一件工作再拆开","必须先推到下一次然后再另行处理；原文禁止打断或并进，以免两次工作互相覆盖状态"],"answer":0,"explain":"原文要求一个 inbox 同一时间只有一个在工作的 worker，并并列写出三种处理：推到下一次 run、并进当前 run，或打断重来。它没有推荐其中一种，课里也不编造偏好。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Event inbox</a>。"},{"q":"怎样决定续上已有 session，还是新开一份？","options":["接着先前工作的用户答复会续上已有 session，其余事件通常都要新开一份","所有事件一律续上最近那份 session，以免新开之后把已经做过的工作丢掉","所有事件一律新开一份 session，以免旧记录把这一次新的工作全部带偏了","只有外来推送会续上已有 session，用户答复和后台任务到来时则必须新开"],"answer":0,"explain":"原文写：Events that continue earlier work, such as a reply from the user, resume an existing session, while everything else starts a new session。也就是用户答复这类接着先前工作的事件续上已有 session，其余通常新开。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Event inbox</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 里的 <strong>Event inbox</strong> 一节。读的时候对照上面的三件套和四条实践：每看到 handler、worker、source of truth、batch，就停下来问自己「它挡住了哪一种失败」。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>哪一条实践没看明白、三种中途处理想对照原文再走一遍，或者想先问「一人一个 inbox」以后怎么拆，都可以直接在对话里问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：把 <a href="../reference/glossary.html">术语表</a> 里 event inbox、handler、worker 三条再扫一眼，需要时也可看 <a href="../reference/cycle-cheatsheet.html">循环速查</a> 里 inbox 那张卡片。</p>
+
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0001-sleep-wake-cycle-and-five-primitives.html">上一课 · 睡醒循环与五个原语</a>
+  <a class="next" href="0003-timers.html">下一课 · Timers</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品。
+</footer>
+</main>
+</body>
+</html>

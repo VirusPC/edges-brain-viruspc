@@ -18,5 +18,5 @@ DeepSeek Harness（dsh）学习 Project：日常用法与插件/profile 架构�
 <!-- edges-entries-local:start -->
 ## 本层内容
 
-- [notes/README.md](<notes/README.md>)
+- [notes/README.md](<notes/README.md>) — 笔记内容的组织清单。
 <!-- edges-entries-local:end -->

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 7 课 · 总复习</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0007-cumulative-review.html" aria-current="page">第 7 课 · 总复习</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/cycle-cheatsheet.html">循环速查</a>
+</nav>
+
+
+<h1>总复习</h1>
+<p class="subtitle">不看原文，把睡醒循环画出来；再在交错的情景里判断，该由哪一个原语接手。</p>
+<p class="meta">第 7 课 · 约 10 分钟 · 主来源：<a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a></p>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>合上前面六课和原文，能用自己的话把整个循环讲一遍，并能在「中途杀到一条 webhook」「用户答复一次推迟的调用」「一条 follow-up 到期」这类情景里，指出该由哪个原语接手，memory 和 outbox 在其中做什么。</p>
+</div>
+
+<h2>先凭记忆把循环画出来</h2>
+<p>请先不要翻回第 1 课，也不要打开循环速查。用几句话或一张草图，按顺序写出：一次 run 从哪里开始，怎样经过五个原语，怎样结束，用户的答复和到期的 timer 又怎样回来。写完再点「对照答案」。</p>
+
+<div class="self-check" data-check-id="cycle-draw">
+  <div class="self-check-prompt">
+    <p>提示：从「Agent 大半时间在睡」起笔，经过 event inbox、worker、memory、permissions、outbox，再画上两条回来的路。</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <p>always-on 只是用户体验。Agent 大半时间在睡。每次 run 都从 inbox 里的事件开始，无论它是用户消息、webhook，还是到期的 timer。唯一的 worker 拾起事件，在新的或已有的 session 里叫醒 Agent。Agent 先读 memory 作为基线，在 permissions 内行动，再把学到的写入 memory。结束时，它可能把一行推进 outbox，由 dispatcher 交给用户；也可能判断什么也不必送；也可能发出一次 deferred tool call。用户若答复，答复再作为事件回到 inbox。一次 run 也可以给自己设一个 timer，到期后同样先变成 inbox 里的事件。每次 run 都很短，循环可以一直转，这才让人觉得它一直在。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · The cycle / How everything fits together</a></p>
+    <p>若要对照一页纸的压缩版，打开 <a href="../reference/cycle-cheatsheet.html">循环速查</a>；若要把三条情景也放在手边，可看 <a href="../reference/scenario-cards.html">情景速查</a>。</p>
+  </div>
+</div>
+
+<h2>交错练习：三条情景</h2>
+<p>下面每条情景都混进了不止一个原语。先自己判断，再对照答案。原文没有写明的地方，答案里会标明，不会编造偏好。</p>
+
+<div class="self-check" data-check-id="scenario-webhook">
+  <div class="self-check-prompt">
+    <h3>情景 A　一次 run 做到一半，新的 webhook 到了</h3>
+    <p>请指出：这条 webhook 应当先进入哪一个原语？同一份 inbox 能不能再起一个 worker 来抢跑？中途到来的事件有哪三种处理？这次若开新的 run，session 通常是续上还是新开？这一步里 memory 和 outbox 各做什么？</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <ul>
+      <li>webhook 应当先由 handler 很快确认并写入 event inbox，而不是直接去叫 Agent。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+      <li>同一 inbox 不能再起一个在工作的 worker 来抢跑。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+      <li>中途到来的事件，原文并列了三种处理：推到下一次 run、并进当前这次，或打断重来。它没有推荐哪一种。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+      <li>webhook 属于「其余事件」，通常新开一份 session；原文把「续上已有 session」明确写给接着先前工作的事件，例如用户答复。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+      <li>当前这次尚未结束的 run，仍按原计划读、写 memory，并在结束时才可能写入 outbox。新 webhook 在被某一次 run 拾起之前，还不会动 memory 或 outbox。不要把「尚未开始的那次工作」提前写进 outbox。</li>
+    </ul>
+  </div>
+</div>
+
+<div class="self-check" data-check-id="scenario-deferred">
+  <div class="self-check-prompt">
+    <h3>情景 B　用户答复了一次 deferred tool call</h3>
+    <p>请指出：当时那次 run 是否还在空等？session 去了哪里？答复应当先进入哪一个原语？新的 run 会不会续上原来的 session？等待期间 worker 在做什么？这次请求当初可以怎样交给用户？</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <ul>
+      <li>当时那次 run 已经结束，并不是一直挂着空等。session 保存在调用做到一半的地方。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></li>
+      <li>用户答复作为事件回到 event inbox，并开一次新的 run，接着那份已保存的 session。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></li>
+      <li>等待期间，worker 仍可拾起 inbox 里别的事件，Agent 不会被堵住。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Permissions</a></li>
+      <li>当初把请求交给用户时，可以经过 outbox，也可以直接显示在界面上；原文把两条都写成可以。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="self-check" data-check-id="scenario-followup">
+  <div class="self-check-prompt">
+    <h3>情景 C　一条 follow-up 到期了</h3>
+    <p>请指出：是 timer 自己开 run，还是另有角色？scheduler 到期后先做什么、再把事件送到哪里？worker 随后怎样？这次 run 会不会自动续上旧 session？若 Agent 在这次里学到了新的用户偏好，应当写到哪里？若它决定暂时不打扰用户，属于哪一种结束方式？</p>
+  </div>
+  <button type="button" class="self-check-toggle">对照答案</button>
+  <div class="self-check-answer" hidden>
+    <ul>
+      <li>timer 自己不会开 run。scheduler 找出这条已到期的 follow-up，把它标成完成，再把事件写入 inbox 并叫醒 worker。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Timers</a></li>
+      <li>随后仍由唯一的 worker 取出事件并开 run。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+      <li>这次 run 是否续上旧 session：原文只明确把「用户答复」这类接着先前工作的事件写成续上已有 session，其余通常新开。到期的 follow-up 没有被单独写成必须续上旧 session，这里不做额外推断。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Event inbox</a></li>
+      <li>新学到的用户偏好属于 user notes，应当写入 memory；已在别的系统里的事项则只存指针。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Memory</a></li>
+      <li>决定暂时不打扰用户，属于三种结束方式里的「这次什么也不必送」。 <a class="src" href="https://claude.com/resources/articles/building-always-on-agents">原文 · Outbox</a></li>
+    </ul>
+  </div>
+</div>
+
+<h2>回想练习</h2>
+<p>下面六题把前面各课交错在一起。不要往上翻，答完会立刻告诉你对错和出处。</p>
+<div class="quiz" data-quiz-id="0007-cumulative-review">
+<script type="application/json">{"questions":[{"q":"一次 run 从醒来到再睡，下面哪一条顺序符合原文「How everything fits together」？","options":["inbox 接到事件 → worker 开 run → 读 memory → 在 permissions 内行动 → 更新 memory → 才可写入 outbox","inbox 接到事件 → 随即先写 outbox → worker 开 run → 读 memory → 在 permissions 内行动 → 更新 memory","worker 先开 run → 读 memory → inbox 接到事件 → 在 permissions 内行动 → 更新 memory → 可写入 outbox","inbox 接到事件 → worker 开 run → 随即写入 outbox → 读 memory → 在 permissions 内行动 → 更新 memory"],"answer":0,"explain":"原文把一圈写成：每次 run 都从 inbox 里的事件开始；worker 拾起事件，在新的或已有的 session 里叫醒 Agent；Agent 先读 memory 作为基线，在 permissions 内行动，再把学到的写入 memory；结束后才可能把一行推进 outbox，由 dispatcher 交给用户。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · How everything fits together</a>。"},{"q":"当前一次工作尚未结束时，新到来的 webhook 应当怎样处理？","options":["当前一次工作尚未结束时，新到来的 webhook 应当先写入 inbox，并保持只有一个 worker，随后按三种并列办法之一处理","当前一次工作尚未结束时，新到来的 webhook 应当直接再开一次并行工作，让它不必在 inbox 排队，也无须再等 worker","当前一次工作尚未结束时，新到来的 webhook 应当先进入待发表，等当前工作结束后再转交 inbox，再交给 worker 取走","当前一次工作尚未结束时，新到来的 webhook 应当先写进计时存储，等下一轮扫描再开火，以免打断当前工作，也不再经过 inbox"],"answer":0,"explain":"新 webhook 仍应先由 handler 写入 event inbox，而不能直接再开一次互相竞争的 run。因为同一 inbox 只能有一个在工作的 worker，中途到来的事件可按原文并列的三种办法处理：推到下一次、并进当前这次，或打断重来；原文没有推荐哪一种。webhook 通常属于「其余事件」，一般会新开一份 session。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Event inbox</a>。"},{"q":"用户对一次推迟的工具调用作出答复时，应当怎样接上？","options":["用户对一次推迟的工具调用作出答复时，应当把答复作为事件写回 inbox，并开一次新的 run，接着那份做到一半的 session","用户对一次推迟的工具调用作出答复时，应当把答复作为事件写回 inbox，但必须新开一份空白 session，不接着原来的 run","用户对一次推迟的工具调用作出答复时，应当把答复直接灌进仍在空等的那次 run，不必经过 inbox，也不另开一份 session","用户对一次推迟的工具调用作出答复时，应当把答复先写成一条延期提醒，到期后再进入 inbox，再另开一次全新的空白 session"],"answer":0,"explain":"deferred tool call 会结束当时那次 run，并把 session 保存在调用做到一半的地方。用户答复作为事件回到 inbox，新的 run 接着那份已保存的 session。它不会让旧的 run 一直空等，也不会丢掉 session 再从头来。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Permissions · Deferred tool calls</a>。"},{"q":"当一条 follow-up 到期时，正确的路径是什么？","options":["当一条 follow-up 到期时，正确的路径是：scheduler 把它标成完成，写入 inbox 并叫醒 worker；timer 自己并不会开 run","当一条 follow-up 到期时，正确的路径是：它自己直接开一次 run，绕过 inbox 与 worker；timer 不必等 scheduler 处理","当一条 follow-up 到期时，正确的路径是：先通知用户，等回一句后，scheduler 才写入 inbox 并叫醒 worker，timer 仍在等待","当一条 follow-up 到期时，正确的路径是：它留在存储里继续等，直到 worker 空闲，再绕过 inbox 直接开 run，timer 也仍然在等待"],"answer":0,"explain":"timer 自己不会开 run。scheduler 找出到期的 follow-up，把它标成完成，再把事件写入 inbox 并叫醒 worker。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Timers</a>。至于这次 run 该续上旧 session 还是新开一份：原文只明确把「用户答复」这类接着先前工作的事件写成续上已有 session，其余通常新开。到期的 follow-up 没有被单独写成必须续上旧 session，这里不做额外推断。"},{"q":"若事项已在问题跟踪里，并且考虑要不要单独做投递表，原文的意思是？","options":["若事项已在问题跟踪里，并且考虑要不要单独做投递表，原文的意思是：只存一个指针；要控制发送节奏或从投递错误里恢复时，才值得做正式 outbox","若事项已在问题跟踪里，并且考虑要不要单独做投递表，原文的意思是：应整份拷贝进来；每一个此类系统也都必须先做成正式 outbox，才能开始投递","若事项已在问题跟踪里，并且考虑要不要单独做投递表，原文的意思是：只存一个指针；但正式 outbox 必须先于送达工具存在，否则就不能交给用户","若事项已在问题跟踪里，并且考虑要不要单独做投递表，原文的意思是：应整份拷贝进来；正式 outbox 只在用户在场时使用，后台工作不得向外投递"],"answer":0,"explain":"memory 只存查不回来的东西；已在问题跟踪里的事项应当只存指针。正式 outbox 不是人人必做：多数情况一个 send 工具就够，需要控制节奏或从投递错误里恢复时才值得单独做。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Memory / Outbox</a>。"},{"q":"当 session 太长，又涉及最重要的权限决定时，哪一句符合原文？","options":["当 session 太长，又涉及最重要的权限决定时，哪一句符合原文：可 compact 或新开，两种都会丢细节，故途中要写入 memory；最重要的决定仍要人看","当 session 太长，又涉及最重要的权限决定时，哪一句符合原文：只需 compact 一次，细节不会丢失，故途中不必写 memory；最重要的决定交给自动层","当 session 太长，又涉及最重要的权限决定时，哪一句符合原文：必须新开且禁止 compact，以免丢失细节；最重要的决定在自动层打开以后也就可以不再等人看","当 session 太长，又涉及最重要的权限决定时，哪一句符合原文：改在当次工作里压缩上下文，也不必写 memory；凭证应放进模型环境，好在无人值守时拿来使用"],"answer":0,"explain":"session 太长时可以 compact 旧消息或新开一份，两种都会丢细节，所以途中要把该留的写入 memory。auto mode 可以拦住危险动作，但最重要的决定仍要人看。凭证则应走环境外的 credential proxy，而不是放进 Agent 环境。见 <a href=\"https://claude.com/resources/articles/building-always-on-agents\">原文 · Inside the context window / Permissions</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p>请回读 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 里的 <strong>The cycle behind the always-on agent</strong> 与 <strong>How everything fits together</strong> 两节。这一次不要再按单个原语逐段记，而是看着循环，检查自己能不能在不看笔记的情况下把五个原语的位置讲出来。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>哪一条情景还对不上、想让我听你用 60 秒复述一遍，或者想回到某一个原语再挖深一点，都可以直接问我。我是你这门课的老师。</p>
+</div>
+
+<div class="box interview">
+  <span class="box-title">学完七课之后</span>
+  <p>这门课的目标，是让你不看原文也能讲清：always-on 只是体验，底下是睡了再醒的循环，以及五个原语各自为什么存在、怎么协作。可以把 <a href="../reference/cycle-cheatsheet.html">循环速查</a> 和 <a href="../reference/scenario-cards.html">情景速查</a> 留在手机上，隔几天再做一遍第 7 课的测验。</p>
+</div>
+
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <a class="prev" href="0006-outbox.html">上一课 · Outbox</a>
+  <span></span>
+</nav>
+<script src="../assets/self-check.js" defer></script>
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://claude.com/resources/articles/building-always-on-agents">William Hu · Building always-on agents</a> 为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品。
+</footer>
+</main>
+</body>
+</html>

@@ -23,12 +23,14 @@ const groups = sortProjects(
 ).map((section) => ({
   heading: section.title,
   items: sortProjectDocuments(
-    (byProject.get(section.id) ?? []).map((doc) => ({
-      title: doc.data.title,
-      date: doc.data.date ?? null,
-      isHub: doc.data.isHub,
-      href: doc.data.hasPage ? siteUrl(`/projects/${doc.id}`) : githubBlob(doc.data.sourcePath),
-    })),
+    (byProject.get(section.id) ?? [])
+      .filter((doc) => !doc.data.isHub)
+      .map((doc) => ({
+        title: doc.data.title,
+        date: doc.data.date ?? null,
+        isHub: doc.data.isHub,
+        href: doc.data.hasPage ? siteUrl(`/projects/${doc.id}`) : githubBlob(doc.data.sourcePath),
+      })),
   ).map(({ title, date, href }) => ({
     title,
     date: date ?? undefined,

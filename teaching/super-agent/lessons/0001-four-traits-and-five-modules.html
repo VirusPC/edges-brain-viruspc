@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 课 · 四个特征与五个模块</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<main class="page">
+<nav class="crumbs">
+  <a href="../index.html">目录</a>
+  <a href="../lessons/0001-four-traits-and-five-modules.html" aria-current="page">第 1 课 · 四个特征与五个模块</a>
+  <a href="../reference/glossary.html">术语表</a>
+  <a href="../reference/traits-and-modules.html">特征与模块速查</a>
+</nav>
+
+<h1>四个特征与五个模块</h1>
+<p class="subtitle">先抓住原文第 1 节的骨架：现有单会话 Agent 卡在人的注意力上；Super-agent 是跨会话、跨任务的连续实体；它有四个基础特征，五个模块只先记名字和指向。</p>
+<p class="meta">第 1 课 · 约 10 分钟 · 主来源：<a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a>（第 1 节）</p>
+
+<div class="box warn">
+  <span class="box-title">这篇文章是什么，不是什么</span>
+  <p>原文第一句就写明：这是一篇面向工程实践的架构思路探讨，并非对 DeepSeek Harness 现有产品功能的介绍。下面出现的内部实例，只用来理解这种形态，不要读成产品功能清单。</p>
+</div>
+
+<div class="box win">
+  <span class="box-title">学完这一课，你能做到</span>
+  <p>不看原文，能讲清：为什么以单一 Session 为基本单位会撞上人的注意力天花板；Super-agent 指的是哪一种连续实体；连续、高效、主动、持久在原文里各是什么意思；为什么单个 ReAct Loop 撑不住这四件事；五个模块叫什么、各自先指向哪一类能力。这是吃透这篇原文的骨架。</p>
+</div>
+
+<h2>单任务越来越省人，多任务还卡在人身上</h2>
+<p>原文从过去一年的变化讲起。以 Coding Agent 为代表的单任务 Agent 已经证明，模型能够使用工具解决复杂问题，而且越来越少需要人持续盯着、一步步插手。模型的多 Agent 协同能力也在提升，使跨会话的组织与调度变得可行。于是人的角色正往上移：更少参与底层执行，更多做高层的决策与验收。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a></p>
+<p>模型能力的这一提升，也催生了新的应用形态。个人助手开始直接接入日常的消息、日程、邮件与工作平台，持续观察信息流并协助处理事务。原文强调：这种持续在线、事件驱动的工作模式并不局限于个人场景，在软件开发等商业场景中同样很有价值。</p>
+<p class="with-side">可是，现有的主流 Agent 设计还难以在多任务和团队协作的规模上撑住这一模式。Agent 的工作仍然以单一 Session 为基本单位，不同 Session 彼此独立。用户要并行推进多项工作时，必须手动切换，并自己记住各个 Session 的上下文。作者写道，据他们观察，一个人通常只能同时跟进 3 到 5 个活跃 Session。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a>
+<span class="side">「3 到 5 个」是原文给出的观察，用来说明多任务会撞上人的注意力。它不是一条普遍定律，课里也不要把它讲成架构必须遵守的硬上限。</span>
+</p>
+<p>在这种设计下，单任务的上限取决于模型能力，多任务的上限取决于人的注意力。如果只在现有的本地单会话 Agent 上，借助 CLI、MCP 或外部连接器做简单扩展，Agent 虽然也能接入外部消息，但仍会受制于单会话同步阻塞、多任务上下文混乱、本地设备离线即停止运行等问题，需要大量人工维护。</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 210" role="img" aria-label="以单一 Session 为基本单位时，用户必须手动切换上下文，多任务的上限取决于人的注意力">
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .bx3{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+    .n{font:700 11px "Noto Sans CJK SC",sans-serif;fill:#a3341f}
+  </style>
+  <rect class="bx" x="16" y="36" width="200" height="120" rx="4"/>
+  <text class="t" x="30" y="64">单一 Session 为基本单位</text>
+  <text class="s" x="30" y="88">不同 Session 彼此独立</text>
+  <text class="s" x="30" y="108">用户自己切换、自己记上下文</text>
+  <text class="s" x="30" y="128">只做连接器扩展仍不够</text>
+
+  <rect class="bx3" x="260" y="36" width="200" height="120" rx="4"/>
+  <text class="t" x="274" y="64">人的注意力</text>
+  <text class="s" x="274" y="88">作者观察：通常只能同时</text>
+  <text class="s" x="274" y="108">跟进 3 到 5 个活跃 Session</text>
+  <text class="s" x="274" y="128">这是观察，不是定律</text>
+
+  <rect class="bx2" x="504" y="36" width="200" height="120" rx="4"/>
+  <text class="t" x="518" y="64">两条上限</text>
+  <text class="s" x="518" y="88">单任务：取决于模型能力</text>
+  <text class="s" x="518" y="108">多任务：取决于人的注意力</text>
+  <text class="s" x="518" y="128">人还在自己管 Session</text>
+
+  <text class="n" x="216" y="24">现有主流设计还难以支撑多任务与团队协作的规模</text>
+</svg>
+<figcaption>图 1　原文的判断：单任务越来越少需要人盯着，但只要工作单位仍是彼此独立的 Session，多任务的上限就会落在人的注意力上。</figcaption>
+</figure>
+
+<h2>Super-agent：跨会话、跨任务的连续实体</h2>
+<p>要突破这些限制，原文认为需要打破 Agent 与单次手动会话的绑定，使它成为一个能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体。原文把这种 Agent 形态及其系统架构称为 Super-agent。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a></p>
+<p>也就是说，Super-agent 不只是一个更长的 Session，而是一种形态，加上支撑它的架构。课里说到这个词，都按「形态 + 架构」来理解，不要把它缩成某一个产品开关。</p>
+<p>原文用他们内部基于 DeepSeek Harness 运行的 Super-agent 实例举了两个例子：同一个开发任务可以在 IM 和 GitHub 之间连续推进；这个实例还会持续观察公共群聊中的反馈，在无人 @ 的情况下主动定位根因并提交修复 Pull Request。这些是原文用来说明形态的例子，仍然不是产品功能介绍。</p>
+
+<h2>四个基础特征，按原文的意思记</h2>
+<p>具体来说，原文认为 Super-agent 具备以下四个基础特征。不要只记住这四个字，要记住原文给每个字的意思。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a></p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>特征</th><th>原文里的意思</th></tr>
+</thead>
+<tbody>
+<tr><td>连续</td><td>用户可以直接在 IM 聊天、GitHub 评论等熟悉的工作界面与它交互，感觉始终只存在一个 Agent，不需要去想「Session X 的上下文中是否有 Y 信息」。例如，用户先在 IM 上提出采用方案 A，随后在 GitHub Pull Request 评论里改为方案 B，它能理解并调整执行方向。</td></tr>
+<tr><td>高效</td><td>交互响应迅速，同时能并行、高质量地完成多个复杂任务。无需等上一个命令或任务完成，就能接受下一条指令。</td></tr>
+<tr><td>主动</td><td>无需等待用户逐条下达指令，能持续观察环境事件并主动推进值得处理的事项，不需要介入时则保持安静。</td></tr>
+<tr><td>持久</td><td>始终在线、直接接入用户真实的工作环境，并在长期运行中遇到异常时自动恢复。</td></tr>
+</tbody>
+</table>
+</div>
+<p class="with-side">四个词很容易被平时的用法带偏。「连续」在这里不是「一个 Session 永远不要停」，而是用户不必自己管理 Session 分界；「高效」同时包含响应快和多任务并行；「主动」必须连着「不需要时保持安静」一起记；「持久」同时包含始终在线、接入真实环境、异常时能恢复。后面几课再讲这些特征是怎样被做出来的。
+<span class="side">Anthropic 的《<a href="https://claude.com/resources/articles/building-always-on-agents">Building always-on agents</a>》也把「一直在」首先写成用户体验，而不是一个永不停止的推理循环。本课先按本篇，把「始终在线」记在「持久」这个特征里，机制放到后面讲。</span>
+</p>
+
+<h2>单个 ReAct Loop 撑不住，五个模块先记框架</h2>
+<p>原文写得很干脆：单个 ReAct Loop 无法同时支持上述四个特征，底层需要一套相应的架构。相似的设计约束会导出相似的架构选择。无论是面向个人的助手，还是面向软件开发等商业场景的 Agent，如果目标是构建一个持续在线、并发响应环境事件的系统，那么在底层就可能会采用相近的架构。这一过程中面临的许多问题，与传统计算机系统长期探讨的问题很相似，因此经典的系统设计思想在这里同样适用。 <a class="src" href="https://www.bilibili.com/opus/1265361021143351318">原文 · 第 1 节</a></p>
+<p>在具体落地中，这套架构会有不同的变体，但原文认为以下五个模块构成了支撑上述四个基础特征的基本框架。第 1 课只记住它们的名字，以及原文给它们的职责指向，先不进入各节内部。</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>模块</th><th>对应原文章节</th><th>在框架里先指向什么</th></tr>
+</thead>
+<tbody>
+<tr><td>双层架构</td><td>第 2 节</td><td>兼顾连续交互与高效并发</td></tr>
+<tr><td>事件驱动</td><td>第 3 节</td><td>实现主动响应</td></tr>
+<tr><td>面向人的交互</td><td>第 4 节</td><td>在交互过程中同时做到连续与高效</td></tr>
+<tr><td>计算、状态与环境的分离</td><td>第 5 节</td><td>与 Watchdog 一起，实现跨设备的持久在线与异常自愈</td></tr>
+<tr><td>Watchdog</td><td>第 6 节</td><td>与上一模块一起，实现跨设备的持久在线与异常自愈</td></tr>
+</tbody>
+</table>
+</div>
+<p>原文把第 5 节和第 6 节写在同一句里：二者共同支撑「持久」。不要在第 1 课就把「在线」和「自愈」拆成互不相干的两套东西，也不要提前讲 Router、过滤或 daemon 的内部做法。</p>
+
+<figure class="wide scroll">
+<span class="scroll-hint">← 手机上可以左右滑动看全图 →</span>
+<svg viewBox="0 0 720 250" role="img" aria-label="Super-agent 是跨会话跨任务的连续实体，四个特征由五个模块支撑">
+  <style>
+    .bx{fill:#fffffb;stroke:#1f1d1a;stroke-width:1.4}
+    .bx2{fill:#e8eff6;stroke:#2c5d8a;stroke-width:1.4}
+    .bx3{fill:#f7ebe7;stroke:#a3341f;stroke-width:1.4}
+    .t{font:700 13px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#1f1d1a}
+    .s{font:11px "Noto Sans CJK SC","PingFang SC",sans-serif;fill:#5a554d}
+    .m{font:700 12px "Noto Sans CJK SC",sans-serif;fill:#2c5d8a}
+  </style>
+  <rect class="bx3" x="210" y="16" width="300" height="70" rx="4"/>
+  <text class="t" x="228" y="44">Super-agent</text>
+  <text class="s" x="228" y="64">跨会话保持上下文，同时推进多项任务</text>
+
+  <rect class="bx" x="16" y="110" width="156" height="50" rx="4"/>
+  <text class="m" x="30" y="132">连续</text>
+  <text class="s" x="30" y="148">始终像同一个 Agent</text>
+
+  <rect class="bx" x="192" y="110" width="156" height="50" rx="4"/>
+  <text class="m" x="206" y="132">高效</text>
+  <text class="s" x="206" y="148">响应快，且能并行</text>
+
+  <rect class="bx" x="368" y="110" width="156" height="50" rx="4"/>
+  <text class="m" x="382" y="132">主动</text>
+  <text class="s" x="382" y="148">观察事件，必要时安静</text>
+
+  <rect class="bx" x="544" y="110" width="160" height="50" rx="4"/>
+  <text class="m" x="558" y="132">持久</text>
+  <text class="s" x="558" y="148">在线、接入环境、能恢复</text>
+
+  <rect class="bx2" x="16" y="186" width="688" height="50" rx="4"/>
+  <text class="s" x="30" y="208">五个模块（先记框架）：双层架构 · 事件驱动 · 面向人的交互 · 计算、状态与环境的分离 · Watchdog</text>
+  <text class="s" x="30" y="226">第 2 至第 6 节再进入内部。单个 ReAct Loop 无法同时支持这四个特征。</text>
+</svg>
+<figcaption>图 2　第 1 课要带走的骨架：Super-agent 是连续实体；四个特征按原文含义来记；五个模块是支撑它们的基本框架，内部机制留给后面几课。</figcaption>
+</figure>
+
+<div class="box interview">
+  <span class="box-title">合上原文，60 秒这样讲</span>
+  <p>「这篇原文开篇就声明：它是面向工程实践的架构思路探讨，不是 DeepSeek Harness 现有产品功能的介绍。现有主流 Agent 仍以单一 Session 为基本单位，Session 彼此独立。用户并行推进多项工作时，必须手动切换并记住各个 Session 的上下文。作者观察到，一个人通常只能同时跟进 3 到 5 个活跃 Session——这是观察，不是定律。于是单任务的上限取决于模型能力，多任务的上限取决于人的注意力。只在本地单会话 Agent 上接 CLI、MCP 或连接器，仍会碰到同步阻塞、多任务上下文混乱、设备离线即停止这些问题。要突破限制，就要打破 Agent 与单次手动会话的绑定，使它成为能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体。原文把这种形态及其系统架构称为 Super-agent。它有四个基础特征：连续，是用户在 IM、GitHub 评论等熟悉界面里感觉始终只有一个 Agent，不必去想某条信息在哪个 Session 里；高效，是响应快，并能并行、高质量地完成多个复杂任务，不必等上一件做完再接受新指令；主动，是持续观察环境事件并推进值得处理的事项，不需要介入时保持安静；持久，是始终在线、直接接入真实工作环境，遇到异常能自动恢复。单个 ReAct Loop 无法同时支持这四个特征，底下需要一套架构。五个模块构成基本框架：双层架构兼顾连续与高效，事件驱动实现主动，面向人的交互让连续和高效同时落在交互体验上，计算、状态与环境的分离以及 Watchdog 一起支撑跨设备的持久在线与异常自愈。」</p>
+</div>
+
+<h2>回想练习</h2>
+<p>不要往上翻。凭记忆作答，答完会立刻告诉你对错和出处。</p>
+<div class="quiz" data-quiz-id="0001-four-traits-and-five-modules">
+<script type="application/json">{"questions":[{"q":"原文把 Super-agent 定义成什么？","options":["能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体，以及专门用来支撑这一形态的那套系统架构","DeepSeek Harness 已经对外发布的正式产品功能，用来在同一个会话里自动完成全部开发任务","一个永不结束的单一 Session，把用户所有并行任务都塞进同一份上下文里集中处理并且还一直保持运行","只适用于现有的个人助手场景的一种正式产品形态，在软件开发等商业场景里并不被原文作者本人视为真正有价值"],"answer":0,"explain":"原文的定义是：打破 Agent 与单次手动会话的绑定，使它成为能跨会话保持上下文、同时推进多项复杂任务且互不干扰的连续实体；并把这种形态及其系统架构称为 Super-agent。它不是现成产品功能，也不是把所有任务塞进一个永不结束的 Session。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"原文写「一个人通常只能同时跟进 3 到 5 个活跃 Session」，应如何理解？","options":["这是作者团队给出的观察，用来说明多任务上限受制于人的注意力，并不是一条普遍成立的铁定律","这是架构必须遵守的硬性上限，超出五个 Session 之后模型就无法再继续完成任何任务","这是模型能力本身的上限，只要把模型换得更强，一个人就能同时跟进任意多个 Session","这是对个人助手产品的建议配置，软件开发场景不存在 Session 数量带来的注意力问题"],"answer":0,"explain":"原文的措辞是「据我们观察」。它用来说明：在以单一 Session 为基本单位的设计下，多任务的上限取决于人的注意力。课里把它记为观察，而不是定律、模型上限或某一类产品的配置建议。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"四个基础特征里，「连续」在原文中的意思最接近哪一句？","options":["在熟悉界面中交互，感觉始终只有一个 Agent，不必想信息在哪个 Session","交互响应迅速，并能并行、高质量地完成多个复杂任务，不必等上一件做完再接受新的指令","不必等用户逐条下达指令，能持续观察环境事件并主动推进值得处理的事项，否则保持安静","始终在线、直接接入用户真实的工作环境，并且在长期运行中遇到异常时能够自动完成恢复"],"answer":0,"explain":"「连续」指用户在熟悉的工作界面里感觉始终只有一个 Agent，不必去想某条信息在哪个 Session 里。后面三项分别是高效、主动、持久的原文含义，不要和连续换着记。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"关于单个 ReAct Loop 和五个模块，哪一句最符合原文第 1 节？","options":["单个 ReAct Loop 无法同时支持这四个特征，五个模块只构成基本框架，本课先记名字和各自的指向","单个 ReAct Loop 其实已经够用，五个模块只是可选的产品包装，可以等落地时再决定要不要去采用","单个 ReAct Loop 无法同时支持这四个特征，必须先实现五个模块的全部内部机制才谈得上这些特征","单个 ReAct Loop 无法同时支持这四个特征，因此要把所有任务都合并进同一个永不中断的循环执行"],"answer":0,"explain":"原文明确写：单个 ReAct Loop 无法同时支持这四个特征，底层需要相应架构；五个模块构成基本框架。第 1 课只记名字和职责指向，不把内部机制提前讲完，也不要把问题理解成再做一个永不中断的单循环。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"在现有以单一 Session 为基本单位的设计下，原文如何划分上限？","options":["单任务的上限取决于模型能力，多任务的上限取决于人的注意力","单任务的上限取决于人的注意力，多任务的上限取决于模型能力","单任务和多任务的上限都只取决于模型能力，与人的注意力无关","单任务和多任务的上限都只取决于人的注意力，与模型能力无关"],"answer":0,"explain":"原文原句就是这一划分：单任务的上限取决于模型能力，多任务的上限取决于人的注意力。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文 · 第 1 节</a>。"},{"q":"关于这篇文章的性质，哪一句最符合原文开篇的声明？","options":["面向工程实践的架构思路探讨，并非对 DeepSeek Harness 现有产品功能的介绍","DeepSeek Harness 现成产品的功能说明，用来指导用户打开并完成全部相关配置","已经完成全部实验验证的系统设计手册，其中列出的开放问题都已经给出可直接拿去落地的标准答案","只讨论个人助手交互界面应该怎么去做的一篇产品文案，并且也不涉及软件开发等商业场景里的架构"],"answer":0,"explain":"原文第一句就是前半句几乎逐字的声明。它也明确写到，这种模式在软件开发等商业场景中同样有价值；第 7、第 8 节还分别把实验称为初步参考，并把若干问题留作开放问题。见 <a href=\"https://www.bilibili.com/opus/1265361021143351318\">原文开篇与第 1 节</a>。"}]}</script>
+</div>
+
+<div class="box read">
+  <span class="box-title">本课推荐精读的一手资料</span>
+  <p><a href="https://www.bilibili.com/opus/1265361021143351318">Super-agent 设计探索</a>的第 1 节，从开篇声明读到五个模块被点名、整体架构图出现为止。读的时候对照图 1 和图 2：每看到「Session」「注意力」「四个特征」或某一个模块名，就在图上指一下它属于哪一段。第 2 节起的内部机制先不要一次记完。</p>
+</div>
+
+<div class="box ask">
+  <span class="box-title">有不懂的，直接问我</span>
+  <p>哪个特征的含义还容易和日常用法混在一起、想对照原文练一遍 60 秒复述，或者想先看五个模块里的某一块，都可以直接在对话里问我。我是你这门课的老师。</p>
+</div>
+
+<p>下一步：把 <a href="../reference/glossary.html">术语表</a> 和 <a href="../reference/traits-and-modules.html">特征与模块速查</a> 存到手机上。速查页是四个特征和五个模块的压缩版，适合打印。准备好了就进入 <a href="0002-two-layer-router-and-worker.html">第 2 课 · 双层架构：Router 与 Worker</a>。</p>
+
+<nav class="lesson-nav" aria-label="相邻课程">
+  <span></span>
+  <a class="next" href="0002-two-layer-router-and-worker.html">下一课 · 双层架构：Router 与 Worker</a>
+</nav>
+
+<script src="../assets/quiz.js" defer></script>
+
+<footer class="foot">
+  说法以 <a href="https://www.bilibili.com/opus/1265361021143351318">DeepSeek Harness 团队 · Super-agent 设计探索</a> 的中文原文为准。
+  延伸资料只作补充，见 <a href="../RESOURCES.md">RESOURCES.md</a>。
+  本课不映射到具体产品，也不进入五个模块的内部机制。
+</footer>
+</main>
+</body>
+</html>

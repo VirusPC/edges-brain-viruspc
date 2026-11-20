@@ -9,6 +9,8 @@ Public homepage: [`index.html`](index.html)（公网 `/teaching/`）。每次交
 - [dsh-coding-agent-course](dsh-coding-agent-course) — DSH 源码架构课：公开控制接口与默认执行驱动；按 teach 渐进学习并持久化进度
 
 - [agent-evals](agent-evals) — Anthropic《Demystifying evals for AI agents》概念课（6 课）：task/trial/transcript/outcome、三类 grader、capability vs regression、pass@k / pass^k、读 transcript 与 outcome 归因、框架加速 vs 任务/grader 质量；系统补齐评测方法，不绑定具体项目
+- [always-on-agents](always-on-agents) — Anthropic《Building always-on agents》概念课（7 课）：睡醒循环与五个原语、event inbox、timers、memory、permissions、outbox、总复习；先吃透原文，不绑定具体产品
+- [super-agent](super-agent) — DeepSeek Harness 团队《Super-agent 设计探索：迈向更自主的 Agent 系统》概念课（9 课）：四个特征与五个模块、双层架构、事件过滤与路由、上下文与提前行动、面向人的交互、计算/状态/环境分离、Watchdog、初步实验与开放问题、总复习；先吃透原文，不绑定具体产品
 - [changelog](changelog) — write a usable `CHANGELOG.md` for your own projects
 - [cloud-coding-agent](cloud-coding-agent) — 看懂云端 coding agent 产品的架构：以 vercel-labs/coding-agent-template 为教材，讲任务流程、Sandbox 生命周期、预制环境与隔离、Agent CLI、进度回传、密钥与信任边界（6 课）
 - [crewai](crewai) — CrewAI 概念模型：Agent / Task / Crew / Flow，以及 Quickstart 数据流（概念优先）
