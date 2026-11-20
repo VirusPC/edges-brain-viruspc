@@ -25,7 +25,7 @@
   },
   "summary": {
     "thinChars": 280,
-    "note": "item.summary 保留 feed 转成纯文本后的全文，不再按字数裁切。纯文本短于 thinChars 时 item.thin 为 true；正文明显不全（thin、feed 被截断，或结尾是「阅读全文」一类）时，写周报再抓文章页。"
+    "note": "item.summary 保留 feed 转成纯文本后的全文，不再按字数裁切。--index-out 另写一份索引，只有标题、链接、来源、thin 和开头约 400 字，给主 Agent 挑文章。全文用 --pick 按链接抽出。纯文本短于 thinChars 时 item.thin 为 true；正文明显不全（thin、feed 被截断，或结尾是「阅读全文」一类）时，由写这条摘要的 Agent 再抓文章页。"
   },
   "sources": [
     {

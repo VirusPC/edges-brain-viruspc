@@ -42,6 +42,7 @@ DEFAULT_META = ROOT / "feeds" / "ai-coding-blogs.meta.json"
 
 USER_AGENT = "edges-weekly-ai-blogs-digest/1.0 (+https://github.com/VirusPC/edges-brain-viruspc)"
 THIN_CHARS = 280
+PREVIEW_CHARS = 400
 DEFAULT_TIMEOUT = 40
 DEFAULT_WORKERS = 6
 
@@ -84,6 +85,67 @@ def plain_text(raw: str) -> str:
 def cap_summary(text: str) -> str:
     """Return the feed's full plain text. Short items are flagged thin, not cut."""
     return text
+
+
+def preview_text(text: str, limit: int = PREVIEW_CHARS) -> str:
+    """Opening slice for the index. The stored summary stays complete."""
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + "…"
+
+
+def index_from_payload(payload: dict) -> dict:
+    """Title, link, source, and a short opening. No full summary."""
+    items = []
+    for item in payload.get("items") or []:
+        row = {
+            "title": item.get("title") or "",
+            "date": item.get("date") or "",
+            "link": item.get("link") or "",
+            "source": item.get("source") or "",
+            "thin": bool(item.get("thin")),
+            "preview": preview_text(item.get("summary") or ""),
+        }
+        if item.get("lane"):
+            row["lane"] = item["lane"]
+        items.append(row)
+    stats = payload.get("stats") or {}
+    return {
+        "window": payload.get("window") or {},
+        "stats": {
+            "feeds": stats.get("feeds", 0),
+            "errors": stats.get("errors", 0),
+            "items": stats.get("items", len(items)),
+            "thin": stats.get("thin", sum(1 for row in items if row["thin"])),
+        },
+        "items": items,
+    }
+
+
+def pick_items(path: Path, links: list[str]) -> int:
+    """Print only the requested articles from a full JSON file."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    wanted = list(dict.fromkeys(links))
+    if not wanted:
+        print("请用 --link 指定要读的文章", file=sys.stderr)
+        return 2
+    by_link = {item.get("link"): item for item in payload.get("items") or []}
+    chosen = []
+    missing = []
+    for link in wanted:
+        item = by_link.get(link)
+        if item is None:
+            missing.append(link)
+        else:
+            chosen.append(item)
+    if missing:
+        print("全文里没有这些链接:", file=sys.stderr)
+        for link in missing:
+            print(f"- {link}", file=sys.stderr)
+        return 2
+    json.dump(chosen, sys.stdout, ensure_ascii=False, indent=2)
+    sys.stdout.write("\n")
+    return 0
 
 
 def host_of(url: str) -> str:
@@ -699,6 +761,34 @@ def self_test() -> int:
     long_item = to_item({"title": "长文", "date": "2026-11-13", "link": "https://example.com/long", "body": long}, "example")
     assert long_item["summary"] == long
     assert long_item["thin"] is False
+    indexed = index_from_payload(
+        {
+            "window": {"since": "2026-11-13", "until": "2026-11-19"},
+            "stats": {"feeds": 1, "errors": 0, "items": 1, "thin": 0},
+            "items": [long_item],
+        }
+    )
+    assert "summary" not in indexed["items"][0]
+    assert indexed["items"][0]["preview"].endswith("…")
+    assert len(indexed["items"][0]["preview"]) <= PREVIEW_CHARS + 1
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        full_path = Path(tmp) / "full.json"
+        full_path.write_text(
+            json.dumps({"items": [long_item, {"title": "短", "date": "2026-11-14", "link": "https://example.com/b", "source": "s", "thin": True, "summary": "只有一句"}]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        saved_out, saved_err = sys.stdout, sys.stderr
+        sys.stdout = io_out = __import__("io").StringIO()
+        sys.stderr = __import__("io").StringIO()
+        try:
+            assert pick_items(full_path, ["https://example.com/b"]) == 0
+            picked = json.loads(io_out.getvalue())
+            assert picked[0]["summary"] == "只有一句"
+            assert pick_items(full_path, []) == 2
+            assert pick_items(full_path, ["https://example.com/missing"]) == 2
+        finally:
+            sys.stdout, sys.stderr = saved_out, saved_err
 
     stale = dict(report)
     stale["newest"] = "2026-10-01"
@@ -776,7 +866,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--meta", type=Path, default=DEFAULT_META)
     parser.add_argument("--since", help="YYYY-MM-DD，含当天（UTC 日历日）")
     parser.add_argument("--until", help="YYYY-MM-DD，含当天（UTC 日历日）")
-    parser.add_argument("--out", type=Path, help="写入 JSON 文件；默认打到 stdout")
+    parser.add_argument("--out", type=Path, help="全文 JSON。summary 是完整纯文本")
+    parser.add_argument("--index-out", type=Path, help="索引 JSON：标题、链接、来源、开头约 400 字，不含全文")
+    parser.add_argument("--pick", type=Path, help="从已有的全文 JSON 按 --link 抽出若干篇，不重新抓取")
+    parser.add_argument("--link", action="append", default=[], help="配合 --pick，可重复")
     parser.add_argument("--compare", type=Path, help="已有周报 markdown，按标题链接和行内链接比对覆盖")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
@@ -790,6 +883,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv if argv is not None else sys.argv[1:])
     if args.self_test:
         return self_test()
+    if args.pick:
+        return pick_items(args.pick, args.link or [])
     feeds = load_opml(args.opml)
     meta = load_meta(args.meta)
     errors = check_pair(feeds, meta)
@@ -832,9 +927,12 @@ def main(argv: list[str] | None = None) -> int:
         text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     if args.out:
         args.out.write_text(text + "\n", encoding="utf-8")
-    else:
+    elif not args.index_out:
         sys.stdout.write(text)
         sys.stdout.write("\n")
+    if args.index_out:
+        index_text = json.dumps(index_from_payload(payload), ensure_ascii=False, separators=(",", ":"))
+        args.index_out.write_text(index_text + "\n", encoding="utf-8")
     stats = payload["stats"]
     print(
         f"feeds={stats['feeds']} errors={stats['errors']} items={stats['items']} "

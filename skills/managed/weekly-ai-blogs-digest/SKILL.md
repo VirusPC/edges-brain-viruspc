@@ -35,14 +35,33 @@ npm install --prefix scripts
 1. 在本 skill 目录，用上面的 Python 3.12 环境拉订阅：
 
 ```bash
-/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/ai-coding-feeds.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py \
+  --since YYYY-MM-DD --until YYYY-MM-DD \
+  --out /tmp/ai-coding-feeds.json \
+  --index-out /tmp/ai-coding-feeds.index.json
 ```
 
-日期要显式传入，不要依赖跑脚本那台机器的时区。
+日期要显式传入，不要依赖跑脚本那台机器的时区。`--out` 是全文，`summary` 不再截断。`--index-out` 只有标题、日期、链接、来源、`thin` 和开头约 400 字。主 Agent 只打开索引。不要 `cat` 全文那份 JSON。
 
-2. 读脚本写出的结果来写周报，不要把原始 feed 整份塞进上下文。`summary` 是 feed 转成纯文本后的全文，不再截到 1200 字。入选文章按这篇全文写摘要。只有 feed 给的正文明显不全时，才去抓文章页补齐：`thin` 为 true（纯文本少于 280 字）、这条 feed 被截断，或正文结尾是「阅读全文」一类。某站拉取失败，或该站没有 feed 时，仍用列表页或文章页。链接必须是 feed、列表页、站点地图或文章页里真实出现的地址；对不上就修，修不了就去掉。
+2. 挑文章和写摘要分开，避免整份全文进主 Agent 的上下文。
 
-3. 按下面的章节精选成文，不要把窗口内所有文章平铺成清单。条目写短，文风参考既有的 REDoc 演示稿（无文首一级标题，条目用四级标题，有来源的标题直接链到原文）。
+   主 Agent 只读索引，按标题、链接、来源和开头挑要写的文章。不要为了挑选去读全文。
+
+   入选的文章分成几批，每批 3 到 5 篇，交给多个子 Agent 并行写。每个子 Agent 只用 `--pick` 读自己这一批的全文：
+
+```bash
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py \
+  --pick /tmp/ai-coding-feeds.json \
+  --link 'https://例子/a' --link 'https://例子/b'
+```
+
+   子 Agent 按现有条目规则写：一篇一条，不超过 200 字，和研发有关时加一句落地点，不编数字。feed 里的正文明显不全时（`thin`、这条 feed 被截断，或结尾是「阅读全文」一类），由这个子 Agent 自己打开文章页补齐，不要把补页的工作退回主 Agent。
+
+   主 Agent 把各批摘要收齐，排进固定章节，再核对链接、主类和发文公司。不要在这一步重读全文。
+
+   运行环境没有子 Agent 时，主 Agent 自己按上面的 `--pick` 逐篇读全文、写完再读下一篇。一次只读一篇，不要一次读入整份 JSON。
+
+3. 按下面的章节排版，不要把窗口内所有文章平铺成清单。条目写短，文风参考既有的 REDoc 演示稿（无文首一级标题，条目用四级标题，有来源的标题直接链到原文）。链接必须是 feed、列表页、站点地图或文章页里真实出现的地址；对不上就修，修不了就去掉。
 
 4. 跑非博客脚本（见下）。某一项没跑成、或拿不到该期可核验的历史快照，**不要留空标题，也不要拿后来的数据冒充当时，更不要编造**。这一小节直接省略，原因写进同期说明文件。OpenRouter 是一节里的三张图：只省略拉不到的那一张；三张都没有才去掉整节。
 
@@ -57,7 +76,7 @@ npm install --prefix scripts
      - 应用用量：`GET /api/v1/datasets/app-rankings?sort=popular`，`start_date` / `end_date` 与本周用量相同。这是官网页公开应用榜：隐藏和私有应用不计，别名并进主应用。正文不要加 `category=coding`。coding 分类可以另存快照。
      - 图：绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)，轴名「Token 用量（T）」。文件名是 `openrouter-usage-top15-YYYY-MM-DD.svg`、`openrouter-programming-top15-YYYY-MM-DD.svg`、`openrouter-apps-top15-YYYY-MM-DD.svg`，以及同名 `-marked.png`（日期用抓取日，UTC+8）。红圈只圈覆盖窗口内新发布、并且出现在这张 Top 15 上的模型。没有这样的模型时，`--highlight` 传空（`--highlight ""`）以关掉票数启发，图注写「不圈」。图注只写来源、窗口或采样周，以及圈了谁（或没有可圈的）。只经过 OpenRouter 的流量、Flash 和长上下文把 token 抬高、不同供应商的 tokenizer 不能横比、编程用量是采样估计：这些写进说明文件，不要写进正文。`organization` 用 permaslug 的供应商段，其中 `moonshotai` 写成 `moonshot`，以便沿用绘图脚本已有的配色。
 
-2. **GitHub Trending**在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，第三方抓页，不是 GitHub 官方 RSS）。周报里只保留 **daily / all 的前 5**，放到「项目开源」开头，并写快照日期。窗口内有可核验快照才列。没有可核验快照就整节省略，原因写进说明文件。
+2. **GitHub Trending**在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，第三方抓页，不是 GitHub 官方 RSS）。周报里只保留 **daily / all 的前 5**，放到「项目开源」开头，并写快照日期。名次按 feed 原始顺序，不用索引里按标题排过的顺序。这 5 个仓库的 README 也按上面的办法：主 Agent 只看索引里的标题和开头，全文用 `--pick` 交给子 Agent，或自己逐个读。不要把其余 Trending 条目的 README 全文读进上下文。窗口内有可核验快照才列。没有可核验快照就整节省略，原因写进说明文件。
 
 ```bash
 /tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --limit 0 --out /tmp/aa-language-models.json
