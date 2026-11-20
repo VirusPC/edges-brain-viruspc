@@ -163,12 +163,23 @@ node scripts/render_keyword_cloud.mjs \
 - 开源：开源项目和仓库发布
 - 行业：融资、并购、政策、人事、公司动向
 
-主类后面可以紧跟 0 个或多个自由标签，写具体主题，例如 DeepSeek、MCP、补录。自由标签不是枚举。每个标签仍然单独放进 `&lt;...&gt;`，都留在链接外面。站点把第一个画成彩色胶囊，后面的画成灰色小字。只有一个 `&lt;...&gt;` 的旧稿继续只显示那一个胶囊。
+主类后面可以紧跟 0 个或多个自由标签，写这篇的发文公司，不写文里讨论的产品或主题。火山引擎的投稿在讲 Claude Code，标火山引擎；OpenAI 写 Codex，标 OpenAI。每个标签仍然单独放进 `&lt;...&gt;`，都留在链接外面。站点把第一个画成彩色胶囊，后面的画成灰色小字，点灰色标签仍用 `?tag=` 按这家公司筛选。只有一个 `&lt;...&gt;` 的旧稿继续只显示那一个胶囊，那些不是自由标签，不要改成公司名。
+
+公司名收到这一层，不写团队，也不升到母集团：
+
+- 大淘宝技术、淘宝闪购、淘宝营销与交易技术，都写淘宝。不写成阿里，也不写成团队名。
+- 阿里技术账号上、正文没有点名子公司的，写阿里。点名了淘宝业务的，仍写淘宝。
+- 腾讯技术工程、腾讯轻量云，写腾讯。
+- 火山引擎写火山引擎。挂在字节跳动技术团队账号上、正文主体是火山引擎的，也写火山引擎，不写成字节跳动。
+- 发布组织名就是这家公司的，用这个名字：Cursor、Warp、Amp、Lovable、Hugging Face。不改成页脚里的法律实体。
+- 页面的 publisher 或 parentOrganization 写明母公司时，用母公司：Devin 博客的 publisher 是 Cognition，写 Cognition；Kiro 的 parentOrganization 是 Amazon Web Services，写 AWS。claude.com、claude.dev 的 publisher 是 Anthropic，写 Anthropic。
+- 合作新闻只标发文博客的公司。Hugging Face 博客写和 OpenRouter 合作，只标 Hugging Face。
+- 「其他短讯」里每家发文方各一个标签，按条目顺序排。
 
 模型发布、项目开源不加这套主类。没有来源 URL 的章节标题保持纯文字，例如「LLM Arena」、「Artificial Analysis」、「OpenRouter」、「模型发布」、「本周关键词」和纯图标题。「精选文章」里没有链接的条目，主类仍然要写。
 
 ```md
-#### &lt;Agent 与 Harness&gt;&lt;DeepSeek&gt;&lt;MCP&gt;[{{标题}}]({{url}})
+#### &lt;Agent 与 Harness&gt;&lt;淘宝&gt;[{{标题}}]({{url}})
 
 {{短述}}
 ```
@@ -184,7 +195,7 @@ node scripts/render_keyword_cloud.mjs \
 没有链接时：
 
 ```md
-#### &lt;产品&gt;&lt;Amp&gt;其他短讯
+#### &lt;产品&gt;&lt;Amp&gt;&lt;Lovable&gt;其他短讯
 ```
 
 要求：
