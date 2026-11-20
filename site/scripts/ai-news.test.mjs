@@ -151,6 +151,21 @@ test('item titles link to the source and quote blocks are gone', () => {
       assert.equal(unread, 3);
       assert.equal((selected.match(/订阅源里只有这些/g) || []).length, 3);
       assert.doesNotMatch(selected, /微信原文这次没打开|这次没打开原文/);
+      const projects = body.split(/^## 三、项目开源$/m)[1].split(/^## 四、/m)[0];
+      assert.match(projects, /GitHub Trending（weekly \/ all 前 5）/);
+      const projectItems = projects.split(/^#### /m).slice(1);
+      assert.equal(projectItems.length, 6);
+      assert.match(projectItems[0], /^GitHub Trending（weekly \/ all 前 5）/);
+      assert.doesNotMatch(projectItems[0], /<details/);
+      for (const item of projectItems.slice(1)) {
+        assert.doesNotMatch(item, /&lt;/);
+        const details = item.match(/<details class="article-more">[\s\S]*?<\/details>/g) || [];
+        assert.equal(details.length, 1, item.slice(0, 60));
+        for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
+          assert.match(details[0], new RegExp(`<strong>${label}</strong>`));
+        }
+        assert.doesNotMatch(details[0], /做 agent infra|做业务时|后续可以怎么做/);
+      }
     }
   }
 

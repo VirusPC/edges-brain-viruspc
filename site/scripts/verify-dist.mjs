@@ -408,10 +408,10 @@ assert.equal(projectFolded20.length, 5);
 assert.equal(selectedFolded20.length, 31);
 for (const block of projectFolded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
-  for (const label of ['解决什么问题：', '如何解决：', '效果怎样：']) {
+  for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
     assert.match(block[1], new RegExp(`<strong>${label}</strong>`));
   }
-  assert.doesNotMatch(block[1], /洞察与启发|相关工作：|后续可以怎么做|相关进展：|在解决什么问题|怎么解决：|与其他进展的关联|和最近的进展/);
+  assert.doesNotMatch(block[1], /后续可以怎么做|相关进展：|在解决什么问题|怎么解决：|与其他进展的关联|和最近的进展|做 agent infra|做业务时/);
 }
 for (const block of selectedFolded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
