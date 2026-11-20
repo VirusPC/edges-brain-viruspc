@@ -133,6 +133,33 @@ def fetch_page(
     return status, payload, error
 
 
+# Free-tier medians. Artificial Analysis returns null for every one of these
+# from 2026-12-10; performance_v3 means stay. Neither object is the card's
+# speed ranking, which uses OpenRouter official-endpoint latency.
+PERFORMANCE_FIELDS = (
+    "median_output_tokens_per_second",
+    "median_time_to_first_token_seconds",
+    "median_time_to_first_answer_token_seconds",
+    "median_end_to_end_response_time_seconds",
+)
+PERFORMANCE_V3_FIELDS = (
+    "mean_output_tokens_per_second",
+    "mean_time_to_first_token_seconds",
+    "mean_time_to_first_answer_token_seconds",
+)
+
+
+def _metric(value: object) -> int | float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return value
+
+
+def _metric_object(raw: object, fields: tuple[str, ...]) -> dict:
+    source = raw if isinstance(raw, dict) else {}
+    return {key: _metric(source.get(key)) for key in fields}
+
+
 def lean_model(row: dict) -> dict:
     creator = row.get("model_creator") or {}
     evaluations = row.get("evaluations") or {}
@@ -146,6 +173,8 @@ def lean_model(row: dict) -> dict:
         "price_1m_input_tokens": pricing.get("price_1m_input_tokens"),
         "price_1m_output_tokens": pricing.get("price_1m_output_tokens"),
         "release_date": row.get("release_date"),
+        "performance": _metric_object(row.get("performance"), PERFORMANCE_FIELDS),
+        "performance_v3": _metric_object(row.get("performance_v3"), PERFORMANCE_V3_FIELDS),
     }
 
 

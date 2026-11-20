@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -17,6 +18,7 @@ from fetch_artificial_analysis import (  # noqa: E402
     collect,
     fetch_page,
     is_retryable,
+    lean_model,
 )
 
 
@@ -38,6 +40,61 @@ def page(names: list[tuple[str, float]], has_more: bool) -> dict:
         "tier": "free",
         "intelligence_index_version": 5,
     }
+
+
+class LeanModelTests(unittest.TestCase):
+    def test_keeps_free_speed_fields_and_drops_pro_percentiles(self) -> None:
+        row = {
+            "name": "GLM-5.3 (Max)",
+            "slug": "glm-5-3",
+            "release_date": "2026-08-18",
+            "model_creator": {"name": "Z AI"},
+            "evaluations": {
+                "artificial_analysis_intelligence_index": 31.7,
+                "artificial_analysis_coding_index": None,
+            },
+            "pricing": {"price_1m_input_tokens": 1.4, "price_1m_output_tokens": 4.4},
+            "performance": {
+                "median_output_tokens_per_second": 80.07,
+                "median_time_to_first_token_seconds": 2.22,
+                "median_time_to_first_answer_token_seconds": 27.19,
+                "median_end_to_end_response_time_seconds": 33.44,
+                "percentile_95_output_tokens_per_second": 117.05,
+            },
+            "performance_v3": {
+                "mean_output_tokens_per_second": 62.36,
+                "mean_time_to_first_token_seconds": 3.45,
+                "mean_time_to_first_answer_token_seconds": 79.11,
+                "time_per_task_seconds": 1907.94,
+                "workloads": {"1k": {"mean_time_to_first_token_seconds": 1.96}},
+            },
+            "openrouter_api_id": "z-ai/glm-5.3",
+        }
+        item = lean_model(row)
+        self.assertEqual(
+            item["performance"],
+            {
+                "median_output_tokens_per_second": 80.07,
+                "median_time_to_first_token_seconds": 2.22,
+                "median_time_to_first_answer_token_seconds": 27.19,
+                "median_end_to_end_response_time_seconds": 33.44,
+            },
+        )
+        self.assertEqual(
+            item["performance_v3"],
+            {
+                "mean_output_tokens_per_second": 62.36,
+                "mean_time_to_first_token_seconds": 3.45,
+                "mean_time_to_first_answer_token_seconds": 79.11,
+            },
+        )
+        self.assertNotIn("openrouter_api_id", item)
+        self.assertNotIn("percentile_95_output_tokens_per_second", json.dumps(item))
+
+    def test_missing_performance_is_null_fields_not_dropped(self) -> None:
+        item = lean_model({"name": "A", "slug": "a", "evaluations": {}, "pricing": {}})
+        self.assertEqual(set(item["performance"].values()), {None})
+        self.assertEqual(set(item["performance_v3"].values()), {None})
 
 
 class RetryTests(unittest.TestCase):

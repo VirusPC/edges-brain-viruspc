@@ -583,7 +583,11 @@ body.is-post.has-toc .sidenote {
   font-weight: 650;
 }
 
-.model-facts dd { margin: 0; }
+.model-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 
 .model-facts-src {
   color: var(--panel-muted);

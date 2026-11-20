@@ -62,7 +62,7 @@ function priceRow(model) {
     `缓存读 ${money(price.cache_read)}`,
   ];
   if (Number(price.discount) > 0) bits.push(`含 ${Math.round(Number(price.discount) * 100)}% 折扣`);
-  return { text: esc(bits.join(' · ')), source: priceSource(price) };
+  return { text: esc(`${bits.join(' · ')}${rankSuffix(price, '更便宜')}`), source: priceSource(price) };
 }
 
 /**
@@ -82,7 +82,7 @@ function speedRow(model) {
   if (!speed || (speed.latency_s == null && speed.throughput_tps == null)) {
     return { text: '暂无', source: '暂无' };
   }
-  const text = `首 token ${seconds(speed.latency_s)} · 吞吐 ${rate(speed.throughput_tps)}`;
+  const text = `首 token ${seconds(speed.latency_s)} · 吞吐 ${rate(speed.throughput_tps)}${rankSuffix(speed, '更快')}`;
   const median = Array.isArray(speed.endpoints_considered) && speed.endpoints_considered.length > 1;
   const source = speed.source === 'openrouter_endpoints'
     ? openRouterLabel(speed.provider, median)
@@ -108,6 +108,20 @@ function effectRow(model) {
   }
   if (fit) parts.push(fit);
   return { text: esc(parts.join('。')), source: 'AA' };
+}
+
+/**
+ * Positive integer rank and denominator, or an empty suffix.
+ *
+ * @param {any} record
+ * @param {string} label
+ */
+function rankSuffix(record, label) {
+  const rank = record?.rank;
+  const total = record?.rank_of;
+  if (!Number.isInteger(rank) || rank < 1) return '';
+  if (!Number.isInteger(total) || total < 1 || rank > total) return '';
+  return ` · ${label}第 ${rank}/${total}`;
 }
 
 /**
