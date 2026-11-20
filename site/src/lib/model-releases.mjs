@@ -103,9 +103,8 @@ function effectRow(model) {
     `智力指数 ${formatNumber(aa.intelligence_index)}，第 ${aa.rank}/${aa.rank_of ?? '暂无'}`,
   ];
   if (aa.variant) parts[0] += `（${aa.variant}）`;
-  if (aa.fetched_at) parts.push(`快照 ${beijingTime(aa.fetched_at)}`);
   if (model?.name === 'Gemini 4 Neon') {
-    parts.push('原文写 Extra High 档 61 分、第 3；快照是 61.4，第 6/156');
+    parts.push('原文写 Extra High 档 61 分、第 3；榜上的 Xhigh 是 61.4，第 6/156');
   }
   if (fit) parts.push(fit);
   return { text: esc(parts.join('。')), source: 'AA' };
@@ -155,17 +154,6 @@ function rate(value) {
  */
 function formatNumber(n) {
   return String(n);
-}
-
-/**
- * @param {string} iso
- */
-function beijingTime(iso) {
-  const parsed = new Date(iso);
-  if (Number.isNaN(parsed.getTime())) return iso;
-  const shifted = new Date(parsed.getTime() + 8 * 60 * 60 * 1000);
-  const pad = (value) => String(value).padStart(2, '0');
-  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())} ${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}（北京时间）`;
 }
 
 /**

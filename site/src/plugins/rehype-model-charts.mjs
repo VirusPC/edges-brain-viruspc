@@ -208,7 +208,10 @@ function ignorable(node) {
   if (!node) return true;
   if (node.type === 'text') return !String(node.value || '').trim();
   if (node.type === 'element' && node.tagName === 'br') return true;
-  if (node.type === 'raw') return /^<br\s*\/?>$/i.test(String(node.value || '').trim());
+  if (node.type === 'raw') {
+    const value = String(node.value || '').trim();
+    return /^<br\s*\/?>$/i.test(value) || /^<!--\s*chart-meta\b[\s\S]*-->$/.test(value);
+  }
   return false;
 }
 

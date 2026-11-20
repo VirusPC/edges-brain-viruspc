@@ -68,7 +68,7 @@ export function remarkModelCharts(options = {}) {
       }
       for (const chart of assigned) {
         const anchor = uniqueAnchor(chartAnchor(chart.kind), index, usedAnchors);
-        const caption = chart.captions.map((node) => plainText(node)).join('\n');
+        const caption = chart.captions.map((node) => [plainText(node), chartMeta(node)].filter(Boolean).join('\n')).join('\n');
         const spec = dataRoot
           ? loadSeries(dataRoot, issueDate, chart.kind, caption, { imageUrl: chart.image.url || '' })
           : null;
@@ -96,6 +96,9 @@ export function remarkModelCharts(options = {}) {
 
     remove.sort((a, b) => b - a);
     for (const headingIndex of remove) tree.children.splice(headingIndex, 1);
+    for (let childIndex = tree.children.length - 1; childIndex >= 0; childIndex -= 1) {
+      if (isChartMeta(tree.children[childIndex])) tree.children.splice(childIndex, 1);
+    }
   };
 }
 
@@ -258,6 +261,20 @@ function uniqueAnchor(anchor, index, used) {
 /**
  * @param {any} node
  */
+function isChartMeta(node) {
+  return node?.type === 'html' && /<!--\s*chart-meta\b/.test(String(node.value || ''));
+}
+
+function chartMeta(node) {
+  if (!node) return '';
+  if (node.type === 'html') {
+    const match = String(node.value || '').match(/<!--\s*chart-meta\s*([\s\S]*?)-->/);
+    return match ? match[1].trim() : '';
+  }
+  if (!Array.isArray(node.children)) return '';
+  return node.children.map((child) => chartMeta(child)).filter(Boolean).join('\n');
+}
+
 function plainText(node) {
   if (!node) return '';
   if (typeof node.value === 'string' && (node.type === 'text' || node.type === 'html')) {

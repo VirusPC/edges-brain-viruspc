@@ -45,7 +45,7 @@ test('a release-article price is labeled 原文 and speed names the OpenRouter p
   assert.match(html, /首 token 2\.7 秒 · 吞吐 37 token\/s/);
   assert.match(html, /OpenRouter·OpenAI</);
   assert.match(html, /智力指数 62\.1，第 3\/156（GPT-6\.2 Astra \(Max\)）/);
-  assert.match(html, /快照 2026-11-20 20:50（北京时间）/);
+  assert.doesNotMatch(html, /快照/);
   assert.match(html, /适合：最难的专业项目（原文）/);
   assert.match(html, /model-facts-src">AA</);
 });
@@ -80,7 +80,8 @@ test('several official endpoints are labeled as a median, and a missing price st
   assert.match(html, /OpenRouter·Google AI Studio \/ Google（中位数）/);
   assert.match(html, /首 token 3\.73 秒 · 吞吐 81\.5 token\/s/);
   assert.match(html, /61\.4，第 6\/156/);
-  assert.match(html, /原文写 Extra High 档 61 分、第 3；快照是 61\.4，第 6\/156/);
+  assert.match(html, /原文写 Extra High 档 61 分、第 3；榜上的 Xhigh 是 61\.4，第 6\/156/);
+  assert.doesNotMatch(html, /快照/);
   assert.match(renderModelFacts({ name: '空', price: {} }).replace(/\s+/g, ' '), /价格<\/dt><dd>暂无<\/dd><dd class="model-facts-src">暂无/);
 });
 

@@ -290,6 +290,54 @@ test('platform sections become one dropdown, and a missing figure stays out of i
   }
 });
 
+test('a chart-meta comment keeps the highlight while the reader sentence stays separate', async () => {
+  const previous = process.env.AI_NEWS_DATA_ROOT;
+  process.env.AI_NEWS_DATA_ROOT = fixtureRoot;
+  try {
+    const processor = await createMarkdownProcessor({
+      gfm: true,
+      smartypants: false,
+      syntaxHighlight: false,
+      remarkPlugins: [[remarkModelCharts, { repoRoot: '/tmp/unused' }]],
+      rehypePlugins: [rehypeModelCharts],
+    });
+    const source = [
+      '## 二、模型进展',
+      '',
+      '### LLM Arena',
+      '',
+      '![LLM Arena Top 15](https://example.com/llm-arena-top15-2026-11-11-marked.png)',
+      '',
+      '读者看到的是名次变化。',
+      '',
+      '<!-- chart-meta',
+      '榜单发布日 2026-11-11。红圈：Gemini 4 Hydrogen (High)。',
+      '-->',
+      '',
+      '### OpenRouter',
+      '',
+      '![OpenRouter 本周用量 Top 15](https://example.com/openrouter-usage-top15-2026-11-13-marked.png)',
+      '',
+      '用量这句只讲变化。',
+    ].join('\n');
+    const html = (await processor.render(source, {
+      fileURL: new URL('file:///tmp/ai-news/2026-11-13-ai-news.md'),
+    })).code;
+    const specs = chartSpecs(html);
+    assert.equal(specs[0].publishDate, '2026-11-11');
+    assert.equal(specs[0].items[1].highlight, true);
+    assert.deepEqual(optionLabels(html), ['LLM Arena', 'OpenRouter 本周用量']);
+    assert.match(html, /读者看到的是名次变化。/);
+    assert.match(html, /用量这句只讲变化。/);
+    assert.doesNotMatch(html, /chart-meta/);
+    assert.doesNotMatch(html, /红圈/);
+    assert.doesNotMatch(html, /数据取自/);
+  } finally {
+    if (previous == null) delete process.env.AI_NEWS_DATA_ROOT;
+    else process.env.AI_NEWS_DATA_ROOT = previous;
+  }
+});
+
 test('Artificial Analysis is shown first even when the source lists Arena before it', async () => {
   const previous = process.env.AI_NEWS_DATA_ROOT;
   delete process.env.AI_NEWS_DATA_ROOT;

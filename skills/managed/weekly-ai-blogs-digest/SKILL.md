@@ -14,7 +14,7 @@ description: 当用户想要汇总一段时间内（默认过去一周）AI / AI
 1. [采集数据并存入 ai-news-data](references/01-采集数据并存入-ai-news-data.md)。RSS 全文、索引、GitHub Trending、Artificial Analysis、LLM Arena、OpenRouter、模型发布 facts，并更新 `manifest.json`。密钥只走环境变量。
 2. [选文](references/02-选文.md)。只打开索引和 Trending 名次，不把整份全文读进上下文。
 3. [并行写总结](references/03-并行写总结.md)。子 Agent 用 `--pick` 读快照里的 RSS 正文。订阅源偏短就按短文写，不开网页。
-4. [榜单与图](references/04-榜单与图.md)。用快照里已有的榜单和模型发布数据画图、写词云。缺文件就省略对应小节，不现场重抓。
+4. [榜单与图](references/04-榜单与图.md)。用快照里已有的榜单和模型发布数据画图、写词云。图下写给读者的一句变化或格局；来源和快照时间只进说明文件。缺文件就省略对应小节，不现场重抓。
 5. [排版与开 PR](references/05-排版与开-PR.md)。按固定章节写入 `ai-news/`，更新索引和说明文件，开 PR，不合并。
 
 写周报时侧重 Agent 与产品。研究向、红队、纯学术长文可以不写。融资、IPO、营收、定价套餐、厂商客户案例等营销内容不收，除非里面有具体技术或产品细节。优惠和白嫖不写进周报。
