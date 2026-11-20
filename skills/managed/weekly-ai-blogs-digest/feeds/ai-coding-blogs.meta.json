@@ -6,7 +6,7 @@
     "product": "发布、功能、定价、面向用户的产品博客和 changelog。",
     "tech": "工程博客、实现、基础设施、深入的 how-to。",
     "mixed": "同一份 feed 经常同时有产品和工程内容。周报按每一篇归入产品动态或技术与工程。",
-    "special": "GitHub Trending 与薅羊毛。不进入文章总结的产品/技术分栏，仍写各自专节。"
+    "special": "GitHub Trending。不进入文章总结的产品/技术分栏，写在「项目开源」。"
   },
   "olshansk": {
     "repo": "https://github.com/Olshansk/rss-feeds",
@@ -969,25 +969,6 @@
         "note": "不是博客，不适用 BestBlogs。"
       },
       "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 页面生成，不是 GitHub 官方 RSS。2026-10-31 核对 channel pubDate 为当天。条目没有 pubDate，脚本用 channel 日期并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
-    },
-    {
-      "id": "linux-do-welfare",
-      "title": "linux.do 福利羊毛",
-      "lane": "special",
-      "group": "薅羊毛",
-      "listUrls": [
-        "https://linux.do/c/welfare/36"
-      ],
-      "htmlUrl": "https://linux.do/c/welfare/36",
-      "xmlUrl": "https://linux.do/c/welfare.rss",
-      "feedOrigin": "linux-do-welfare-rss",
-      "fallback": null,
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "站点自己的 Discourse 分类 RSS，不是 BestBlogs。"
-      },
-      "notes": "短地址 https://linux.do/c/welfare.rss 会 301 到 https://linux.do/c/welfare/36.rss。周报「〇、薅羊毛」用这份 feed，并加上其它博客里和 AI/Coding 有关的优惠。银行立减金、电商价保等日常消费不写。2026-10-31 拉取 200，25 条。urllib 会被 Cloudflare 403，脚本改用 curl 回退。"
     }
   ]
 }
