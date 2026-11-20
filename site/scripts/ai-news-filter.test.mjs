@@ -101,8 +101,9 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /\.ai-news-filter-all\s*\{[^}]*background:\s*transparent/);
   assert.match(css, /\.ai-news-filter-all\s*\{[^}]*box-shadow:\s*inset 0 0 0 1px var\(--rule\)/);
   assert.match(css, /\.ai-news-filter-co\s*\{/);
-  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*color:\s*var\(--muted\)/);
-  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*0\.72rem/);
+  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*color:\s*var\(--ink\)/);
+  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-weight:\s*700/);
+  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*1em/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*left:\s*0/);
   const source = fs.readFileSync(new URL('../src/lib/ai-news-category-filter.mjs', import.meta.url), 'utf8');

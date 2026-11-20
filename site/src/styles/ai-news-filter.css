@@ -24,12 +24,13 @@
 
 .ai-news-filter-label {
   flex: none;
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 500;
+  color: var(--ink);
+  font-size: 1em;
+  font-weight: 700;
   line-height: 1.35;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   background: var(--paper);
+  cursor: default;
 }
 
 @media (max-width: 560px) {
