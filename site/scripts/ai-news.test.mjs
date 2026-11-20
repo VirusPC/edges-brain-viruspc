@@ -142,7 +142,7 @@ test('item titles link to the source and quote blocks are gone', () => {
         }
         assert.equal(details.length, 1, item.slice(0, 80));
         assert.doesNotMatch(details[0], /\n\n/);
-        for (const label of ['在解决什么问题：', '怎么解决：', '效果怎样：', '后续可以怎么做：', '相关进展：']) {
+        for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
           assert.match(details[0], new RegExp(`<strong>${label}</strong>`));
         }
         folded += 1;
