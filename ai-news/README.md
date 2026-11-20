@@ -1,6 +1,6 @@
 # AI 资讯周报归档
 
-每期周报以「周报生成日」命名，保存为 `YYYY-MM-DD-ai-news.md`；正文覆盖此前一周、**不含生成当天**。自 2026-10-30 起，以及 2026-11 补录的更早期次，按固定章节精选（〇薅羊毛 → 本周关键词 → 模型进展 → 项目开源 → 精选文章）。「精选文章」下用二级章节分「国内」「国际」。更早写在正文里的「国内进展」「国际进展」由站点渲染时收进这一章，原文不改。某一章没有可核对的内容时整章不写。以后按内容形式加的「推特」「播客」是「精选文章」后面的同级一级章节。
+每期周报以「周报生成日」命名，保存为 `YYYY-MM-DD-ai-news.md`；正文覆盖此前一周、**不含生成当天**。自 2026-10-30 起，以及 2026-11 补录的更早期次，正文按当时的章节写（〇薅羊毛 → 本周关键词 → 模型进展 → 项目开源 → 精选文章），这些已归档的期次保持原样。「精选文章」下用二级章节分「国内」「国际」。更早写在正文里的「国内进展」「国际进展」由站点渲染时收进这一章，原文不改。某一章没有可核对的内容时整章不写。新稿不再写「薅羊毛」，从「一、本周关键词」起。以后按内容形式加的「推特」「播客」仍是「精选文章」后面的同级一级章节。
 
 订阅真源是 [`skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml)，阅读器可直接导入。没有可用 feed 的站写在同目录的 [`ai-coding-blogs.meta.json`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.meta.json)。拉 feed 用 [`scripts/fetch_feeds.py`](../skills/managed/weekly-ai-blogs-digest/scripts/fetch_feeds.py)。
 

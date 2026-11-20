@@ -313,7 +313,7 @@ def download(url: str, timeout: int) -> tuple[bytes, str | None]:
         with urllib.request.urlopen(req, timeout=timeout) as response:
             return response.read(), None
     except urllib.error.HTTPError as exc:
-        # linux.do 的 Discourse RSS 对 urllib 返回 403，curl 可以拿到 200。
+        # 有的站点对 urllib 返回 403，curl 可以拿到正文。
         if exc.code == 403:
             body, curl_err = download_curl(url, timeout)
             if body:
