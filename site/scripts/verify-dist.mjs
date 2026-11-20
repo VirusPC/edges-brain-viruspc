@@ -396,16 +396,37 @@ for (const heading of ['一、本周关键词', '二、模型进展', '三、项
 }
 assert.match(toc20[0], />国内</);
 assert.match(toc20[0], />国际</);
-const folded20 = [...issue20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
-assert.equal(folded20.length, 30);
-for (const block of folded20) {
+const headingAt20 = [...issue20.matchAll(/<h2\b[^>]*>[\s\S]*?<\/h2>/g)];
+const projectAt20 = headingAt20.find((match) => match[0].includes('三、项目开源'))?.index ?? -1;
+const selectedAt20 = headingAt20.find((match) => match[0].includes('四、精选文章'))?.index ?? -1;
+assert.ok(projectAt20 > 0 && selectedAt20 > projectAt20, '2026-11-20 chapter headings are out of order');
+const projectHtml20 = issue20.slice(projectAt20, selectedAt20);
+const selectedHtml20 = issue20.slice(selectedAt20);
+const projectFolded20 = [...projectHtml20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
+const selectedFolded20 = [...selectedHtml20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
+assert.equal(projectFolded20.length, 5);
+assert.equal(selectedFolded20.length, 31);
+for (const block of projectFolded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
-  for (const label of ['在解决什么问题：', '怎么解决：', '效果怎样：', '后续可以怎么做：', '和最近的进展：']) {
+  for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
     assert.match(block[1], new RegExp(`<strong>${label}</strong>`));
   }
-  assert.doesNotMatch(block[1], /微信原文这次没打开|这次没打开原文/);
+  assert.doesNotMatch(block[1], /后续可以怎么做|相关进展：|在解决什么问题|怎么解决：|与其他进展的关联|和最近的进展|做 agent infra|做业务时/);
 }
-assert.equal((issue20.match(/class="article-card"/g) || []).length, 33);
+for (const block of selectedFolded20) {
+  assert.match(block[1], /<summary>完整总结<\/summary>/);
+  for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
+    assert.match(block[1], new RegExp(`<strong>${label}</strong>`));
+  }
+  assert.doesNotMatch(block[1], /在解决什么问题|怎么解决：|后续可以怎么做|相关进展：|和最近的进展|与其他进展的关联|做 agent infra|做业务时|微信原文这次没打开|这次没打开原文/);
+}
+assert.equal((projectHtml20.match(/class="article-card"/g) || []).length, 5);
+assert.equal((selectedHtml20.match(/class="article-card"/g) || []).length, 34);
+assert.match(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
+assert.doesNotMatch(projectHtml20.slice(0, projectHtml20.indexOf('GitHub Trending')), /article-card/);
+assert.doesNotMatch(projectHtml20, /data-cat=/);
+assert.match(selectedHtml20, /data-cat="开源"/);
+assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);
 assert.equal((issue20.match(/订阅源里只有这些/g) || []).length, 3);
 assert.equal((issue20.match(/微信原文这次没打开|这次没打开原文/g) || []).length, 0);
 const selectedHeadings20 = issue20.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];

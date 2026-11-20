@@ -270,6 +270,9 @@ def check_pair(feeds: list[dict], meta: dict) -> list[str]:
     for url in opml_set:
         if url not in meta_set:
             errors.append(f"OPML feed 没有 meta 条目: {url}")
+    for url in sorted(set(opml_urls) | set(meta_urls)):
+        if "GitHubTrendingRSS" in url and "/daily/" in url:
+            errors.append(f"GitHub Trending 仍在订 daily: {url}")
     return errors
 
 
@@ -426,7 +429,7 @@ def feed_report(feed: dict, meta_by_url: dict, timeout: int) -> dict:
 def mark_window(report: dict, since: str, until: str) -> None:
     # since/until 是 UTC 日历日，闭区间，不是北京时间。
     if report.get("snapshot"):
-        # 当日榜单没有文章发布日。保留整份快照，不按博客窗口裁掉。
+        # Trending 榜没有条目发布日。保留整份快照，不按博客窗口裁掉。
         report["entries_in_window"] = len(report.get("entries") or [])
         report["stale"] = False
         report["truncated"] = False
@@ -660,12 +663,27 @@ def run_fetch(feeds: list[dict], meta: dict, since: str, until: str, timeout: in
 
 
 def self_test() -> int:
-    errors = check_pair(load_opml(DEFAULT_OPML), load_meta(DEFAULT_META))
+    feeds = load_opml(DEFAULT_OPML)
+    meta = load_meta(DEFAULT_META)
+    errors = check_pair(feeds, meta)
     if errors:
         print("real OPML/meta check failed:", file=sys.stderr)
         for err in errors:
             print(f"- {err}", file=sys.stderr)
         return 1
+    expected_trending = {
+        "github-trending-weekly-all": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/all.xml",
+        "github-trending-weekly-python": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml",
+        "github-trending-weekly-typescript": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/typescript.xml",
+    }
+    got_trending = {
+        source["id"]: source.get("xmlUrl")
+        for source in meta["sources"]
+        if str(source.get("id") or "").startswith("github-trending-")
+    }
+    assert got_trending == expected_trending, got_trending
+    opml_trending = [feed["xmlUrl"] for feed in feeds if "GitHubTrendingRSS" in feed["xmlUrl"]]
+    assert opml_trending == list(expected_trending.values()), opml_trending
 
     sample = b"""<?xml version="1.0"?>
     <rss version="2.0"><channel>

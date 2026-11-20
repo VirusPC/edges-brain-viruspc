@@ -1,7 +1,9 @@
 /**
- * Put each 「精选文章」 item in one div, so a filter can hide the border
- * together with the title, the one-line gist, and the folded summary.
- * Model-release and project headings stay unwrapped.
+ * Put each 「精选文章」 item, and each GitHub project under 「项目开源」,
+ * in one div. The filter only walks 「精选文章」, so project cards keep the
+ * same border without joining that filter. The 「GitHub Trending」 heading
+ * and the sentence under it stay outside any card. Model-release headings
+ * stay unwrapped.
  *
  * @returns {(tree: any) => void}
  */
@@ -26,7 +28,10 @@ function walk(node) {
   if (!Array.isArray(children)) return;
   for (let index = 0; index < children.length; index += 1) {
     const child = children[index];
-    if (isHeading(child, 'h2') && textOf(child).endsWith('精选文章')) {
+    const chapter = textOf(child);
+    const selected = isHeading(child, 'h2') && chapter.endsWith('精选文章');
+    const projects = isHeading(child, 'h2') && chapter.endsWith('项目开源');
+    if (selected || projects) {
       let end = children.length;
       for (let cursor = index + 1; cursor < children.length; cursor += 1) {
         if (isHeading(children[cursor], 'h2')) {
@@ -34,7 +39,7 @@ function walk(node) {
           break;
         }
       }
-      const wrapped = wrapRange(children.slice(index + 1, end));
+      const wrapped = wrapRange(children.slice(index + 1, end), { skipTrending: projects });
       children.splice(index + 1, end - (index + 1), ...wrapped);
       index += wrapped.length;
       continue;
@@ -45,13 +50,14 @@ function walk(node) {
 
 /**
  * @param {any[]} nodes
+ * @param {{ skipTrending?: boolean }} [options]
  */
-function wrapRange(nodes) {
+function wrapRange(nodes, options = {}) {
   /** @type {any[]} */
   const out = [];
   for (let index = 0; index < nodes.length; index += 1) {
     const node = nodes[index];
-    if (!isHeading(node, 'h4')) {
+    if (!isHeading(node, 'h4') || (options.skipTrending && isTrendingHeading(node))) {
       out.push(node);
       continue;
     }
@@ -90,6 +96,10 @@ function isGap(node) {
 
 function isHeading(node, tag) {
   return node?.type === 'element' && node.tagName === tag;
+}
+
+function isTrendingHeading(node) {
+  return isHeading(node, 'h4') && textOf(node).startsWith('GitHub Trending');
 }
 
 /**
