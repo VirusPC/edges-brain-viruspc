@@ -41,8 +41,10 @@ test('a release-article price is labeled 原文 and speed names the OpenRouter p
   const html = renderModelFacts(astra);
   assert.match(html, /GPT-6\.2 Astra/);
   assert.match(html, /输入 \$8 · 输出 \$40 · 缓存读 \$0\.4/);
+  assert.doesNotMatch(html, /更便宜第/);
   assert.match(html, /model-facts-src">原文</);
   assert.match(html, /首 token 2\.7 秒 · 吞吐 37 token\/s/);
+  assert.doesNotMatch(html, /更快第/);
   assert.match(html, /OpenRouter·OpenAI</);
   assert.match(html, /智力指数 62\.1，第 3\/156（GPT-6\.2 Astra \(Max\)）/);
   assert.doesNotMatch(html, /快照/);
@@ -128,4 +130,23 @@ test('a discounted OpenRouter price keeps the discount and the official provider
   assert.match(html, /OpenRouter·Alibaba</);
   assert.match(html, /首 token 2\.59 秒/);
   assert.match(html, /第 52\/156/);
+});
+
+test('price and speed ranks use the cheaper and faster wording, and a missing rank is omitted', () => {
+  const ranked = renderModelFacts({
+    ...astra,
+    price: { ...astra.price, rank: 123, rank_of: 142, rank_metric: 'blended_input_plus_3_output_over_4' },
+    speed: { ...astra.speed, rank: 40, rank_of: 51, rank_metric: 'latency_p50_s' },
+  });
+  assert.match(ranked, /输入 \$8 · 输出 \$40 · 缓存读 \$0\.4 · 更便宜第 123\/142/);
+  assert.match(ranked, /首 token 2\.7 秒 · 吞吐 37 token\/s · 更快第 40\/51/);
+  assert.doesNotMatch(ranked, /快照|数据取自|抓取于/);
+  const broken = renderModelFacts({
+    ...astra,
+    price: { ...astra.price, rank: null, rank_of: null },
+    speed: { ...astra.speed, rank: '暂无', rank_of: 51 },
+  });
+  assert.doesNotMatch(broken, /更便宜第|更快第|第 暂无/);
+  assert.match(broken, /输入 \$8 · 输出 \$40 · 缓存读 \$0\.4</);
+  assert.match(broken, /首 token 2\.7 秒 · 吞吐 37 token\/s</);
 });

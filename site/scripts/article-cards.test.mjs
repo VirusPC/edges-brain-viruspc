@@ -130,6 +130,9 @@ test('dark cards use a deep ground and light type, not the light note wash', () 
   assert.match(css, /\.prose \.article-card\s*\{[^}]*background:\s*var\(--panel\)/);
   assert.match(css, /\.model-board select\s*\{[^}]*background:\s*var\(--paper\)/);
   assert.match(css, /\.model-facts-src\s*\{\s*color:\s*var\(--panel-muted\)/);
+  assert.match(css, /\.model-facts dd\s*\{[^}]*overflow-wrap:\s*anywhere/);
+  assert.match(css, /@media \(max-width: 560px\)[\s\S]*\.model-facts-row \{ grid-template-columns: 2\.6rem minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 560px\)[\s\S]*\.model-facts-src \{ grid-column: 2; white-space: normal/);
   assert.match(forced, /color-mix\(in srgb, var\(--note\) 55%, white\)/);
   assert.doesNotMatch(forced, /\[data-theme="light"\]/);
 });
