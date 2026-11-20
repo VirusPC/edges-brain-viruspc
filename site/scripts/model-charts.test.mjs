@@ -5,7 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { createMarkdownProcessor } from '@astrojs/markdown-remark';
-import { chartOption } from '../src/lib/model-chart-option.mjs';
+import { chartOption, compactModelName, MOBILE_NAME_LIMIT } from '../src/lib/model-chart-option.mjs';
 import {
   classifyChart,
   coverageForIssueDate,
@@ -169,6 +169,52 @@ test('chart option marks this-week releases and exposes the value in the tooltip
   assert.match(tip, /Fresh/);
   assert.match(tip, /Arena Score：9\.0/);
   assert.match(tip, /本周新发布/);
+  assert.equal(option.yAxis.axisLabel.formatter('Kept'), 'Kept');
+  assert.equal(option.grid.right, 72);
+});
+
+test('mobile labels stop at 20 characters and the tooltip keeps the full name', () => {
+  const full = 'Claude Fable 5.2 (Max, Default Fallback)';
+  const exact = '12345678901234567890';
+  const over = '123456789012345678901';
+  assert.equal([...compactModelName(full)].length, MOBILE_NAME_LIMIT);
+  assert.equal(compactModelName(full).endsWith('…'), true);
+  assert.equal(compactModelName(exact), exact);
+  assert.equal(compactModelName(over), '1234567890123456789…');
+  assert.equal([...compactModelName(over)].length, MOBILE_NAME_LIMIT);
+  const spec = {
+    axis: 'Intelligence Index',
+    items: [
+      { name: full, value: 64.6, valueText: '64.6', organization: 'anthropic', highlight: true, rank: 1 },
+      { name: 'Short', value: 10, valueText: '10', organization: 'openai', rank: 2 },
+    ],
+  };
+  const theme = {
+    ink: '#111',
+    inkSoft: '#333',
+    muted: '#888',
+    rule: '#ddd',
+    note: '#b4541f',
+    noteWash: '#f8efe4',
+    paper: '#fff',
+  };
+  const mobile = chartOption(spec, theme, { compactLabels: true });
+  const raw = mobile.yAxis.axisLabel.formatter(full);
+  const shown = raw.replace('{hot|新} ', '');
+  assert.equal(raw.startsWith('{hot|新} '), true);
+  assert.equal([...shown].length, MOBILE_NAME_LIMIT - 2);
+  assert.equal([...'新 ' + shown].length, MOBILE_NAME_LIMIT);
+  assert.equal(mobile.yAxis.axisLabel.formatter('Short'), 'Short');
+  const plain = 'Claude Fable 5.2 (High, Default Fallback)';
+  assert.equal([...mobile.yAxis.axisLabel.formatter(plain)].length, MOBILE_NAME_LIMIT);
+  assert.ok(mobile.grid.right < 72);
+  assert.equal(mobile.xAxis.splitNumber, 4);
+  assert.equal(mobile.xAxis.axisLabel.hideOverlap, true);
+  const tip = mobile.tooltip.formatter({ dataIndex: 0 });
+  assert.ok(tip.includes(full));
+  const desktop = chartOption(spec, theme);
+  assert.equal(desktop.yAxis.axisLabel.formatter('Short'), 'Short');
+  assert.match(desktop.yAxis.axisLabel.formatter(full), new RegExp(full.replace(/[()]/g, '\\$&')));
 });
 
 test('platform sections become one dropdown, and a missing figure stays out of it', async () => {

@@ -12,6 +12,7 @@ const ORG_COLORS = {
 };
 const DEFAULT_COLOR = '#888888';
 const APP_COLOR = '#3d6f8f';
+export const MOBILE_NAME_LIMIT = 20;
 const FONT = '"Source Serif 4", Palatino, "Songti SC", "Noto Serif SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei", "Droid Sans Fallback", sans-serif';
 
 /**
@@ -26,6 +27,19 @@ export function organizationColor(org) {
 /**
  * @param {unknown} value
  */
+/**
+ * Visible mobile name, at most `limit` characters, ellipsis included.
+ * The full name stays in the tooltip.
+ *
+ * @param {unknown} name
+ * @param {number} [limit]
+ */
+export function compactModelName(name, limit = MOBILE_NAME_LIMIT) {
+  const chars = [...String(name ?? '')];
+  if (chars.length <= limit) return chars.join('');
+  return `${chars.slice(0, limit - 1).join('')}…`;
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -44,14 +58,19 @@ function escapeHtml(value) {
  *   items: { name: string, value: number, valueText: string, organization?: string, highlight?: boolean, rank?: number, detail?: string }[],
  * }} spec
  * @param {{ ink: string, inkSoft: string, muted: string, rule: string, note: string, noteWash: string, paper: string }} theme
+ * @param {{ compactLabels?: boolean }} [options]
  */
-export function chartOption(spec, theme) {
+export function chartOption(spec, theme, options = {}) {
+  const compact = Boolean(options.compactLabels);
   const highlighted = new Set(spec.items.filter((item) => item.highlight).map((item) => item.name));
+  const grid = compact
+    ? { left: 2, right: 36, top: 8, bottom: 28, containLabel: true }
+    : { left: 8, right: 72, top: 12, bottom: 36, containLabel: true };
   return {
     animation: false,
     backgroundColor: 'transparent',
     textStyle: { fontFamily: FONT, color: theme.ink },
-    grid: { left: 8, right: 72, top: 12, bottom: 36, containLabel: true },
+    grid,
     tooltip: {
       trigger: 'item',
       triggerOn: 'mousemove|click',
@@ -75,9 +94,15 @@ export function chartOption(spec, theme) {
       min: spec.scaleZero ? 0 : undefined,
       name: spec.axis,
       nameLocation: 'middle',
-      nameGap: 28,
-      nameTextStyle: { color: theme.inkSoft, fontFamily: FONT, fontSize: 12 },
-      axisLabel: { color: theme.muted, fontFamily: FONT, fontSize: 11 },
+      nameGap: compact ? 22 : 28,
+      nameTextStyle: { color: theme.inkSoft, fontFamily: FONT, fontSize: compact ? 11 : 12 },
+      splitNumber: compact ? 4 : 5,
+      axisLabel: {
+        color: theme.muted,
+        fontFamily: FONT,
+        fontSize: compact ? 10 : 11,
+        hideOverlap: true,
+      },
       splitLine: { lineStyle: { color: theme.rule } },
       axisLine: { lineStyle: { color: theme.rule } },
     },
@@ -87,12 +112,17 @@ export function chartOption(spec, theme) {
       data: spec.items.map((item) => item.name),
       axisTick: { show: false },
       axisLine: { show: false },
+      triggerEvent: true,
       axisLabel: {
         color: theme.ink,
         fontFamily: FONT,
-        fontSize: 12,
+        fontSize: compact ? 11 : 12,
         formatter(value) {
-          return highlighted.has(value) ? `{hot|新} ${value}` : value;
+          const marked = highlighted.has(value);
+          const shown = compact
+            ? compactModelName(value, marked ? MOBILE_NAME_LIMIT - 2 : MOBILE_NAME_LIMIT)
+            : value;
+          return marked ? `{hot|新} ${shown}` : shown;
         },
         rich: {
           hot: {
@@ -123,7 +153,7 @@ export function chartOption(spec, theme) {
           position: 'right',
           color: theme.ink,
           fontFamily: FONT,
-          fontSize: 12,
+          fontSize: compact ? 11 : 12,
           formatter(params) {
             return spec.items[params.dataIndex]?.valueText ?? '';
           },

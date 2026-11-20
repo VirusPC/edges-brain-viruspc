@@ -121,8 +121,10 @@ test('dark cards use a deep ground and light type, not the light note wash', () 
   assert.match(dark, /--panel-ink:\s*#f6f1e7/);
   assert.match(dark, /--panel-label:\s*#f3ece1/);
   assert.match(dark, /--panel-muted:\s*#d2c9bb/);
-  assert.match(dark, /\.model-facts,\s*\.prose \.article-card\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(dark, /\.model-board,\s*\.model-facts,\s*\.prose \.article-card\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(dark, /\.model-board select\s*\{[^}]*background:\s*var\(--paper\)/);
   assert.match(dark, /\.model-facts-src\s*\{\s*color:\s*var\(--panel-muted\)/);
   assert.match(dark, /color-mix\(in srgb, var\(--note\) 55%, white\)/);
   assert.doesNotMatch(dark, /model-facts[^}]*note-wash/);
+  assert.doesNotMatch(dark, /\.model-board[^,{]*note-wash/);
 });
