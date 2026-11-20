@@ -28,7 +28,7 @@
 ## 维护约定
 
 1. 周报生成后直接提交到本目录，并更新本索引。
-2. 文章优先来自 OPML 里的 feed。抓取脚本保留全文，另写一份只有标题、链接、来源和开头的索引。主 Agent 只读索引来挑文章，不要把整份全文 JSON 读进上下文。入选的文章分批写摘要；没有子 Agent 时逐篇读全文。只有正文明显不全（少于 280 字、被截断，或结尾是「阅读全文」一类）、拉取失败，或该站没有 feed 时，才用列表页、sitemap 或文章页补齐。失效链接须修复或排除。GitHub Trending 只写 daily / all 前 5，README 也按这个办法读。
+2. 抓取先存进 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`。写周报和补总结只读这份快照：选文看 `feeds.index.json`，全文用 `fetch_feeds.py --pick` 读 `feeds.json`。不要跳过快照直接开网页。只有 `thin`、少于 280 字、被截断或结尾是「阅读全文」时才开文章页，打不开就写明原因。GitHub Trending 只写 daily / all 前 5。
 3. 一句话概括尽量短。折叠的完整总结按 skill 的五段写，每段一两句，不编数字。AI Coding 相关条目在概括或后续建议里点出研发落点。
 4. 执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。播客不进 OPML，只在本周关键词或相关章节里按需点名。
 5. 每期说明文件是同名 `YYYY-MM-DD-ai-news.notes.md`，记录来源细节和缺项原因。站点不收录、不链接。
