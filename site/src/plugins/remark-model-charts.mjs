@@ -9,6 +9,12 @@ import {
 } from '../lib/model-charts.mjs';
 
 const PLATFORM_HEADINGS = new Set(['LLM Arena', 'Artificial Analysis', 'OpenRouter', '整体排名']);
+const PLATFORM_RANK = new Map([
+  ['Artificial Analysis', 0],
+  ['LLM Arena', 1],
+  ['OpenRouter', 2],
+  ['模型发布', 3],
+]);
 
 /**
  * Mark leaderboard images under 「二、模型进展」 and drop the platform
@@ -29,6 +35,7 @@ export function remarkModelCharts(options = {}) {
     const dataRoot = resolveAiNewsDataRoot(repoRoot);
     const range = sectionRange(tree.children);
     if (!range) return;
+    reorderModelPlatforms(tree.children, range);
 
     const blocks = blocksIn(tree.children, range.start + 1, range.end);
     /** @type {number[]} */
@@ -90,6 +97,52 @@ export function remarkModelCharts(options = {}) {
     remove.sort((a, b) => b - a);
     for (const headingIndex of remove) tree.children.splice(headingIndex, 1);
   };
+}
+
+/**
+ * When Artificial Analysis is present, render it before LLM Arena, then
+ * OpenRouter, then 模型发布. Issues without that section keep their source order.
+ *
+ * @param {any[]} children
+ * @param {{ start: number, end: number }} range
+ */
+function reorderModelPlatforms(children, range) {
+  const slice = children.slice(range.start + 1, range.end);
+  /** @type {{ nodes: any[], rank: number }[]} */
+  const blocks = [];
+  /** @type {{ nodes: any[], rank: number } | null} */
+  let current = null;
+  for (const node of slice) {
+    if (isHeading(node, 3)) {
+      current = { nodes: [node], rank: platformRank(plainText(node)) };
+      blocks.push(current);
+      continue;
+    }
+    if (!current) {
+      current = { nodes: [node], rank: -1 };
+      blocks.push(current);
+      continue;
+    }
+    current.nodes.push(node);
+  }
+  const known = blocks.filter((block) => block.rank >= 0);
+  if (!known.some((block) => block.rank === 0)) return;
+  const sorted = [...known].sort((left, right) => left.rank - right.rank);
+  let cursor = 0;
+  const next = blocks.flatMap((block) => {
+    if (block.rank < 0) return block.nodes;
+    const replacement = sorted[cursor];
+    cursor += 1;
+    return replacement.nodes;
+  });
+  children.splice(range.start + 1, slice.length, ...next);
+}
+
+/**
+ * @param {string} text
+ */
+function platformRank(text) {
+  return PLATFORM_RANK.has(text) ? PLATFORM_RANK.get(text) : -1;
 }
 
 /**

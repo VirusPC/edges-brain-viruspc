@@ -42,6 +42,15 @@ function optionLabels(html) {
   return [...html.matchAll(/<option\b[^>]*>([^<]*)<\/option>/g)].map((match) => match[1].trim());
 }
 
+function firstPanelKind(html) {
+  const match = html.match(/<div class="model-panel"([^>]*)>/);
+  assert.ok(match, 'model panel is missing');
+  assert.doesNotMatch(match[1], /\bhidden\b/, 'the first model panel is hidden');
+  const kind = match[1].match(/data-chart-kind="([^"]+)"/);
+  assert.ok(kind, 'first model panel has no kind');
+  return kind[1];
+}
+
 function chartSpecs(html) {
   return [...html.matchAll(/<pre\b[^>]*\bmodel-chart-spec\b[^>]*>([\s\S]*?)<\/pre>/g)].map((match) =>
     JSON.parse(decodeHtml(match[1])),
@@ -266,16 +275,17 @@ const platformOrder = [...newestIssue.matchAll(/<h3\b[^>]*>([^<]*)<\/h3>/g)]
   .filter((text) => ['LLM Arena', 'Artificial Analysis', 'OpenRouter', '模型发布'].includes(text));
 assert.deepEqual(platformOrder, ['模型发布']);
 assert.deepEqual(optionLabels(newestIssue), [
-  'LLM Arena',
   'Artificial Analysis',
+  'LLM Arena',
   'OpenRouter 本周用量',
   'OpenRouter 编程用量',
   'OpenRouter 应用用量',
 ]);
+assert.equal(firstPanelKind(newestIssue), 'aa');
 const newestSpecs = chartSpecs(newestIssue);
 assert.deepEqual(newestSpecs.map((spec) => spec.kind), [
-  'llm-arena',
   'aa',
+  'llm-arena',
   'openrouter-usage',
   'openrouter-programming',
   'openrouter-apps',
@@ -284,9 +294,9 @@ for (const spec of newestSpecs) {
   assert.equal(spec.items.length, 15, spec.kind);
   assert.equal(typeof spec.items[0].value, 'number', spec.kind);
 }
-assert.ok(newestSpecs[0].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.highlight));
-assert.equal(newestSpecs[0].publishDate, '2026-11-11');
-assert.ok(newestSpecs[1].items.some((item) => item.highlight && item.name.includes('Claude Fable 5.2')));
+assert.ok(newestSpecs[1].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.highlight));
+assert.equal(newestSpecs[1].publishDate, '2026-11-11');
+assert.ok(newestSpecs[0].items.some((item) => item.highlight && item.name.includes('Claude Fable 5.2')));
 assert.equal(newestSpecs[2].scaleZero, true);
 assert.match(newestSpecs[2].items[0].valueText, / T$/);
 assert.equal(newestSpecs[2].items[0].name.includes('/'), false);
@@ -333,23 +343,24 @@ assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
 assert.match(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
 assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
-  'LLM Arena',
   'Artificial Analysis',
+  'LLM Arena',
   'OpenRouter 本周用量',
   'OpenRouter 编程用量',
   'OpenRouter 应用用量',
 ]);
+assert.equal(firstPanelKind(issue20), 'aa');
 const specs20 = chartSpecs(issue20);
 assert.deepEqual(specs20.map((spec) => spec.kind), [
-  'llm-arena',
   'aa',
+  'llm-arena',
   'openrouter-usage',
   'openrouter-programming',
   'openrouter-apps',
 ]);
-assert.ok(specs20[0].items.some((item) => item.name === 'Gemini 4 Neon (High)' && item.highlight));
-assert.equal(specs20[0].publishDate, '2026-11-18');
-assert.ok(specs20[1].items.some((item) => item.highlight));
+assert.ok(specs20[1].items.some((item) => item.name === 'Gemini 4 Neon (High)' && item.highlight));
+assert.equal(specs20[1].publishDate, '2026-11-18');
+assert.ok(specs20[0].items.some((item) => item.highlight));
 assert.equal(specs20[2].items.some((item) => item.name === 'Hy4 flash' && item.highlight), true);
 assert.equal(specs20[2].items[0].name.includes('/'), false);
 assert.match(issue20, /alt="LLM Arena Top 15，2026-11-18"/);

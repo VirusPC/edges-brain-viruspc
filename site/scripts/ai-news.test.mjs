@@ -106,6 +106,17 @@ test('item titles link to the source and quote blocks are gone', () => {
       assert.match(model, /openrouter-programming-top15-2026-11-13-marked\.png/);
       assert.match(model, /openrouter-apps-top15-2026-11-13-marked\.png/);
     }
+    if (name === '2026-11-20-ai-news.md') {
+      const model = body.split(/^## 二、模型进展$/m)[1].split(/^## 三、/m)[0];
+      const analysis = model.indexOf('### Artificial Analysis');
+      const arena = model.indexOf('### LLM Arena');
+      const openrouter = model.indexOf('### OpenRouter');
+      const releases = model.indexOf('### 模型发布');
+      assert.ok(
+        analysis >= 0 && analysis < arena && arena < openrouter && openrouter < releases,
+        name,
+      );
+    }
   }
 
   const latest = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-news.md'), 'utf8');
