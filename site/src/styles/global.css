@@ -346,6 +346,7 @@ body.is-post.has-toc .sidenote {
 
 .prose :is(h2, h3, h4, h5, h6)[data-cat]::before {
   content: attr(data-cat);
+  order: 0;
   flex: none;
   max-width: 100%;
   padding: 0.12em 0.5em 0.14em;
@@ -358,6 +359,60 @@ body.is-post.has-toc .sidenote {
   line-height: 1.35;
   letter-spacing: 0;
   white-space: nowrap;
+}
+
+/* Named primaries get their own capsule. Any other data-cat keeps the wash above. */
+.prose :is(h2, h3, h4, h5, h6)[data-cat="模型"]::before {
+  background: color-mix(in srgb, #2f5496 14%, var(--paper));
+  color: #2f5496;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f5496 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="产品"]::before {
+  background: color-mix(in srgb, #b4541f 14%, var(--note-wash));
+  color: #b4541f;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #b4541f 24%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="Agent 与 Harness"]::before {
+  background: color-mix(in srgb, #5c4d8a 14%, var(--paper));
+  color: #5c4d8a;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #5c4d8a 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="工程实践"]::before {
+  background: color-mix(in srgb, #2f6f4e 14%, var(--paper));
+  color: #2f6f4e;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f6f4e 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="开源"]::before {
+  background: color-mix(in srgb, #0f6e6e 14%, var(--paper));
+  color: #0f6e6e;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #0f6e6e 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="行业"]::before {
+  background: color-mix(in srgb, #6b4f3a 14%, var(--paper));
+  color: #6b4f3a;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #6b4f3a 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-tags]::after {
+  content: attr(data-tags);
+  order: 1;
+  flex: none;
+  max-width: 100%;
+  color: var(--muted);
+  font-family: var(--sans, ui-sans-serif, sans-serif);
+  font-size: 0.72em;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-tags] > * {
+  order: 2;
 }
 
 .prose ul, .prose ol { padding-left: 1.3rem; }

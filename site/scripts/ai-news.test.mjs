@@ -127,6 +127,31 @@ test('item titles link to the source and quote blocks are gone', () => {
   assert.doesNotMatch(latest, /^#### \[整体排名\]/m);
 });
 
+const PRIMARY_CATEGORIES = ['模型', '产品', 'Agent 与 Harness', '工程实践', '开源', '行业'];
+
+function progressItems(body, heading) {
+  const chunk = body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '';
+  return [...chunk.matchAll(/^#### .+$/gm)].map((match) => match[0]);
+}
+
+test('domestic and international items from 2026-11-20 on have one primary category', () => {
+  const primaries = new Set(PRIMARY_CATEGORIES);
+  const checked = [];
+  for (const name of listAiNewsFiles(aiNewsRoot)) {
+    if (name.slice(0, 10) < '2026-11-20') continue;
+    const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
+    for (const section of ['四、国内进展', '五、国际进展']) {
+      for (const line of progressItems(body, section)) {
+        const match = line.match(/^#### &lt;([^&]+)&gt;((?:&lt;[^&]+&gt;)*)\s*\S/);
+        assert.ok(match, `${name} ${section} is missing a primary category: ${line}`);
+        assert.ok(primaries.has(match[1]), `${name} primary is not one of the six: ${match[1]}`);
+        checked.push(`${name} ${match[1]}`);
+      }
+    }
+  }
+  assert.ok(checked.length >= 18, `expected the 2026-11-20 items to be checked, got ${checked.length}`);
+});
+
 test('a missing keyword chapter is legacy even when the date is recent', () => {
   const body = '## 本周风向\n\n## 文章总结列表\n\n### 一条 - 2026-11-01\n';
   assert.equal(isLegacyIssue(body), true);
