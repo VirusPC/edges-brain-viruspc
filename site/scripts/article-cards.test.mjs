@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 import { wrapArticleCards } from '../src/plugins/rehype-article-cards.mjs';
 import { collectChapter } from '../src/lib/ai-news-category-filter.mjs';
@@ -98,4 +99,16 @@ test('a hidden article card is one node, so the border goes with the item', () =
   assert.deepEqual(collected.groups[0].items[0].nodes, [card]);
   assert.equal(collected.groups[0].items[0].cat, '产品');
   assert.deepEqual(collected.groups[0].items[0].tags, ['Cognition']);
+});
+
+test('the summary arrow stays the warm accent when open and when closed', () => {
+  const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
+  assert.match(css, /\.prose details\.article-more > summary,\s*\.prose details\.article-more\[open\] > summary\s*\{[^}]*color:\s*var\(--note\)/);
+  assert.match(css, /\.prose details\.article-more\[open\] > summary::marker/);
+  assert.match(css, /summary::-webkit-details-marker/);
+  assert.match(css, /font-weight:\s*650/);
+  assert.doesNotMatch(
+    css.slice(css.indexOf('.prose details.article-more > summary')),
+    /article-more > summary[^}]*background\s*:/,
+  );
 });

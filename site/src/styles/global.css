@@ -511,15 +511,27 @@ body.is-post.has-toc .sidenote {
   margin: 0.15rem 0 1.05rem;
 }
 
-.prose details.article-more > summary {
+.prose details.article-more > summary,
+.prose details.article-more[open] > summary {
   cursor: pointer;
-  color: var(--ink-soft);
+  color: var(--note);
   font-size: 0.92rem;
+  font-weight: 650;
   width: fit-content;
   max-width: 100%;
 }
 
-.prose details.article-more > summary:hover { color: var(--ink); }
+.prose details.article-more > summary::marker,
+.prose details.article-more[open] > summary::marker,
+.prose details.article-more > summary::-webkit-details-marker,
+.prose details.article-more[open] > summary::-webkit-details-marker {
+  color: var(--note);
+}
+
+.prose details.article-more > summary:hover,
+.prose details.article-more[open] > summary:hover {
+  color: #8a3f18;
+}
 
 .prose details.article-more > :not(summary) { margin-top: 0.35rem; }
 
@@ -783,6 +795,20 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
   .prose a {
     color: color-mix(in srgb, var(--note) 58%, white);
     text-decoration-color: color-mix(in srgb, var(--note) 45%, transparent);
+  }
+
+  .prose details.article-more > summary,
+  .prose details.article-more[open] > summary,
+  .prose details.article-more > summary::marker,
+  .prose details.article-more[open] > summary::marker,
+  .prose details.article-more > summary::-webkit-details-marker,
+  .prose details.article-more[open] > summary::-webkit-details-marker {
+    color: color-mix(in srgb, var(--note) 72%, white);
+  }
+
+  .prose details.article-more > summary:hover,
+  .prose details.article-more[open] > summary:hover {
+    color: color-mix(in srgb, var(--note) 48%, white);
   }
 
   .prose pre,
