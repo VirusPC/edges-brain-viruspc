@@ -65,9 +65,13 @@ peng cheng 直接基于 Pi 自研编码 Agent，vendoring `pi-agent-core` 与 `p
 
 用户追问为什么 Cline 的 live abort 和 Claude Code 的半截正文仍标未确认。随后在同一提交上补追踪了 Cline 的完整中止路径，并下载官方发布包检查 Claude Code 嵌入 JS。结论写入下面「结果」相应两节。
 
+### 11:43 后 检索这些做法背后的设计原因
+
+用户问有没有文章详细讲这背后的原因。随后检索了官方文档、作者说明、引入这些行为时附理由的 PR / issue，以及第三方分析。没有找到一篇专门的综述文章，较好的一手依据写入下面「设计原因与依据」。本次只补这篇笔记，没有改仓库里其他文件，也没有合并 PR。
+
 ## 结果
 
-做成了这些事：纠正了对 Pi 的错误判断；按源码（或公开证据）对照了各家在三类问题上的做法；明确了 `PiTurnRunner` 的建议策略。还没有改 `PiTurnRunner` 的代码。
+做成了这些事：纠正了对 Pi 的错误判断；按源码（或公开证据）对照了各家在三类问题上的做法；明确了 `PiTurnRunner` 的建议策略；后来又检索了这些做法的设计原因，见「设计原因与依据」。还没有改 `PiTurnRunner` 的代码。
 
 各家对照如下。
 
@@ -131,9 +135,50 @@ peng cheng 直接基于 Pi 自研编码 Agent，vendoring `pi-agent-core` 与 `p
 
 3. Escape 取消**不会**自动插入 “you were interrupted” / `[Request interrupted by user]` 这类标记。VS Code 只在 UI 上追加 `ask: "resume_task"`（[`sdk-task-control-coordinator.ts` L109–L116](https://github.com/cline/cline/blob/20b042723a14412f6c1e84230b008708534d6e8c/apps/vscode/src/sdk/sdk-task-control-coordinator.ts#L109-L116)），不进模型请求。活会话在中止后会被复用：[`askResponse`](https://github.com/cline/cline/blob/20b042723a14412f6c1e84230b008708534d6e8c/apps/vscode/src/sdk/sdk-followup-coordinator.ts#L107-L113) 写明 “Stopping a turn keeps the session alive… mirroring the CLI”。用户接着输入时，把原文发给同一会话；只有空内容的 Resume（只点继续、没有新文本）才会注入 `"[TASK RESUMPTION] Please continue where you left off."`（[`sdk-followup-coordinator.ts` L20–L27](https://github.com/cline/cline/blob/20b042723a14412f6c1e84230b008708534d6e8c/apps/vscode/src/sdk/sdk-followup-coordinator.ts#L20-L27)）（[`continueIdleSession` L193](https://github.com/cline/cline/blob/20b042723a14412f6c1e84230b008708534d6e8c/apps/vscode/src/sdk/sdk-followup-coordinator.ts#L193)、从历史重建时同样 [L277](https://github.com/cline/cline/blob/20b042723a14412f6c1e84230b008708534d6e8c/apps/vscode/src/sdk/sdk-followup-coordinator.ts#L277)）。CLI 的 `sendCurrentTurn` 把用户输入交给 `manager.send`，源码里没有注入 `TASK RESUMPTION`。这与 PR [cline/cline#13175](https://github.com/cline/cline/pull/13175) 的描述一致，现已由源码证实。
 
+## 设计原因与依据
+
+没有找到一篇专门、系统论述「编码 Agent 为什么要这样处理用户打断」的综述文章。最接近的依据是官方 API 约束，以及各项目在引入这些行为时写了理由的 PR / issue。第三方文章多为实现拆解或日志观察，不是设计动机总论。下列链接均在 2026-11-20（Asia/Shanghai）检索时用 HTTP 200 核验；`platform.openai.com` 的文档会跳转到 `developers.openai.com`，`badlogic/pi-mono#838` 与 `sst/opencode#62977` 会跳到现仓库，目标页均可打开。
+
+三类常见处理，大致对应下面三条原因。
+
+### 1. API 要求 tool 配对，所以要给中止或孤儿工具补合成结果
+
+Anthropic 官方文档要求：每个 `tool_use` 都必须在下一条 user 消息里立刻配上对应 `tool_result`，失败也要回；缺配对会得到 400 错误 `tool_use ids were found without tool_result blocks immediately after`（[Handle tool calls](https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls)，排错见 [Troubleshooting tool use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/troubleshooting-tool-use)）。并行调用文档进一步写明：即便决定不执行某次调用，仍须回 `is_error: true` 和简短说明（[Parallel tool use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/parallel-tool-use)）。这就是各家给 aborted / 孤儿 tool call 补合成错误结果的直接约束。
+
+合成结果里若只有一句“已中断”、丢掉已经跑出的输出，模型仍看不见副作用走到哪一步。OpenCode 维护者为此改过 shell 中止路径：旧实现会删掉输出文件，模型只看到 `"Tool execution interrupted"`；后来改为保留输出尾部、文件路径和 shell ID，再以失败结果交回（[anomalyco/opencode#62977](https://github.com/anomalyco/opencode/pull/62977)）。
+
+### 2. 回放半截 thinking / reasoning 会让请求不合法，或丢掉推理
+
+Anthropic 要求回放助手消息时，thinking 必须完整、原样带回去；改动会报 400（`thinking` / `redacted_thinking` blocks cannot be modified），丢掉则会丢失其中的推理（[Thinking in tool and multi-turn workflows](https://platform.claude.com/docs/en/build-with-claude/thinking-tool-workflows)）。因此未完成的流式或思考轮次往往不适合原样带进下一轮。
+
+OpenAI Responses API 的推理指南要求：做 function calling 时，要把随 function call 返回的 reasoning item 连同 tool output 一起传回去；若自行管理历史，须按原顺序带上「原始 input 和该次 response 的全部 output items」（[Reasoning models：Keeping reasoning items in context](https://platform.openai.com/docs/guides/reasoning)）。官方文档没有写到那条常见的 400：`Item of type 'reasoning' was provided without its required following item`。Pi PR 作者也写了 “I did check and found no docs”（[earendil-works/pi#838](https://github.com/earendil-works/pi/pull/838)）。这条约束仍说明：只有 reasoning、没有后续 message 或 function_call 的不完整轮次，不能当作完整历史回放。
+
+Pi 引入「整段跳过 aborted / error 的 assistant 消息」，正是因为中止轮次常只留下 thinking/reasoning；把它们回放会触发上述 OpenAI 400。Mario Zechner 选择让模型从上一份合法状态重试，而不是在 provider 层过滤（同上 [PR #838](https://github.com/earendil-works/pi/pull/838)）。
+
+### 3. 若不明确告知已被打断，模型可能重复已发生的副作用
+
+Codex 在引入 `<turn_aborted>` 时写明原因：此前只发出 `TurnAborted`，历史里没有模型可见标记；下一轮模型不知道上次已被中止，可能继续或重复已中止动作，包括重复副作用（例如再次开 PR）（[openai/codex#9043](https://github.com/openai/codex/pull/9043)，问题陈述见 [#9042](https://github.com/openai/codex/issues/9042)）。标记会说明用户是故意打断，并要求先核对当前状态再重试。
+
+Gemini CLI 用占位句 `[The previous response was interrupted before it completed.]` 保住角色交替：工具轮之后若只剩空 / 仅思考的 model 轮并被丢掉，下一条用户消息可能被并进 `functionResponse`，或触发 400：`Requests ending with a model turn are not supported`（[google-gemini/gemini-cli#30228](https://github.com/google-gemini/gemini-cli/pull/30228)）。该 PR 直接针对的是工具轮后的空 / 仅思考回复，不是只讲 Esc，但它给出了同一占位句被保留的理由。
+
+Claude Code 的系统提示则把 `[Request interrupted by user]` / `[Request interrupted by user for tool use]` 写成合成消息，并要求模型不要回应、也不要自己发出这些字符串（[Superlinear 对系统提示的整理](https://www.superlinear.academy/c/share-your-projects-en/a-peek-inside-claude-code-and-cursor)）。这证明标记会被模型看见，但没有展开「为什么必须插入」。
+
+### 依据一览
+
+1. [Anthropic：Handle tool calls](https://platform.claude.com/docs/en/agents-and-tools/tool-use/handle-tool-calls)（及 [Parallel tool use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/parallel-tool-use)、[Troubleshooting tool use](https://platform.claude.com/docs/en/agents-and-tools/tool-use/troubleshooting-tool-use)）（一手，官方文档）——每个 `tool_use` 必须立刻配对 `tool_result`，失败或不执行也要回 `is_error: true`，否则 400。
+2. [Anthropic：Thinking in tool and multi-turn workflows](https://platform.claude.com/docs/en/build-with-claude/thinking-tool-workflows)（一手，官方文档）——thinking 必须完整原样回放；改动会 400，丢掉会丢失推理。
+3. [OpenAI：Reasoning models — Keeping reasoning items in context](https://platform.openai.com/docs/guides/reasoning)（一手，官方文档）——须把 reasoning item 与后续 tool output / 全部 output items 按原顺序一起回传；官方未记载那条 “reasoning without following item” 400。
+4. [Pi PR #838：skip reasoning-only / aborted assistant replay](https://github.com/earendil-works/pi/pull/838)（一手，作者与合并说明）——中止轮次常是 reasoning-only，回放会触发 OpenAI 400，因此整段跳过 aborted / error 的 assistant。
+5. [Codex PR #9043](https://github.com/openai/codex/pull/9043)（及 issue [#9042](https://github.com/openai/codex/issues/9042)）（一手）——没有模型可见的中断标记时，下一轮可能重复已中止动作及副作用。
+6. [Gemini CLI PR #30228](https://github.com/google-gemini/gemini-cli/pull/30228)（一手）——保留中断占位句以维持角色交替，避免用户消息被并进 tool response，或触发 “Requests ending with a model turn are not supported”。
+7. [OpenCode PR #62977](https://github.com/anomalyco/opencode/pull/62977)（一手，维护者 jlongster）——合成工具结果不能只剩 “Tool execution interrupted”，应保留已跑出的部分输出再以失败交回。
+8. [Superlinear：A Peek Inside Claude Code (and Cursor)](https://www.superlinear.academy/c/share-your-projects-en/a-peek-inside-claude-code-and-cursor)（二手，提示词观察）——记录了 Claude Code 会插入上述合成中断标记，并要求模型不要回应或自行发出。
+
+另附：[Jason Cai：打断：OpenCode 如何停止一次正在执行的会话](https://www.jasoncai.site/posts/opencode-interrupt.html)（二手，源码精读）——讲的是 OpenCode 打断时的 fiber / claim / 输入保留，不是上面三条历史塑造策略的设计总论。
+
 ## 所学
 
-下列对照均以上文「结果」中已标注的源码或公开证据为准。
+下列对照均以上文「结果」中已标注的源码或公开证据为准。这三条取舍背后的 API 约束与产品理由，见「设计原因与依据」。
 
 各家并不都和 Pi 一样。丢掉半截流式文本的是 Pi、Codex、Gemini CLI、Cline，以及 Claude Code（发布包中的嵌入 JS：中止路径不提交本次 `be`）。OpenCode 和 Aider 会带上。会给模型显式中断说明的是 Codex、Gemini CLI、Claude Code、Aider；Pi 和 OpenCode 不另注这类用户或系统提示，OpenCode 只在 tool result 里说明。Cline 在 Escape 后不自动插入 interrupted 标记；只有空内容的 Resume 才会发 `TASK RESUMPTION`。
 
@@ -160,7 +205,7 @@ peng cheng 直接基于 Pi 自研编码 Agent，vendoring `pi-agent-core` 与 `p
 
 #### 核心解决方案
 
-以下取舍的事实依据见「结果」各节源码或公开证据链接。
+以下取舍的事实依据见「结果」各节源码或公开证据链接；设计原因见「设计原因与依据」。
 
 1. 把打断分成两类分别处理：模型还在流式输出，以及工具已经在执行。不要混成一种策略。
 2. 流式输出中途被打断时，不要把半截 assistant 文本（尤其是只有 reasoning、或工具参数不完整的片段）回放给模型。可选项是像 OpenCode、Aider 那样保留非空正文；不做这条，是因为 Pi 已经证明回放可能触发 API 错误，Codex 和 Gemini CLI 也选择不把未完成条目发给模型。
@@ -195,10 +240,10 @@ peng cheng 直接基于 Pi 自研编码 Agent，vendoring `pi-agent-core` 与 `p
 
 ## 补充说明
 
-- 原始材料：peng cheng 与 Grok Bot 在 2026-11-20 的对话，时间范围约当天至 11:03（Asia/Shanghai）。议题从「打断内容要不要带进下一轮」追问到 Pi 的真实做法，再对照其他 coding agent，最后要求沉淀到个人大脑 Project。
+- 原始材料：peng cheng 与 Grok Bot 在 2026-11-20 的对话，时间范围约当天至 11:43 后（Asia/Shanghai）。议题从「打断内容要不要带进下一轮」追问到 Pi 的真实做法，再对照其他 coding agent，要求沉淀到个人大脑 Project，随后又要求检索这些做法背后的设计原因并记入本笔记。
 - 本笔记写入已有 Project「Agent 基础设施」（`projects/agent-infra/`），因为这里已有 Pi 生态和 coding agent 调研；没有为此新建 Project，也没有放进 dsh 课程 Project。
 - 相关已有材料：[pi 生态与插件扩展](../../2026-10-19--pi生态与插件扩展.md) — 更早的 Pi 生态笔记，不包含本次打断策略。
-- 证据原则：开源论断使用当时实际核对的完整提交 SHA，并以 GitHub permalink 加 `#Lx-Ly` 行锚点定位。Claude Code 闭源，使用官方 npm 发布包版本号 + 文件名 + 从原生二进制中抽出的短摘录；并保留公开文章和 GitHub issue。凡无法用链接或上述摘录支撑的判断，已标「未确认」或删去。
+- 证据原则：开源论断使用当时实际核对的完整提交 SHA，并以 GitHub permalink 加 `#Lx-Ly` 行锚点定位。Claude Code 闭源，使用官方 npm 发布包版本号 + 文件名 + 从原生二进制中抽出的短摘录；并保留公开文章和 GitHub issue。设计原因一节使用官方文档与附理由的 PR / issue，链接均已核验可打开。凡无法用链接或上述摘录支撑的判断，已标「未确认」或删去。
 - Claude Code 的公开证据来源：[A Peek Inside Claude Code (and Cursor)](https://www.superlinear.academy/c/share-your-projects-en/a-peek-inside-claude-code-and-cursor)；GitHub issues [anthropics/claude-code#25920](https://github.com/anthropics/claude-code/issues/25920)、[#78915](https://github.com/anthropics/claude-code/issues/78915)、[#29243](https://github.com/anthropics/claude-code/issues/29243)、[#111053](https://github.com/anthropics/claude-code/issues/111053)。
 - Cline 的 Resume / 复用活会话说法，现已由 [`sdk-followup-coordinator.ts`](https://github.com/cline/cline/blob/20b042723a14412f6c1e84230b008708534d6e8c/apps/vscode/src/sdk/sdk-followup-coordinator.ts#L107-L113) 等源码证实；公开 PR [cline/cline#13175](https://github.com/cline/cline/pull/13175) 仅作对照。
 - 本次只做记录和对照，没有修改 `PiTurnRunner`，也没有合并任何既有 PR。
