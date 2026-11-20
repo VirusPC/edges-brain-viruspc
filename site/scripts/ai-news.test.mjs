@@ -134,19 +134,25 @@ function progressItems(body, heading) {
   return [...chunk.matchAll(/^#### .+$/gm)].map((match) => match[0]);
 }
 
-test('domestic and international items from 2026-11-20 on have one primary category', () => {
+function selectedArticleItems(body) {
+  const selected = body.split(/^## [〇一二三四五六七八九十]+、精选文章$/m)[1]?.split(/^## /m)[0];
+  if (selected) return [...selected.matchAll(/^#### .+$/gm)].map((match) => match[0]);
+  return ['四、国内进展', '五、国际进展'].flatMap((section) => progressItems(body, section));
+}
+
+test('selected-article items from 2026-11-20 on have one primary category', () => {
   const primaries = new Set(PRIMARY_CATEGORIES);
   const checked = [];
   for (const name of listAiNewsFiles(aiNewsRoot)) {
     if (name.slice(0, 10) < '2026-11-20') continue;
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
-    for (const section of ['四、国内进展', '五、国际进展']) {
-      for (const line of progressItems(body, section)) {
-        const match = line.match(/^#### &lt;([^&]+)&gt;((?:&lt;[^&]+&gt;)*)\s*\S/);
-        assert.ok(match, `${name} ${section} is missing a primary category: ${line}`);
-        assert.ok(primaries.has(match[1]), `${name} primary is not one of the six: ${match[1]}`);
-        checked.push(`${name} ${match[1]}`);
-      }
+    const lines = selectedArticleItems(body);
+    assert.ok(lines.length > 0, `${name} has no selected-article items`);
+    for (const line of lines) {
+      const match = line.match(/^#### &lt;([^&]+)&gt;((?:&lt;[^&]+&gt;)*)\s*\S/);
+      assert.ok(match, `${name} is missing a primary category: ${line}`);
+      assert.ok(primaries.has(match[1]), `${name} primary is not one of the six: ${match[1]}`);
+      checked.push(`${name} ${match[1]}`);
     }
   }
   assert.ok(checked.length >= 18, `expected the 2026-11-20 items to be checked, got ${checked.length}`);
