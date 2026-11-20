@@ -118,8 +118,11 @@ export function chartOption(spec, theme, options = {}) {
         fontFamily: FONT,
         fontSize: compact ? 11 : 12,
         formatter(value) {
-          const shown = compact ? compactModelName(value) : value;
-          return highlighted.has(value) ? `{hot|新} ${shown}` : shown;
+          const marked = highlighted.has(value);
+          const shown = compact
+            ? compactModelName(value, marked ? MOBILE_NAME_LIMIT - 2 : MOBILE_NAME_LIMIT)
+            : value;
+          return marked ? `{hot|新} ${shown}` : shown;
         },
         rich: {
           hot: {

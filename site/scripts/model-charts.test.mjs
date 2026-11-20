@@ -199,9 +199,14 @@ test('mobile labels stop at 20 characters and the tooltip keeps the full name', 
     paper: '#fff',
   };
   const mobile = chartOption(spec, theme, { compactLabels: true });
-  const shown = mobile.yAxis.axisLabel.formatter(full).replace('{hot|新} ', '');
-  assert.equal([...shown].length, MOBILE_NAME_LIMIT);
+  const raw = mobile.yAxis.axisLabel.formatter(full);
+  const shown = raw.replace('{hot|新} ', '');
+  assert.equal(raw.startsWith('{hot|新} '), true);
+  assert.equal([...shown].length, MOBILE_NAME_LIMIT - 2);
+  assert.equal([...'新 ' + shown].length, MOBILE_NAME_LIMIT);
   assert.equal(mobile.yAxis.axisLabel.formatter('Short'), 'Short');
+  const plain = 'Claude Fable 5.2 (High, Default Fallback)';
+  assert.equal([...mobile.yAxis.axisLabel.formatter(plain)].length, MOBILE_NAME_LIMIT);
   assert.ok(mobile.grid.right < 72);
   assert.equal(mobile.xAxis.splitNumber, 4);
   assert.equal(mobile.xAxis.axisLabel.hideOverlap, true);
