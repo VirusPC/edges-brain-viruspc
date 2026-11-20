@@ -215,6 +215,14 @@ export function mountCategoryFilter(doc) {
   bar.setAttribute('role', 'group');
   bar.setAttribute('aria-label', '筛选精选文章');
 
+  const addLabel = (row, text) => {
+    const label = doc.createElement('span');
+    label.className = 'ai-news-filter-label';
+    label.textContent = text;
+    label.setAttribute('aria-hidden', 'true');
+    row.append(label);
+  };
+
   const addAll = (row, rowName) => {
     const all = doc.createElement('button');
     all.type = 'button';
@@ -228,7 +236,8 @@ export function mountCategoryFilter(doc) {
   const row = doc.createElement('div');
   row.className = 'ai-news-filter-row';
   row.setAttribute('role', 'group');
-  row.setAttribute('aria-label', '主类');
+  row.setAttribute('aria-label', '分类');
+  addLabel(row, '分类');
   addAll(row, 'cat');
   for (const name of present) {
     const button = doc.createElement('button');
@@ -246,7 +255,8 @@ export function mountCategoryFilter(doc) {
     const companyRow = doc.createElement('div');
     companyRow.className = 'ai-news-filter-row';
     companyRow.setAttribute('role', 'group');
-    companyRow.setAttribute('aria-label', '发文公司');
+    companyRow.setAttribute('aria-label', '来源');
+    addLabel(companyRow, '来源');
     addAll(companyRow, 'tag');
     for (const name of companies) {
       const button = doc.createElement('button');

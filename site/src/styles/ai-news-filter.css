@@ -22,6 +22,16 @@
   gap: 0.45rem 0.4rem;
 }
 
+.ai-news-filter-label {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  background: var(--paper);
+}
+
 @media (max-width: 560px) {
   .post.has-toc .prose:has(.ai-news-selected) {
     overflow-x: clip;
@@ -33,6 +43,14 @@
     overscroll-behavior-x: contain;
     scrollbar-width: thin;
     padding-bottom: 0.1rem;
+  }
+
+  .ai-news-filter-label {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    margin-right: -0.4rem;
+    padding-right: 0.4rem;
   }
 }
 
