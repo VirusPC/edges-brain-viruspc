@@ -511,15 +511,27 @@ body.is-post.has-toc .sidenote {
   margin: 0.15rem 0 1.05rem;
 }
 
-.prose details.article-more > summary {
+.prose details.article-more > summary,
+.prose details.article-more[open] > summary {
   cursor: pointer;
-  color: var(--ink-soft);
+  color: var(--note);
   font-size: 0.92rem;
+  font-weight: 650;
   width: fit-content;
   max-width: 100%;
 }
 
-.prose details.article-more > summary:hover { color: var(--ink); }
+.prose details.article-more > summary::marker,
+.prose details.article-more[open] > summary::marker,
+.prose details.article-more > summary::-webkit-details-marker,
+.prose details.article-more[open] > summary::-webkit-details-marker {
+  color: var(--note);
+}
+
+.prose details.article-more > summary:hover,
+.prose details.article-more[open] > summary:hover {
+  color: #8a3f18;
+}
 
 .prose details.article-more > :not(summary) { margin-top: 0.35rem; }
 
@@ -777,12 +789,51 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
     --muted: #b3aa9c;
     --rule: #3f3b35;
     --rule-strong: #e4d9c8;
+    /* Dark cards sit below the page, not on the light note wash. */
+    --panel: #121110;
+    --panel-line: #6f685c;
+    --panel-ink: #f6f1e7;
+    --panel-label: #f3ece1;
+    --panel-muted: #d2c9bb;
     /* --note and --note-wash stay, so category chips keep a light ground and theme-colored type. */
+  }
+
+  .model-facts,
+  .prose .article-card {
+    background: var(--panel);
+    border-color: var(--panel-line);
+    color: var(--panel-ink);
+  }
+
+  .model-facts-row { border-top-color: #3a3630; }
+
+  .model-facts dt { color: var(--panel-label); }
+
+  .model-facts-src { color: var(--panel-muted); }
+
+  .prose .article-card details.article-more,
+  .prose .article-card details.article-more p,
+  .prose .article-card strong {
+    color: var(--panel-ink);
   }
 
   .prose a {
     color: color-mix(in srgb, var(--note) 58%, white);
     text-decoration-color: color-mix(in srgb, var(--note) 45%, transparent);
+  }
+
+  .prose details.article-more > summary,
+  .prose details.article-more[open] > summary,
+  .prose details.article-more > summary::marker,
+  .prose details.article-more[open] > summary::marker,
+  .prose details.article-more > summary::-webkit-details-marker,
+  .prose details.article-more[open] > summary::-webkit-details-marker {
+    color: color-mix(in srgb, var(--note) 55%, white);
+  }
+
+  .prose details.article-more > summary:hover,
+  .prose details.article-more[open] > summary:hover {
+    color: color-mix(in srgb, var(--note) 48%, white);
   }
 
   .prose pre,
