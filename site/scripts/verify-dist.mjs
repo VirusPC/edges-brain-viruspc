@@ -353,7 +353,13 @@ assert.match(issue20, /红圈：Gemini 4 Neon/);
 assert.match(issue20, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
 const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(toc20, '2026-11-20 is missing the chapter toc');
-assert.match(toc20[0], /二、模型进展/);
+assert.doesNotMatch(issue20, /薅羊毛/);
+assert.doesNotMatch(toc20[0], /薅羊毛/);
+for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章']) {
+  assert.match(toc20[0], new RegExp(heading));
+}
+assert.match(toc20[0], />国内</);
+assert.match(toc20[0], />国际</);
 assert.doesNotMatch(toc20[0], /LLM Arena/);
 const arena20 = issue20.match(/<img[^>]*alt="LLM Arena Top 15，2026-11-18"[^>]*src="([^"]+)"/)
   ?? issue20.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top 15，2026-11-18"/);
