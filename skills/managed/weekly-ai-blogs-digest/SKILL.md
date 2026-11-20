@@ -102,7 +102,15 @@ npm install --prefix scripts
 
 ### 模型发布
 
-模型发布用四级标题，只写在这一节下面。这一节与「Artificial Analysis」「LLM Arena」「OpenRouter」同级。没有发布就整节去掉。
+模型发布用四级标题，只写在这一节下面。这一节与「Artificial Analysis」「LLM Arena」「OpenRouter」同级。没有发布就整节去掉。每个模型标题下加一个三行信息块（价格 / 速度 / 效果），原来的发布说明留着。
+
+价格是输入、输出、缓存读取，单位美元每百万 token。先用发布原文里的单价。原文没有，再用 OpenRouter 的生成日快照（`GET /api/v1/models`），不要在打开页面或构建时重拉。提供商优先模型官方的标准档；官方有多个标准档就取中位数，并在来源里写「中位数」。flex、priority、fast、ultrafast 不用。
+
+速度是首 token 延迟和吞吐。用同一天的 OpenRouter `GET /api/v1/models/{slug}/endpoints`：`latency_last_30m.p50` 从毫秒换成秒，`throughput_last_30m.p50` 是 token/s。提供商规则与价格相同。
+
+效果写 Artificial Analysis 综合智力指数、名次、分母和快照时间，以及这个模型适合什么任务。智力指数用免费接口 `GET /api/v2/language/models/free`。旧路径 `/api/v2/data/llms/models` 已 410，不要用。适合什么任务优先用发布原文。厂商自述的名次如果和这份快照不同，正文数字以快照为准，并写明原文怎么说。
+
+缺的写「暂无」，不要换别的来源凑。每个数字标来源：原文、`OpenRouter·提供商`、AA。快照在有密钥的机器上抓好，放进 VirusPC/ai-news-data 的 `issues/YYYY-MM-DD/model-releases.json`。密钥不进仓库，也不进云端。站点只读这份文件。
 
 ## 三、项目开源
 
@@ -174,7 +182,7 @@ node scripts/render_keyword_cloud.mjs \
 - 发布组织名就是这家公司的，用这个名字：Cursor、Warp、Amp、Lovable、Hugging Face。不改成页脚里的法律实体。
 - 页面的 publisher 或 parentOrganization 写明母公司时，用母公司：Devin 博客的 publisher 是 Cognition，写 Cognition；Kiro 的 parentOrganization 是 Amazon Web Services，写 AWS。claude.com、claude.dev 的 publisher 是 Anthropic，写 Anthropic。
 - 合作新闻只标发文博客的公司。Hugging Face 博客写和 OpenRouter 合作，只标 Hugging Face。
-- 「其他短讯」里每家发文方各一个标签，按条目顺序排。
+- 一条只标这一篇的发文公司。短讯也各自成条，不再用一条「其他短讯」把几家公司串在一起。
 
 模型发布、项目开源不加这套主类。没有来源 URL 的章节标题保持纯文字，例如「LLM Arena」、「Artificial Analysis」、「OpenRouter」、「模型发布」、「本周关键词」和纯图标题。「精选文章」里没有链接的条目，主类仍然要写。
 
@@ -192,18 +200,12 @@ node scripts/render_keyword_cloud.mjs \
 {{短述}}
 ```
 
-没有链接时：
-
-```md
-#### &lt;产品&gt;&lt;Amp&gt;&lt;Lovable&gt;其他短讯
-```
-
 要求：
 
 1. 单条尽量短，不要超过 200 字。
 2. 和 AI Coding / Agent 相关时，用一句话点出对研发的落地点。
-3. 同一主题的多篇合成一条。标题用主链接：按书写顺序，取第一条链接文字不是「社区帖」的来源；来源都是「社区帖」时用第一条。其余链接接在短述末尾，链接文字保持原样。
-4. 已经是列表项、项内自带链接的（如「其他短讯」），把加粗名称做成该项的链接，地址仍留在这项里。
+3. 每篇文章单独成一条 `####`，带自己的标题链接、主类和发文公司。不要把同一来源的多篇合成一条，也不要把另一篇文章挂在这条短述末尾。短述只讲这一篇。
+4. 短讯同样各自成条，不用「其他短讯」把几篇收成一条列表。
 
 ## 强制要求
 

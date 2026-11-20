@@ -116,6 +116,22 @@ test('item titles link to the source and quote blocks are gone', () => {
         analysis >= 0 && analysis < arena && arena < openrouter && openrouter < releases,
         name,
       );
+      for (const title of [
+        '&lt;开源&gt;&lt;腾讯&gt;[登上 GitHub Trending｜腾讯开源 LoopForge]',
+        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[用 Super-agent 的理念拆解 Octop 团队模式]',
+        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[不只是 Memory：Ontology 如何让 Coding Agent 越用越懂项目]',
+      ]) {
+        assert.ok(body.includes(`#### ${title}`), title);
+      }
+      assert.doesNotMatch(body, /同一周腾讯另有两篇|其他短讯/);
+      const selected = ['四、国内进展', '五、国际进展']
+        .map((heading) => body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '')
+        .join('\n');
+      const items = selected.split(/^#### /m).slice(1);
+      for (const item of items) {
+        const links = item.match(/\[[^\]]+\]\(https?:\/\//g) || [];
+        assert.equal(links.length, 1, `merged article: ${item.slice(0, 80)}`);
+      }
     }
   }
 
