@@ -387,7 +387,7 @@ for (const heading of ['一、本周关键词', '二、模型进展', '三、项
 assert.match(toc20[0], />国内</);
 assert.match(toc20[0], />国际</);
 const folded20 = [...issue20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
-assert.equal(folded20.length, 20);
+assert.equal(folded20.length, 30);
 for (const block of folded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
   for (const label of ['在解决什么问题：', '怎么解决：', '效果怎样：', '后续可以怎么做：', '和最近的进展：']) {
@@ -396,8 +396,8 @@ for (const block of folded20) {
   assert.doesNotMatch(block[1], /微信原文这次没打开|这次没打开原文/);
 }
 assert.equal((issue20.match(/class="article-card"/g) || []).length, 33);
-assert.equal((issue20.match(/微信原文这次没打开/g) || []).length, 10);
-assert.equal((issue20.match(/这次没打开原文/g) || []).length, 3);
+assert.equal((issue20.match(/订阅源里只有这些/g) || []).length, 3);
+assert.equal((issue20.match(/微信原文这次没打开|这次没打开原文/g) || []).length, 0);
 const selectedHeadings20 = issue20.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];
 for (const [cat, tag, title] of [
   ['开源', '腾讯', 'LoopForge'],
