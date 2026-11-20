@@ -29,6 +29,25 @@ function exists(rel) {
   assert.ok(rels.includes(rel), `missing ${rel}`);
 }
 
+function decodeHtml(value) {
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function optionLabels(html) {
+  return [...html.matchAll(/<option\b[^>]*>([^<]*)<\/option>/g)].map((match) => match[1].trim());
+}
+
+function chartSpecs(html) {
+  return [...html.matchAll(/<pre\b[^>]*\bmodel-chart-spec\b[^>]*>([\s\S]*?)<\/pre>/g)].map((match) =>
+    JSON.parse(decodeHtml(match[1])),
+  );
+}
+
 function assertCategoryPills(html, samples, plainHeadings = [/<h4\b(?![^>]*data-cat)[^>]*>\s*整体排名\s*<\/h4>/]) {
   const toc = html.match(/<nav class="toc"[\s\S]*?<\/nav>/);
   assert.ok(toc, 'issue is missing the chapter toc');
@@ -218,27 +237,51 @@ assert.match(cloudRel, /keywords-cloud-2026-11-06/);
 exists(cloudRel);
 assert.match(latestIssue, /href="https:\/\/kiroween\.devpost\.com"/);
 assert.match(latestIssue, /href="https:\/\/linux\.do\/t\/topic\/3101137"/);
-assert.match(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
+assert.doesNotMatch(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
+assert.match(latestIssue, /data-model-board/);
+assert.deepEqual(optionLabels(latestIssue), ['LLM Arena']);
+assert.equal(chartSpecs(latestIssue).length, 0);
 assert.doesNotMatch(latestIssue, /原始链接/);
 assertCategoryPills(latestIssue, [
   ['交付闭环', 'OpenAI 收购 Pierre'],
   ['代码评审', 'Devin Review 2.0'],
-]);
+], []);
 
 const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
 assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、国内进展/);
-assert.match(newestToc[0], /LLM Arena/);
-assert.match(newestToc[0], /Artificial Analysis/);
-assert.match(newestToc[0], /OpenRouter/);
+assert.match(newestToc[0], /二、模型进展/);
 assert.match(newestToc[0], /模型发布/);
+assert.doesNotMatch(newestToc[0], /LLM Arena|Artificial Analysis|OpenRouter/);
 assert.doesNotMatch(newestToc[0], /&lt;|&#x3C;|data-cat/);
 const platformOrder = [...newestIssue.matchAll(/<h3\b[^>]*>([^<]*)<\/h3>/g)]
   .map((match) => match[1].replace(/\s+/g, ' ').trim())
   .filter((text) => ['LLM Arena', 'Artificial Analysis', 'OpenRouter', '模型发布'].includes(text));
-assert.deepEqual(platformOrder, ['LLM Arena', 'Artificial Analysis', 'OpenRouter', '模型发布']);
+assert.deepEqual(platformOrder, ['模型发布']);
+assert.deepEqual(optionLabels(newestIssue), [
+  'LLM Arena',
+  'Artificial Analysis',
+  'OpenRouter 本周用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 应用用量',
+]);
+const newestSpecs = chartSpecs(newestIssue);
+assert.deepEqual(newestSpecs.map((spec) => spec.kind), [
+  'llm-arena',
+  'aa',
+  'openrouter-usage',
+  'openrouter-programming',
+  'openrouter-apps',
+]);
+for (const spec of newestSpecs) {
+  assert.equal(spec.items.length, 15, spec.kind);
+  assert.equal(typeof spec.items[0].value, 'number', spec.kind);
+}
+assert.ok(newestSpecs[1].items.some((item) => item.highlight && item.name.includes('Claude Fable 5.2')));
+assert.equal(newestSpecs[2].scaleZero, true);
+assert.match(newestSpecs[2].items[0].valueText, / T$/);
 const modelProgress = newestIssue.split(/<h2\b[^>]*>\s*二、模型进展\s*<\/h2>/)[1]?.split(/<h2\b/)[0] ?? '';
 assert.doesNotMatch(
   modelProgress.split(/<h3\b[^>]*>\s*模型发布\s*<\/h3>/)[0],
@@ -249,9 +292,6 @@ assertCategoryPills(newestIssue, [
   ['研发提效', '授人以鱼不如授人以渔：我对企业级 AI 研发提效的思考与实践'],
   ['Harness', '研发Loop的上下文优化与多Agent协作实践'],
 ], [
-  /<h3\b[^>]*>\s*LLM Arena\s*<\/h3>/,
-  /<h3\b[^>]*>\s*Artificial Analysis\s*<\/h3>/,
-  /<h3\b[^>]*>\s*OpenRouter\s*<\/h3>/,
   /<h3\b[^>]*>\s*模型发布\s*<\/h3>/,
 ]);
 for (const alt of [
@@ -276,6 +316,24 @@ const backfillToc = backfillIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(backfillToc, '2026-10-23 is missing the chapter toc');
 assert.match(backfillToc[0], /二、模型进展/);
 assert.match(backfillIssue, /alt="LLM Arena Top15 2026-10-22"/);
+assert.deepEqual(optionLabels(backfillIssue), ['LLM Arena']);
+assert.equal(chartSpecs(backfillIssue).length, 0);
+
+const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
+assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
+assert.deepEqual(optionLabels(issue20), ['LLM Arena']);
+assert.equal(chartSpecs(issue20).length, 0);
+assert.match(issue20, /alt="LLM Arena Top 15，2026-11-18"/);
+assert.match(issue20, /红圈：Gemini 4 Neon/);
+assert.match(issue20, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
+const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
+assert.ok(toc20, '2026-11-20 is missing the chapter toc');
+assert.match(toc20[0], /二、模型进展/);
+assert.doesNotMatch(toc20[0], /LLM Arena/);
+const arena20 = issue20.match(/<img[^>]*alt="LLM Arena Top 15，2026-11-18"[^>]*src="([^"]+)"/)
+  ?? issue20.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top 15，2026-11-18"/);
+assert.ok(arena20, '2026-11-20 is missing the arena image');
+exists(arena20[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0]);
 
 const aiFeed = fs.readFileSync(path.join(dist, 'ai-news/rss.xml'), 'utf8');
 assert.match(aiFeed, /<title>AI 资讯<\/title>/);
@@ -283,6 +341,7 @@ assert.match(aiFeed, /<title>2026-11-06 AI 资讯<\/title>/);
 assert.match(aiFeed, /<title>2026-10-30 AI 资讯<\/title>/);
 assert.match(aiFeed, /edges-brain-viruspc\/ai-news\/2026-11-06\//);
 assert.match(aiFeed, /<title>2026-11-13 AI 资讯<\/title>/);
+assert.match(aiFeed, /<title>2026-11-20 AI 资讯<\/title>/);
 assert.doesNotMatch(aiFeed, /data-cat|&lt;研发提效&gt;|&lt;交付闭环&gt;/);
 assert.equal((aiFeed.match(/<item>/g) || []).length, aiNewsFiles.length);
 
