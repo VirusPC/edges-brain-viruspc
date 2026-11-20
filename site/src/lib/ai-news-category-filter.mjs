@@ -23,19 +23,38 @@ export function filterChips(date, names) {
   return present;
 }
 
+/** Company names in first-seen order. Repeats stay on the first chip. */
+export function companiesPresent(tagLists) {
+  const seen = new Set();
+  const names = [];
+  for (const tags of tagLists) {
+    for (const tag of tags || []) {
+      if (!tag || seen.has(tag)) continue;
+      seen.add(tag);
+      names.push(tag);
+    }
+  }
+  return names;
+}
+
 export function parseFilter(search) {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
-  const cat = params.get('cat');
-  if (cat && PRIMARY.has(cat)) return { kind: 'cat', value: cat };
+  const cat = params.get('cat') || '';
   const tag = (params.get('tag') || '').trim();
-  if (tag) return { kind: 'tag', value: tag };
-  return { kind: 'all' };
+  return { cat: PRIMARY.has(cat) ? cat : '', tag };
 }
 
 export function nextFilter(current, action) {
-  if (!action || action.kind === 'all') return { kind: 'all' };
-  if (current.kind === action.kind && current.value === action.value) return { kind: 'all' };
-  return { kind: action.kind, value: action.value };
+  const next = { cat: current?.cat || '', tag: current?.tag || '' };
+  if (!action || action.kind === 'all') {
+    if (action?.row === 'cat') next.cat = '';
+    else if (action?.row === 'tag') next.tag = '';
+    else return { cat: '', tag: '' };
+    return next;
+  }
+  if (action.kind === 'cat') next.cat = next.cat === action.value ? '' : action.value;
+  if (action.kind === 'tag') next.tag = next.tag === action.value ? '' : action.value;
+  return next;
 }
 
 export function toSearch(filter, currentSearch = '') {
@@ -43,8 +62,8 @@ export function toSearch(filter, currentSearch = '') {
   const params = new URLSearchParams(raw);
   params.delete('cat');
   params.delete('tag');
-  if (filter.kind === 'cat') params.set('cat', filter.value);
-  if (filter.kind === 'tag') params.set('tag', filter.value);
+  if (filter?.cat) params.set('cat', filter.cat);
+  if (filter?.tag) params.set('tag', filter.tag);
   const text = params.toString();
   return text ? `?${text}` : '';
 }
@@ -55,16 +74,16 @@ export function isFilterStuck(barTop, stickyTop, tolerance = 2) {
 }
 
 export function itemMatches(item, filter) {
-  if (!filter || filter.kind === 'all') return true;
-  if (filter.kind === 'cat') return item.cat === filter.value;
-  if (filter.kind === 'tag') return item.tags.includes(filter.value);
+  if (filter?.cat && item.cat !== filter.cat) return false;
+  if (filter?.tag && !(item.tags || []).includes(filter.tag)) return false;
   return true;
 }
 
 export function sectionPlan(sections, filter) {
+  const active = Boolean(filter?.cat || filter?.tag);
   const planned = sections.map((section) => {
     const items = section.items.map((item) => ({ id: item.id, show: itemMatches(item, filter) }));
-    const show = !filter || filter.kind === 'all' || items.some((item) => item.show);
+    const show = !active || items.some((item) => item.show);
     return { id: section.id, show, items };
   });
   return { any: planned.some((section) => section.items.some((item) => item.show)), sections: planned };
@@ -155,13 +174,14 @@ function paintTags(groups) {
 function syncPressed(bar, groups, filter) {
   for (const button of bar.querySelectorAll('button')) {
     const kind = button.dataset.filter;
-    const value = kind === 'cat' ? button.dataset.cat : kind === 'tag' ? button.dataset.tag : '';
-    const on = filter.kind === 'all' ? kind === 'all' : filter.kind === kind && filter.value === value;
+    let on = false;
+    if (kind === 'all') on = button.dataset.row === 'tag' ? !filter.tag : !filter.cat;
+    else if (kind === 'cat') on = filter.cat === button.dataset.cat;
+    else if (kind === 'tag') on = filter.tag === button.dataset.tag;
     button.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
   for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...item.heading.querySelectorAll('.ai-news-tag')]))) {
-    const on = filter.kind === 'tag' && filter.value === button.dataset.tag;
-    button.setAttribute('aria-pressed', on ? 'true' : 'false');
+    button.setAttribute('aria-pressed', filter.tag && filter.tag === button.dataset.tag ? 'true' : 'false');
   }
 }
 
@@ -175,7 +195,7 @@ function applyDom(groups, status, filter) {
       for (const node of item.nodes) setShown(node, show);
     });
   });
-  status.hidden = !filter || filter.kind === 'all' || plan.any;
+  status.hidden = !(filter?.cat || filter?.tag) || plan.any;
 }
 
 export function mountCategoryFilter(doc) {
@@ -194,14 +214,22 @@ export function mountCategoryFilter(doc) {
   bar.className = 'ai-news-filter';
   bar.setAttribute('role', 'group');
   bar.setAttribute('aria-label', '筛选精选文章');
+
+  const addAll = (row, rowName) => {
+    const all = doc.createElement('button');
+    all.type = 'button';
+    all.className = 'ai-news-filter-all';
+    all.dataset.filter = 'all';
+    all.dataset.row = rowName;
+    all.textContent = '全部';
+    row.append(all);
+  };
+
   const row = doc.createElement('div');
   row.className = 'ai-news-filter-row';
-  const all = doc.createElement('button');
-  all.type = 'button';
-  all.className = 'ai-news-filter-all';
-  all.dataset.filter = 'all';
-  all.textContent = '全部';
-  row.append(all);
+  row.setAttribute('role', 'group');
+  row.setAttribute('aria-label', '主类');
+  addAll(row, 'cat');
   for (const name of present) {
     const button = doc.createElement('button');
     button.type = 'button';
@@ -212,6 +240,25 @@ export function mountCategoryFilter(doc) {
     row.append(button);
   }
   bar.append(row);
+
+  const companies = companiesPresent(chapter.groups.map((group) => group.items.flatMap((item) => item.tags)));
+  if (companies.length > 0) {
+    const companyRow = doc.createElement('div');
+    companyRow.className = 'ai-news-filter-row';
+    companyRow.setAttribute('role', 'group');
+    companyRow.setAttribute('aria-label', '发文公司');
+    addAll(companyRow, 'tag');
+    for (const name of companies) {
+      const button = doc.createElement('button');
+      button.type = 'button';
+      button.className = 'ai-news-filter-co';
+      button.dataset.filter = 'tag';
+      button.dataset.tag = name;
+      button.textContent = name;
+      companyRow.append(button);
+    }
+    bar.append(companyRow);
+  }
   const status = doc.createElement('p');
   status.className = 'ai-news-filter-status';
   status.hidden = true;
@@ -255,8 +302,9 @@ export function mountCategoryFilter(doc) {
     const button = event.target.closest('button');
     if (!button || !bar.contains(button)) return;
     const kind = button.dataset.filter;
-    if (kind === 'all') choose({ kind: 'all' });
+    if (kind === 'all') choose({ kind: 'all', row: button.dataset.row });
     else if (kind === 'cat') choose({ kind: 'cat', value: button.dataset.cat });
+    else if (kind === 'tag') choose({ kind: 'tag', value: button.dataset.tag });
   });
 
   root.addEventListener('click', (event) => {
