@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "items": [
+    {"name": "Old Model", "creator": "Google", "intelligence_index": 80, "release_date": "2026-10-01"},
+    {"name": "New Model", "creator": "Anthropic", "intelligence_index": 70, "release_date": "2026-11-09"},
+    {"name": "B", "creator": "Meta", "intelligence_index": 50, "release_date": "2026-01-01"},
+    {"name": "A", "creator": "Meta", "intelligence_index": 50, "release_date": "2026-01-01"},
+    {"name": "No Score", "creator": "Meta", "intelligence_index": null, "release_date": "2026-11-09"}
+  ]
+}

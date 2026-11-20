@@ -1,0 +1,7 @@
+{
+  "leaderboard_publish_date": "2026-11-11",
+  "items": [
+    {"rank": 1, "model": "Gemini 4 Carbon (High)", "organization": "google", "score": 1500.1, "votes": 10},
+    {"rank": 2, "model": "Gemini 4 Hydrogen (High)", "organization": "google", "score": 1490.2, "votes": 4}
+  ]
+}

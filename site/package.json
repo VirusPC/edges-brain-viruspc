@@ -6,8 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build && node scripts/verify-dist.mjs",
+    "dev": "node scripts/ensure-ai-news-data.mjs && astro dev",
+    "build": "node scripts/ensure-ai-news-data.mjs && astro build && node scripts/verify-dist.mjs",
     "preview": "astro preview --host 127.0.0.1",
     "test": "node --test scripts/*.test.mjs"
   },
@@ -17,6 +17,7 @@
     "@fontsource/caveat": "^5.2.8",
     "@fontsource/source-serif-4": "^5.2.9",
     "astro": "^5.16.0",
+    "echarts": "^6.1.0",
     "gray-matter": "^4.0.3"
   }
 }

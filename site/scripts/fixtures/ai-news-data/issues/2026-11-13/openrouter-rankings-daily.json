@@ -1,0 +1,10 @@
+{
+  "meta": {"start_date": "2026-10-30", "end_date": "2026-11-12"},
+  "data": [
+    {"date": "2026-11-06", "model_permaslug": "openai/gpt-test", "total_tokens": "1000000000000"},
+    {"date": "2026-11-07", "model_permaslug": "openai/gpt-test", "total_tokens": "1000000000000"},
+    {"date": "2026-10-30", "model_permaslug": "openai/gpt-test", "total_tokens": "9000000000000"},
+    {"date": "2026-11-06", "model_permaslug": "other", "total_tokens": "9000000000000"},
+    {"date": "2026-11-06", "model_permaslug": "anthropic/claude-test", "total_tokens": "500000000000"}
+  ]
+}
