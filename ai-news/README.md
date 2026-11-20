@@ -6,7 +6,7 @@
 
 ## 已归档周报
 
-- [2026-11-20 AI 资讯](2026-11-20-ai-news.md) — 覆盖 2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC）。附 Arena 2026-11-18 快照图（红圈 Gemini 4 Neon）。关键词：Gemini 4 Neon、GPT-6.2 Astra / Sol、Qwen4-Max、Devin Bots、常驻 Agent。GitHub Trending 用 2026-11-19 16:10（UTC+8）的 daily / all 前 5。模型进展按 Artificial Analysis、LLM Arena、OpenRouter、模型发布排列。
+- [2026-11-20 AI 资讯](2026-11-20-ai-news.md) — 覆盖 2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC）。附 Arena 2026-11-18 快照图（红圈 Gemini 4 Neon）。关键词：Gemini 4 Neon、GPT-6.2 Astra / Sol、Qwen4-Max、Devin Bots、常驻 Agent。GitHub Trending 用 2026-11-20 15:56（UTC+8）的 weekly / all 前 5。模型进展按 Artificial Analysis、LLM Arena、OpenRouter、模型发布排列。
 - [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06～2026-11-12。附 Arena 2026-11-11 快照图，以及 OpenRouter 本周用量、编程用量、应用用量。关键词：Claude Fable 5.2、Gemini 4 Hydrogen、多 Agent 编排、Qwen Code 1.0。GitHub Trending 用 2026-11-12 15:55（UTC+8）的 daily / all 前 5。补录 11 月 1 日 DeepSeek Harness Super-agent 架构文与 11 月 2 日 Creator Mode。
 - [2026-11-06 AI 资讯](2026-11-06-ai-news.md) — 覆盖 2026-10-30～2026-11-05；按新模版重跑。Arena 复用 2026-10-28 的图（较上周无新榜）。
 - [2026-10-30 AI 资讯](2026-10-30-ai-news.md) — 覆盖 2026-10-23～2026-10-29；按新模版重跑，附 Arena 2026-10-28 快照图。
@@ -28,7 +28,7 @@
 ## 维护约定
 
 1. 周报生成后直接提交到本目录，并更新本索引。
-2. 抓取先存进 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`。快照只记 feed 给出的正文，不为偏短条目打开文章页。写周报和补总结只读这份快照：选文看 `feeds.index.json`，正文用 `fetch_feeds.py --pick` 读 `feeds.json`。订阅源只有简介时按这个长度写；不够写五段就只留一句话，并写明订阅源里只有这些。GitHub Trending 只写 daily / all 前 5。
+2. 抓取先存进 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`。快照只记 feed 给出的正文，不为偏短条目打开文章页。写周报和补总结只读这份快照：选文看 `feeds.index.json`，正文用 `fetch_feeds.py --pick` 读 `feeds.json`。订阅源只有简介时按这个长度写；不够写五段就只留一句话，并写明订阅源里只有这些。GitHub Trending 只写 weekly / all 前 5。
 3. 一句话概括尽量短。折叠的完整总结按 skill 的五段写，每段一两句，不编数字。AI Coding 相关条目在概括或后续建议里点出研发落点。
 4. 执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。播客不进 OPML，只在本周关键词或相关章节里按需点名。
 5. 每期说明文件是同名 `YYYY-MM-DD-ai-news.notes.md`，记录来源细节和缺项原因。站点不收录、不链接。

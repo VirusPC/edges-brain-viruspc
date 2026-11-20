@@ -2,7 +2,7 @@
 
 阅读器要导入的是 [`ai-coding-blogs.opml`](ai-coding-blogs.opml)。里面是 feed（`type="rss"` + `xmlUrl`），Folo 或其他 OPML 阅读器可以直接导入。英文博客在「AI Coding Blogs」，国内团队在「国内技术团队」，GitHub Trending 在「GitHub Trending」。脚本这些分组都拉。周报不再收「薅羊毛」，OPML 里没有这一组。
 
-GitHub Trending 用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的每日榜（全部、Python、TypeScript）。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，快照日期用 channel 的 `pubDate`。
+GitHub Trending 用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的一周榜（全部、Python、TypeScript）。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，日期用 channel 的 `pubDate`。订阅 id 是 `github-trending-weekly-all`、`github-trending-weekly-python`、`github-trending-weekly-typescript`。正文只写 all 的前 5。摘录文件仍叫 `github-trending.json`，内容是 weekly / all，不再摘 daily。
 
 Artificial Analysis 和 LLM Arena 不是 OPML。见 skill 里的「非博客数据」，脚本在 `scripts/fetch_artificial_analysis.py` 和 `scripts/fetch_llm_arena.py`。
 

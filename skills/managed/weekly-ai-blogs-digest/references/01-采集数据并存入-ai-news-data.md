@@ -10,7 +10,7 @@
 | --- | --- |
 | `feeds.json` | `fetch_feeds.py --out` 的全文，就是 feed 给出的正文，不截断，也不打开文章页去补。一份文件，不再另存截断版。`thin` 表示这条不足 280 字或为空，原样保留。 |
 | `feeds.index.json` | `--index-out`。只有标题、日期、链接、来源、`thin` 和开头约 400 字。选文只读这一份。 |
-| `github-trending.json` | 从同一次抓取里抽出 `github-trending-daily-all` 的全文。`fetch_feeds.py` 会按日期和标题重排，所以数组顺序不是榜上名次。其它 Trending 分类只留在 `feeds.json`。 |
+| `github-trending.json` | 从同一次抓取里抽出 `github-trending-weekly-all` 的全文。文件名不变。`fetch_feeds.py` 会按日期和标题重排，所以数组顺序不是榜上名次。`github-trending-weekly-python` 和 `github-trending-weekly-typescript` 只留在 `feeds.json`。 |
 | `aa-language-models.json` | Artificial Analysis 免费接口全量精简字段，含 `performance` 中位数和 `performance_v3` 均值。 |
 | `llm-arena-YYYY-MM-DD.json` | 窗口结束日之前最近一份已发布榜。 |
 | `openrouter-*.json` | 日用量、编程用量、应用用量；coding 应用榜只作旁路。 |
@@ -18,7 +18,7 @@
 | `model-releases.json` | 模型发布的价格、速度、智力指数，以及价格排名和速度排名。 |
 | `manifest.json` | 窗口、各文件来源、条数、字节数。不含密钥。 |
 
-这周全文大约 1.7MB，大头是 Trending README。所以全文只存一份 `feeds.json`，再用小索引和 daily/all 摘录给撰写步骤，避免每篇文章一个文件，也避免再存一份截断稿。
+这周全文大约 1.7MB，大头是 Trending README。所以全文只存一份 `feeds.json`，再用小索引和 weekly/all 摘录给撰写步骤，避免每篇文章一个文件，也避免再存一份截断稿。
 
 密钥只用环境变量：`AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`）、`OPENROUTER_API_KEY`。不要写进命令行、日志、仓库或快照。需要密钥的拉取只在有密钥的机器上跑。没有密钥就跳过该文件，在 manifest 里写明没拉，不要用空文件假装有数据。
 
@@ -47,7 +47,7 @@ $PY scripts/fetch_feeds.py \
   --index-out /path/to/ai-news-data/issues/YYYY-MM-DD/feeds.index.json
 ```
 
-然后从 `feeds.json` 抽出 `source` 为 `github-trending-daily-all` 的条目，写入 `github-trending.json`。名次仍以 Trending feed 的 XML 原始顺序为准，不要用这个文件的数组顺序。
+然后从 `feeds.json` 抽出 `source` 为 `github-trending-weekly-all` 的条目，写入 `github-trending.json`。文件名仍是 `github-trending.json`。名次仍以 Trending feed 的 XML 原始顺序为准，不要用这个文件的数组顺序，也不要编造名次。不要再留 daily 源。
 
 ```bash
 $PY scripts/fetch_artificial_analysis.py --limit 0 \
