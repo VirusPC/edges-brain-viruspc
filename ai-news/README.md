@@ -1,12 +1,12 @@
 # AI 资讯周报归档
 
-每期周报以「周报生成日」命名，保存为 `YYYY-MM-DD-ai-news.md`；正文覆盖此前一周、**不含生成当天**。自 2026-10-30 起，以及 2026-11 补录的更早期次，正文按当时的章节写（〇薅羊毛 → 本周关键词 → 模型进展 → 项目开源 → 精选文章），这些已归档的期次保持原样。「精选文章」下用二级章节分「国内」「国际」。更早写在正文里的「国内进展」「国际进展」由站点渲染时收进这一章，原文不改。某一章没有可核对的内容时整章不写。新稿不再写「薅羊毛」，从「一、本周关键词」起。以后按内容形式加的「推特」「播客」仍是「精选文章」后面的同级一级章节。
+每期周报以「周报生成日」命名，保存为 `YYYY-MM-DD-ai-news.md`；正文覆盖此前一周、**不含生成当天**。自 2026-11-20 起，正文第一行写时刻和时区：`覆盖窗口：D-7 00:00:00 至 D-1 23:59:59（UTC；生成日 D，不含当天）。` [`fetch_feeds.py`](../skills/managed/weekly-ai-blogs-digest/scripts/fetch_feeds.py) 把 feed 发布时间换成 UTC 日历日，再和这两个日期做闭区间比较，所以截止是 D-1 的 23:59:59 UTC，不是北京时间当天 23:59。源文件保持 UTC。站点渲染时只把含「（UTC；」的这一行加 8 小时，显示成北京时间；生成日不换算。更早各期的第一行不回改，渲染时也原文照排。自 2026-10-30 起，以及 2026-11 补录的更早期次，正文按当时的章节写（〇薅羊毛 → 本周关键词 → 模型进展 → 项目开源 → 精选文章）。2026-11-13 及更早的已归档期次保持原样。2026-11-20 已去掉「〇、薅羊毛」，从「一、本周关键词」起。「精选文章」下用二级章节分「国内」「国际」。更早写在正文里的「国内进展」「国际进展」由站点渲染时收进这一章，原文不改。某一章没有可核对的内容时整章不写。新稿不再写「薅羊毛」，从「一、本周关键词」起。以后按内容形式加的「推特」「播客」仍是「精选文章」后面的同级一级章节。
 
 订阅真源是 [`skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml)，阅读器可直接导入。没有可用 feed 的站写在同目录的 [`ai-coding-blogs.meta.json`](../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.meta.json)。拉 feed 用 [`scripts/fetch_feeds.py`](../skills/managed/weekly-ai-blogs-digest/scripts/fetch_feeds.py)。
 
 ## 已归档周报
 
-- [2026-11-20 AI 资讯](2026-11-20-ai-news.md) — 覆盖 2026-11-13～2026-11-19。附 Arena 2026-11-18 快照图（红圈 Gemini 4 Neon）。关键词：Gemini 4 Neon、GPT-6.2 Astra / Sol、Qwen4-Max、Devin Bots、常驻 Agent。GitHub Trending 用 2026-11-19 16:10（UTC+8）的 daily / all 前 5。本期没有 Artificial Analysis 和 OpenRouter 的图（缺 API 密钥）。
+- [2026-11-20 AI 资讯](2026-11-20-ai-news.md) — 覆盖 2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC）。附 Arena 2026-11-18 快照图（红圈 Gemini 4 Neon）。关键词：Gemini 4 Neon、GPT-6.2 Astra / Sol、Qwen4-Max、Devin Bots、常驻 Agent。GitHub Trending 用 2026-11-19 16:10（UTC+8）的 daily / all 前 5。本期没有 Artificial Analysis 和 OpenRouter 的图（缺 API 密钥）。
 - [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06～2026-11-12。附 Arena 2026-11-11 快照图，以及 OpenRouter 本周用量、编程用量、应用用量。关键词：Claude Fable 5.2、Gemini 4 Hydrogen、多 Agent 编排、Qwen Code 1.0。GitHub Trending 用 2026-11-12 15:55（UTC+8）的 daily / all 前 5。补录 11 月 1 日 DeepSeek Harness Super-agent 架构文与 11 月 2 日 Creator Mode。
 - [2026-11-06 AI 资讯](2026-11-06-ai-news.md) — 覆盖 2026-10-30～2026-11-05；按新模版重跑。Arena 复用 2026-10-28 的图（较上周无新榜）。
 - [2026-10-30 AI 资讯](2026-10-30-ai-news.md) — 覆盖 2026-10-23～2026-10-29；按新模版重跑，附 Arena 2026-10-28 快照图。

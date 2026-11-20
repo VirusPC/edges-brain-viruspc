@@ -217,6 +217,8 @@ def check_pair(feeds: list[dict], meta: dict) -> list[str]:
 
 
 def entry_date(entry: dict) -> str | None:
+    # feedparser 的 published_parsed / updated_parsed 是 UTC。
+    # 窗口只比较这个 YYYY-MM-DD，含当天。+0800 的 00:30 仍算前一个 UTC 日。
     for key in ("published_parsed", "updated_parsed"):
         parsed = entry.get(key)
         if parsed:
@@ -365,6 +367,7 @@ def feed_report(feed: dict, meta_by_url: dict, timeout: int) -> dict:
 
 
 def mark_window(report: dict, since: str, until: str) -> None:
+    # since/until 是 UTC 日历日，闭区间，不是北京时间。
     if report.get("snapshot"):
         # 当日榜单没有文章发布日。保留整份快照，不按博客窗口裁掉。
         report["entries_in_window"] = len(report.get("entries") or [])
@@ -659,6 +662,30 @@ def self_test() -> int:
     )
     undated_entries, _title = parse_feed_bytes(undated)
     assert undated_entries[0]["date"] == "2026-10-29", undated_entries
+    boundary = b"""<?xml version="1.0"?><rss version="2.0"><channel>
+      <item><title>Beijing next day</title><link>https://example.com/bj</link>
+        <pubDate>Fri, 20 Nov 2026 00:30:00 +0800</pubDate><description>x</description></item>
+      <item><title>UTC end</title><link>https://example.com/utc-end</link>
+        <pubDate>Thu, 19 Nov 2026 23:59:59 GMT</pubDate><description>x</description></item>
+      <item><title>Before since UTC</title><link>https://example.com/early</link>
+        <pubDate>Fri, 13 Nov 2026 00:30:00 +0800</pubDate><description>x</description></item>
+    </channel></rss>"""
+    boundary_entries, _title = parse_feed_bytes(boundary)
+    by_title = {item["title"]: item["date"] for item in boundary_entries}
+    assert by_title["Beijing next day"] == "2026-11-19", by_title
+    assert by_title["UTC end"] == "2026-11-19", by_title
+    assert by_title["Before since UTC"] == "2026-11-12", by_title
+    boundary_report = {
+        "snapshot": False,
+        "newest": max(by_title.values()),
+        "oldest": min(by_title.values()),
+        "entries_total": len(boundary_entries),
+        "entries": boundary_entries,
+        "stale": False,
+        "truncated": False,
+    }
+    mark_window(boundary_report, "2026-11-13", "2026-11-19")
+    assert {item["title"] for item in boundary_report["entries"]} == {"Beijing next day", "UTC end"}
     snapshot_feed = b"""<?xml version="1.0"?>
     <rss version="2.0"><channel>
       <title>Trending</title>
@@ -747,8 +774,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Pull AI Coding OPML feeds into lean JSON.")
     parser.add_argument("--opml", type=Path, default=DEFAULT_OPML)
     parser.add_argument("--meta", type=Path, default=DEFAULT_META)
-    parser.add_argument("--since", help="YYYY-MM-DD，含当天")
-    parser.add_argument("--until", help="YYYY-MM-DD，含当天")
+    parser.add_argument("--since", help="YYYY-MM-DD，含当天（UTC 日历日）")
+    parser.add_argument("--until", help="YYYY-MM-DD，含当天（UTC 日历日）")
     parser.add_argument("--out", type=Path, help="写入 JSON 文件；默认打到 stdout")
     parser.add_argument("--compare", type=Path, help="已有周报 markdown，按标题链接和行内链接比对覆盖")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)

@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import { rehypeModelCharts } from './src/plugins/rehype-model-charts.mjs';
 import { rehypeSidenotes } from './src/plugins/rehype-sidenotes.mjs';
 import { remarkCategoryPills } from './src/plugins/remark-category-pills.mjs';
+import { remarkCoverageWindow } from './src/plugins/remark-coverage-window.mjs';
 import { remarkLocalAssets } from './src/plugins/remark-local-assets.mjs';
 import { remarkModelCharts } from './src/plugins/remark-model-charts.mjs';
 import { remarkSelectedArticles } from './src/plugins/remark-selected-articles.mjs';
@@ -25,7 +26,7 @@ export default defineConfig({
   markdown: {
     gfm: true,
     smartypants: false,
-    remarkPlugins: [remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], remarkSelectedArticles],
+    remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], remarkSelectedArticles],
     rehypePlugins: [rehypeSidenotes, rehypeModelCharts],
   },
 });

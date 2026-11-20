@@ -249,6 +249,8 @@ assertCategoryPills(latestIssue, [
 
 const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
 assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
+assert.match(newestIssue, /覆盖窗口：2026-11-06～2026-11-12（生成日 2026-11-13）。/);
+assert.doesNotMatch(newestIssue, /北京时间/);
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、精选文章/);
@@ -328,6 +330,8 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
+assert.match(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
+assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
   'LLM Arena',
   'Artificial Analysis',
@@ -353,7 +357,13 @@ assert.match(issue20, /红圈：Gemini 4 Neon/);
 assert.match(issue20, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
 const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(toc20, '2026-11-20 is missing the chapter toc');
-assert.match(toc20[0], /二、模型进展/);
+assert.doesNotMatch(issue20, /薅羊毛/);
+assert.doesNotMatch(toc20[0], /薅羊毛/);
+for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章']) {
+  assert.match(toc20[0], new RegExp(heading));
+}
+assert.match(toc20[0], />国内</);
+assert.match(toc20[0], />国际</);
 assert.doesNotMatch(toc20[0], /LLM Arena/);
 const arena20 = issue20.match(/<img[^>]*alt="LLM Arena Top 15，2026-11-18"[^>]*src="([^"]+)"/)
   ?? issue20.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top 15，2026-11-18"/);
