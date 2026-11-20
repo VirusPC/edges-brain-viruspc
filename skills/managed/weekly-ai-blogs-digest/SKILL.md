@@ -35,14 +35,33 @@ npm install --prefix scripts
 1. 在本 skill 目录，用上面的 Python 3.12 环境拉订阅：
 
 ```bash
-/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py --since YYYY-MM-DD --until YYYY-MM-DD --out /tmp/ai-coding-feeds.json
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py \
+  --since YYYY-MM-DD --until YYYY-MM-DD \
+  --out /tmp/ai-coding-feeds.json \
+  --index-out /tmp/ai-coding-feeds.index.json
 ```
 
-日期要显式传入，不要依赖跑脚本那台机器的时区。
+日期要显式传入，不要依赖跑脚本那台机器的时区。`--out` 是全文，`summary` 不再截断。`--index-out` 只有标题、日期、链接、来源、`thin` 和开头约 400 字。主 Agent 只打开索引。不要 `cat` 全文那份 JSON。
 
-2. 读脚本写出的结果来写周报，不要把原始 feed 整份塞进上下文。正文够写摘要，就不要再打开原文；正文太短、某站失败、或 feed 明显被截断时，再用该站列表页或文章页补。链接必须是 feed、列表页、站点地图或文章页里真实出现的地址；对不上就修，修不了就去掉。
+2. 挑文章和写摘要分开，避免整份全文进主 Agent 的上下文。
 
-3. 按下面的章节精选成文，不要把窗口内所有文章平铺成清单。条目写短，文风参考既有的 REDoc 演示稿（无文首一级标题，条目用四级标题，有来源的标题直接链到原文）。
+   主 Agent 只读索引，按标题、链接、来源和开头挑要写的文章。不要为了挑选去读全文。
+
+   入选的文章分成几批，每批 3 到 5 篇，交给多个子 Agent 并行写。每个子 Agent 只用 `--pick` 读自己这一批的全文：
+
+```bash
+/tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_feeds.py \
+  --pick /tmp/ai-coding-feeds.json \
+  --link 'https://例子/a' --link 'https://例子/b'
+```
+
+   子 Agent 按下面的单条模版写这三部分：标题行、一句话概括、默认折叠的完整总结。一篇一条，不编数字。feed 里的正文明显不全时（`thin`、这条 feed 被截断，或结尾是「阅读全文」一类），由这个子 Agent 自己打开文章页补齐，不要把补页的工作退回主 Agent。打不开原文就只留那句概括，并写明原因。
+
+   主 Agent 把各批摘要收齐，排进固定章节，再核对链接、主类和发文公司。不要在这一步重读全文。
+
+   运行环境没有子 Agent 时，主 Agent 自己按上面的 `--pick` 逐篇读全文、写完再读下一篇。一次只读一篇，不要一次读入整份 JSON。
+
+3. 按下面的章节排版，不要把窗口内所有文章平铺成清单。条目写短，文风参考既有的 REDoc 演示稿（无文首一级标题，条目用四级标题，有来源的标题直接链到原文）。链接必须是 feed、列表页、站点地图或文章页里真实出现的地址；对不上就修，修不了就去掉。
 
 4. 跑非博客脚本（见下）。某一项没跑成、或拿不到该期可核验的历史快照，**不要留空标题，也不要拿后来的数据冒充当时，更不要编造**。这一小节直接省略，原因写进同期说明文件。OpenRouter 是一节里的三张图：只省略拉不到的那一张；三张都没有才去掉整节。
 
@@ -57,7 +76,7 @@ npm install --prefix scripts
      - 应用用量：`GET /api/v1/datasets/app-rankings?sort=popular`，`start_date` / `end_date` 与本周用量相同。这是官网页公开应用榜：隐藏和私有应用不计，别名并进主应用。正文不要加 `category=coding`。coding 分类可以另存快照。
      - 图：绘图用同级 skill [`llm-arena-marked-chart`](../llm-arena-marked-chart/SKILL.md)，轴名「Token 用量（T）」。文件名是 `openrouter-usage-top15-YYYY-MM-DD.svg`、`openrouter-programming-top15-YYYY-MM-DD.svg`、`openrouter-apps-top15-YYYY-MM-DD.svg`，以及同名 `-marked.png`（日期用抓取日，UTC+8）。红圈只圈覆盖窗口内新发布、并且出现在这张 Top 15 上的模型。没有这样的模型时，`--highlight` 传空（`--highlight ""`）以关掉票数启发，图注写「不圈」。图注只写来源、窗口或采样周，以及圈了谁（或没有可圈的）。只经过 OpenRouter 的流量、Flash 和长上下文把 token 抬高、不同供应商的 tokenizer 不能横比、编程用量是采样估计：这些写进说明文件，不要写进正文。`organization` 用 permaslug 的供应商段，其中 `moonshotai` 写成 `moonshot`，以便沿用绘图脚本已有的配色。
 
-2. **GitHub Trending**在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，第三方抓页，不是 GitHub 官方 RSS）。周报里只保留 **daily / all 的前 5**，放到「项目开源」开头，并写快照日期。窗口内有可核验快照才列。没有可核验快照就整节省略，原因写进说明文件。
+2. **GitHub Trending**在 OPML 分组「GitHub Trending」（mshibanami/GitHubTrendingRSS，第三方抓页，不是 GitHub 官方 RSS）。周报里只保留 **daily / all 的前 5**，放到「项目开源」开头，并写快照日期。名次按 feed 原始顺序，不用索引里按标题排过的顺序。这 5 个仓库的 README 也按上面的办法：主 Agent 只看索引里的标题和开头，全文用 `--pick` 交给子 Agent，或自己逐个读。不要把其余 Trending 条目的 README 全文读进上下文。窗口内有可核验快照才列。没有可核验快照就整节省略，原因写进说明文件。
 
 ```bash
 /tmp/weekly-ai-blogs-digest-py312/bin/python scripts/fetch_artificial_analysis.py --limit 0 --out /tmp/aa-language-models.json
@@ -189,29 +208,32 @@ node scripts/render_keyword_cloud.mjs \
 ```md
 #### &lt;Agent 与 Harness&gt;&lt;淘宝&gt;[{{标题}}]({{url}})
 
-{{短述}}
+一句话概括这篇在做什么。
+
+<details class="article-more">
+<summary>完整总结</summary>
+<p><strong>在解决什么问题：</strong>一两句。</p>
+<p><strong>怎么解决：</strong>一两句。</p>
+<p><strong>效果怎样：</strong>没有数字就写定性的结果，不编数字。</p>
+<p><strong>后续可以怎么做：</strong>做 agent infra 的可以怎样用；做业务开发的可以怎样用。</p>
+<p><strong>和最近的进展：</strong>点出它和这一期别的模型、产品或做法的关系。</p>
+</details>
 ```
 
-只有主类时：
-
-```md
-#### &lt;产品&gt;[{{标题}}]({{url}})
-
-{{短述}}
-```
+`<details>` 到 `</details>` 中间不要空行。空行会让 CommonMark 把后面的段落拆到折叠块外面，展开就失效。五段小标题用冒号并加粗，例如「在解决什么问题：」，不要在冒号前加句号。`class="article-more"` 给站点排版用，不靠脚本。站点再给每条套上卡片边框；源稿不要自己包一层 div。只有主类时，标题行同样先写主类再写链接。读不到原文时，只留那句概括，再写明原因，不要补一份看起来像读过的完整总结。
 
 要求：
 
-1. 单条尽量短，不要超过 200 字。
-2. 和 AI Coding / Agent 相关时，用一句话点出对研发的落地点。
-3. 每篇文章单独成一条 `####`，带自己的标题链接、主类和发文公司。不要把同一来源的多篇合成一条，也不要把另一篇文章挂在这条短述末尾。短述只讲这一篇。
-4. 短讯同样各自成条，不用「其他短讯」把几篇收成一条列表。
+1. 一句话概括尽量短。完整总结也要少字，五段都写，但每段一两句。
+2. 和 AI Coding / Agent 相关时，概括或后续建议里点出对研发的落地点。
+3. 每篇文章单独成一条 `####`，带自己的标题链接、主类和发文公司。不要把同一来源的多篇合成一条，也不要把另一篇文章挂在这条短述末尾。
+4. 短讯同样各自成条，不用「其他短讯」把几篇收成一条列表。完整总结放在 `<details class="article-more">` 里，默认折叠，没有 JavaScript 也能展开。子 Agent 按自己读到的全文写这三部分：标题行、一句话、折叠的完整总结。
 
 ## 强制要求
 
 1. 网站链接必须真实有效。失效链接须修复或排除。
 2. 只写窗口内的文章。窗口按 UTC 日历日：UTC 日期为 D 的内容不属于这一期。北京时间已经到 D 日、但 UTC 日期仍是 D-1 的文章仍在窗口内。
-3. 优先用 feed 正文。只有正文不够、失败或被截断，或该站只能走列表页时，才再抓页面。
+3. 入选文章按 feed 给出的全文写摘要。只有正文明显不全（少于 280 字、feed 被截断，或结尾是「阅读全文」一类）、拉取失败，或该站只能走列表页时，才再抓文章页。
 4. 维护订阅时：没有可用原生 feed，可以订公开的抓取 RSS 或 BestBlogs 转换源，并保留列表页退路；已经有可用原生 feed 的站不要再并一份抓取源。研究向的源不要新加进订阅。
 5. 不要编造 Trending 名次或榜单数字。缺了的原因写进说明文件。
 

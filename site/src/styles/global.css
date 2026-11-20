@@ -507,6 +507,47 @@ body.is-post.has-toc .sidenote {
   white-space: nowrap;
 }
 
+.prose details.article-more {
+  margin: 0.15rem 0 1.05rem;
+}
+
+.prose details.article-more > summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.prose details.article-more > summary:hover { color: var(--ink); }
+
+.prose details.article-more > :not(summary) { margin-top: 0.35rem; }
+
+.prose details.article-more p { margin: 0.35rem 0; }
+
+.prose p:has(+ details.article-more) { margin-bottom: 0.35rem; }
+
+.prose .article-card {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.9rem 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--note-wash) 45%, var(--paper));
+  min-width: 0;
+  max-width: 100%;
+}
+
+.prose .article-card > :first-child { margin-top: 0; }
+.prose .article-card > :last-child { margin-bottom: 0; }
+
+.prose .article-card h4 { margin: 0 0 0.4rem; }
+
+.prose .article-card p { margin: 0.35rem 0 0; }
+
+.prose .article-card details.article-more { margin: 0.45rem 0 0; }
+
+.prose .article-card strong { font-weight: 650; }
+
 .model-chart { width: 100%; height: 0; overflow: hidden; }
 .model-chart.is-ready { height: 560px; overflow: visible; }
 
@@ -713,6 +754,18 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
 
   .model-facts-row { grid-template-columns: 2.6rem minmax(0, 1fr); }
   .model-facts-src { grid-column: 2; white-space: normal; }
+
+  .prose details.article-more { margin-bottom: 1.2rem; }
+  .prose details.article-more > summary {
+    padding: 0.28rem 0;
+    line-height: 1.45;
+  }
+
+  .prose .article-card {
+    margin-bottom: 0.7rem;
+    padding: 0.65rem 0.75rem 0.7rem;
+    border-radius: 0.6rem;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

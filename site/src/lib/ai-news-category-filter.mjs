@@ -113,7 +113,7 @@ function textOf(node) {
   return (node.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
-function collectChapter(root) {
+export function collectChapter(root) {
   const heading = [...root.querySelectorAll('h2')].find((node) => textOf(node).endsWith('精选文章'));
   if (!heading) return null;
   const groups = [];
@@ -129,6 +129,20 @@ function collectChapter(root) {
       group = { id: String(groups.length), heading: cursor, items: [] };
       groups.push(group);
       item = null;
+    } else if (cursor.classList?.contains('article-card') && group) {
+      const heading = cursor.querySelector('h4');
+      if (heading) {
+        item = {
+          id: `${group.id}-${group.items.length}`,
+          heading,
+          nodes: [cursor],
+          cat: heading.getAttribute('data-cat') || '',
+          tags: splitTags(heading.getAttribute('data-tags')),
+        };
+        group.items.push(item);
+      } else {
+        item = null;
+      }
     } else if (cursor.tagName === 'H4' && group) {
       item = {
         id: `${group.id}-${group.items.length}`,

@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
+import { rehypeArticleCards } from './src/plugins/rehype-article-cards.mjs';
 import { rehypeModelCharts } from './src/plugins/rehype-model-charts.mjs';
 import { rehypeSidenotes } from './src/plugins/rehype-sidenotes.mjs';
 import { remarkCategoryPills } from './src/plugins/remark-category-pills.mjs';
@@ -28,6 +29,6 @@ export default defineConfig({
     gfm: true,
     smartypants: false,
     remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
-    rehypePlugins: [rehypeSidenotes, rehypeModelCharts],
+    rehypePlugins: [rehypeSidenotes, rehypeModelCharts, rehypeArticleCards],
   },
 });
