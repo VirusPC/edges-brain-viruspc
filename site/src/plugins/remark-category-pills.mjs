@@ -1,9 +1,11 @@
 /**
- * Turn a leading `<label>` on a heading into `data-cat`, and drop it from the
- * heading text. The page paints the label with CSS; chapter lists keep the
- * title only, because they read the heading's text.
+ * Turn leading `<label>` marks on a heading into attributes, and drop them
+ * from the heading text. Chapter lists keep the title only.
  *
- * Source files keep writing `#### &lt;标签&gt;[标题](url)`.
+ * The first label is `data-cat` (one capsule). Further labels are `data-tags`
+ * (gray text). A single label, including older issues, stays `data-cat` only.
+ *
+ * Source: `#### &lt;主类&gt;&lt;自由标签&gt;[标题](url)`.
  */
 
 const LEADING_LABEL = /^(?:<([^<>\n"]{1,32})>|&lt;([^<>\n"]{1,32})&gt;)\s*/;
@@ -35,16 +37,23 @@ function tagHeading(heading) {
   if (children.slice(0, index).some((child) => child?.type !== 'text')) return;
 
   const text = children[index];
-  const match = String(text.value).match(LEADING_LABEL);
-  if (!match) return;
-  const label = (match[1] ?? match[2] ?? '').trim();
-  if (!label || label.includes('://')) return;
+  const labels = [];
+  let value = String(text.value);
+  for (;;) {
+    const match = value.match(LEADING_LABEL);
+    if (!match) break;
+    const label = (match[1] ?? match[2] ?? '').trim();
+    if (!label || label.includes('://')) break;
+    labels.push(label);
+    value = value.slice(match[0].length);
+  }
+  if (labels.length === 0) return;
 
-  const rest = String(text.value).slice(match[0].length);
-  if (rest) text.value = rest;
+  if (value) text.value = value;
   else children.splice(index, 1);
 
   heading.data ??= {};
   heading.data.hProperties ??= {};
-  heading.data.hProperties.dataCat = label;
+  heading.data.hProperties.dataCat = labels[0];
+  if (labels.length > 1) heading.data.hProperties.dataTags = labels.slice(1).join(' · ');
 }
