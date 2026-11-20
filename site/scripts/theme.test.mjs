@@ -92,6 +92,15 @@ test('before a choice, a system change still repaints; a blocked store still swi
   assert.equal(blocked.storage.getItem('theme'), null);
 });
 
+test('the header star link opens the personal brain and does not star by itself', () => {
+  const layout = fs.readFileSync(new URL('../src/layouts/BaseLayout.astro', import.meta.url), 'utf8');
+  assert.match(layout, /class="github-star"/);
+  assert.match(layout, /href="https:\/\/github.com\/VirusPC\/edges-brain-viruspc"/);
+  assert.match(layout, /由你自己点 Star/);
+  assert.doesNotMatch(layout, /github\.com\/VirusPC\/edges"/);
+  assert.doesNotMatch(layout, /自动/);
+});
+
 test('the shared header has the toggle and applies a saved choice before paint', () => {
   const layout = fs.readFileSync(new URL('../src/layouts/BaseLayout.astro', import.meta.url), 'utf8');
   assert.match(layout, /data-theme-toggle/);

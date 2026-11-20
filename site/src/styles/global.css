@@ -115,6 +115,34 @@ body.has-toc .frame {
   gap: 0.15rem 0.95rem;
 }
 
+.github-star {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  height: 2.25rem;
+  padding: 0 0.7rem;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.github-star:hover { background: var(--panel); }
+
+.github-star:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.github-star svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
 .theme-toggle {
   flex: none;
   width: 2.25rem;
@@ -817,7 +845,10 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
 }
 
 @media (max-width: 560px) {
-  .theme-toggle { width: 2.75rem; height: 2.75rem; }
+  .theme-toggle,
+  .github-star { height: 2.75rem; }
+
+  .theme-toggle { width: 2.75rem; }
 
   .post-list li { grid-template-columns: 1fr; gap: 0.15rem; }
   .issue-list li { grid-template-columns: 1fr; }
