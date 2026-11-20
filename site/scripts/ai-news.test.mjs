@@ -128,10 +128,27 @@ test('item titles link to the source and quote blocks are gone', () => {
         .map((heading) => body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '')
         .join('\n');
       const items = selected.split(/^#### /m).slice(1);
+      assert.equal(items.length, 33);
+      let folded = 0;
+      let unread = 0;
       for (const item of items) {
         const links = item.match(/\[[^\]]+\]\(https?:\/\//g) || [];
         assert.equal(links.length, 1, `merged article: ${item.slice(0, 80)}`);
+        const details = item.match(/<details class="article-more">[\s\S]*?<\/details>/g) || [];
+        if (details.length === 0) {
+          assert.match(item, /微信原文这次没打开|这次没打开原文/);
+          unread += 1;
+          continue;
+        }
+        assert.equal(details.length, 1, item.slice(0, 80));
+        assert.doesNotMatch(details[0], /\n\n/);
+        for (const label of ['在解决什么问题', '怎么解决', '效果怎样', '后续可以怎么做', '和最近的进展']) {
+          assert.match(details[0], new RegExp(label));
+        }
+        folded += 1;
       }
+      assert.equal(folded, 20);
+      assert.equal(unread, 13);
     }
   }
 
