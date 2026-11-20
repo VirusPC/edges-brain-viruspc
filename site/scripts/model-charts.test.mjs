@@ -244,6 +244,56 @@ test('platform sections become one dropdown, and a missing figure stays out of i
   }
 });
 
+test('Artificial Analysis is shown first even when the source lists Arena before it', async () => {
+  const previous = process.env.AI_NEWS_DATA_ROOT;
+  delete process.env.AI_NEWS_DATA_ROOT;
+  try {
+    const processor = await createMarkdownProcessor({
+      gfm: true,
+      smartypants: false,
+      syntaxHighlight: false,
+      remarkPlugins: [[remarkModelCharts, { repoRoot: '/tmp/unused' }]],
+      rehypePlugins: [rehypeModelCharts],
+    });
+    const source = [
+      '## 二、模型进展',
+      '',
+      '### LLM Arena',
+      '',
+      '![LLM Arena Top 15](https://example.com/llm-arena-top15-2026-11-11-marked.png)',
+      '',
+      'Arena 说明。',
+      '',
+      '### Artificial Analysis',
+      '',
+      '![Artificial Analysis Intelligence Index Top 15](https://example.com/aa-intelligence-top15-2026-11-13-marked.png)',
+      '',
+      'AA 说明。',
+      '',
+      '### OpenRouter',
+      '',
+      '![OpenRouter 本周用量 Top 15](https://example.com/openrouter-usage-top15-2026-11-13-marked.png)',
+      '',
+      '用量说明。',
+    ].join('\n');
+    const html = (await processor.render(source, {
+      fileURL: new URL('file:///tmp/ai-news/2026-11-13-ai-news.md'),
+    })).code;
+    assert.deepEqual(optionLabels(html), ['Artificial Analysis', 'LLM Arena', 'OpenRouter 本周用量']);
+    const panels = [...html.matchAll(/<div class="model-panel"([^>]*)>/g)].map((match) => match[1]);
+    assert.match(panels[0], /data-chart-kind="aa"/);
+    assert.doesNotMatch(panels[0], /\bhidden\b/);
+    assert.match(panels[1], /data-chart-kind="llm-arena"/);
+    assert.match(panels[1], /\bhidden\b/);
+    const aaAt = html.indexOf('AA 说明');
+    const arenaAt = html.indexOf('Arena 说明');
+    assert.ok(aaAt >= 0 && arenaAt > aaAt);
+  } finally {
+    if (previous == null) delete process.env.AI_NEWS_DATA_ROOT;
+    else process.env.AI_NEWS_DATA_ROOT = previous;
+  }
+});
+
 test('an old issue without a snapshot keeps the PNG inside the same dropdown', async () => {
   const previous = process.env.AI_NEWS_DATA_ROOT;
   process.env.AI_NEWS_DATA_ROOT = fixtureRoot;
