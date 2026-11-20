@@ -249,6 +249,8 @@ assertCategoryPills(latestIssue, [
 
 const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
 assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
+assert.match(newestIssue, /覆盖窗口：2026-11-06～2026-11-12（生成日 2026-11-13）。/);
+assert.doesNotMatch(newestIssue, /北京时间/);
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、精选文章/);
@@ -328,6 +330,8 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
+assert.match(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
+assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
   'LLM Arena',
   'Artificial Analysis',
