@@ -62,7 +62,9 @@ export function remarkModelCharts(options = {}) {
       for (const chart of assigned) {
         const anchor = uniqueAnchor(chartAnchor(chart.kind), index, usedAnchors);
         const caption = chart.captions.map((node) => plainText(node)).join('\n');
-        const spec = dataRoot ? loadSeries(dataRoot, issueDate, chart.kind, caption) : null;
+        const spec = dataRoot
+          ? loadSeries(dataRoot, issueDate, chart.kind, caption, { imageUrl: chart.image.url || '' })
+          : null;
         stamp(chart.host, {
           'data-chart-index': String(index),
           'data-chart-role': 'media',

@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -66,7 +68,22 @@ test('snapshots become top-15 series, with release dates or the 红圈 line as t
   assert.equal(arena.items[0].highlight, false);
   assert.equal(arena.items[1].name, 'Gemini 4 Hydrogen (High)');
   assert.equal(arena.items[1].highlight, true);
+  assert.equal(arena.publishDate, '2026-11-11');
   assert.equal(arena.scaleZero, false);
+
+  const mismatch = fs.mkdtempSync(path.join(os.tmpdir(), 'arena-'));
+  fs.mkdirSync(path.join(mismatch, 'issues/2026-11-13'), { recursive: true });
+  fs.writeFileSync(
+    path.join(mismatch, 'issues/2026-11-13/llm-arena.json'),
+    JSON.stringify({
+      leaderboard_publish_date: '2026-11-09',
+      items: [{ rank: 1, model: 'Gemini 4 Carbon (High)', organization: 'google', score: 1500 }],
+    }),
+  );
+  assert.equal(
+    loadSeries(mismatch, '2026-11-13', 'llm-arena', '榜单发布日 2026-11-11。红圈：Gemini 4 Hydrogen (High)。', { catalog: null }),
+    null,
+  );
 
   const neon = seriesFromPayload(
     'llm-arena',
@@ -80,13 +97,22 @@ test('snapshots become top-15 series, with release dates or the 红圈 line as t
   assert.deepEqual(aa.items.map((item) => item.name), ['Old Model', 'New Model', 'A', 'B']);
   assert.deepEqual(aa.items.map((item) => item.highlight), [false, true, false, false]);
 
-  const usage = loadSeries(fixtureRoot, '2026-11-13', 'openrouter-usage', '不圈。');
+  const usage = loadSeries(fixtureRoot, '2026-11-13', 'openrouter-usage', '不圈。', { catalog: null });
   assert.equal(usage.items[0].name, 'gpt-test');
   assert.equal(usage.items[0].valueText, '2.00 T');
-  assert.equal(usage.items[0].detail, 'openai/gpt-test');
   assert.equal(usage.items[1].name, 'claude-test');
   assert.equal(usage.items[0].highlight, false);
   assert.equal(usage.scaleZero, true);
+  const named = loadSeries(fixtureRoot, '2026-11-13', 'openrouter-usage', '不圈。', {
+    catalog: {
+      byCanonical: new Map([
+        ['openai/gpt-test', [{ id: 'openai/gpt-test', name: 'OpenAI: GPT Test' }]],
+      ]),
+      byId: new Map(),
+    },
+  });
+  assert.equal(named.items[0].name, 'GPT Test');
+  assert.equal(named.items[0].name.includes('/'), false);
 
   const programming = loadSeries(fixtureRoot, '2026-11-13', 'openrouter-programming', '');
   assert.equal(programming.items.length, 1);

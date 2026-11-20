@@ -65,7 +65,6 @@ export function chartOption(spec, theme) {
         const lines = [`<strong>${escapeHtml(item.name)}</strong>`];
         if (item.rank) lines.push(`#${item.rank}`);
         lines.push(`${escapeHtml(spec.axis)}：${escapeHtml(item.valueText)}`);
-        if (item.detail && item.detail !== item.name) lines.push(escapeHtml(item.detail));
         if (item.highlight) lines.push('本周新发布');
         return lines.join('<br/>');
       },

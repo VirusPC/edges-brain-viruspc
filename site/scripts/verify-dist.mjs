@@ -279,9 +279,13 @@ for (const spec of newestSpecs) {
   assert.equal(spec.items.length, 15, spec.kind);
   assert.equal(typeof spec.items[0].value, 'number', spec.kind);
 }
+assert.ok(newestSpecs[0].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.highlight));
+assert.equal(newestSpecs[0].publishDate, '2026-11-11');
 assert.ok(newestSpecs[1].items.some((item) => item.highlight && item.name.includes('Claude Fable 5.2')));
 assert.equal(newestSpecs[2].scaleZero, true);
 assert.match(newestSpecs[2].items[0].valueText, / T$/);
+assert.equal(newestSpecs[2].items[0].name.includes('/'), false);
+assert.match(newestSpecs[2].items[0].name, /\s|[A-Z]/);
 const modelProgress = newestIssue.split(/<h2\b[^>]*>\s*二、模型进展\s*<\/h2>/)[1]?.split(/<h2\b/)[0] ?? '';
 assert.doesNotMatch(
   modelProgress.split(/<h3\b[^>]*>\s*模型发布\s*<\/h3>/)[0],
@@ -321,8 +325,26 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
-assert.deepEqual(optionLabels(issue20), ['LLM Arena']);
-assert.equal(chartSpecs(issue20).length, 0);
+assert.deepEqual(optionLabels(issue20), [
+  'LLM Arena',
+  'Artificial Analysis',
+  'OpenRouter 本周用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 应用用量',
+]);
+const specs20 = chartSpecs(issue20);
+assert.deepEqual(specs20.map((spec) => spec.kind), [
+  'llm-arena',
+  'aa',
+  'openrouter-usage',
+  'openrouter-programming',
+  'openrouter-apps',
+]);
+assert.ok(specs20[0].items.some((item) => item.name === 'Gemini 4 Neon (High)' && item.highlight));
+assert.equal(specs20[0].publishDate, '2026-11-18');
+assert.ok(specs20[1].items.some((item) => item.highlight));
+assert.equal(specs20[2].items.some((item) => item.name === 'Hy4 flash' && item.highlight), true);
+assert.equal(specs20[2].items[0].name.includes('/'), false);
 assert.match(issue20, /alt="LLM Arena Top 15，2026-11-18"/);
 assert.match(issue20, /红圈：Gemini 4 Neon/);
 assert.match(issue20, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);

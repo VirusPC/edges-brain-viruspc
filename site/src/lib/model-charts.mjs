@@ -116,21 +116,39 @@ export function highlightsFromCaption(text) {
 }
 
 /**
+ * The date the article actually charts. The caption wins; the image filename
+ * is only a fallback. A snapshot whose publish date differs is not this chart.
+ *
+ * @param {string} caption
+ * @param {string} [imageUrl]
+ */
+export function adoptedArenaDate(caption, imageUrl = '') {
+  const fromCaption = String(caption || '').match(/榜单发布日\s*(\d{4}-\d{2}-\d{2})/);
+  if (fromCaption) return fromCaption[1];
+  const fromFile = String(imageUrl || '').match(/llm-arena-top15-(\d{4}-\d{2}-\d{2})/);
+  return fromFile ? fromFile[1] : null;
+}
+
+/**
  * @param {string} dataRoot
  * @param {string} issueDate
  * @param {string} kind
  * @param {string} caption
+ * @param {{ imageUrl?: string, catalog?: ReturnType<typeof readModelCatalog> | null }} [options]
  */
-export function loadSeries(dataRoot, issueDate, kind, caption) {
+export function loadSeries(dataRoot, issueDate, kind, caption, options = {}) {
   if (!dataRoot || !FILES[kind]) return null;
   const coverage = coverageForIssueDate(issueDate);
   if (!coverage) return null;
-  const file = path.join(dataRoot, 'issues', issueDate, FILES[kind]);
-  if (!fs.existsSync(file)) return null;
-  const payload = readJson(file);
+  const catalog = options.catalog === undefined ? readModelCatalog() : options.catalog;
+  const payload = kind === 'llm-arena'
+    ? readArenaPayload(dataRoot, issueDate, caption, options.imageUrl || '')
+    : readJson(path.join(dataRoot, 'issues', issueDate, FILES[kind]));
   if (!payload || typeof payload !== 'object') return null;
   try {
-    return seriesFromPayload(kind, payload, coverage, caption);
+    const series = seriesFromPayload(kind, payload, coverage, caption, catalog);
+    if (series && kind === 'llm-arena') series.publishDate = payload.leaderboard_publish_date || null;
+    return series;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.warn(`model chart ${kind} ${issueDate}: ${message}`);
@@ -139,17 +157,33 @@ export function loadSeries(dataRoot, issueDate, kind, caption) {
 }
 
 /**
+ * Prefer a display name already on the snapshot. Otherwise map the permaslug
+ * through OpenRouter's public model list. A bare slug is not a chart label.
+ *
+ * @param {string} name
+ * @param {string} slug
+ * @param {ReturnType<typeof readModelCatalog> | null | undefined} catalog
+ */
+export function resolveModelName(name, slug, catalog) {
+  const raw = typeof name === 'string' ? name.trim() : '';
+  if (raw && !isSlugLike(raw, slug)) return raw;
+  const looked = lookupDisplayName(slug, catalog);
+  return looked || raw;
+}
+
+/**
  * @param {string} kind
  * @param {any} payload
  * @param {{ start: string, end: string }} coverage
  * @param {string} caption
+ * @param {ReturnType<typeof readModelCatalog> | null} [catalog]
  */
-export function seriesFromPayload(kind, payload, coverage, caption) {
+export function seriesFromPayload(kind, payload, coverage, caption, catalog = null) {
   if (!payload || typeof payload !== 'object' || payload.skipped) return null;
   let rows = null;
   if (kind === 'aa') rows = aaRows(payload, coverage);
-  else if (kind === 'llm-arena') rows = rankedRows(payload, caption, kind);
-  else if (String(kind).startsWith('openrouter')) rows = openRouterRows(kind, payload, coverage, caption);
+  else if (kind === 'llm-arena') rows = rankedRows(payload, caption, kind, catalog);
+  else if (String(kind).startsWith('openrouter')) rows = openRouterRows(kind, payload, coverage, caption, catalog);
   if (!rows || rows.length === 0) return null;
   return {
     kind,
@@ -158,6 +192,30 @@ export function seriesFromPayload(kind, payload, coverage, caption) {
     scaleZero: String(kind).startsWith('openrouter'),
     items: rows,
   };
+}
+
+/**
+ * @param {string} dataRoot
+ * @param {string} issueDate
+ * @param {string} caption
+ * @param {string} imageUrl
+ */
+function readArenaPayload(dataRoot, issueDate, caption, imageUrl) {
+  const adopted = adoptedArenaDate(caption, imageUrl);
+  if (!adopted) return null;
+  const dir = path.join(dataRoot, 'issues', issueDate);
+  if (!fs.existsSync(dir)) return null;
+  const files = fs.readdirSync(dir).filter((name) => /^llm-arena.*\.json$/i.test(name)).sort();
+  /** @type {{ name: string, payload: any }[]} */
+  const payloads = [];
+  for (const name of files) {
+    const payload = readJson(path.join(dir, name));
+    if (payload && typeof payload === 'object') payloads.push({ name, payload });
+  }
+  const match = payloads.find((entry) => entry.payload.leaderboard_publish_date === adopted)
+    || payloads.find((entry) => entry.name.includes(adopted));
+  if (!match || match.payload.leaderboard_publish_date !== adopted) return null;
+  return match.payload;
 }
 
 /**
@@ -199,6 +257,80 @@ function readJson(file) {
 }
 
 /**
+ * OpenRouter's public model list, fetched at build time. Missing file means
+ * raw snapshots keep a slug until the catalog is present.
+ */
+export function readModelCatalog() {
+  const file = process.env.OPENROUTER_MODELS_PATH
+    || path.join(path.dirname(fileURLToPath(import.meta.url)), '../../.cache/openrouter-models.json');
+  if (!file || !fs.existsSync(file)) return null;
+  const payload = readJson(file);
+  const rows = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+  /** @type {Map<string, any[]>} */
+  const byCanonical = new Map();
+  /** @type {Map<string, any>} */
+  const byId = new Map();
+  for (const row of rows) {
+    if (!row || typeof row !== 'object') continue;
+    if (typeof row.id === 'string') byId.set(row.id, row);
+    if (typeof row.canonical_slug === 'string') {
+      const list = byCanonical.get(row.canonical_slug) || [];
+      list.push(row);
+      byCanonical.set(row.canonical_slug, list);
+    }
+  }
+  return { byCanonical, byId };
+}
+
+/**
+ * @param {string} slug
+ * @param {ReturnType<typeof readModelCatalog> | null | undefined} catalog
+ */
+function lookupDisplayName(slug, catalog) {
+  if (!slug || !catalog) return null;
+  const model = matchCatalog(slug, catalog);
+  if (!model || typeof model.name !== 'string') return null;
+  const name = model.name.includes(': ') ? model.name.split(': ').slice(1).join(': ').trim() : model.name.trim();
+  return name || null;
+}
+
+/**
+ * @param {string} permaslug
+ * @param {{ byCanonical: Map<string, any[]>, byId: Map<string, any> }} catalog
+ */
+function matchCatalog(permaslug, catalog) {
+  let base = permaslug;
+  let variant = '';
+  if (permaslug.includes(':')) {
+    const index = permaslug.lastIndexOf(':');
+    base = permaslug.slice(0, index);
+    variant = permaslug.slice(index + 1);
+  }
+  const candidates = catalog.byCanonical.get(base) || [];
+  if (variant) {
+    const hit = candidates.find((model) => String(model.id || '').endsWith(`:${variant}`));
+    if (hit) return hit;
+    return catalog.byId.get(permaslug) || null;
+  }
+  const plain = candidates.filter((model) => !String(model.id || '').includes(':'));
+  if (plain[0]) return plain[0];
+  if (candidates[0]) return candidates[0];
+  return catalog.byId.get(permaslug) || null;
+}
+
+/**
+ * @param {string} name
+ * @param {string} slug
+ */
+function isSlugLike(name, slug) {
+  if (!name) return true;
+  if (name.includes('/')) return true;
+  if (name.includes(' ') || /[A-Z]/.test(name)) return false;
+  const tail = slug.includes('/') ? slug.split('/').slice(1).join('/') : slug;
+  return !slug || name === tail || name === slug;
+}
+
+/**
  * @param {any} payload
  * @param {{ start: string, end: string }} coverage
  */
@@ -236,22 +368,22 @@ function aaRows(payload, coverage) {
  * @param {string} caption
  * @param {string} kind
  */
-function rankedRows(payload, caption, kind) {
+function rankedRows(payload, caption, kind, catalog) {
   const prepared = preparedItems(payload);
   if (!prepared) return null;
   prepared.sort((a, b) => (Number(a.rank) || 1e9) - (Number(b.rank) || 1e9));
   const names = highlightsFromCaption(caption);
   return prepared.slice(0, TOP).map((row, index) => {
-    const name = String(row.model);
+    const slug = typeof row.model_permaslug === 'string' ? row.model_permaslug : '';
+    const name = resolveModelName(String(row.model), slug, catalog);
     const value = asNumber(row.score);
     return {
       rank: index + 1,
       name,
       value,
       valueText: kind === 'llm-arena' ? value.toFixed(1) : formatToken(value),
-      organization: String(row.organization || orgFromSlug(row.model_permaslug || name)),
-      highlight: names.some((wanted) => namesMatch(name, wanted)),
-      detail: typeof row.model_permaslug === 'string' ? row.model_permaslug : undefined,
+      organization: String(row.organization || orgFromSlug(slug || name)),
+      highlight: names.some((wanted) => namesMatch(name, wanted) || (slug && namesMatch(slug, wanted))),
     };
   });
 }
@@ -262,13 +394,13 @@ function rankedRows(payload, caption, kind) {
  * @param {{ start: string, end: string }} coverage
  * @param {string} caption
  */
-function openRouterRows(kind, payload, coverage, caption) {
+function openRouterRows(kind, payload, coverage, caption, catalog) {
   const prepared = preparedItems(payload);
-  if (prepared) return rankedRows(payload, caption, kind);
+  if (prepared) return rankedRows(payload, caption, kind, catalog);
   const data = Array.isArray(payload.data) ? payload.data : [];
   if (kind === 'openrouter-apps') return appRows(data, caption);
-  if (kind === 'openrouter-programming') return programmingRows(data, coverage, caption);
-  return usageRows(data, coverage, caption);
+  if (kind === 'openrouter-programming') return programmingRows(data, coverage, caption, catalog);
+  return usageRows(data, coverage, caption, catalog);
 }
 
 /**
@@ -276,7 +408,7 @@ function openRouterRows(kind, payload, coverage, caption) {
  * @param {{ start: string, end: string }} coverage
  * @param {string} caption
  */
-function usageRows(data, coverage, caption) {
+function usageRows(data, coverage, caption, catalog) {
   /** @type {Map<string, bigint>} */
   const totals = new Map();
   for (const row of data) {
@@ -289,15 +421,16 @@ function usageRows(data, coverage, caption) {
     if (tokens == null) continue;
     totals.set(slug, (totals.get(slug) || 0n) + tokens);
   }
-  return tokenRows(totals, caption);
+  return tokenRows(totals, caption, catalog);
 }
 
 /**
  * @param {any[]} data
  * @param {{ start: string, end: string }} coverage
  * @param {string} caption
+ * @param {ReturnType<typeof readModelCatalog> | null} catalog
  */
-function programmingRows(data, coverage, caption) {
+function programmingRows(data, coverage, caption, catalog) {
   const dates = [];
   for (const row of data) {
     if (row && typeof row.date === 'string') dates.push(row.date);
@@ -314,7 +447,7 @@ function programmingRows(data, coverage, caption) {
     if (tokens == null) continue;
     totals.set(slug, (totals.get(slug) || 0n) + tokens);
   }
-  return tokenRows(totals, caption);
+  return tokenRows(totals, caption, catalog);
 }
 
 /**
@@ -350,12 +483,12 @@ function appRows(data, caption) {
  * @param {Map<string, bigint>} totals
  * @param {string} caption
  */
-function tokenRows(totals, caption) {
+function tokenRows(totals, caption, catalog) {
   const ranked = [...totals.entries()].sort((a, b) => (a[1] < b[1] ? 1 : a[1] > b[1] ? -1 : a[0] < b[0] ? -1 : 1));
   if (ranked.length === 0) return null;
   const names = highlightsFromCaption(caption);
   return ranked.slice(0, TOP).map(([slug, tokens], index) => {
-    const name = modelFromSlug(slug);
+    const name = resolveModelName(modelFromSlug(slug), slug, catalog);
     const value = trillions(tokens);
     return {
       rank: index + 1,
@@ -364,7 +497,6 @@ function tokenRows(totals, caption) {
       valueText: formatToken(value),
       organization: orgFromSlug(slug),
       highlight: names.some((wanted) => namesMatch(name, wanted) || namesMatch(slug, wanted)),
-      detail: slug,
     };
   });
 }
