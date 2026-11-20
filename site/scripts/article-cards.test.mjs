@@ -112,3 +112,17 @@ test('the summary arrow stays the warm accent when open and when closed', () => 
     /article-more > summary[^}]*background\s*:/,
   );
 });
+
+test('dark cards use a deep ground and light type, not the light note wash', () => {
+  const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
+  const dark = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
+  assert.match(dark, /--panel:\s*#121110/);
+  assert.match(dark, /--panel-line:\s*#6f685c/);
+  assert.match(dark, /--panel-ink:\s*#f6f1e7/);
+  assert.match(dark, /--panel-label:\s*#f3ece1/);
+  assert.match(dark, /--panel-muted:\s*#d2c9bb/);
+  assert.match(dark, /\.model-facts,\s*\.prose \.article-card\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(dark, /\.model-facts-src\s*\{\s*color:\s*var\(--panel-muted\)/);
+  assert.match(dark, /color-mix\(in srgb, var\(--note\) 55%, white\)/);
+  assert.doesNotMatch(dark, /model-facts[^}]*note-wash/);
+});
