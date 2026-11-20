@@ -103,7 +103,8 @@ test('a hidden article card is one node, so the border goes with the item', () =
 
 test('the summary arrow stays the warm accent when open and when closed', () => {
   const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
-  assert.match(css, /\.prose details\.article-more > summary,\s*\.prose details\.article-more\[open\] > summary\s*\{[^}]*color:\s*var\(--note\)/);
+  assert.match(css, /\.prose details\.article-more > summary,\s*\.prose details\.article-more\[open\] > summary\s*\{[^}]*color:\s*var\(--summary\)/);
+  assert.match(css, /--summary:\s*var\(--note\)/);
   assert.match(css, /\.prose details\.article-more\[open\] > summary::marker/);
   assert.match(css, /summary::-webkit-details-marker/);
   assert.match(css, /font-weight:\s*650/);
@@ -115,16 +116,20 @@ test('the summary arrow stays the warm accent when open and when closed', () => 
 
 test('dark cards use a deep ground and light type, not the light note wash', () => {
   const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
-  const dark = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
-  assert.match(dark, /--panel:\s*#121110/);
-  assert.match(dark, /--panel-line:\s*#6f685c/);
-  assert.match(dark, /--panel-ink:\s*#f6f1e7/);
-  assert.match(dark, /--panel-label:\s*#f3ece1/);
-  assert.match(dark, /--panel-muted:\s*#d2c9bb/);
-  assert.match(dark, /\.model-board,\s*\.model-facts,\s*\.prose \.article-card\s*\{[^}]*background:\s*var\(--panel\)/);
-  assert.match(dark, /\.model-board select\s*\{[^}]*background:\s*var\(--paper\)/);
-  assert.match(dark, /\.model-facts-src\s*\{\s*color:\s*var\(--panel-muted\)/);
-  assert.match(dark, /color-mix\(in srgb, var\(--note\) 55%, white\)/);
-  assert.doesNotMatch(dark, /model-facts[^}]*note-wash/);
-  assert.doesNotMatch(dark, /\.model-board[^,{]*note-wash/);
+  const forced = css.slice(css.indexOf(':root[data-theme="dark"]'), css.indexOf('@media (prefers-color-scheme: dark)'));
+  const system = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
+  for (const block of [forced, system]) {
+    assert.match(block, /--panel:\s*#121110/);
+    assert.match(block, /--panel-line:\s*#6f685c/);
+    assert.match(block, /--panel-ink:\s*#f6f1e7/);
+    assert.match(block, /--panel-muted:\s*#d2c9bb/);
+  }
+  assert.match(system, /:root:not\(\[data-theme="light"\]\)/);
+  assert.match(css, /\.model-board\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(css, /\.model-facts\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(css, /\.prose \.article-card\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(css, /\.model-board select\s*\{[^}]*background:\s*var\(--paper\)/);
+  assert.match(css, /\.model-facts-src\s*\{\s*color:\s*var\(--panel-muted\)/);
+  assert.match(forced, /color-mix\(in srgb, var\(--note\) 55%, white\)/);
+  assert.doesNotMatch(forced, /\[data-theme="light"\]/);
 });

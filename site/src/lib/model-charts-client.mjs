@@ -7,7 +7,17 @@ import { chartOption } from './model-chart-option.mjs';
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
 const charts = new WeakMap();
+const themePaints = new Set();
 const COMPACT_QUERY = '(max-width: 560px)';
+let listening = false;
+
+function listenForTheme() {
+  if (listening || typeof window === 'undefined') return;
+  listening = true;
+  window.addEventListener('themechange', () => {
+    for (const paint of themePaints) paint();
+  });
+}
 
 function compactLabels() {
   return window.matchMedia(COMPACT_QUERY).matches;
@@ -19,15 +29,15 @@ function compactLabels() {
 export function mountModelBoards(root = document) {
   const boards = [...root.querySelectorAll('[data-model-board]')];
   if (boards.length === 0) return;
-  const theme = readTheme();
-  for (const board of boards) mountBoard(board, theme);
+  listenForTheme();
+  for (const board of boards) mountBoard(board);
 }
 
 /**
  * @param {Element} board
  * @param {ReturnType<typeof readTheme>} theme
  */
-function mountBoard(board, theme) {
+function mountBoard(board) {
   const select = board.querySelector('select');
   const fromHash = panelValueForHash(board);
   if (select && fromHash) select.value = fromHash;
@@ -36,7 +46,7 @@ function mountBoard(board, theme) {
       panel.hidden = panel.getAttribute('data-panel') !== value;
     }
     const panel = board.querySelector(`[data-panel="${CSS.escape(value)}"]`);
-    if (panel) requestAnimationFrame(() => ensureChart(panel, theme));
+    if (panel) requestAnimationFrame(() => ensureChart(panel));
   };
   show(select?.value || '0');
   select?.addEventListener('change', () => show(select.value));
@@ -46,7 +56,7 @@ function mountBoard(board, theme) {
  * @param {Element} panel
  * @param {ReturnType<typeof readTheme>} theme
  */
-function ensureChart(panel, theme) {
+function ensureChart(panel) {
   const el = panel.querySelector('.model-chart');
   if (!(el instanceof HTMLElement)) return;
   const existing = charts.get(el);
@@ -67,14 +77,17 @@ function ensureChart(panel, theme) {
   try {
     const chart = echarts.init(el, null, { renderer: 'canvas' });
     let compact = null;
-    const render = () => {
-      const next = compactLabels();
-      if (next !== compact) {
-        compact = next;
-        chart.setOption(chartOption(spec, theme, { compactLabels: next }), { notMerge: true });
-      }
+    const paint = () => {
+      compact = compactLabels();
+      chart.setOption(chartOption(spec, readTheme(), { compactLabels: compact }), { notMerge: true });
       chart.resize();
     };
+    const render = () => {
+      const next = compactLabels();
+      if (next !== compact) paint();
+      else chart.resize();
+    };
+    themePaints.add(paint);
     chart.on('click', (params) => {
       if (params.componentType !== 'yAxis') return;
       const dataIndex = spec.items.findIndex((item) => item.name === params.value);
