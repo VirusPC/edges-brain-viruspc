@@ -78,6 +78,40 @@ function chain(nodes) {
   return nodes[0];
 }
 
+test('project items become cards and the trending heading stays outside', () => {
+  const trending = heading('h4', 'GitHub Trending（weekly / all 前 5）');
+  const blurb = { type: 'element', tagName: 'p', properties: {}, children: [text('这期看的是一周榜')] };
+  const project = heading('h4', 'plannotator');
+  const gist = { type: 'element', tagName: 'p', properties: {}, children: [text('一句')] };
+  const details = { type: 'raw', value: '<details class="article-more"></details>' };
+  const selected = heading('h4', 'llama.cpp');
+  selected.properties = { dataCat: '开源', dataTags: 'ggml' };
+  const tree = {
+    type: 'root',
+    children: [
+      heading('h2', '三、项目开源'),
+      trending,
+      blurb,
+      project,
+      gist,
+      details,
+      heading('h2', '四、精选文章'),
+      heading('h3', '国际'),
+      selected,
+      { type: 'element', tagName: 'p', properties: {}, children: [text('库接口')] },
+    ],
+  };
+  wrapArticleCards(tree);
+  assert.equal(tree.children[1], trending);
+  assert.equal(tree.children[2], blurb);
+  assert.equal(tree.children[3].tagName, 'div');
+  assert.deepEqual(tree.children[3].properties.className, ['article-card']);
+  assert.deepEqual(tree.children[3].children, [project, gist, details]);
+  assert.equal(tree.children[4].tagName, 'h2');
+  assert.equal(tree.children[6].tagName, 'div');
+  assert.equal(tree.children[6].children[0], selected);
+});
+
 test('a hidden article card is one node, so the border goes with the item', () => {
   const heading = element('h4', { 'data-cat': '产品', 'data-tags': 'Cognition' });
   heading.textContent = 'Devin';
@@ -99,6 +133,36 @@ test('a hidden article card is one node, so the border goes with the item', () =
   assert.deepEqual(collected.groups[0].items[0].nodes, [card]);
   assert.equal(collected.groups[0].items[0].cat, '产品');
   assert.deepEqual(collected.groups[0].items[0].tags, ['Cognition']);
+});
+
+test('project cards stay out of the selected-article filter', () => {
+  const projectChapter = element('h2');
+  projectChapter.textContent = '三、项目开源';
+  const trending = element('h4');
+  trending.textContent = 'GitHub Trending（weekly / all 前 5）';
+  const projectHeading = element('h4');
+  projectHeading.textContent = 'plannotator';
+  const projectCard = element('div', { class: 'article-card' }, [projectHeading]);
+  const selectedChapter = element('h2');
+  selectedChapter.textContent = '四、精选文章';
+  const section = element('h3');
+  section.textContent = '国际';
+  const articleHeading = element('h4', { 'data-cat': '开源', 'data-tags': 'ggml' });
+  articleHeading.textContent = 'llama.cpp';
+  const articleCard = element('div', { class: 'article-card' }, [articleHeading]);
+  const root = {
+    querySelectorAll(selector) {
+      assert.equal(selector, 'h2');
+      return [projectChapter, selectedChapter];
+    },
+  };
+  chain([projectChapter, trending, projectCard, selectedChapter, section, articleCard]);
+  const collected = collectChapter(root);
+  assert.equal(collected.groups.length, 1);
+  assert.equal(collected.groups[0].items.length, 1);
+  assert.equal(collected.groups[0].items[0].nodes[0], articleCard);
+  assert.equal(collected.groups[0].items[0].cat, '开源');
+  assert.deepEqual(collected.groups[0].items[0].tags, ['ggml']);
 });
 
 test('the summary arrow stays the warm accent when open and when closed', () => {
