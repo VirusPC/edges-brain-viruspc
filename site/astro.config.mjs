@@ -5,6 +5,7 @@ import { rehypeSidenotes } from './src/plugins/rehype-sidenotes.mjs';
 import { remarkCategoryPills } from './src/plugins/remark-category-pills.mjs';
 import { remarkLocalAssets } from './src/plugins/remark-local-assets.mjs';
 import { remarkModelCharts } from './src/plugins/remark-model-charts.mjs';
+import { remarkSelectedArticles } from './src/plugins/remark-selected-articles.mjs';
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
@@ -24,7 +25,7 @@ export default defineConfig({
   markdown: {
     gfm: true,
     smartypants: false,
-    remarkPlugins: [remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }]],
+    remarkPlugins: [remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], remarkSelectedArticles],
     rehypePlugins: [rehypeSidenotes, rehypeModelCharts],
   },
 });
