@@ -25,8 +25,7 @@
   },
   "summary": {
     "thinChars": 280,
-    "maxChars": 1200,
-    "note": "纯文本短于 thinChars 时 item.thin 为 true，摘要阶段再抓原文。更长的正文裁到 maxChars。"
+    "note": "item.summary 保留 feed 转成纯文本后的全文，不再按字数裁切。纯文本短于 thinChars 时 item.thin 为 true；正文明显不全（thin、feed 被截断，或结尾是「阅读全文」一类）时，写周报再抓文章页。"
   },
   "sources": [
     {

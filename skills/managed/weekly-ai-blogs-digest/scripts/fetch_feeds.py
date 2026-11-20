@@ -42,7 +42,6 @@ DEFAULT_META = ROOT / "feeds" / "ai-coding-blogs.meta.json"
 
 USER_AGENT = "edges-weekly-ai-blogs-digest/1.0 (+https://github.com/VirusPC/edges-brain-viruspc)"
 THIN_CHARS = 280
-SUMMARY_MAX = 1200
 DEFAULT_TIMEOUT = 40
 DEFAULT_WORKERS = 6
 
@@ -83,13 +82,8 @@ def plain_text(raw: str) -> str:
 
 
 def cap_summary(text: str) -> str:
-    if len(text) <= SUMMARY_MAX:
-        return text
-    cut = text[:SUMMARY_MAX]
-    space = cut.rfind(" ")
-    if space >= SUMMARY_MAX - 200:
-        cut = cut[:space]
-    return cut.rstrip() + "…"
+    """Return the feed's full plain text. Short items are flagged thin, not cut."""
+    return text
 
 
 def host_of(url: str) -> str:
@@ -699,6 +693,12 @@ def self_test() -> int:
     assert normalize_link("https://example.com/a?utm_source=rss") == "example.com/a"
     assert "Hello world" in by_link["example.com/a"]["summary"]
     assert "<b>" not in by_link["example.com/a"]["summary"]
+    long = ("甲" * 1500) + " 结尾还在"
+    assert cap_summary(long) == long
+    assert not cap_summary(long).endswith("…")
+    long_item = to_item({"title": "长文", "date": "2026-11-13", "link": "https://example.com/long", "body": long}, "example")
+    assert long_item["summary"] == long
+    assert long_item["thin"] is False
 
     stale = dict(report)
     stale["newest"] = "2026-10-01"

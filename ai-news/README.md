@@ -28,7 +28,7 @@
 ## 维护约定
 
 1. 周报生成后直接提交到本目录，并更新本索引。
-2. 文章优先来自 OPML 里的 feed。feed 正文够写摘要就不要再抓原文。feed 太短、失败、被截断，或该站没有 feed 时，再用列表页、sitemap 或文章页核对日期和链接。失效链接须修复或排除。
+2. 文章优先来自 OPML 里的 feed。入选文章按 feed 给出的全文写摘要，抓取脚本不再把正文截到 1200 字。只有正文明显不全（少于 280 字、被截断，或结尾是「阅读全文」一类）、拉取失败，或该站没有 feed 时，才用列表页、sitemap 或文章页补齐。失效链接须修复或排除。
 3. 每篇摘要不超过 200 字；AI Coding 相关条目附带研发落点。
 4. 执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。播客不进 OPML，只在本周关键词或相关章节里按需点名。
 5. 每期说明文件是同名 `YYYY-MM-DD-ai-news.notes.md`，记录来源细节和缺项原因。站点不收录、不链接。
