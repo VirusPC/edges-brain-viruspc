@@ -33,6 +33,7 @@ if (!ok || !fs.existsSync(path.join(cache, 'issues'))) {
 }
 const rev = spawnSync('git', ['-C', cache, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' });
 overlayAdoptedArena(cache);
+overlayModelReleases(cache);
 await downloadModelCatalog(path.join(siteRoot, '.cache/openrouter-models.json'));
 console.log(`ai-news-data: ${cache} @ ${rev.stdout.trim() || 'unknown'}`);
 
@@ -83,6 +84,33 @@ function overlayAdoptedArena(dir) {
   if (listed.status !== 0) return;
   for (const file of listed.stdout.split('\n')) {
     if (!/^issues\/\d{4}-\d{2}-\d{2}\/llm-arena-\d{4}-\d{2}-\d{2}\.json$/.test(file)) continue;
+    const dest = path.join(dir, file);
+    if (fs.existsSync(dest)) continue;
+    const show = spawnSync('git', ['-C', dir, 'show', `FETCH_HEAD:${file}`]);
+    if (show.status !== 0) continue;
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, show.stdout);
+    console.log(`ai-news-data overlay ${file}`);
+  }
+}
+
+function overlayModelReleases(dir) {
+  const branch = 'cursor/model-release-facts-164f';
+  const fetched = spawnSync(
+    'git',
+    ['-C', dir, 'fetch', '--depth', '1', 'origin', branch],
+    { stdio: 'inherit', timeout: 120_000 },
+  );
+  if (fetched.status !== 0) {
+    console.warn(`ai-news-data: 没有 ${branch}，模型发布信息块会缺席`);
+    return;
+  }
+  const listed = spawnSync('git', ['-C', dir, 'ls-tree', '-r', '--name-only', 'FETCH_HEAD'], {
+    encoding: 'utf8',
+  });
+  if (listed.status !== 0) return;
+  for (const file of listed.stdout.split('\n')) {
+    if (!/^issues\/\d{4}-\d{2}-\d{2}\/model-releases\.json$/.test(file)) continue;
     const dest = path.join(dir, file);
     if (fs.existsSync(dest)) continue;
     const show = spawnSync('git', ['-C', dir, 'show', `FETCH_HEAD:${file}`]);

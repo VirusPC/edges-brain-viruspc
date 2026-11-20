@@ -32,3 +32,4 @@
 3. 每篇摘要不超过 200 字；AI Coding 相关条目附带研发落点。
 4. 执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。播客不进 OPML，只在本周关键词或相关章节里按需点名。
 5. 每期说明文件是同名 `YYYY-MM-DD-ai-news.notes.md`，记录来源细节和缺项原因。站点不收录、不链接。
+6. 「模型发布」每个模型有价格、速度、效果三行。价格先用发布原文，没有再用 OpenRouter 生成日快照的官方提供商（多个标准档取中位数并标注）。速度用同一快照的首 token 延迟和吞吐。效果用 Artificial Analysis 免费接口的智力指数，写明名次分母和快照时间；适合什么任务优先用原文。缺的写「暂无」。快照在 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/model-releases.json`，密钥不入库。2026-11-20 起站点按这份快照渲染信息块。

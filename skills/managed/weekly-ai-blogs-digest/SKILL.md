@@ -102,7 +102,15 @@ npm install --prefix scripts
 
 ### 模型发布
 
-模型发布用四级标题，只写在这一节下面。这一节与「Artificial Analysis」「LLM Arena」「OpenRouter」同级。没有发布就整节去掉。
+模型发布用四级标题，只写在这一节下面。这一节与「Artificial Analysis」「LLM Arena」「OpenRouter」同级。没有发布就整节去掉。每个模型标题下加一个三行信息块（价格 / 速度 / 效果），原来的发布说明留着。
+
+价格是输入、输出、缓存读取，单位美元每百万 token。先用发布原文里的单价。原文没有，再用 OpenRouter 的生成日快照（`GET /api/v1/models`），不要在打开页面或构建时重拉。提供商优先模型官方的标准档；官方有多个标准档就取中位数，并在来源里写「中位数」。flex、priority、fast、ultrafast 不用。
+
+速度是首 token 延迟和吞吐。用同一天的 OpenRouter `GET /api/v1/models/{slug}/endpoints`：`latency_last_30m.p50` 从毫秒换成秒，`throughput_last_30m.p50` 是 token/s。提供商规则与价格相同。
+
+效果写 Artificial Analysis 综合智力指数、名次、分母和快照时间，以及这个模型适合什么任务。智力指数用免费接口 `GET /api/v2/language/models/free`。旧路径 `/api/v2/data/llms/models` 已 410，不要用。适合什么任务优先用发布原文。厂商自述的名次如果和这份快照不同，正文数字以快照为准，并写明原文怎么说。
+
+缺的写「暂无」，不要换别的来源凑。每个数字标来源：原文、`OpenRouter·提供商`、AA。快照在有密钥的机器上抓好，放进 VirusPC/ai-news-data 的 `issues/YYYY-MM-DD/model-releases.json`。密钥不进仓库，也不进云端。站点只读这份文件。
 
 ## 三、项目开源
 
