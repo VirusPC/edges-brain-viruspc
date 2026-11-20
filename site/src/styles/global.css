@@ -798,11 +798,18 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
     /* --note and --note-wash stay, so category chips keep a light ground and theme-colored type. */
   }
 
+  .model-board,
   .model-facts,
   .prose .article-card {
     background: var(--panel);
     border-color: var(--panel-line);
     color: var(--panel-ink);
+  }
+
+  .model-board select {
+    color: var(--panel-ink);
+    background: var(--paper);
+    border-color: var(--panel-line);
   }
 
   .model-facts-row { border-top-color: #3a3630; }

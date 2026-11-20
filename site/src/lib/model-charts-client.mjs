@@ -7,6 +7,11 @@ import { chartOption } from './model-chart-option.mjs';
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
 const charts = new WeakMap();
+const COMPACT_QUERY = '(max-width: 560px)';
+
+function compactLabels() {
+  return window.matchMedia(COMPACT_QUERY).matches;
+}
 
 /**
  * @param {ParentNode} [root]
@@ -58,12 +63,28 @@ function ensureChart(panel, theme) {
     return;
   }
   el.classList.add('is-ready');
+  el.setAttribute('aria-label', spec.items.map((item) => item.name).join('，'));
   try {
     const chart = echarts.init(el, null, { renderer: 'canvas' });
-    chart.setOption(chartOption(spec, theme));
+    let compact = null;
+    const render = () => {
+      const next = compactLabels();
+      if (next !== compact) {
+        compact = next;
+        chart.setOption(chartOption(spec, theme, { compactLabels: next }), { notMerge: true });
+      }
+      chart.resize();
+    };
+    chart.on('click', (params) => {
+      if (params.componentType !== 'yAxis') return;
+      const dataIndex = spec.items.findIndex((item) => item.name === params.value);
+      if (dataIndex < 0) return;
+      chart.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex });
+    });
     charts.set(el, chart);
+    render();
     if (typeof ResizeObserver !== 'undefined') {
-      const observer = new ResizeObserver(() => chart.resize());
+      const observer = new ResizeObserver(() => render());
       observer.observe(el);
     }
   } catch (error) {
