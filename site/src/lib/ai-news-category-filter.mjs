@@ -318,6 +318,109 @@ function applyDom(groups, status, filter) {
   status.hidden = !(filter?.cat || filter?.src || filter?.tag) || plan.any;
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function svgEl(doc, name, attrs) {
+  const node = doc.createElementNS(SVG_NS, name);
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  return node;
+}
+
+const SEAM_GROOVE = 'M0 2.2 C 150 1.4, 300 3.2, 480 2.2 S 800 1.5, 1000 2.6';
+const SEAM_LIP = 'M0 3.9 C 150 3.1, 300 4.9, 480 3.9 S 800 3.2, 1000 4.3';
+
+function fillChip(button, text) {
+  button.dataset.label = text;
+  button.replaceChildren();
+  const face = button.ownerDocument.createElement('span');
+  face.className = 'ai-news-filter-face';
+  face.textContent = text;
+  button.append(face);
+}
+
+/** Wood plaque filters. Edge jitter is #wood-rough; grain is #wood-grain. */
+function ensureWoodFilters(doc, bar) {
+  if (doc.getElementById('wood-rough')) return;
+  const defs = svgEl(doc, 'svg', { class: 'ai-news-filter-defs', 'aria-hidden': 'true', width: '0', height: '0' });
+  const rough = svgEl(doc, 'filter', {
+    id: 'wood-rough',
+    filterUnits: 'objectBoundingBox',
+    x: '-8%',
+    y: '-20%',
+    width: '116%',
+    height: '150%',
+  });
+  rough.append(
+    svgEl(doc, 'feTurbulence', {
+      type: 'fractalNoise',
+      baseFrequency: '0.02',
+      numOctaves: '2',
+      seed: '7',
+      result: 'noise',
+    }),
+    svgEl(doc, 'feDisplacementMap', {
+      in: 'SourceGraphic',
+      in2: 'noise',
+      scale: '3.5',
+    }),
+  );
+  const grain = svgEl(doc, 'filter', {
+    id: 'wood-grain',
+    x: '0',
+    y: '0',
+    width: '100%',
+    height: '100%',
+  });
+  grain.append(
+    svgEl(doc, 'feTurbulence', {
+      type: 'fractalNoise',
+      baseFrequency: '0.012 0.35',
+      numOctaves: '3',
+      seed: '3',
+      result: 'noise',
+    }),
+    svgEl(doc, 'feColorMatrix', {
+      in: 'noise',
+      type: 'matrix',
+      values: '0 0 0 0 .45  0 0 0 0 .3  0 0 0 0 .15  0 0 0 .6 0',
+      result: 'colored',
+    }),
+    svgEl(doc, 'feComposite', {
+      in: 'colored',
+      in2: 'SourceGraphic',
+      operator: 'in',
+    }),
+  );
+  defs.append(rough, grain);
+  bar.prepend(defs);
+}
+
+function appendBoard(doc, bar) {
+  const board = doc.createElement('div');
+  board.className = 'ai-news-filter-board';
+  board.setAttribute('aria-hidden', 'true');
+  for (const side of ['l', 'r']) {
+    const nail = doc.createElement('i');
+    nail.className = `ai-news-filter-nail ${side}`;
+    board.append(nail);
+  }
+  bar.prepend(board);
+}
+
+function appendSeam(doc, bar) {
+  const seam = svgEl(doc, 'svg', {
+    class: 'ai-news-filter-seam',
+    viewBox: '0 0 1000 6',
+    preserveAspectRatio: 'none',
+    'aria-hidden': 'true',
+  });
+  seam.append(
+    svgEl(doc, 'path', { class: 'groove', d: SEAM_GROOVE }),
+    svgEl(doc, 'path', { class: 'lip', d: SEAM_LIP }),
+  );
+  bar.append(seam);
+}
+
 export function mountCategoryFilter(doc) {
   const root = doc.querySelector?.('.prose');
   if (!root || root.dataset.filterReady === '1') return;
@@ -349,7 +452,7 @@ export function mountCategoryFilter(doc) {
     all.className = 'ai-news-filter-all';
     all.dataset.filter = 'all';
     all.dataset.row = rowName;
-    all.textContent = '全部';
+    fillChip(all, '全部');
     row.append(all);
   };
 
@@ -365,7 +468,7 @@ export function mountCategoryFilter(doc) {
     button.className = 'ai-news-filter-cat';
     button.dataset.filter = 'cat';
     button.dataset.cat = name;
-    button.textContent = name;
+    fillChip(button, name);
     row.append(button);
   }
   bar.append(row);
@@ -385,9 +488,10 @@ export function mountCategoryFilter(doc) {
       button.className = 'ai-news-filter-src';
       button.dataset.filter = 'src';
       button.dataset.src = group.name;
-      button.textContent = group.name;
+      fillChip(button, group.name);
       sourceRow.append(button);
     }
+    appendSeam(doc, bar);
     bar.append(sourceRow);
 
     const companyRow = doc.createElement('div');
@@ -402,9 +506,10 @@ export function mountCategoryFilter(doc) {
       button.className = 'ai-news-filter-co';
       button.dataset.filter = 'tag';
       button.dataset.tag = name;
-      button.textContent = name;
+      fillChip(button, name);
       companyRow.append(button);
     }
+    appendSeam(doc, bar);
     bar.append(companyRow);
   }
   const status = doc.createElement('p');
@@ -412,6 +517,8 @@ export function mountCategoryFilter(doc) {
   status.hidden = true;
   status.textContent = '没有匹配的条目';
   bar.append(status);
+  ensureWoodFilters(doc, bar);
+  appendBoard(doc, bar);
 
   const wrapper = encloseChapter(chapter.heading);
   wrapper.prepend(bar);
