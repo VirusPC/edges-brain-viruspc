@@ -100,11 +100,17 @@ export function parseFilter(search) {
   const cat = params.get('cat') || '';
   const tag = canonicalCompany((params.get('tag') || '').trim());
   let src = params.get('src') || '';
-  const group = tag ? sourceGroup(tag) : '';
-  if (group) src = group;
+  if (!GROUP_NAMES.has(src)) src = '';
+  if (src && sourceGroup(tag) !== src) {
+    return {
+      cat: PRIMARY.has(cat) ? cat : '',
+      src,
+      tag: '',
+    };
+  }
   return {
     cat: PRIMARY.has(cat) ? cat : '',
-    src: GROUP_NAMES.has(src) ? src : '',
+    src,
     tag,
   };
 }
@@ -126,17 +132,21 @@ export function nextFilter(current, action) {
   if (action.kind === 'src') {
     if (next.src === action.value) return { ...next, src: '', tag: '' };
     next.src = action.value;
-    if (next.tag && sourceGroup(next.tag) !== next.src) next.tag = '';
+    next.tag = '';
   }
   if (action.kind === 'tag') {
-    if (next.tag === action.value) next.tag = '';
-    else {
-      next.tag = action.value;
-      const group = sourceGroup(action.value);
-      if (group) next.src = group;
-    }
+    const value = canonicalCompany(action.value);
+    if (next.tag === value) next.tag = '';
+    else if (!next.src || sourceGroup(value) === next.src) next.tag = value;
   }
   return next;
+}
+
+export function filterQueryMatches(search, filter) {
+  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+  return (params.get('cat') || '') === (filter?.cat || '')
+    && (params.get('src') || '') === (filter?.src || '')
+    && (params.get('tag') || '') === (filter?.tag || '');
 }
 
 export function toSearch(filter, currentSearch = '') {
@@ -542,6 +552,12 @@ export function mountCategoryFilter(doc) {
   wrapper.prepend(bar);
 
   let filter = parseFilter(doc.defaultView?.location?.search || '');
+  if (doc.defaultView?.location && !filterQueryMatches(doc.defaultView.location.search || '', filter)) {
+    const view = doc.defaultView;
+    const url = new URL(view.location.href);
+    url.search = toSearch(filter, url.search);
+    view.history?.replaceState?.({ aiNewsFilter: filter }, '', `${url.pathname}${url.search}${url.hash}`);
+  }
 
   const write = (next, replace) => {
     const view = doc.defaultView;
