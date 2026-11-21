@@ -16,6 +16,11 @@
   --star-line-hover: #d7a88c;
   --panel: color-mix(in srgb, var(--note-wash) 45%, var(--paper));
   --panel-line: var(--rule);
+  --wood-chip: #fffaf0;
+  --wood-chip-line: #bba98f;
+  --wood-on-line: #3a2a1c;
+  --wood-on-ink: #2a1d12;
+  --wood-edge: #8a5a34;
   --panel-ink: var(--ink);
   --panel-label: var(--ink-soft);
   --panel-muted: var(--muted);
@@ -1202,6 +1207,11 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   --rule-strong: #e4d9c8;
   --panel: #121110;
   --panel-line: #6f685c;
+  --wood-chip: #53402f;
+  --wood-chip-line: #c6aa8c;
+  --wood-on-line: #f3e4d4;
+  --wood-on-ink: #fff8f1;
+  --wood-edge: #c4a27a;
   --panel-ink: #f6f1e7;
   --panel-label: #f3ece1;
   --panel-muted: #d2c9bb;
@@ -1247,6 +1257,11 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
     --rule-strong: #e4d9c8;
     --panel: #121110;
     --panel-line: #6f685c;
+  --wood-chip: #53402f;
+  --wood-chip-line: #c6aa8c;
+  --wood-on-line: #f3e4d4;
+  --wood-on-ink: #fff8f1;
+  --wood-edge: #c4a27a;
     --panel-ink: #f6f1e7;
     --panel-label: #f3ece1;
     --panel-muted: #d2c9bb;

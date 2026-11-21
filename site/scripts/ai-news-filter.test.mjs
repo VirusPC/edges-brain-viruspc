@@ -254,7 +254,11 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(source, /scale: '3\.5'/);
   assert.match(source, /fillChip\(button, name\)/);
   assert.match(source, /preserveAspectRatio: 'none'/);
-  assert.match(css, /\.ai-news-tag,\s*\n\.prose h4 \.ai-news-src\s*\{[^}]*color:\s*var\(--muted\)/);
+  assert.match(css, /\.prose h4 \.ai-news-tag,\s*\n\.prose h4 \.ai-news-src\s*\{[^}]*background:\s*var\(--wood-chip\)/);
+  assert.match(css, /\.prose h4 \.ai-news-tag\[aria-pressed='true'\],\s*\n\.prose h4 \.ai-news-src\[aria-pressed='true'\]\s*\{[^}]*box-shadow:\s*inset 0 0 0 2\.5px var\(--wood-on-line\)/);
+  assert.match(source, /querySelectorAll\('\.ai-news-src'\)/);
+  assert.match(source, /querySelectorAll\('\.ai-news-tag'\)/);
+  assert.match(source, /addEventListener\?\.\('popstate'/);
 });
 
 test('a category and a company both have to match, and an empty section hides', () => {
