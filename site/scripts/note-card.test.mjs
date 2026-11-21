@@ -79,7 +79,11 @@ test('note card css stays serif and does not restyle the filter bar', () => {
   assert.match(css, /\.note-card-hl/);
   assert.match(
     css,
-    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src,\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag \{/,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src,\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag \{[^}]*font-weight:\s*400/,
+  );
+  assert.match(
+    css,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src,\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag \{[^}]*box-shadow:\s*inset 0 0 0 1\.5px var\(--wood-chip-line\)/,
   );
   assert.match(
     css,
@@ -87,12 +91,13 @@ test('note card css stays serif and does not restyle the filter bar', () => {
   );
   assert.match(
     css,
-    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src\[aria-pressed='true'\],\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*box-shadow:\s*inset 0 0 0 1px color-mix/,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src\[aria-pressed='true'\],\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*box-shadow:\s*inset 0 0 0 2\.5px var\(--wood-on-line\)/,
   );
   assert.match(
     css,
-    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src\[aria-pressed='true'\],\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*color:\s*var\(--ink-soft\)/,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src\[aria-pressed='true'\],\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*color:\s*var\(--wood-on-ink\)/,
   );
+  assert.match(css, /\.prose \.note-card h4 \.ai-news-src:focus-visible[\s\S]*outline:\s*2px solid var\(--wood-edge\)/);
   assert.doesNotMatch(
     css,
     /\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*font-weight:\s*700/,

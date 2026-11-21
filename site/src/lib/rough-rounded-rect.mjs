@@ -12,6 +12,7 @@ export const ROUGH_OUTLINE = {
   bowing: 0.8,
   strokeWidth: 1.2,
   disableMultiStroke: true,
+  preserveVertices: true,
 };
 
 /** Keyword clouds keep the previous filter seed. The sample assigned the other five. */
