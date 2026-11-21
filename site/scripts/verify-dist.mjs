@@ -256,13 +256,16 @@ const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-10-28"[^>
 assert.ok(arenaSrc, 'latest issue is missing the arena image');
 const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 exists(arenaRel);
-assert.match(latestIssue, /alt="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"/);
-const cloudSrc = latestIssue.match(/<img[^>]*alt="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"[^>]*src="([^"]+)"/)
-  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"/);
-assert.ok(cloudSrc, 'latest issue is missing the keyword cloud');
-const cloudRel = cloudSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
-assert.match(cloudRel, /keywords-cloud-2026-11-06/);
-exists(cloudRel);
+assert.match(latestIssue, /class="keyword-cloud"/);
+assert.match(latestIssue, /aria-label="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"/);
+assert.match(latestIssue, /class="kw-top"/);
+assert.match(latestIssue, /id="rough"/);
+assert.match(latestIssue, /baseFrequency="0\.03"/);
+assert.match(latestIssue, /scale="2\.2"/);
+assert.doesNotMatch(latestIssue, /keywords-cloud-2026-11-06\.png/);
+const cloudAt = latestIssue.indexOf('class="keyword-cloud"');
+assert.ok(cloudAt > 0, 'latest issue is missing the keyword cloud');
+assert.doesNotMatch(latestIssue.slice(cloudAt, cloudAt + 12000), /fffcf7/);
 assert.match(latestIssue, /href="https:\/\/kiroween\.devpost\.com"/);
 assert.match(latestIssue, /href="https:\/\/linux\.do\/t\/topic\/3101137"/);
 assert.doesNotMatch(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
@@ -277,7 +280,10 @@ assertCategoryPills(latestIssue, [
 
 const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
 assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
-assert.match(newestIssue, /覆盖窗口：2026-11-06～2026-11-12（生成日 2026-11-13）。/);
+assert.match(newestIssue, /class="remark-card"/);
+assert.match(newestIssue, /<mark class="remark-mark">11-06 → 11-12<\/mark>/);
+assert.match(newestIssue, /<dt>生成日<\/dt><dd>2026-11-13<\/dd>/);
+assert.doesNotMatch(newestIssue, /覆盖窗口：2026-11-06～2026-11-12（生成日 2026-11-13）。/);
 assert.doesNotMatch(newestIssue, /北京时间/);
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
@@ -358,10 +364,19 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
-assert.match(issue20, /alt="Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots、常驻 Agent、软件工厂、Skill 自进化与评测、工具检索"/);
+assert.match(issue20, /class="keyword-cloud"/);
+assert.match(issue20, /aria-label="Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots、常驻 Agent、软件工厂、Skill 自进化与评测、工具检索"/);
+assert.match(issue20, /class="kw-top"/);
 assert.doesNotMatch(issue20, /<p>\s*Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max/);
+assert.match(issue20, /class="post-kicker"[\s\S]*2026-11-20[\s\S]*覆盖 2026-11-13～11-19/);
+assert.match(issue20, /class="remark-card"/);
+assert.match(issue20, /<mark class="remark-mark">11-13 08:00 → 11-20 07:59<\/mark>/);
+assert.match(issue20, /<dt>时区<\/dt><dd>北京时间<\/dd>/);
+assert.match(issue20, /<dt>生成日<\/dt><dd>2026-11-20<\/dd>/);
+assert.match(issue20, /不含生成当天/);
+assert.doesNotMatch(issue20, /前五是|这期看的是一周榜/);
 assert.doesNotMatch(aiNewsList, /Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots/);
-assert.match(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
+assert.doesNotMatch(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
 assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
   'Artificial Analysis',

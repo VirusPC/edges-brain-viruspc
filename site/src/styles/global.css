@@ -27,6 +27,12 @@
   --sidenote-line: #e0d8c8;
   --sidenote-open-bg: var(--note-wash);
   --more-line: rgba(28, 27, 25, 0.25);
+  --ai-news-radius: 0.7rem;
+  --kw-top: #b4541f;
+  --kw-high: #1c1b19;
+  --kw-mid: #5c574e;
+  --kw-low: #746f65;
+  --kw-outline: #8a5a34;
   --serif: "Source Serif 4", Palatino, "Palatino Linotype", "Songti SC", "Noto Serif SC",
     "Source Han Serif SC", Georgia, serif;
   --hand: "Caveat", "Segoe Print", "KaiTi", "Kaiti SC", "STKaiti", cursive;
@@ -597,10 +603,129 @@ body.is-post.has-toc .sidenote {
 
 .prose img { max-width: 100%; height: auto; display: block; margin: 1rem 0; }
 
+.keyword-cloud {
+  position: relative;
+  margin: 0.35rem 0 1.2rem;
+  padding: 14px 16px 12px;
+  color: var(--kw-outline);
+  background: transparent;
+}
+
+.keyword-cloud-outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.keyword-cloud-outline rect {
+  x: 1px;
+  y: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 1.25px;
+  vector-effect: non-scaling-stroke;
+  rx: var(--ai-news-radius);
+  ry: var(--ai-news-radius);
+}
+
+.keyword-cloud-art-wrap { position: relative; }
+
+.keyword-cloud-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.keyword-cloud .kw-top { fill: var(--kw-top); font-weight: 700; }
+.keyword-cloud .kw-high { fill: var(--kw-high); font-weight: 700; }
+.keyword-cloud .kw-mid { fill: var(--kw-mid); font-weight: 400; }
+.keyword-cloud .kw-low { fill: var(--kw-low); font-weight: 400; }
+
+.remark-card {
+  --remark-hl: rgba(255, 214, 102, 0.55);
+  margin: 0 0 1.15rem;
+  padding: 0.7rem 0.85rem 0.75rem;
+  border: 1px solid var(--panel-line);
+  border-radius: var(--ai-news-radius);
+  background: var(--panel);
+  color: var(--panel-ink);
+  font-size: 0.8em;
+  line-height: 1.45;
+}
+
+.prose .remark-card-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0 0 0.45rem;
+  color: var(--panel-label);
+  font-weight: 650;
+}
+
+.remark-card-icon {
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+}
+
+.remark-card-rows {
+  margin: 0;
+}
+
+.remark-card-rows > div {
+  display: grid;
+  grid-template-columns: 4.8em max-content;
+  column-gap: 0.7rem;
+  align-items: baseline;
+  padding: 0.08rem 0;
+}
+
+.remark-card dt {
+  margin: 0;
+  color: var(--panel-label);
+  font-weight: 650;
+}
+
+.remark-card dd {
+  margin: 0;
+  min-width: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.remark-card mark,
+.remark-mark {
+  padding: 0 1px;
+  background: linear-gradient(
+    transparent 58%,
+    var(--remark-hl) 58%,
+    var(--remark-hl) 90%,
+    transparent 90%
+  );
+  color: inherit;
+}
+
+.prose .remark-card-note {
+  margin: 0.35rem 0 0;
+  color: var(--panel-muted);
+}
+
+@media (max-width: 560px) {
+  .keyword-cloud { padding: 12px 12px 10px; }
+  .remark-card { padding: 0.6rem 0.7rem 0.65rem; }
+}
+
 .model-board {
   margin: 0.2rem 0 1.4rem;
   padding: 0.85rem 0.9rem 0.2rem;
   border: 1px solid var(--panel-line);
+  border-radius: var(--ai-news-radius);
   background: var(--panel);
   color: var(--panel-ink);
 }
@@ -632,6 +757,7 @@ body.is-post.has-toc .sidenote {
   margin: 0.15rem 0 1rem;
   padding: 0.7rem 0.85rem 0.75rem;
   border: 1px solid var(--panel-line);
+  border-radius: var(--ai-news-radius);
   background: var(--panel);
   color: var(--panel-ink);
 }
@@ -709,7 +835,7 @@ body.is-post.has-toc .sidenote {
   margin: 0 0 0.85rem;
   padding: 0.75rem 0.9rem 0.8rem;
   border: 1px solid var(--panel-line);
-  border-radius: 0.7rem;
+  border-radius: var(--ai-news-radius);
   background: var(--panel);
   color: var(--panel-ink);
   min-width: 0;
@@ -962,7 +1088,6 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   .prose .article-card {
     margin-bottom: 0.7rem;
     padding: 0.65rem 0.75rem 0.7rem;
-    border-radius: 0.6rem;
   }
 }
 
@@ -994,6 +1119,24 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   --sidenote-line: var(--rule);
   --sidenote-open-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
   --more-line: color-mix(in srgb, var(--ink) 28%, transparent);
+  --kw-top: #e09a62;
+  --kw-high: #f3ece1;
+  --kw-mid: #c4bdb2;
+  --kw-low: #9c958a;
+  --kw-outline: #c4a27a;
+}
+
+:root[data-theme="dark"] .remark-card {
+  --remark-hl: rgba(214, 160, 60, 0.32);
+}
+
+:root[data-theme="dark"] .remark-mark {
+  background: linear-gradient(
+    transparent 55%,
+    var(--remark-hl) 55%,
+    var(--remark-hl) 90%,
+    transparent 90%
+  );
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1024,6 +1167,24 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
     --sidenote-line: var(--rule);
     --sidenote-open-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
     --more-line: color-mix(in srgb, var(--ink) 28%, transparent);
+    --kw-top: #e09a62;
+    --kw-high: #f3ece1;
+    --kw-mid: #c4bdb2;
+    --kw-low: #9c958a;
+    --kw-outline: #c4a27a;
+  }
+
+  :root:not([data-theme="light"]) .remark-card {
+    --remark-hl: rgba(214, 160, 60, 0.32);
+  }
+
+  :root:not([data-theme="light"]) .remark-mark {
+    background: linear-gradient(
+      transparent 55%,
+      var(--remark-hl) 55%,
+      var(--remark-hl) 90%,
+      transparent 90%
+    );
   }
 }
 

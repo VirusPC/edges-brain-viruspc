@@ -1,0 +1,160 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { cloudHtml, inlineKeywordClouds } from '../src/plugins/rehype-keyword-cloud.mjs';
+import {
+  assignWeightTiers,
+  fontSize,
+  keywordWeight,
+  renderCloudSvg,
+} from '../../skills/managed/weekly-ai-blogs-digest/scripts/keyword_cloud_style.mjs';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const fontFile = path.join(os.homedir(), '.local/share/fonts/NotoSansCJKsc-Bold.otf');
+
+test('equal weights share a tier and the heaviest weight is top', () => {
+  const tiered = assignWeightTiers([
+    { word: '甲', weight: 3 },
+    { word: '乙', weight: 3 },
+    { word: '丙', weight: 5 },
+    { word: '丁', weight: 1 },
+  ]);
+  const tier = Object.fromEntries(tiered.map((word) => [word.word, word.tier]));
+  assert.equal(tier['丙'], 'top');
+  assert.equal(tier['甲'], 'high');
+  assert.equal(tier['乙'], 'high');
+  assert.equal(tier['丁'], 'mid');
+});
+
+test('2026-11-20 tiers follow weight, not alphabetical order', () => {
+  const body = fs.readFileSync(path.join(repoRoot, 'ai-news/2026-11-20-ai-news.md'), 'utf8');
+  const json = body.match(/<!--\s*keywords-cloud\s*([\s\S]*?)-->/)[1];
+  const words = JSON.parse(json).map((item) => ({ word: item.word, weight: keywordWeight(item) }));
+  const tier = Object.fromEntries(assignWeightTiers(words).map((word) => [word.word, word.tier]));
+  assert.equal(tier['Gemini 4 Neon'], 'top');
+  assert.equal(tier['GPT-6.2 Astra / Sol'], 'high');
+  assert.equal(tier['Qwen4-Max'], tier['工具检索']);
+  assert.equal(tier['Devin Bots'], tier['验证闭环']);
+  assert.equal(tier['Cursor 安全事件'], tier['DeepSeek 应用 API']);
+  assert.equal(tier['Grok Bot'], tier['llama.cpp v1.0']);
+  assert.equal(tier['Grok Bot'], 'low');
+  assert.equal(fontSize(4.4), 52);
+  assert.ok(keywordWeight({ word: 'Gemini 4 Neon', score: 5, mentions: 2, sources: 3 }) > keywordWeight({ word: 'GPT-6.2 Astra / Sol', score: 5, mentions: 1, sources: 2 }));
+});
+
+test('the svg has tier classes and no baked background or outline', () => {
+  const svg = renderCloudSvg(
+    {
+      tiers: {
+        top: { fill: '#b4541f', fontWeight: 700 },
+        high: { fill: '#1c1b19', fontWeight: 700 },
+        mid: { fill: '#5c574e', fontWeight: 400 },
+        low: { fill: '#746f65', fontWeight: 400 },
+      },
+    },
+    { fontFamily: 'Noto Sans CJK SC' },
+    [
+      { text: '甲', x: 1, y: 2, size: 40, weight: 5 },
+      { text: '乙', x: 3, y: 4, size: 30, weight: 4 },
+      { text: '丙', x: 5, y: 6, size: 24, weight: 2 },
+      { text: '丁', x: 7, y: 8, size: 18, weight: 1 },
+    ],
+    100,
+    80,
+    10,
+    12,
+  );
+  assert.match(svg, /class="kw-top"/);
+  assert.match(svg, /class="kw-low"/);
+  assert.match(svg, /font-weight="400"/);
+  assert.doesNotMatch(svg, /<rect|fffcf7|filter=|stroke=/i);
+});
+
+test('ai news cards share one radius token', () => {
+  const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
+  assert.match(css, /--ai-news-radius:\s*0\.7rem/);
+  assert.match(css, /\.model-board\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
+  assert.match(css, /\.model-facts\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
+  assert.match(css, /\.prose \.article-card\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
+  assert.match(css, /\.remark-card\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
+  assert.match(css, /\.keyword-cloud-outline rect\s*\{[^}]*rx:\s*var\(--ai-news-radius\)/);
+  assert.doesNotMatch(css, /border-radius:\s*0\.6rem/);
+  const plugin = fs.readFileSync(new URL('../src/plugins/rehype-keyword-cloud.mjs', import.meta.url), 'utf8');
+  assert.match(plugin, /baseFrequency="0\.03"/);
+  assert.match(plugin, /scale="2\.2"/);
+  assert.match(plugin, /id="rough"/);
+});
+
+test('a keyword cloud image is inlined from the sibling svg', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kw-cloud-'));
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><text class="kw-top">甲</text></svg>
+`;
+  fs.writeFileSync(path.join(dir, 'keywords-cloud-2026-11-20.svg'), svg);
+  const tree = {
+    type: 'root',
+    children: [
+      {
+        type: 'element',
+        tagName: 'p',
+        children: [
+          {
+            type: 'element',
+            tagName: 'img',
+            properties: { src: './keywords-cloud-2026-11-20.png', alt: '甲、乙' },
+          },
+        ],
+      },
+    ],
+  };
+  inlineKeywordClouds(tree, { path: path.join(dir, '2026-11-20-ai-news.md') });
+  assert.equal(tree.children[0].type, 'raw');
+  assert.match(tree.children[0].value, /class="keyword-cloud"/);
+  assert.match(tree.children[0].value, /class="keyword-cloud-art"/);
+  assert.match(tree.children[0].value, /aria-label="甲、乙"/);
+  assert.match(tree.children[0].value, /class="kw-top"/);
+  assert.doesNotMatch(tree.children[0].value, /<\?xml/);
+  const html = cloudHtml('<svg></svg>', 'A & B');
+  assert.match(html, /aria-label="A &amp; B"/);
+});
+
+test('published clouds keep the measured positions when the bold font is installed', async (t) => {
+  let cloud;
+  try {
+    cloud = await import('../../skills/managed/weekly-ai-blogs-digest/scripts/render_keyword_cloud.mjs');
+  } catch {
+    cloud = null;
+  }
+  if (!cloud || !fs.existsSync(fontFile)) {
+    t.skip('keyword cloud font or canvas is not installed');
+    return;
+  }
+  const expected = {
+    '2026-11-20': [
+      ['Gemini 4 Neon', 68, -160, 52],
+      ['GPT-6.2 Astra / Sol', 18, -107, 46],
+      ['Grok Bot', -362, -58, 26],
+    ],
+    '2026-11-06': [
+      ['交付闭环', 68, -160, 49],
+      ['上下文工程', 18, -101, 44],
+      ['Pierre', 97, -61, 24],
+    ],
+  };
+  const font = { fontFile, fontFamily: 'Noto Sans CJK SC', fontWeight: 700 };
+  for (const [date, rows] of Object.entries(expected)) {
+    const words = cloud.wordsFromMarkdown(path.join(repoRoot, 'ai-news', `${date}-ai-news.md`));
+    const placed = cloud.placeKeywords(words, font, 1);
+    const byText = new Map(placed.map((word) => [word.text, word]));
+    for (const [text, x, y, size] of rows) {
+      const got = byText.get(text);
+      assert.ok(got, text);
+      assert.equal(got.x, x, text);
+      assert.equal(got.y, y, text);
+      assert.equal(got.size, size, text);
+    }
+  }
+});
