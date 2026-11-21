@@ -175,7 +175,10 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /filter:\s*url\("#wood-rough"\)/);
   assert.match(css, /\.ai-news-filter-seam path\s*\{[^}]*vector-effect:\s*non-scaling-stroke/);
   assert.match(css, /\.groove\s*\{[^}]*stroke-width:\s*1\.3px/);
-  assert.match(css, /font-weight:\s*700/);
+  assert.match(css, /\.ai-news-filter button\[aria-pressed='true'\] \.ai-news-filter-face\s*\{[^}]*font-weight:\s*600/);
+  assert.match(css, /\.ai-news-filter \.ai-news-filter-co\[aria-pressed='true'\]/);
+  assert.doesNotMatch(css, /(^|\n)\.ai-news-filter-co\[aria-pressed='true'\]/);
+  assert.doesNotMatch(css, /AI News Chip Bold/);
   assert.doesNotMatch(css, /\.ai-news-filter-rule/);
   assert.doesNotMatch(css, /font-weight:\s*800/);
   assert.doesNotMatch(css, /font-weight:\s*900/);
