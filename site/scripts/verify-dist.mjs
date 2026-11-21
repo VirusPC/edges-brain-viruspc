@@ -122,7 +122,12 @@ const projectPage = fs.readFileSync(path.join(dist, 'projects/index.html'), 'utf
 assert.match(projectPage, /class="post-list"/);
 assert.match(projectPage, /class="archive-year"/);
 assert.match(projectPage, /<details class="project-fold">/);
+assert.match(projectPage, /class="project-fold-open-label">展开</);
+assert.match(projectPage, /class="project-fold-close-label">收起</);
 assert.doesNotMatch(projectPage, /<details class="project-fold"[^>]*\bopen\b/);
+const projectCss = fs.readFileSync(path.join(siteRoot, 'src/styles/global.css'), 'utf8');
+assert.match(projectCss, /\.project-fold > summary::marker[\s\S]*?color:\s*var\(--summary\)/);
+assert.doesNotMatch(projectCss, /\.project-fold > summary::-webkit-details-marker\s*\{\s*display:\s*none/);
 assert.equal(
   (projectPage.match(/class="archive-year"/g) || []).length,
   (projectPage.match(/class="project-fold"/g) || []).length,

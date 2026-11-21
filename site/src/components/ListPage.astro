@@ -57,8 +57,14 @@ function articleCount(group: YearGroup) {
             {collapseGroups ? (
               <details class="project-fold">
                 <summary>
-                  <h2>{group.heading}</h2>
-                  <span class="project-fold-count">{articleCount(group)}</span>
+                  <span class="project-fold-line">
+                    <span class="project-fold-toggle">
+                      <span class="project-fold-open-label">展开</span>
+                      <span class="project-fold-close-label">收起</span>
+                    </span>
+                    <h2>{group.heading}</h2>
+                    <span class="project-fold-count">{articleCount(group)}</span>
+                  </span>
                 </summary>
                 {body}
               </details>

@@ -379,41 +379,30 @@ body.is-post.has-toc .sidenote {
 }
 
 .project-fold > summary {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
   cursor: pointer;
-  list-style: none;
+  color: var(--summary);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.45;
   border-bottom: 1px solid var(--rule-strong);
-  padding: 0.15rem 0 0.25rem;
+  padding: 0.35rem 0 0.3rem;
   margin-bottom: 0.4rem;
 }
 
-.project-fold > summary::-webkit-details-marker {
-  display: none;
+.project-fold > summary::marker,
+.project-fold[open] > summary::marker,
+.project-fold > summary::-webkit-details-marker,
+.project-fold[open] > summary::-webkit-details-marker {
+  color: var(--summary);
 }
 
-.project-fold > summary::marker {
-  content: "";
-}
-
-.project-fold > summary::before {
-  content: "";
-  width: 0.42rem;
-  height: 0.42rem;
-  border-right: 1.5px solid var(--muted);
-  border-bottom: 1.5px solid var(--muted);
-  transform: translateY(-0.05rem) rotate(-45deg);
-  flex: none;
-}
-
-.project-fold[open] > summary::before {
-  transform: translateY(0.05rem) rotate(45deg);
-}
-
-.project-fold > summary:hover::before,
-.project-fold > summary:focus-visible::before {
-  border-color: var(--ink);
+.project-fold > summary:hover,
+.project-fold[open] > summary:hover,
+.project-fold > summary:hover::marker,
+.project-fold[open] > summary:hover::marker,
+.project-fold > summary:hover::-webkit-details-marker,
+.project-fold[open] > summary:hover::-webkit-details-marker {
+  color: var(--summary-hover);
 }
 
 .project-fold > summary:focus-visible {
@@ -421,7 +410,27 @@ body.is-post.has-toc .sidenote {
   outline-offset: 2px;
 }
 
-.project-fold > summary > h2 {
+.project-fold-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: calc(100% - 1.5rem);
+  vertical-align: middle;
+}
+
+.project-fold-toggle {
+  flex: none;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.project-fold[open] .project-fold-open-label,
+.project-fold:not([open]) .project-fold-close-label {
+  display: none;
+}
+
+.project-fold-line > h2 {
   flex: 1 1 auto;
   min-width: 0;
   margin: 0;
@@ -934,6 +943,20 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   .prose details.article-more > summary {
     padding: 0.28rem 0;
     line-height: 1.45;
+  }
+
+  .project-fold > summary {
+    font-size: 1.05rem;
+    padding: 0.55rem 0 0.45rem;
+  }
+
+  .project-fold-toggle {
+    font-size: 1.05rem;
+  }
+
+  .project-fold-line {
+    width: calc(100% - 1.7rem);
+    gap: 0.5rem;
   }
 
   .prose .article-card {
