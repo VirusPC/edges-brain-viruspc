@@ -196,6 +196,9 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.doesNotMatch(css, /font-weight:\s*900/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*left:\s*0/);
+  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*background:\s*transparent/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(css, /--wood-label-bg/);
   const source = fs.readFileSync(new URL('../src/lib/ai-news-category-filter.mjs', import.meta.url), 'utf8');
   assert.match(source, /addLabel\(row,\s*'文章类型'\)/);
   assert.match(source, /addLabel\(sourceRow,\s*'来源类型'\)/);
