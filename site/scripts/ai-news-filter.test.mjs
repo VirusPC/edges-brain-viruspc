@@ -14,6 +14,7 @@ import {
   itemMatches,
   nextFilter,
   parseFilter,
+  filterQueryMatches,
   sectionPlan,
   splitTags,
   toSearch,
@@ -50,17 +51,21 @@ test('a page with no primary category offers no filter chips', () => {
   ]);
 });
 
-test('the query string keeps a primary, a source type, and a company together', () => {
+test('the query string keeps a primary, a source type, and a company apart', () => {
   assert.deepEqual(parseFilter(''), { cat: '', src: '', tag: '' });
   assert.deepEqual(parseFilter('?cat=产品'), { cat: '产品', src: '', tag: '' });
   assert.deepEqual(parseFilter('?cat=研发提效'), { cat: '', src: '', tag: '' });
-  assert.deepEqual(parseFilter('?tag=DeepSeek'), { cat: '', src: '国内模型厂', tag: 'DeepSeek' });
-  assert.deepEqual(parseFilter('?cat=产品&tag=DeepSeek'), { cat: '产品', src: '国内模型厂', tag: 'DeepSeek' });
-  assert.deepEqual(parseFilter('?cat=不存在&tag=腾讯'), { cat: '', src: '国内非模型厂', tag: '腾讯' });
-  assert.deepEqual(parseFilter('?src=国外模型厂&tag=阿里'), { cat: '', src: '国内非模型厂', tag: '阿里' });
+  assert.deepEqual(parseFilter('?tag=DeepSeek'), { cat: '', src: '', tag: 'DeepSeek' });
+  assert.deepEqual(parseFilter('?cat=产品&tag=DeepSeek'), { cat: '产品', src: '', tag: 'DeepSeek' });
+  assert.deepEqual(parseFilter('?cat=不存在&tag=腾讯'), { cat: '', src: '', tag: '腾讯' });
+  assert.deepEqual(parseFilter('?src=国内非模型厂&tag=阿里'), { cat: '', src: '国内非模型厂', tag: '阿里' });
+  assert.deepEqual(parseFilter('?src=国外模型厂&tag=阿里'), { cat: '', src: '国外模型厂', tag: '' });
+  assert.deepEqual(parseFilter('?src=没有这种&tag=阿里'), { cat: '', src: '', tag: '阿里' });
+  assert.equal(filterQueryMatches('?tag=%E7%81%AB%E5%B1%B1%E5%BC%95%E6%93%8E', { cat: '', src: '', tag: '字节' }), false);
+  assert.equal(filterQueryMatches('?tag=字节', { cat: '', src: '', tag: '字节' }), true);
 });
 
-test('choosing a company sets its source type, and clearing the type clears the company', () => {
+test('choosing a company leaves the source type, and clearing the type clears the company', () => {
   const both = { cat: '产品', src: '国内非模型厂', tag: '腾讯' };
   assert.deepEqual(nextFilter(both, { kind: 'cat', value: '产品' }), { cat: '', src: '国内非模型厂', tag: '腾讯' });
   assert.deepEqual(nextFilter(both, { kind: 'tag', value: '腾讯' }), { cat: '产品', src: '国内非模型厂', tag: '' });
@@ -70,19 +75,29 @@ test('choosing a company sets its source type, and clearing the type clears the 
   assert.deepEqual(nextFilter(both, { kind: 'all' }), { cat: '', src: '', tag: '' });
   assert.deepEqual(nextFilter({ cat: '产品', src: '', tag: '' }, { kind: 'tag', value: 'Google' }), {
     cat: '产品',
-    src: '国外模型厂',
+    src: '',
     tag: 'Google',
+  });
+  assert.deepEqual(nextFilter({ cat: '', src: '', tag: 'Google' }, { kind: 'tag', value: 'Google' }), {
+    cat: '',
+    src: '',
+    tag: '',
   });
   assert.deepEqual(nextFilter({ cat: '', src: '国内非模型厂', tag: '阿里' }, { kind: 'src', value: '国外模型厂' }), {
     cat: '',
     src: '国外模型厂',
     tag: '',
   });
+  assert.deepEqual(nextFilter({ cat: '', src: '国内非模型厂', tag: '阿里' }, { kind: 'src', value: '国内非模型厂' }), {
+    cat: '',
+    src: '',
+    tag: '',
+  });
   assert.equal(sourceGroup('阿里'), '国内非模型厂');
   assert.equal(sourceGroup('字节'), '国内非模型厂');
 });
 
-test('a source type limits companies, keeps a matching company, and drops one that does not fit', () => {
+test('a source type limits the company row and always clears the selected company', () => {
   const names = ['DeepSeek', 'Anthropic', '阿里', 'Cursor', 'Notion'];
   assert.deepEqual(companiesForSource(names, ''), names);
   assert.deepEqual(companiesForSource(names, '国内模型厂'), ['DeepSeek']);
@@ -94,10 +109,20 @@ test('a source type limits companies, keeps a matching company, and drops one th
   assert.deepEqual(nextFilter(domestic, { kind: 'src', value: '国内非模型厂' }), {
     cat: '产品',
     src: '国内非模型厂',
-    tag: '阿里',
+    tag: '',
   });
-  assert.deepEqual(nextFilter(domestic, { kind: 'src', value: '国外模型厂' }), {
+  assert.deepEqual(nextFilter({ cat: '产品', src: '国内模型厂', tag: 'DeepSeek' }, { kind: 'src', value: '国外模型厂' }), {
     cat: '产品',
+    src: '国外模型厂',
+    tag: '',
+  });
+  assert.deepEqual(nextFilter({ cat: '', src: '国内模型厂', tag: '' }, { kind: 'tag', value: 'DeepSeek' }), {
+    cat: '',
+    src: '国内模型厂',
+    tag: 'DeepSeek',
+  });
+  assert.deepEqual(nextFilter({ cat: '', src: '国外模型厂', tag: '' }, { kind: 'tag', value: '阿里' }), {
+    cat: '',
     src: '国外模型厂',
     tag: '',
   });
@@ -113,7 +138,7 @@ test('a source type limits companies, keeps a matching company, and drops one th
     nextFilter({ cat: '模型', src: '国内非模型厂', tag: '字节' }, { kind: 'cat', value: '模型' }),
     { cat: '', src: '国内非模型厂', tag: '字节' },
   );
-  assert.deepEqual(parseFilter('?cat=架构&tag=火山引擎'), { cat: '架构', src: '国内非模型厂', tag: '字节' });
+  assert.deepEqual(parseFilter('?cat=架构&tag=火山引擎'), { cat: '架构', src: '', tag: '字节' });
   assert.deepEqual(
     nextFilter({ cat: '模型', src: '国内模型厂', tag: 'DeepSeek' }, { kind: 'all', row: 'tag' }),
     { cat: '模型', src: '国内模型厂', tag: '' },
@@ -149,7 +174,9 @@ test('company chips follow the hand-ordered groups', () => {
   assert.equal(SOURCE_ORDER[SOURCE_ORDER.indexOf('腾讯') + 1], '字节');
   assert.equal(sourceGroup('火山引擎'), '国内非模型厂');
   assert.deepEqual(companiesPresent([['火山引擎', '字节', '腾讯']]), ['腾讯', '字节']);
-  assert.deepEqual(parseFilter('?tag=火山引擎'), { cat: '', src: '国内非模型厂', tag: '字节' });
+  assert.deepEqual(parseFilter('?tag=火山引擎'), { cat: '', src: '', tag: '字节' });
+  assert.deepEqual(parseFilter('?src=国内非模型厂&tag=火山引擎'), { cat: '', src: '国内非模型厂', tag: '字节' });
+  assert.deepEqual(parseFilter('?src=国外模型厂&tag=火山引擎'), { cat: '', src: '国外模型厂', tag: '' });
   assert.equal(itemMatches({ cat: '架构', tags: ['火山引擎'], src: '国内非模型厂' }, { tag: '字节' }), true);
   assert.equal(itemMatches({ cat: '架构', tags: ['字节'], src: '国内非模型厂' }, { tag: '火山引擎' }), true);
   assert.deepEqual(
