@@ -5,6 +5,7 @@ import {
   COMPANY_ALIASES,
   SOURCE_ORDER,
   categoriesPresent,
+  companiesForSource,
   companiesPresent,
   sourceGroup,
   filterChips,
@@ -78,6 +79,39 @@ test('choosing a company sets its source type, and clearing the type clears the 
   });
   assert.equal(sourceGroup('阿里'), '国内非模型厂');
   assert.equal(sourceGroup('字节'), '国内非模型厂');
+});
+
+test('a source type limits companies, keeps a matching company, and drops one that does not fit', () => {
+  const names = ['DeepSeek', 'Anthropic', '阿里', 'Cursor', 'Notion'];
+  assert.deepEqual(companiesForSource(names, ''), names);
+  assert.deepEqual(companiesForSource(names, '国内模型厂'), ['DeepSeek']);
+  assert.deepEqual(companiesForSource(names, '国外模型厂'), ['Anthropic']);
+  assert.deepEqual(companiesForSource(names, '国内非模型厂'), ['阿里']);
+  assert.deepEqual(companiesForSource(names, '国外非模型厂'), ['Cursor']);
+
+  const domestic = { cat: '产品', src: '', tag: '阿里' };
+  assert.deepEqual(nextFilter(domestic, { kind: 'src', value: '国内非模型厂' }), {
+    cat: '产品',
+    src: '国内非模型厂',
+    tag: '阿里',
+  });
+  assert.deepEqual(nextFilter(domestic, { kind: 'src', value: '国外模型厂' }), {
+    cat: '产品',
+    src: '国外模型厂',
+    tag: '',
+  });
+  assert.deepEqual(
+    nextFilter({ cat: '产品', src: '国外模型厂', tag: '' }, { kind: 'all', row: 'src' }),
+    { cat: '产品', src: '', tag: '' },
+  );
+  assert.deepEqual(
+    nextFilter({ cat: '', src: '国内模型厂', tag: 'DeepSeek' }, { kind: 'cat', value: '模型' }),
+    { cat: '模型', src: '国内模型厂', tag: 'DeepSeek' },
+  );
+  assert.deepEqual(
+    nextFilter({ cat: '模型', src: '国内模型厂', tag: 'DeepSeek' }, { kind: 'all', row: 'tag' }),
+    { cat: '模型', src: '国内模型厂', tag: '' },
+  );
 });
 
 test('search keeps unrelated params and can share both filters', () => {
@@ -173,6 +207,7 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*color:\s*var\(--wood-title\)/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-weight:\s*700/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*16px/);
+  assert.match(css, /\.ai-news-filter button\[hidden\]\s*\{[^}]*display:\s*none !important/);
   assert.match(css, /\.ai-news-filter button\s*\{[^}]*font-size:\s*14px/);
   assert.match(css, /\.ai-news-filter button\s*\{[^}]*line-height:\s*1\.2/);
   assert.doesNotMatch(css, /\.ai-news-filter button\s*\{[^}]*font:\s*inherit/);

@@ -61,6 +61,12 @@ export function sourceGroup(name) {
   return GROUP_OF.get(canonicalCompany(name)) || '';
 }
 
+/** Company chips for one source type. An empty type means the full list. */
+export function companiesForSource(names, src) {
+  if (!src) return [...names];
+  return names.filter((name) => sourceGroup(name) === src);
+}
+
 /** Unique company names in 来源 order. Repeats and aliases share one chip. */
 export function companiesPresent(tagLists) {
   const seen = new Set();
@@ -300,8 +306,12 @@ function syncPressed(bar, groups, filter) {
   for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...tagRoot(item).querySelectorAll('.ai-news-tag')]))) {
     button.setAttribute('aria-pressed', filter.tag && filter.tag === button.dataset.tag ? 'true' : 'false');
   }
+  const shown = new Set(companiesForSource(
+    [...bar.querySelectorAll('.ai-news-filter-co')].map((button) => button.dataset.tag),
+    filter.src,
+  ));
   for (const button of bar.querySelectorAll('.ai-news-filter-co')) {
-    button.hidden = Boolean(filter.src) && sourceGroup(button.dataset.tag) !== filter.src;
+    button.hidden = !shown.has(button.dataset.tag);
   }
 }
 
