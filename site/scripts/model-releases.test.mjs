@@ -94,16 +94,20 @@ test('one heading can carry both models named in it', () => {
   const tree = {
     type: 'root',
     children: [
-      { type: 'heading', depth: 3, children: [{ type: 'text', value: '模型发布' }] },
+      { type: 'heading', depth: 2, children: [{ type: 'text', value: '二、模型进展' }] },
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'OpenRouter' }] },
       { type: 'heading', depth: 4, children: [{ type: 'text', value: 'Introducing GPT-6.2 Astra and Sol' }] },
       { type: 'paragraph', children: [{ type: 'text', value: '原来的说明' }] },
       { type: 'heading', depth: 2, children: [{ type: 'text', value: '三、项目开源' }] },
+      { type: 'heading', depth: 4, children: [{ type: 'text', value: 'Introducing GPT-6.2 Astra and Sol' }] },
     ],
   };
   insertModelFacts(tree, [astra, sol]);
-  assert.equal(tree.children[2].type, 'html');
-  assert.match(tree.children[2].value, /GPT-6\.2 Sol/);
-  assert.equal(tree.children[3].children[0].value, '原来的说明');
+  assert.equal(tree.children[3].type, 'html');
+  assert.match(tree.children[3].value, /GPT-6\.2 Sol/);
+  assert.equal(tree.children[4].children[0].value, '原来的说明');
+  assert.equal(tree.children[6].type, 'heading');
+  assert.equal(tree.children.length, 7);
 });
 
 test('a discounted OpenRouter price keeps the discount and the official provider', () => {

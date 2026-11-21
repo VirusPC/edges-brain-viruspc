@@ -89,13 +89,13 @@ test('item titles link to the source and quote blocks are gone', () => {
       assert.match(body, /^### LLM Arena$/m, name);
       assert.match(body, /^### Artificial Analysis$/m, name);
       assert.match(body, /^### OpenRouter$/m, name);
-      assert.match(body, /^### 模型发布$/m, name);
+      assert.doesNotMatch(body, /^### 模型发布$/m, name);
       assert.doesNotMatch(body, /^#### 整体排名$/m, name);
       const model = body.split(/^## 二、模型进展$/m)[1].split(/^## 三、/m)[0];
       const arena = model.indexOf('### LLM Arena');
       const analysis = model.indexOf('### Artificial Analysis');
       const openrouter = model.indexOf('### OpenRouter');
-      const releases = model.indexOf('### 模型发布');
+      const releases = model.search(/^#### \[/m);
       assert.ok(
         arena >= 0 && arena < analysis && analysis < openrouter && openrouter < releases,
         name,
@@ -111,7 +111,8 @@ test('item titles link to the source and quote blocks are gone', () => {
       const analysis = model.indexOf('### Artificial Analysis');
       const arena = model.indexOf('### LLM Arena');
       const openrouter = model.indexOf('### OpenRouter');
-      const releases = model.indexOf('### 模型发布');
+      const releases = model.search(/^#### \[/m);
+      assert.doesNotMatch(model, /^### 模型发布$/m);
       assert.ok(
         analysis >= 0 && analysis < arena && arena < openrouter && openrouter < releases,
         name,

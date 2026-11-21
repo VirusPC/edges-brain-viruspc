@@ -268,7 +268,8 @@ test('platform sections become one dropdown, and a missing figure stays out of i
     const headings = result.metadata.headings.map((heading) => heading.text);
     assert.equal(headings.includes('LLM Arena'), false);
     assert.equal(headings.includes('OpenRouter'), false);
-    assert.equal(headings.includes('模型发布'), true);
+    assert.equal(headings.includes('模型发布'), false);
+    assert.ok(headings.includes('新模型'));
     assert.ok(headings.includes('二、模型进展'));
     assert.deepEqual(optionLabels(html), ['LLM Arena', 'OpenRouter 本周用量', 'OpenRouter 编程用量']);
     assert.match(html, /data-model-board/);
@@ -280,7 +281,7 @@ test('platform sections become one dropdown, and a missing figure stays out of i
     assert.equal(specs[0].items[1].highlight, true);
     assert.equal(specs[1].items[0].valueText, '2.00 T');
     assert.match(html, /keywords-cloud\.png/);
-    const board = html.slice(html.indexOf('data-model-board'), html.indexOf('模型发布'));
+    const board = html.slice(html.indexOf('data-model-board'), html.indexOf('新模型'));
     assert.doesNotMatch(board, /keywords-cloud/);
     assert.match(html, /id="llm-arena"/);
     assert.match(html, /红圈：Gemini 4 Hydrogen \(High\)/);

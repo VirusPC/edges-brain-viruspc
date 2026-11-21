@@ -51,6 +51,12 @@ function firstPanelKind(html) {
   return kind[1];
 }
 
+function assertModelProgressToc(toc) {
+  const item = toc.match(/<li>\s*<a href="[^"]+">二、模型进展<\/a>([\s\S]*?)<\/li>/);
+  assert.ok(item, 'toc is missing 二、模型进展');
+  assert.doesNotMatch(item[1], /<ol|模型发布/);
+}
+
 function chartSpecs(html) {
   return [...html.matchAll(/<pre\b[^>]*\bmodel-chart-spec\b[^>]*>([\s\S]*?)<\/pre>/g)].map((match) =>
     JSON.parse(decodeHtml(match[1])),
@@ -280,13 +286,14 @@ assert.match(newestToc[0], />国内</);
 assert.match(newestToc[0], />国际</);
 assert.doesNotMatch(newestToc[0], /国内进展|国际进展/);
 assert.match(newestToc[0], /二、模型进展/);
-assert.match(newestToc[0], /模型发布/);
+assert.doesNotMatch(newestToc[0], /模型发布/);
 assert.doesNotMatch(newestToc[0], /LLM Arena|Artificial Analysis|OpenRouter/);
+assertModelProgressToc(newestToc[0]);
 assert.doesNotMatch(newestToc[0], /&lt;|&#x3C;|data-cat/);
 const platformOrder = [...newestIssue.matchAll(/<h3\b[^>]*>([^<]*)<\/h3>/g)]
   .map((match) => match[1].replace(/\s+/g, ' ').trim())
   .filter((text) => ['LLM Arena', 'Artificial Analysis', 'OpenRouter', '模型发布'].includes(text));
-assert.deepEqual(platformOrder, ['模型发布']);
+assert.deepEqual(platformOrder, []);
 assert.deepEqual(optionLabels(newestIssue), [
   'Artificial Analysis',
   'LLM Arena',
@@ -315,17 +322,14 @@ assert.match(newestSpecs[2].items[0].valueText, / T$/);
 assert.equal(newestSpecs[2].items[0].name.includes('/'), false);
 assert.match(newestSpecs[2].items[0].name, /\s|[A-Z]/);
 const modelProgress = newestIssue.split(/<h2\b[^>]*>\s*二、模型进展\s*<\/h2>/)[1]?.split(/<h2\b/)[0] ?? '';
-assert.doesNotMatch(
-  modelProgress.split(/<h3\b[^>]*>\s*模型发布\s*<\/h3>/)[0],
-  /<h4\b/,
-  '2026-11-13 rankings have no h4 before 模型发布',
-);
+assert.doesNotMatch(modelProgress, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
+const releaseAt = modelProgress.search(/<h4\b/);
+const boardAt = modelProgress.indexOf('data-model-board');
+assert.ok(boardAt >= 0 && releaseAt > boardAt, '2026-11-13 model entries follow the rankings');
 assertCategoryPills(newestIssue, [
   ['研发提效', '授人以鱼不如授人以渔：我对企业级 AI 研发提效的思考与实践'],
   ['Harness', '研发Loop的上下文优化与多Agent协作实践'],
-], [
-  /<h3\b[^>]*>\s*模型发布\s*<\/h3>/,
-]);
+], []);
 for (const alt of [
   'OpenRouter 本周用量 Top 15，2026-11-13',
   'OpenRouter 编程用量 Top 15，2026-11-13',
@@ -388,7 +392,7 @@ assert.doesNotMatch(issue20, /快照/);
 assert.doesNotMatch(issue20, /chart-meta/);
 assert.doesNotMatch(issue20, /红圈：/);
 assert.doesNotMatch(issue20, /榜单发布日/);
-assert.match(issue20, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
+assert.doesNotMatch(issue20, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
 assert.match(issue20, /class="model-facts"/);
 assert.match(issue20, /GPT-6\.2 Astra/);
 assert.match(issue20, /输入 \$8 · 输出 \$40 · 缓存读 \$0\.4/);
@@ -455,7 +459,8 @@ for (const [cat, tag, title] of [
     title,
   );
 }
-assert.doesNotMatch(toc20[0], /LLM Arena/);
+assert.doesNotMatch(toc20[0], /模型发布|LLM Arena/);
+assertModelProgressToc(toc20[0]);
 const arena20 = issue20.match(/<img[^>]*alt="LLM Arena Top 15，2026-11-18"[^>]*src="([^"]+)"/)
   ?? issue20.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top 15，2026-11-18"/);
 assert.ok(arena20, '2026-11-20 is missing the arena image');
