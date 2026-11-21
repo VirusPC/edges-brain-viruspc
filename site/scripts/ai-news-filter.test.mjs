@@ -172,7 +172,12 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /--wood-edge:\s*#8a5a34/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*color:\s*var\(--wood-title\)/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-weight:\s*700/);
-  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*1em/);
+  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*16px/);
+  assert.match(css, /\.ai-news-filter button\s*\{[^}]*font-size:\s*14px/);
+  assert.match(css, /\.ai-news-filter button\s*\{[^}]*line-height:\s*1\.2/);
+  assert.doesNotMatch(css, /\.ai-news-filter button\s*\{[^}]*font:\s*inherit/);
+  assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*14px 14px 12px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*padding:\s*12px 10px 10px/);
   assert.match(css, /transform:\s*rotate\(-0\.5deg\)/);
   assert.match(css, /filter:\s*url\("#wood-rough"\)/);
   assert.match(css, /\.ai-news-filter-seam path\s*\{[^}]*vector-effect:\s*non-scaling-stroke/);
