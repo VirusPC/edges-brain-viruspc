@@ -119,8 +119,8 @@ test('item titles link to the source and quote blocks are gone', () => {
       );
       for (const title of [
         '&lt;开源&gt;&lt;腾讯&gt;[登上 GitHub Trending｜腾讯开源 LoopForge]',
-        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[用 Super-agent 的理念拆解 Octop 团队模式]',
-        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[不只是 Memory：Ontology 如何让 Coding Agent 越用越懂项目]',
+        '&lt;架构&gt;&lt;腾讯&gt;[用 Super-agent 的理念拆解 Octop 团队模式]',
+        '&lt;架构&gt;&lt;腾讯&gt;[不只是 Memory：Ontology 如何让 Coding Agent 越用越懂项目]',
       ]) {
         assert.ok(body.includes(`#### ${title}`), title);
       }
@@ -193,7 +193,7 @@ test('item titles link to the source and quote blocks are gone', () => {
   assert.doesNotMatch(latest, /^#### \[整体排名\]/m);
 });
 
-const PRIMARY_CATEGORIES = ['模型', '产品', 'Agent 与 Harness', '工程实践', '开源', '行业'];
+const PRIMARY_CATEGORIES = ['模型', '架构', '产品', '实践', '开源', '其他'];
 
 function progressItems(body, heading) {
   const chunk = body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '';

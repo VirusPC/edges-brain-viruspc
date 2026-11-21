@@ -166,7 +166,7 @@ test('project cards stay out of the selected-article filter', () => {
 });
 
 test('a note card is one selected-article item', () => {
-  const heading = element('h4', { 'data-cat': 'Agent 与 Harness', 'data-tags': 'Anthropic' });
+  const heading = element('h4', { 'data-cat': '架构', 'data-tags': 'Anthropic' });
   heading.textContent = 'Building always-on agents';
   const card = element('article', { class: 'note-card' }, [heading]);
   const chapter = element('h2');
@@ -183,7 +183,7 @@ test('a note card is one selected-article item', () => {
   const collected = collectChapter(root);
   assert.equal(collected.groups[0].items.length, 1);
   assert.deepEqual(collected.groups[0].items[0].nodes, [card]);
-  assert.equal(collected.groups[0].items[0].cat, 'Agent 与 Harness');
+  assert.equal(collected.groups[0].items[0].cat, '架构');
   assert.deepEqual(collected.groups[0].items[0].tags, ['Anthropic']);
 });
 

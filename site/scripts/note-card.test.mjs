@@ -5,7 +5,7 @@ import { parseArticleCard, splitNoteCards } from '../src/lib/note-card-model.mjs
 
 const selected = `
 <h2 id="四精选文章">四、精选文章</h2>
-<div class="article-card"><h4 id="building-always-on-agents" data-cat="Agent 与 Harness" data-tags="Anthropic"><a href="https://claude.com/a">Building always-on agents</a></h4><p>常驻 Agent <mark>大部分时间在睡</mark>，再干活。</p><details class="article-more"><summary>完整总结</summary><p><strong>解决什么问题：</strong>不能真的不关机。</p><p><strong>如何解决：</strong>五个原语。</p><p><strong>效果怎样：</strong>没有成绩。</p><p><strong>洞察与启发：</strong>醒来再接着干。</p><p><strong>相关工作：</strong>Devin Bot。</p></details></div>
+<div class="article-card"><h4 id="building-always-on-agents" data-cat="架构" data-tags="Anthropic"><a href="https://claude.com/a">Building always-on agents</a></h4><p>常驻 Agent <mark>大部分时间在睡</mark>，再干活。</p><details class="article-more"><summary>完整总结</summary><p><strong>解决什么问题：</strong>不能真的不关机。</p><p><strong>如何解决：</strong>五个原语。</p><p><strong>效果怎样：</strong>没有成绩。</p><p><strong>洞察与启发：</strong>醒来再接着干。</p><p><strong>相关工作：</strong>Devin Bot。</p></details></div>
 `;
 
 test('selected articles keep surrounding html and shorten the five labels', () => {
@@ -14,7 +14,7 @@ test('selected articles keep surrounding html and shorten the five labels', () =
   assert.match(blocks[0].html, /四、精选文章/);
   assert.match(blocks.at(-1).html, /<p>后文<\/p>/);
   const card = blocks[1].card;
-  assert.equal(card.category, 'Agent 与 Harness');
+  assert.equal(card.category, '架构');
   assert.deepEqual(card.sources, ['Anthropic']);
   assert.equal(card.title, 'Building always-on agents');
   assert.equal(card.href, 'https://claude.com/a');

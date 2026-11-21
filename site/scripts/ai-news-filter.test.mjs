@@ -27,7 +27,7 @@ const sections = [
   },
   {
     id: 'intl',
-    items: [{ id: 'c', cat: '行业', tags: ['Cursor'] }],
+    items: [{ id: 'c', cat: '其他', tags: ['Cursor'] }],
   },
 ];
 
@@ -35,14 +35,16 @@ test('a page with no primary category offers no filter chips', () => {
   assert.deepEqual(categoriesPresent(['研发提效', 'Harness', '交付闭环']), []);
   assert.deepEqual(categoriesPresent(['产品', '产品合作', '开源']), ['产品', '开源']);
   assert.deepEqual(filterChips('2026-11-13', ['产品', '开源']), ['产品', '开源']);
+  assert.deepEqual(filterChips('2026-11-13', ['其他', '架构', '实践']), ['架构', '实践', '其他']);
   assert.deepEqual(filterChips('2026-11-06', ['审查', '云端']), []);
+  assert.deepEqual(filterChips('2026-11-06', ['Agent 与 Harness', '工程实践', '行业']), []);
   assert.deepEqual(filterChips('2026-11-20', ['产品', '开源']), [
     '模型',
+    '架构',
     '产品',
-    'Agent 与 Harness',
-    '工程实践',
+    '实践',
     '开源',
-    '行业',
+    '其他',
   ]);
 });
 

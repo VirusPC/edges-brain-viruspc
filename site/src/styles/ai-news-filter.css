@@ -243,19 +243,19 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f5496 28%, transparent);
 }
 
+.ai-news-filter-cat[data-cat='架构'] {
+  background: color-mix(in srgb, #5c4d8a 14%, var(--paper));
+  color: #5c4d8a;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #5c4d8a 28%, transparent);
+}
+
 .ai-news-filter-cat[data-cat='产品'] {
   background: color-mix(in srgb, #b4541f 14%, var(--note-wash));
   color: #b4541f;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #b4541f 24%, transparent);
 }
 
-.ai-news-filter-cat[data-cat='Agent 与 Harness'] {
-  background: color-mix(in srgb, #5c4d8a 14%, var(--paper));
-  color: #5c4d8a;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #5c4d8a 28%, transparent);
-}
-
-.ai-news-filter-cat[data-cat='工程实践'] {
+.ai-news-filter-cat[data-cat='实践'] {
   background: color-mix(in srgb, #2f6f4e 14%, var(--paper));
   color: #2f6f4e;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f6f4e 28%, transparent);
@@ -267,7 +267,7 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #0f6e6e 28%, transparent);
 }
 
-.ai-news-filter-cat[data-cat='行业'] {
+.ai-news-filter-cat[data-cat='其他'] {
   background: color-mix(in srgb, #6b4f3a 14%, var(--paper));
   color: #6b4f3a;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #6b4f3a 28%, transparent);
