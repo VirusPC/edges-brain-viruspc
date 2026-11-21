@@ -25,30 +25,58 @@ interface Props {
   items?: Item[];
   groups?: YearGroup[];
   empty?: string;
+  /** Projects page only. Notes and posts leave this off and stay expanded. */
+  collapseGroups?: boolean;
 }
 
-const { title, description, items = [], groups = [], empty = '' } = Astro.props;
+const { title, description, items = [], groups = [], empty = '', collapseGroups = false } = Astro.props;
+
+function articleCount(group: YearGroup) {
+  if (group.months) return group.months.reduce((sum, month) => sum + month.items.length, 0);
+  return group.items?.length ?? 0;
+}
 ---
 
 <BaseLayout title={title} description={description}>
   <h1>{title}</h1>
   {
     groups.length > 0 ? (
-      groups.map((group) => (
-        <section class="archive-year">
-          <h2>{group.heading}</h2>
-          {group.months ? (
-            group.months.map((month) => (
-              <section class="list-month">
-                <h3>{month.label}</h3>
-                <EntryList items={month.items} />
-              </section>
-            ))
-          ) : (
-            <EntryList items={group.items ?? []} />
-          )}
-        </section>
-      ))
+      groups.map((group) => {
+        const body = group.months ? (
+          group.months.map((month) => (
+            <section class="list-month">
+              <h3>{month.label}</h3>
+              <EntryList items={month.items} />
+            </section>
+          ))
+        ) : (
+          <EntryList items={group.items ?? []} />
+        );
+        return (
+          <section class="archive-year">
+            {collapseGroups ? (
+              <details class="project-fold">
+                <summary>
+                  <span class="project-fold-line">
+                    <span class="project-fold-toggle">
+                      <span class="project-fold-open-label">展开</span>
+                      <span class="project-fold-close-label">收起</span>
+                    </span>
+                    <h2>{group.heading}</h2>
+                    <span class="project-fold-count">{articleCount(group)}</span>
+                  </span>
+                </summary>
+                {body}
+              </details>
+            ) : (
+              <>
+                <h2>{group.heading}</h2>
+                {body}
+              </>
+            )}
+          </section>
+        );
+      })
     ) : (
       <EntryList items={items} empty={empty} />
     )

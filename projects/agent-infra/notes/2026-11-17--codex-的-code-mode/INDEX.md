@@ -143,6 +143,7 @@ skill 的名字和描述每个会话都在，读 `SKILL.md` 的正文也不因 C
 
 - 原始材料：2026-11-17 peng cheng 与 Grok Bot 的对话。源码核对点为 openai/codex `main` `46f5a1d`（2026-11-17）。曝光面见 commit [`51c9ed6d4f6665faa6c443dfa10a8460fd0edbdd`](https://github.com/openai/codex/commit/51c9ed6d4f6665faa6c443dfa10a8460fd0edbdd)。
 - 相关笔记：[Code Mode 与程序性工具调用](../2026-11-15--code-mode-与程序性工具调用/INDEX.md) — 名称从哪来、程序性工具调用和 Pi 的 `codemode` 各指什么，以及 MCP 与 Code Mode 的分工。本篇只写 Codex 的实现。
+- 相关笔记：[编码 Agent 的 Goal 机制](../2026-11-17--编码-agent-的-goal-机制/INDEX.md) — 同一天以 `/goal` 为对象，对照续跑、完成判定和兜底。本篇只写 Code Mode。
 - 官方配置：[Config reference](https://learn.chatgpt.com/docs/config-file/config-reference) — `features.code_mode` 标注 under development，默认关闭。
 - 省 token 的出处（都不是 Codex 官方的开/关对比）：[Anthropic](https://www.anthropic.com/research/code-execution-with-mcp)（150k→2k，-98.7%，挑选场景）、[Cloudflare](https://blog.cloudflare.com/code-mode-mcp/)（约 2500 端点，1.17M→约 1000）、[Bifrost](https://docs.getbifrost.ai/mcp/code-mode)（96 / 251 / 508 个工具）、[AIMultiple](https://aimultiple.com/code-execution-with-mcp)（总 token -77.4%，输出 +120%，延迟 +7%）、[openai/codex#35050](https://github.com/openai/codex/issues/35050)、[openai/codex#41450](https://github.com/openai/codex/issues/41450)。
 - 源码位置（`46f5a1d`）：`codex-rs/code-mode-runtime/src/runtime/globals.rs`（`install_globals`、`build_tools_object`）、`codex-rs/code-mode-runtime/src/runtime/callbacks.rs`（`tool_callback`）、`code-mode-protocol/src/description.rs`（`normalize_code_mode_identifier`、`EXEC_DESCRIPTION_TEMPLATE`）。
@@ -216,7 +217,7 @@ V8 是 Chrome 和 Node 使用的 JavaScript 引擎。isolate 是 V8 里面一块
 
 isolate 是语言层的隔离，不是操作系统一级的隔离。要防 V8 自身的漏洞，通常还要在外面再套一层进程沙箱。
 
-V8 本身只有 C++ API（`v8::Isolate`）。Codex 在 Rust 里通过 `rusty_v8` 绑定它。Node 里最接近的是 npm 包 `isolated-vm`：可以限制内存和超时，并且只注入指定的函数。`worker_threads` 里每个 Worker 有独立的 isolate 和自己的线程，但默认能用 `fs`、`net` 和 `require`；它是并发工具，不是沙箱。`vm` 模块只是在同一个 isolate 里新建一个 context，官方明确写明它不是安全机制。Deno，以及 Cloudflare 的 `workerd`，也是现成的 isolate 运行时。
+V8 本身只有 C++ API（`v8::Isolate`）。Codex 在 Rust 里通过 `rusty_v8` 绑定它。Node 里最接近的是 npm 包 `isolated-vm`：可以限制内存和超时，并且只注入指定的函数。`worker_threads` 里每个 Worker 有独立的 isolate 和自己的线程，但默认能用 `fs`、`net` 和 `require`；它是并发工具，不是沙箱。`vm` 模块只是在同一个 isolate 里新建一个 context，官方明确写明它不是安全机制。Deno，以及 Cloudflare 的 `workerd`，也是现成的 isolate 运行时。浏览器页面脚本拿不到 `v8::Isolate`：专用 Worker 在另一条线程上跑，嵌入层会给它自己的 isolate；iframe 是另一个文档，同源时通常和父页面共用进程里的 isolate、各自一个 JavaScript context。这些都不是让页面自己创建和控制 isolate 的接口。
 
 | 跑法 | 形态 | 默认能做什么 | 隔离 | 启动 |
 | --- | --- | --- | --- | --- |

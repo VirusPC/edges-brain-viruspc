@@ -97,6 +97,9 @@ def render_svg(
     pad = max(2.0, (smax - smin) * 0.08)
     xmin = math.floor((smin - pad) / 5) * 5
     xmax = math.ceil((smax + pad) / 5) * 5
+    # Token totals and other non-negative scores should not grow a negative axis.
+    if smin >= 0:
+        xmin = max(0.0, xmin)
     if xmax <= xmin:
         xmax = xmin + 10
 

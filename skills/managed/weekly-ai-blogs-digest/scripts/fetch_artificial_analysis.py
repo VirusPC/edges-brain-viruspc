@@ -13,6 +13,12 @@ The full list ``/api/v2/language/models`` needs Pro; pass ``--pro``. A free key
 gets 403 there. Old paths under ``/api/v2/data/*`` are gone (410). Archive a
 run with ``--limit 0`` so every model is kept.
 
+Each page is requested up to ``MAX_ATTEMPTS`` times (default 10) with
+exponential backoff. Retries cover transport failures such as a TLS
+handshake ``UNEXPECTED_EOF``, HTTP 408/429/5xx, and a truncated JSON body.
+A definitive 4xx (including 403) is not retried. If a page still fails,
+the run is ``ok: false`` rather than a short list marked successful.
+
 Displaying the data requires attribution to Artificial Analysis:
 https://artificialanalysis.ai/
 Optional MCP: https://mcp.artificialanalysis.ai/mcp
@@ -24,6 +30,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -32,6 +39,8 @@ PRO_URL = "https://artificialanalysis.ai/api/v2/language/models"
 FREE_URL = "https://artificialanalysis.ai/api/v2/language/models/free"
 ATTRIBUTION = "Data from Artificial Analysis (https://artificialanalysis.ai/)."
 USER_AGENT = "edges-weekly-ai-blogs-digest/1.0 (+https://github.com/VirusPC/edges-brain-viruspc)"
+MAX_ATTEMPTS = 10
+RETRYABLE_STATUS = {408, 429, 500, 502, 503, 504}
 
 
 def api_key() -> str:
@@ -80,6 +89,77 @@ def fetch_json(url: str, key: str, timeout: int) -> tuple[int, dict | list | Non
         return status, None, f"JSONDecodeError: {exc}"
 
 
+def is_retryable(status: int, error: str | None) -> bool:
+    """Transport drops and transient HTTP statuses. A 4xx such as 403 is final."""
+    if status == 0:
+        return True
+    if error and str(error).startswith("JSONDecodeError"):
+        return True
+    return status in RETRYABLE_STATUS
+
+
+def backoff_seconds(failed_attempts: int) -> float:
+    """Sleep after ``failed_attempts`` failures: 0.5s, 1s, 2s, 4s, then 8s."""
+    if failed_attempts < 1:
+        return 0.0
+    return min(8.0, 0.5 * (2 ** (failed_attempts - 1)))
+
+
+def fetch_page(
+    url: str,
+    key: str,
+    timeout: int,
+    *,
+    attempts: int = MAX_ATTEMPTS,
+    sleep=time.sleep,
+    fetch=fetch_json,
+) -> tuple[int, dict | list | None, str | None]:
+    """GET one page. Retry transient failures; return the last result."""
+    if attempts < 1:
+        raise ValueError("attempts 至少为 1")
+    status, payload, error = 0, None, "no attempt"
+    for attempt in range(1, attempts + 1):
+        status, payload, error = fetch(url, key, timeout)
+        if error is None and status == 200 and isinstance(payload, dict):
+            return status, payload, None
+        if not is_retryable(status, error) or attempt == attempts:
+            return status, payload, error
+        message = error or f"HTTP {status}"
+        print(
+            f"warn: {url} attempt {attempt}/{attempts} failed ({message}); retrying",
+            file=sys.stderr,
+        )
+        sleep(backoff_seconds(attempt))
+    return status, payload, error
+
+
+# Free-tier medians. Artificial Analysis returns null for every one of these
+# from 2026-12-10; performance_v3 means stay. Neither object is the card's
+# speed ranking, which uses OpenRouter official-endpoint latency.
+PERFORMANCE_FIELDS = (
+    "median_output_tokens_per_second",
+    "median_time_to_first_token_seconds",
+    "median_time_to_first_answer_token_seconds",
+    "median_end_to_end_response_time_seconds",
+)
+PERFORMANCE_V3_FIELDS = (
+    "mean_output_tokens_per_second",
+    "mean_time_to_first_token_seconds",
+    "mean_time_to_first_answer_token_seconds",
+)
+
+
+def _metric(value: object) -> int | float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return value
+
+
+def _metric_object(raw: object, fields: tuple[str, ...]) -> dict:
+    source = raw if isinstance(raw, dict) else {}
+    return {key: _metric(source.get(key)) for key in fields}
+
+
 def lean_model(row: dict) -> dict:
     creator = row.get("model_creator") or {}
     evaluations = row.get("evaluations") or {}
@@ -93,6 +173,8 @@ def lean_model(row: dict) -> dict:
         "price_1m_input_tokens": pricing.get("price_1m_input_tokens"),
         "price_1m_output_tokens": pricing.get("price_1m_output_tokens"),
         "release_date": row.get("release_date"),
+        "performance": _metric_object(row.get("performance"), PERFORMANCE_FIELDS),
+        "performance_v3": _metric_object(row.get("performance_v3"), PERFORMANCE_V3_FIELDS),
     }
 
 
@@ -109,36 +191,68 @@ def fetched_at_shanghai() -> str:
     return clock.isoformat(timespec="seconds")
 
 
-def collect(key: str, timeout: int, limit: int, max_pages: int, pro: bool) -> dict:
+def _failure(endpoint: str, fetched_at: str, message: str, payload: dict | list | None) -> dict:
+    if isinstance(payload, dict) and payload.get("error"):
+        message = str(payload.get("error"))
+    return {
+        "skipped": False,
+        "ok": False,
+        "error": message,
+        "endpoint": endpoint,
+        "fetched_at": fetched_at,
+        "attribution": ATTRIBUTION,
+        "mcp": "https://mcp.artificialanalysis.ai/mcp",
+        "items": [],
+    }
+
+
+def collect(
+    key: str,
+    timeout: int,
+    limit: int,
+    max_pages: int,
+    pro: bool,
+    *,
+    attempts: int = MAX_ATTEMPTS,
+    sleep=time.sleep,
+    fetch=fetch_json,
+) -> dict:
+    def load(page_url: str):
+        return fetch_page(
+            page_url,
+            key,
+            timeout,
+            attempts=attempts,
+            sleep=sleep,
+            fetch=fetch,
+        )
+
     url = PRO_URL if pro else FREE_URL
-    status, payload, error = fetch_json(url, key, timeout)
+    status, payload, error = load(url)
     if status == 403 and url == PRO_URL:
         url = FREE_URL
-        status, payload, error = fetch_json(url, key, timeout)
+        status, payload, error = load(url)
     fetched_at = fetched_at_shanghai()
     if error or status != 200 or not isinstance(payload, dict):
         message = error or f"HTTP {status}"
-        if isinstance(payload, dict) and payload.get("error"):
-            message = str(payload.get("error"))
-        return {
-            "skipped": False,
-            "ok": False,
-            "error": message,
-            "endpoint": url,
-            "fetched_at": fetched_at,
-            "attribution": ATTRIBUTION,
-            "mcp": "https://mcp.artificialanalysis.ai/mcp",
-            "items": [],
-        }
+        return _failure(url, fetched_at, message, payload)
     rows = list(payload.get("data") or [])
     pagination = payload.get("pagination") or {}
     pages = 1
     while pagination.get("has_more") and pages < max_pages:
         pages += 1
         next_url = f"{url}?page={pages}"
-        status, page_payload, error = fetch_json(next_url, key, timeout)
+        status, page_payload, error = load(next_url)
         if error or status != 200 or not isinstance(page_payload, dict):
-            break
+            detail = error or f"HTTP {status}"
+            if not error and isinstance(page_payload, dict) and page_payload.get("error"):
+                detail = str(page_payload.get("error"))
+            return _failure(
+                url,
+                fetched_at,
+                f"第 {pages} 页在 {attempts} 次尝试后失败: {detail}",
+                None,
+            )
         rows.extend(page_payload.get("data") or [])
         pagination = page_payload.get("pagination") or {}
     if pagination.get("has_more"):

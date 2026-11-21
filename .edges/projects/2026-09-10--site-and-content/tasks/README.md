@@ -10,4 +10,5 @@
 - [richer\-content\-outputs](<backlog/2026-10-07--%E9%99%A4-posts-%E5%A4%96%E6%94%AF%E6%8C%81%E6%9B%B4%E4%B8%B0%E5%AF%8C%E7%9A%84%E5%86%85%E5%AE%B9%E8%BE%93%E5%87%BA%E5%BD%A2%E6%80%81/INDEX.md>) — 在 posts 之外扩展 videos、朋友圈、flashcards、ppt 等输出；对标 Google NotebookLM 一类「同知识多形态输出」能力。
 - [个人资料主页](<backlog/2026-10-31--%E4%B8%AA%E4%BA%BA%E8%B5%84%E6%96%99%E4%B8%BB%E9%A1%B5/INDEX.md>) — 建设对外可访问的个人资料主页。
 - [整理 posts 文件夹并建站](<backlog/2026-09-14--%E6%95%B4%E7%90%86posts%E6%96%87%E4%BB%B6%E5%A4%B9%E5%B9%B6%E5%BB%BA%E7%AB%99/INDEX.md>) — 整理 knowledge/posts 文件夹并建站；建站栈跟已有 Astro 条目
+- [设计\_ai\_资讯文末介绍和\_star\_引导](<backlog/2026-11-20--%E8%AE%BE%E8%AE%A1-AI-%E8%B5%84%E8%AE%AF%E6%96%87%E6%9C%AB%E4%BB%8B%E7%BB%8D%E5%92%8C-Star-%E5%BC%95%E5%AF%BC/INDEX.md>) — 以后给资讯文末写一段不打扰阅读的介绍和 Star 引导，并先分清推广的是个人大脑还是 Edges。
 <!-- edges-entries-local:end -->

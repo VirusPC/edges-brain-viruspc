@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatISODate } from '../lib/select.mjs';
+import '../styles/ai-news-filter.css';
 
 interface Heading {
   depth: number;
@@ -122,4 +123,10 @@ for (const heading of headings) {
       update();
     }
   }
+</script>
+
+<script>
+  import { mountCategoryFilter } from '../lib/ai-news-category-filter.mjs';
+
+  mountCategoryFilter(document);
 </script>

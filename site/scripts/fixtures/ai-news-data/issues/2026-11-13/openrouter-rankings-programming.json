@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"date": "2026-11-09", "model_permaslug": "openai/new-model", "total_tokens": "9000000000000"},
+    {"date": "2026-11-02", "model_permaslug": "anthropic/claude-test", "total_tokens": "3000000000000"},
+    {"date": "2026-11-02", "model_permaslug": "other", "total_tokens": "1000"},
+    {"date": "2026-10-26", "model_permaslug": "openai/old-model", "total_tokens": "1000000000000"}
+  ]
+}

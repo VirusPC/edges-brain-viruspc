@@ -56,4 +56,5 @@ description: 持续观测并改进整条 AI 研发流程的效率与质量。每
 ## 本层内容
 
 - [notes/README.md](<notes/README.md>) — 笔记内容的组织清单。
+- [tasks/README.md](<tasks/README.md>) — Task board
 <!-- edges-entries-local:end -->

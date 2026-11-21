@@ -31,3 +31,11 @@ const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverage
 >
   <Content />
 </ArticlePage>
+
+<script>
+  const board = document.querySelector('[data-model-board]');
+  if (board) {
+    const { mountModelBoards } = await import('../../lib/model-charts-client.mjs');
+    mountModelBoards(document);
+  }
+</script>

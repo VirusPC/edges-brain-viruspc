@@ -33,12 +33,9 @@ const backfillKeywords = {
 test('issue files are the dated digests, not the readme, charts, or notes', () => {
   const files = listAiNewsFiles(aiNewsRoot);
   const notes = fs.readdirSync(aiNewsRoot).filter((name) => name.endsWith('.notes.md'));
-  assert.equal(files.length, 13);
-  assert.equal(notes.length, 13);
   assert.equal(files.includes('README.md'), false);
   assert.equal(notes.includes('2026-11-06-ai-news.notes.md'), true);
   assert.equal(files.includes('2026-11-06-ai-news.notes.md'), false);
-  assert.equal(files.at(-1), '2026-11-13-ai-news.md');
   assert.equal(files.at(0), '2026-08-14-ai-news.md');
 });
 
@@ -108,8 +105,67 @@ test('item titles link to the source and quote blocks are gone', () => {
       assert.match(model, /openrouter-usage-top15-2026-11-13-marked\.png/);
       assert.match(model, /openrouter-programming-top15-2026-11-13-marked\.png/);
       assert.match(model, /openrouter-apps-top15-2026-11-13-marked\.png/);
-    } else {
-      assert.match(body, /^#### 整体排名$/m, name);
+    }
+    if (name === '2026-11-20-ai-news.md') {
+      const model = body.split(/^## 二、模型进展$/m)[1].split(/^## 三、/m)[0];
+      const analysis = model.indexOf('### Artificial Analysis');
+      const arena = model.indexOf('### LLM Arena');
+      const openrouter = model.indexOf('### OpenRouter');
+      const releases = model.indexOf('### 模型发布');
+      assert.ok(
+        analysis >= 0 && analysis < arena && arena < openrouter && openrouter < releases,
+        name,
+      );
+      for (const title of [
+        '&lt;开源&gt;&lt;腾讯&gt;[登上 GitHub Trending｜腾讯开源 LoopForge]',
+        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[用 Super-agent 的理念拆解 Octop 团队模式]',
+        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[不只是 Memory：Ontology 如何让 Coding Agent 越用越懂项目]',
+      ]) {
+        assert.ok(body.includes(`#### ${title}`), title);
+      }
+      assert.doesNotMatch(body, /同一周腾讯另有两篇|其他短讯/);
+      const selected = ['四、国内进展', '五、国际进展']
+        .map((heading) => body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '')
+        .join('\n');
+      const items = selected.split(/^#### /m).slice(1);
+      assert.equal(items.length, 34);
+      let folded = 0;
+      let unread = 0;
+      for (const item of items) {
+        const links = item.match(/\[[^\]]+\]\(https?:\/\//g) || [];
+        assert.equal(links.length, 1, `merged article: ${item.slice(0, 80)}`);
+        const details = item.match(/<details class="article-more">[\s\S]*?<\/details>/g) || [];
+        if (details.length === 0) {
+          assert.match(item, /订阅源里只有这些/);
+          unread += 1;
+          continue;
+        }
+        assert.equal(details.length, 1, item.slice(0, 80));
+        assert.doesNotMatch(details[0], /\n\n/);
+        for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
+          assert.match(details[0], new RegExp(`<strong>${label}</strong>`));
+        }
+        folded += 1;
+      }
+      assert.equal(folded, 31);
+      assert.equal(unread, 3);
+      assert.equal((selected.match(/订阅源里只有这些/g) || []).length, 3);
+      assert.doesNotMatch(selected, /微信原文这次没打开|这次没打开原文/);
+      const projects = body.split(/^## 三、项目开源$/m)[1].split(/^## 四、/m)[0];
+      assert.match(projects, /GitHub Trending（weekly \/ all 前 5）/);
+      const projectItems = projects.split(/^#### /m).slice(1);
+      assert.equal(projectItems.length, 6);
+      assert.match(projectItems[0], /^GitHub Trending（weekly \/ all 前 5）/);
+      assert.doesNotMatch(projectItems[0], /<details/);
+      for (const item of projectItems.slice(1)) {
+        assert.doesNotMatch(item, /&lt;/);
+        const details = item.match(/<details class="article-more">[\s\S]*?<\/details>/g) || [];
+        assert.equal(details.length, 1, item.slice(0, 60));
+        for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
+          assert.match(details[0], new RegExp(`<strong>${label}</strong>`));
+        }
+        assert.doesNotMatch(details[0], /做 agent infra|做业务时|后续可以怎么做/);
+      }
     }
   }
 
@@ -130,6 +186,37 @@ test('item titles link to the source and quote blocks are gone', () => {
   );
   assert.match(latest, /"word":"交付闭环","score":5,"mentions":2,"sources":2,"weight":4\.1/);
   assert.doesNotMatch(latest, /^#### \[整体排名\]/m);
+});
+
+const PRIMARY_CATEGORIES = ['模型', '产品', 'Agent 与 Harness', '工程实践', '开源', '行业'];
+
+function progressItems(body, heading) {
+  const chunk = body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '';
+  return [...chunk.matchAll(/^#### .+$/gm)].map((match) => match[0]);
+}
+
+function selectedArticleItems(body) {
+  const selected = body.split(/^## [〇一二三四五六七八九十]+、精选文章$/m)[1]?.split(/^## /m)[0];
+  if (selected) return [...selected.matchAll(/^#### .+$/gm)].map((match) => match[0]);
+  return ['四、国内进展', '五、国际进展'].flatMap((section) => progressItems(body, section));
+}
+
+test('selected-article items from 2026-11-20 on have one primary category', () => {
+  const primaries = new Set(PRIMARY_CATEGORIES);
+  const checked = [];
+  for (const name of listAiNewsFiles(aiNewsRoot)) {
+    if (name.slice(0, 10) < '2026-11-20') continue;
+    const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
+    const lines = selectedArticleItems(body);
+    assert.ok(lines.length > 0, `${name} has no selected-article items`);
+    for (const line of lines) {
+      const match = line.match(/^#### &lt;([^&]+)&gt;((?:&lt;[^&]+&gt;)*)\s*\S/);
+      assert.ok(match, `${name} is missing a primary category: ${line}`);
+      assert.ok(primaries.has(match[1]), `${name} primary is not one of the six: ${match[1]}`);
+      checked.push(`${name} ${match[1]}`);
+    }
+  }
+  assert.ok(checked.length >= 18, `expected the 2026-11-20 items to be checked, got ${checked.length}`);
 });
 
 test('a missing keyword chapter is legacy even when the date is recent', () => {

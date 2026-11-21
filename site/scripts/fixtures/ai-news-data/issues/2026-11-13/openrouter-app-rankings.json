@@ -1,0 +1,6 @@
+{
+  "data": [
+    {"rank": 2, "app_name": "Second", "total_tokens": "1000000000000"},
+    {"rank": 1, "app_name": "First", "total_tokens": "5000000000000"}
+  ]
+}

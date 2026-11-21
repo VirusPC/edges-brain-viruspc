@@ -53,12 +53,9 @@
       <outline text="阿里技术" title="阿里技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml"/>
     </outline>
     <outline text="GitHub Trending" title="GitHub Trending">
-      <outline text="GitHub Trending（每日 / 全部）" title="GitHub Trending（每日 / 全部）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml" htmlUrl="https://github.com/trending"/>
-      <outline text="GitHub Trending（每日 / Python）" title="GitHub Trending（每日 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/python.xml" htmlUrl="https://github.com/trending/python?since=daily"/>
-      <outline text="GitHub Trending（每日 / TypeScript）" title="GitHub Trending（每日 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/daily/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=daily"/>
-    </outline>
-    <outline text="薅羊毛" title="薅羊毛">
-      <outline text="linux.do 福利羊毛" title="linux.do 福利羊毛" type="rss" xmlUrl="https://linux.do/c/welfare.rss" htmlUrl="https://linux.do/c/welfare/36"/>
+      <outline text="GitHub Trending（每周 / 全部）" title="GitHub Trending（每周 / 全部）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/all.xml" htmlUrl="https://github.com/trending?since=weekly"/>
+      <outline text="GitHub Trending（每周 / Python）" title="GitHub Trending（每周 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml" htmlUrl="https://github.com/trending/python?since=weekly"/>
+      <outline text="GitHub Trending（每周 / TypeScript）" title="GitHub Trending（每周 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=weekly"/>
     </outline>
   </body>
 </opml>

@@ -2,7 +2,7 @@
 import ListPage from '../../components/ListPage.astro';
 import { getProjects } from '../../lib/entries';
 import { githubBlob, siteUrl } from '../../lib/paths';
-import { listProjectFolders, projectsRoot, sortProjectDocuments, sortProjects, titleForProject } from '../../lib/projects.mjs';
+import { dateForProjectRow, listProjectFolders, projectsRoot, sortProjectDocuments, sortProjects, titleForProject } from '../../lib/projects.mjs';
 
 const docs = await getProjects();
 const byProject = new Map<string, typeof docs>();
@@ -14,12 +14,18 @@ for (const doc of docs) {
 
 const folders = listProjectFolders(projectsRoot());
 const groups = sortProjects(
-  folders.map((folder) => ({
-    id: folder.id,
-    title: byProject.get(folder.id)?.find((doc) => doc.data.isHub)?.data.projectTitle
-      ?? titleForProject(folder.id, '', ''),
-    date: folder.date,
-  })),
+  folders.map((folder) => {
+    const projectDocs = byProject.get(folder.id) ?? [];
+    return {
+      id: folder.id,
+      title: projectDocs.find((doc) => doc.data.isHub)?.data.projectTitle
+        ?? titleForProject(folder.id, '', ''),
+      date: dateForProjectRow(
+        projectDocs.map((doc) => doc.data.date),
+        folder.date,
+      ),
+    };
+  }),
 ).map((section) => ({
   heading: section.title,
   items: sortProjectDocuments(
@@ -39,4 +45,4 @@ const groups = sortProjects(
 }));
 ---
 
-<ListPage title="Projects" description="Project workspaces." groups={groups} />
+<ListPage title="Projects" description="Project workspaces." groups={groups} collapseGroups />

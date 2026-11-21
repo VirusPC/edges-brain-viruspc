@@ -1,7 +1,7 @@
 ---
 metadata:
   edges-type: task
-  edges-updated-at: '2026-11-15T12:51:05.628Z'
+  edges-updated-at: '2026-11-15T14:49:18.616Z'
   edges-title: 改造现有认知优势目录 edges/：初始化 .edges 并加 edges-create-edges skill
   edges-tasks-status: backlog
   edges-task-priority: high
@@ -13,6 +13,7 @@ description: >-
 
 **背景：**
 今天你先提：在个人大脑根目录建一个叫 edges 的文件夹，专门记录一个个观点、洞察、判断和决策。每个点单独一篇，保持精简；并要求初始化 .edges，在 .edges 里补一个 edges-create-edges skill，格式是一句话加解释。原本准备直接交给云端 Agent 去做，你喊停，改成先记一张任务卡。开卡时发现根目录已有 edges/，README 标题是「认知优势 (Edges)」，用来放已经提炼、可复用的判断；现有格式要求每条有结论、理由、适用边界和检验方式，路径约定是 主题--核心洞察/INDEX.md；目录里还有大量历史导入内容，但没有 .edges。你确认要用的就是这个「认知优势」目录，不另起新目录。
+- 你补充（2026-11-15 晚，Asia/Shanghai）：这个 edges/ 目录将是全仓库信噪比最高的地方。
 - 现有笔记（notes）和任务（tasks）都装不下这种短小的单点判断。
 - 关联：skill 命名与现有 edges-create-notes、edges-create-tasks 对齐。
 - 你只读核对过：现有 edges/ 共 3136 个文件，全是历史导入的技术学习笔记和资料摘录（图形渲染&计算机视觉 1724、AI-LLM 418、前端 347、金融量化 127、数据可视化 106 等），没有一条符合 README 约定的 `主题--核心洞察/INDEX.md` Edge 格式。edges/backup 里是大模型课第一课讲义的两份旧版本（Lesson1 - LLM Foundation 1、第一课：大模型基础），配图与 edges/Lesson1 - LLM Foundation 相同，正文 INDEX.md 各不相同。

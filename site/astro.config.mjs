@@ -1,8 +1,14 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
+import { rehypeArticleCards } from './src/plugins/rehype-article-cards.mjs';
+import { rehypeModelCharts } from './src/plugins/rehype-model-charts.mjs';
 import { rehypeSidenotes } from './src/plugins/rehype-sidenotes.mjs';
 import { remarkCategoryPills } from './src/plugins/remark-category-pills.mjs';
+import { remarkCoverageWindow } from './src/plugins/remark-coverage-window.mjs';
 import { remarkLocalAssets } from './src/plugins/remark-local-assets.mjs';
+import { remarkModelCharts } from './src/plugins/remark-model-charts.mjs';
+import { remarkModelFacts } from './src/plugins/remark-model-facts.mjs';
+import { remarkSelectedArticles } from './src/plugins/remark-selected-articles.mjs';
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
@@ -22,7 +28,7 @@ export default defineConfig({
   markdown: {
     gfm: true,
     smartypants: false,
-    remarkPlugins: [remarkCategoryPills, [remarkLocalAssets, { repoRoot }]],
-    rehypePlugins: [rehypeSidenotes],
+    remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
+    rehypePlugins: [rehypeSidenotes, rehypeModelCharts, rehypeArticleCards],
   },
 });

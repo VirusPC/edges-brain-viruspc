@@ -8,6 +8,25 @@
   --rule-strong: #1c1b19;
   --note: #b4541f;
   --note-wash: #f8efe4;
+  --panel: color-mix(in srgb, var(--note-wash) 45%, var(--paper));
+  --panel-line: var(--rule);
+  --panel-ink: var(--ink);
+  --panel-label: var(--ink-soft);
+  --panel-muted: var(--muted);
+  --facts-line: var(--rule);
+  --select-line: var(--rule-strong);
+  --prose-link: #6d3a22;
+  --prose-link-line: rgba(180, 84, 31, 0.45);
+  --summary: var(--note);
+  --summary-hover: #8a3f18;
+  --code-bg: rgba(28, 27, 25, 0.04);
+  --code-inline-bg: rgba(28, 27, 25, 0.05);
+  --fn-open-bg: #f6e0d4;
+  --sidenote: #5a5346;
+  --sidenote-bg: #faf6ee;
+  --sidenote-line: #e0d8c8;
+  --sidenote-open-bg: var(--note-wash);
+  --more-line: rgba(28, 27, 25, 0.25);
   --serif: "Source Serif 4", Palatino, "Palatino Linotype", "Songti SC", "Noto Serif SC",
     "Source Han Serif SC", Georgia, serif;
   --hand: "Caveat", "Segoe Print", "KaiTi", "Kaiti SC", "STKaiti", cursive;
@@ -82,10 +101,73 @@ body.has-toc .frame {
   letter-spacing: 0.01em;
 }
 
+.top-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.95rem;
+  margin-left: auto;
+}
+
 .nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.15rem 0.95rem;
+}
+
+.github-star {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  height: 2.25rem;
+  padding: 0 0.7rem;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.github-star:hover { background: var(--panel); }
+
+.github-star:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.github-star svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.theme-toggle {
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover { background: var(--panel); }
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .nav a {
@@ -129,7 +211,7 @@ h2 {
   margin-top: 0.9rem;
   color: var(--muted);
   text-decoration: underline;
-  text-decoration-color: rgba(28, 27, 25, 0.25);
+  text-decoration-color: var(--more-line);
   text-underline-offset: 0.25em;
 }
 
@@ -292,6 +374,84 @@ body.is-post.has-toc .sidenote {
   margin-bottom: 0.4rem;
 }
 
+.project-fold {
+  margin: 0;
+}
+
+.project-fold > summary {
+  cursor: pointer;
+  color: var(--summary);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.45;
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 0.35rem 0 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.project-fold > summary::marker,
+.project-fold[open] > summary::marker,
+.project-fold > summary::-webkit-details-marker,
+.project-fold[open] > summary::-webkit-details-marker {
+  color: var(--summary);
+}
+
+.project-fold > summary:hover,
+.project-fold[open] > summary:hover,
+.project-fold > summary:hover::marker,
+.project-fold[open] > summary:hover::marker,
+.project-fold > summary:hover::-webkit-details-marker,
+.project-fold[open] > summary:hover::-webkit-details-marker {
+  color: var(--summary-hover);
+}
+
+.project-fold > summary:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.project-fold-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: calc(100% - 1.5rem);
+  vertical-align: middle;
+}
+
+.project-fold-toggle {
+  flex: none;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.project-fold[open] .project-fold-open-label,
+.project-fold:not([open]) .project-fold-close-label {
+  display: none;
+}
+
+.project-fold-line > h2 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.project-fold-count {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 .list-month > h3 {
   margin: 1.15rem 0 0.35rem;
   font-size: 1.05rem;
@@ -346,6 +506,7 @@ body.is-post.has-toc .sidenote {
 
 .prose :is(h2, h3, h4, h5, h6)[data-cat]::before {
   content: attr(data-cat);
+  order: 0;
   flex: none;
   max-width: 100%;
   padding: 0.12em 0.5em 0.14em;
@@ -358,6 +519,60 @@ body.is-post.has-toc .sidenote {
   line-height: 1.35;
   letter-spacing: 0;
   white-space: nowrap;
+}
+
+/* Named primaries get their own capsule. Any other data-cat keeps the wash above. */
+.prose :is(h2, h3, h4, h5, h6)[data-cat="模型"]::before {
+  background: color-mix(in srgb, #2f5496 14%, var(--paper));
+  color: #2f5496;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f5496 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="产品"]::before {
+  background: color-mix(in srgb, #b4541f 14%, var(--note-wash));
+  color: #b4541f;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #b4541f 24%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="Agent 与 Harness"]::before {
+  background: color-mix(in srgb, #5c4d8a 14%, var(--paper));
+  color: #5c4d8a;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #5c4d8a 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="工程实践"]::before {
+  background: color-mix(in srgb, #2f6f4e 14%, var(--paper));
+  color: #2f6f4e;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f6f4e 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="开源"]::before {
+  background: color-mix(in srgb, #0f6e6e 14%, var(--paper));
+  color: #0f6e6e;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #0f6e6e 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-cat="行业"]::before {
+  background: color-mix(in srgb, #6b4f3a 14%, var(--paper));
+  color: #6b4f3a;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #6b4f3a 28%, transparent);
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-tags]::after {
+  content: attr(data-tags);
+  order: 1;
+  flex: none;
+  max-width: 100%;
+  color: var(--muted);
+  font-family: var(--sans, ui-sans-serif, sans-serif);
+  font-size: 0.72em;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.prose :is(h2, h3, h4, h5, h6)[data-tags] > * {
+  order: 2;
 }
 
 .prose ul, .prose ol { padding-left: 1.3rem; }
@@ -374,18 +589,166 @@ body.is-post.has-toc .sidenote {
 .prose a {
   text-decoration: underline;
   text-underline-offset: 0.18em;
-  text-decoration-color: rgba(180, 84, 31, 0.45);
-  color: #6d3a22;
+  text-decoration-color: var(--prose-link-line);
+  color: var(--prose-link);
 }
 
 .prose hr { border: 0; border-top: 1px solid var(--rule); margin: 1.6rem 0; }
 
 .prose img { max-width: 100%; height: auto; display: block; margin: 1rem 0; }
 
+.model-board {
+  margin: 0.2rem 0 1.4rem;
+  padding: 0.85rem 0.9rem 0.2rem;
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+  color: var(--panel-ink);
+}
+
+.model-board-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
+  margin: 0 0 0.75rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.model-board select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--select-line);
+  border-radius: 0;
+  padding: 0.28rem 0.55rem;
+  max-width: 100%;
+}
+
+.model-panel { position: relative; }
+.model-panel[hidden] { display: none !important; }
+
+.model-facts {
+  margin: 0.15rem 0 1rem;
+  padding: 0.7rem 0.85rem 0.75rem;
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+  color: var(--panel-ink);
+}
+
+.model-facts-name {
+  margin: 0 0 0.45rem;
+  font-size: 0.98rem;
+  font-weight: 650;
+}
+
+.model-facts dl { margin: 0; }
+
+.model-facts-row {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+  gap: 0.35rem 0.7rem;
+  align-items: baseline;
+  padding: 0.28rem 0;
+  border-top: 1px solid var(--facts-line);
+}
+
+.model-facts-row:first-child { border-top: 0; padding-top: 0; }
+
+.model-facts dt {
+  margin: 0;
+  color: var(--panel-label);
+  font-weight: 650;
+}
+
+.model-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.model-facts-src {
+  color: var(--panel-muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.prose details.article-more {
+  margin: 0.15rem 0 1.05rem;
+}
+
+.prose details.article-more > summary,
+.prose details.article-more[open] > summary {
+  cursor: pointer;
+  color: var(--summary);
+  font-size: 0.92rem;
+  font-weight: 650;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.prose details.article-more > summary::marker,
+.prose details.article-more[open] > summary::marker,
+.prose details.article-more > summary::-webkit-details-marker,
+.prose details.article-more[open] > summary::-webkit-details-marker {
+  color: var(--summary);
+}
+
+.prose details.article-more > summary:hover,
+.prose details.article-more[open] > summary:hover {
+  color: var(--summary-hover);
+}
+
+.prose details.article-more > :not(summary) { margin-top: 0.35rem; }
+
+.prose details.article-more p { margin: 0.35rem 0; }
+
+.prose p:has(+ details.article-more) { margin-bottom: 0.35rem; }
+
+.prose .article-card {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.9rem 0.8rem;
+  border: 1px solid var(--panel-line);
+  border-radius: 0.7rem;
+  background: var(--panel);
+  color: var(--panel-ink);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.prose .article-card > :first-child { margin-top: 0; }
+.prose .article-card > :last-child { margin-bottom: 0; }
+
+.prose .article-card h4 { margin: 0 0 0.4rem; }
+
+.prose .article-card p { margin: 0.35rem 0 0; }
+
+.prose .article-card details.article-more { margin: 0.45rem 0 0; }
+
+.prose .article-card strong { font-weight: 650; }
+
+.model-chart { width: 100%; height: 0; overflow: hidden; }
+.model-chart.is-ready { height: 560px; overflow: visible; }
+
+.model-panel:has(.model-chart.is-ready) img {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.prose pre.model-chart-spec,
+pre.model-chart-spec { display: none !important; }
+
 .prose pre {
   overflow-x: auto;
   padding: 0.8rem 0.9rem;
-  background: rgba(28, 27, 25, 0.04);
+  background: var(--code-bg);
   font-family: var(--mono);
   font-size: 0.82rem;
   line-height: 1.5;
@@ -394,7 +757,7 @@ body.is-post.has-toc .sidenote {
 .prose :not(pre) > code {
   font-family: var(--mono);
   font-size: 0.86em;
-  background: rgba(28, 27, 25, 0.05);
+  background: var(--code-inline-bg);
   padding: 0.05em 0.3em;
 }
 
@@ -435,7 +798,7 @@ body.is-post.has-toc .sidenote {
 .fn-toggle:focus-visible + .fn-label,
 .fn-label:hover { text-decoration: underline; }
 
-.fn-toggle:checked + .fn-label { background: #f6e0d4; }
+.fn-toggle:checked + .fn-label { background: var(--fn-open-bg); }
 
 .sidenote {
   display: block;
@@ -458,10 +821,10 @@ body.is-post .sidenote {
   font-size: 1.35rem;
   line-height: 1.25;
   font-weight: 500;
-  color: #5a5346;
+  color: var(--sidenote);
 }
 
-body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note-wash); }
+body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--sidenote-open-bg); }
 
 .sidenote-mark {
   font-family: var(--serif);
@@ -554,8 +917,8 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
     width: auto;
     margin: 0.55rem 0 0.9rem;
     padding-left: 0.75rem;
-    border-left: 1px dashed #e0d8c8;
-    background: #faf6ee;
+    border-left: 1px dashed var(--sidenote-line);
+    background: var(--sidenote-bg);
     font-family: var(--hand);
     font-size: 1.35rem;
   }
@@ -564,13 +927,77 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
 }
 
 @media (max-width: 560px) {
+  .theme-toggle,
+  .github-star { height: 2.75rem; }
+
+  .theme-toggle { width: 2.75rem; }
+
   .post-list li { grid-template-columns: 1fr; gap: 0.15rem; }
   .issue-list li { grid-template-columns: 1fr; }
   .issue-list time { grid-row: auto; }
+
+  .model-facts-row { grid-template-columns: 2.6rem minmax(0, 1fr); }
+  .model-facts-src { grid-column: 2; white-space: normal; }
+
+  .prose details.article-more { margin-bottom: 1.2rem; }
+  .prose details.article-more > summary {
+    padding: 0.28rem 0;
+    line-height: 1.45;
+  }
+
+  .project-fold > summary {
+    font-size: 1.05rem;
+    padding: 0.55rem 0 0.45rem;
+  }
+
+  .project-fold-toggle {
+    font-size: 1.05rem;
+  }
+
+  .project-fold-line {
+    width: calc(100% - 1.7rem);
+    gap: 0.5rem;
+  }
+
+  .prose .article-card {
+    margin-bottom: 0.7rem;
+    padding: 0.65rem 0.75rem 0.7rem;
+    border-radius: 0.6rem;
+  }
+}
+
+/* Explicit choice wins. System dark applies only when the page has not been set to light. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1c1b19;
+  --ink: #f6f1e7;
+  --ink-soft: #ddd4c6;
+  --muted: #b3aa9c;
+  --rule: #3f3b35;
+  --rule-strong: #e4d9c8;
+  --panel: #121110;
+  --panel-line: #6f685c;
+  --panel-ink: #f6f1e7;
+  --panel-label: #f3ece1;
+  --panel-muted: #d2c9bb;
+  --facts-line: #3a3630;
+  --select-line: var(--panel-line);
+  --prose-link: color-mix(in srgb, var(--note) 58%, white);
+  --prose-link-line: color-mix(in srgb, var(--note) 45%, transparent);
+  --summary: color-mix(in srgb, var(--note) 55%, white);
+  --summary-hover: color-mix(in srgb, var(--note) 48%, white);
+  --code-bg: color-mix(in srgb, var(--ink) 8%, transparent);
+  --code-inline-bg: color-mix(in srgb, var(--ink) 8%, transparent);
+  --fn-open-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
+  --sidenote: var(--ink-soft);
+  --sidenote-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
+  --sidenote-line: var(--rule);
+  --sidenote-open-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
+  --more-line: color-mix(in srgb, var(--ink) 28%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
     --paper: #1c1b19;
     --ink: #f6f1e7;
@@ -578,29 +1005,37 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--note
     --muted: #b3aa9c;
     --rule: #3f3b35;
     --rule-strong: #e4d9c8;
-    /* --note and --note-wash stay, so category chips keep a light ground and theme-colored type. */
-  }
-
-  .prose a {
-    color: color-mix(in srgb, var(--note) 58%, white);
-    text-decoration-color: color-mix(in srgb, var(--note) 45%, transparent);
-  }
-
-  .prose pre,
-  .prose :not(pre) > code {
-    background: color-mix(in srgb, var(--ink) 8%, transparent);
-  }
-
-  .more {
-    text-decoration-color: color-mix(in srgb, var(--ink) 28%, transparent);
-  }
-
-  body.is-post .sidenote {
-    color: var(--ink-soft);
-  }
-
-  .fn-toggle:checked + .fn-label,
-  body.is-post .fn-toggle:checked + .fn-label + .sidenote {
-    background: color-mix(in srgb, var(--note) 24%, var(--paper));
+    --panel: #121110;
+    --panel-line: #6f685c;
+    --panel-ink: #f6f1e7;
+    --panel-label: #f3ece1;
+    --panel-muted: #d2c9bb;
+    --facts-line: #3a3630;
+    --select-line: var(--panel-line);
+    --prose-link: color-mix(in srgb, var(--note) 58%, white);
+    --prose-link-line: color-mix(in srgb, var(--note) 45%, transparent);
+    --summary: color-mix(in srgb, var(--note) 55%, white);
+    --summary-hover: color-mix(in srgb, var(--note) 48%, white);
+    --code-bg: color-mix(in srgb, var(--ink) 8%, transparent);
+    --code-inline-bg: color-mix(in srgb, var(--ink) 8%, transparent);
+    --fn-open-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
+    --sidenote: var(--ink-soft);
+    --sidenote-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
+    --sidenote-line: var(--rule);
+    --sidenote-open-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
+    --more-line: color-mix(in srgb, var(--ink) 28%, transparent);
   }
 }
+
+.theme-icon { display: none; }
+.theme-icon-sun { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .theme-icon-sun { display: none; }
+  html:not([data-theme="light"]) .theme-icon-moon { display: block; }
+}
+
+html[data-theme="dark"] .theme-icon-sun { display: none; }
+html[data-theme="dark"] .theme-icon-moon { display: block; }
+html[data-theme="light"] .theme-icon-sun { display: block; }
+html[data-theme="light"] .theme-icon-moon { display: none; }
