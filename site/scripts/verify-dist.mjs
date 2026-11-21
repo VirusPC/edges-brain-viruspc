@@ -217,6 +217,8 @@ assert.equal(rels.includes('ai-news/README/index.html'), false);
 
 const aiNewsList = fs.readFileSync(path.join(dist, 'ai-news/index.html'), 'utf8');
 assert.match(aiNewsList, /<h1>AI News<\/h1>/);
+assert.match(aiNewsList, /每周五上午 9 点开始生成（北京时间）/);
+assert.doesNotMatch(aiNewsList, /上午 8 点|08:00|准点/);
 assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/"[^>]*aria-current="page"/);
 assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/2026-11-06\/"/);
 assert.match(aiNewsList, /2026-10-30～11-05/);
@@ -227,6 +229,7 @@ assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/rss\.xml"/);
 assert.doesNotMatch(aiNewsList, /class="tag">旧版/);
 
 const latestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-06/index.html'), 'utf8');
+assert.doesNotMatch(latestIssue, /每周五上午 9 点开始生成/);
 assert.match(latestIssue, /<h1>\s*2026-11-06 AI 资讯\s*<\/h1>/);
 assert.match(latestIssue, /覆盖 2026-10-30～11-05/);
 const latestToc = latestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
