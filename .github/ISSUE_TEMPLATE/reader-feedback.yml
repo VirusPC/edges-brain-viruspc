@@ -1,0 +1,32 @@
+name: 读者反馈
+description: 文章或站点的错误、建议
+title: "反馈："
+body:
+  - type: markdown
+    attributes:
+      value: |
+        用 GitHub 账号提交即可，不需要在本站注册。不要在这里填写密码、令牌或其他私人信息。
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 类型
+      options:
+        - 错误
+        - 建议
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: 页面
+      description: 站点会尽量填入当前页面地址。如果是空的，请贴上你看到问题的网址。
+      placeholder: https://viruspc.github.io/edges-brain-viruspc/
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: 说明
+      description: 写清楚看到了什么、希望怎样。
+    validations:
+      required: true

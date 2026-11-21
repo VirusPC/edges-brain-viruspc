@@ -1,4 +1,5 @@
 ---
+import ArticleComments from './ArticleComments.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatISODate } from '../lib/select.mjs';
 import '../styles/ai-news-filter.css';
@@ -73,6 +74,7 @@ for (const heading of headings) {
       <slot />
     </div>
     {source ? <p class="source"><a href={source}>Source</a></p> : null}
+    <ArticleComments />
   </article>
 </BaseLayout>
 

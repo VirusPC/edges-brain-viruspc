@@ -10,6 +10,7 @@ import '@fontsource/source-serif-4/latin-ext-400-italic.css';
 import '@fontsource/caveat/latin-500.css';
 import '@fontsource/caveat/latin-ext-500.css';
 import '../styles/global.css';
+import { feedbackIssueUrl } from '../lib/reader-feedback.mjs';
 import { siteUrl } from '../lib/paths';
 
 interface Props {
@@ -31,6 +32,7 @@ const {
 } = Astro.props;
 const fullTitle = title ? `${title} · peng cheng` : 'peng cheng';
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const feedbackHref = feedbackIssueUrl('');
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 interface NavLink {
@@ -141,5 +143,15 @@ function current(link: NavLink) {
         <span>peng cheng</span>
       </footer>
     </div>
+    <a class="site-feedback" data-feedback-link href={feedbackHref} target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>反馈</span>
+    </a>
+    <script>
+      import { bindFeedbackLinks } from '../lib/feedback-links.mjs';
+      bindFeedbackLinks();
+    </script>
   </body>
 </html>
