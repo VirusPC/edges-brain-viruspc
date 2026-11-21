@@ -125,9 +125,13 @@ test('item titles link to the source and quote blocks are gone', () => {
         assert.ok(body.includes(`#### ${title}`), title);
       }
       assert.doesNotMatch(body, /同一周腾讯另有两篇|其他短讯/);
-      const selected = ['四、国内进展', '五、国际进展']
-        .map((heading) => body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '')
-        .join('\n');
+      assert.match(body, /^## 四、精选文章$/m);
+      assert.doesNotMatch(body, /^## [四五]、(?:国内|国际)进展$/m);
+      const selected = body.split(/^## 四、精选文章$/m)[1]?.split(/^## /m)[0] ?? '';
+      assert.deepEqual(
+        [...selected.matchAll(/^### (.+)$/gm)].map((match) => match[1]),
+        ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂'],
+      );
       const items = selected.split(/^#### /m).slice(1);
       assert.equal(items.length, 34);
       let folded = 0;
@@ -183,7 +187,7 @@ test('item titles link to the source and quote blocks are gone', () => {
   );
   assert.match(
     latest,
-    /^#### &lt;交付闭环&gt;\[OpenAI 收购 Pierre\]\(https:\/\/openai\.com\/index\/openai-to-acquire-pierre\)$/m,
+    /^#### &lt;交付闭环&gt;&lt;OpenAI&gt;\[OpenAI 收购 Pierre\]\(https:\/\/openai\.com\/index\/openai-to-acquire-pierre\)$/m,
   );
   assert.match(latest, /"word":"交付闭环","score":5,"mentions":2,"sources":2,"weight":4\.1/);
   assert.doesNotMatch(latest, /^#### \[整体排名\]/m);

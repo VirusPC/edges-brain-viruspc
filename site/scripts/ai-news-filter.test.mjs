@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import {
+  COMPANY_ALIASES,
+  SOURCE_ORDER,
   categoriesPresent,
   companiesPresent,
+  sourceGroup,
   filterChips,
   isFilterStuck,
   itemMatches,
@@ -43,26 +46,36 @@ test('a page with no primary category offers no filter chips', () => {
   ]);
 });
 
-test('the query string keeps a primary and a company together', () => {
-  assert.deepEqual(parseFilter(''), { cat: '', tag: '' });
-  assert.deepEqual(parseFilter('?cat=产品'), { cat: '产品', tag: '' });
-  assert.deepEqual(parseFilter('?cat=研发提效'), { cat: '', tag: '' });
-  assert.deepEqual(parseFilter('?tag=DeepSeek'), { cat: '', tag: 'DeepSeek' });
-  assert.deepEqual(parseFilter('?cat=产品&tag=DeepSeek'), { cat: '产品', tag: 'DeepSeek' });
-  assert.deepEqual(parseFilter('?cat=不存在&tag=腾讯'), { cat: '', tag: '腾讯' });
+test('the query string keeps a primary, a source type, and a company together', () => {
+  assert.deepEqual(parseFilter(''), { cat: '', src: '', tag: '' });
+  assert.deepEqual(parseFilter('?cat=产品'), { cat: '产品', src: '', tag: '' });
+  assert.deepEqual(parseFilter('?cat=研发提效'), { cat: '', src: '', tag: '' });
+  assert.deepEqual(parseFilter('?tag=DeepSeek'), { cat: '', src: '国内模型厂', tag: 'DeepSeek' });
+  assert.deepEqual(parseFilter('?cat=产品&tag=DeepSeek'), { cat: '产品', src: '国内模型厂', tag: 'DeepSeek' });
+  assert.deepEqual(parseFilter('?cat=不存在&tag=腾讯'), { cat: '', src: '国内非模型厂', tag: '腾讯' });
+  assert.deepEqual(parseFilter('?src=国外模型厂&tag=阿里'), { cat: '', src: '国内非模型厂', tag: '阿里' });
 });
 
-test('choosing the active filter again clears only that row', () => {
-  const both = { cat: '产品', tag: '腾讯' };
-  assert.deepEqual(nextFilter(both, { kind: 'cat', value: '产品' }), { cat: '', tag: '腾讯' });
-  assert.deepEqual(nextFilter(both, { kind: 'tag', value: '腾讯' }), { cat: '产品', tag: '' });
-  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'cat' }), { cat: '', tag: '腾讯' });
-  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'tag' }), { cat: '产品', tag: '' });
-  assert.deepEqual(nextFilter(both, { kind: 'all' }), { cat: '', tag: '' });
-  assert.deepEqual(nextFilter({ cat: '产品', tag: '' }, { kind: 'tag', value: '百度' }), {
+test('choosing a company sets its source type, and clearing the type clears the company', () => {
+  const both = { cat: '产品', src: '国内非模型厂', tag: '腾讯' };
+  assert.deepEqual(nextFilter(both, { kind: 'cat', value: '产品' }), { cat: '', src: '国内非模型厂', tag: '腾讯' });
+  assert.deepEqual(nextFilter(both, { kind: 'tag', value: '腾讯' }), { cat: '产品', src: '国内非模型厂', tag: '' });
+  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'cat' }), { cat: '', src: '国内非模型厂', tag: '腾讯' });
+  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'tag' }), { cat: '产品', src: '国内非模型厂', tag: '' });
+  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'src' }), { cat: '产品', src: '', tag: '' });
+  assert.deepEqual(nextFilter(both, { kind: 'all' }), { cat: '', src: '', tag: '' });
+  assert.deepEqual(nextFilter({ cat: '产品', src: '', tag: '' }, { kind: 'tag', value: 'Google' }), {
     cat: '产品',
-    tag: '百度',
+    src: '国外模型厂',
+    tag: 'Google',
   });
+  assert.deepEqual(nextFilter({ cat: '', src: '国内非模型厂', tag: '阿里' }, { kind: 'src', value: '国外模型厂' }), {
+    cat: '',
+    src: '国外模型厂',
+    tag: '',
+  });
+  assert.equal(sourceGroup('阿里'), '国内非模型厂');
+  assert.equal(sourceGroup('字节'), '国内非模型厂');
 });
 
 test('search keeps unrelated params and can share both filters', () => {
@@ -75,12 +88,59 @@ test('search keeps unrelated params and can share both filters', () => {
   );
 });
 
-test('company chips follow the first time each publisher appears', () => {
+test('company chips follow the hand-ordered groups', () => {
   assert.deepEqual(
-    companiesPresent([['DeepSeek'], ['腾讯', '淘宝'], ['淘宝', '百度']]),
-    ['DeepSeek', '腾讯', '淘宝', '百度'],
+    companiesPresent([[
+      'Google', 'Warp', '美团', 'OpenAI', '阿里', 'Hugging Face',
+      'AWS', 'LangChain', '火山引擎', 'Amp', '腾讯', 'Cognition', '百度',
+      'Lovable', 'Anthropic', 'Cursor', 'DeepSeek',
+    ]]),
+    [
+      'DeepSeek',
+      'Anthropic', 'OpenAI', 'Google',
+      '阿里', '腾讯', '火山引擎', '美团', '百度',
+      'Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS',
+    ],
+  );
+  assert.equal(SOURCE_ORDER[SOURCE_ORDER.indexOf('火山引擎') + 1], '字节');
+  assert.equal(SOURCE_ORDER.includes('ggml'), false);
+  assert.deepEqual(
+    companiesPresent([['Wrap', '月之暗面', 'XAI', 'Kimi'], ['Cogonition', 'Langchain', '智谱', '阶跃星辰']]),
+    ['Kimi', 'GLM', 'StepFun', 'xAI', 'Cognition', 'LangChain', 'Warp'],
   );
   assert.deepEqual(companiesPresent([[], []]), []);
+});
+
+test('companies missing from the table sort last, in first-seen order', () => {
+  assert.deepEqual(
+    companiesPresent([['Zed', '腾讯', 'Notion'], ['腾讯', '小红书']]),
+    ['腾讯', 'Zed', 'Notion', '小红书'],
+  );
+});
+
+test('every published company tag is listed in the source table', () => {
+  const dir = new URL('../../ai-news/', import.meta.url);
+  const files = fs.readdirSync(dir).filter((name) => /^\d{4}-\d{2}-\d{2}-ai-news\.md$/.test(name));
+  assert.ok(files.length >= 1);
+  const published = new Set();
+  for (const name of files) {
+    const text = fs.readFileSync(new URL(name, dir), 'utf8');
+    for (const line of text.split('\n')) {
+      if (!line.startsWith('#### ')) continue;
+      const head = line.slice('#### '.length).split('[')[0];
+      const labels = [...head.matchAll(/(?:<([^<>\n"]{1,32})>|&lt;([^&]+?)&gt;)/g)]
+        .map((match) => (match[1] ?? match[2]).trim())
+        .filter(Boolean);
+      for (const tag of labels.slice(1)) published.add(tag);
+    }
+  }
+  const known = new Set([...SOURCE_ORDER, ...Object.keys(COMPANY_ALIASES)]);
+  const missing = [...published].filter((tag) => !known.has(tag));
+  assert.deepEqual(missing, []);
+  assert.ok(published.has('阿里'));
+  assert.ok(published.has('Hugging Face'));
+  assert.equal(published.has('淘宝'), false);
+  assert.equal(published.has('ggml'), false);
 });
 
 test('a stuck filter should return to the chapter, a resting one should not', () => {
@@ -100,15 +160,17 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /overflow-x:\s*auto/);
   assert.match(css, /\.ai-news-filter-all\s*\{[^}]*background:\s*transparent/);
   assert.match(css, /\.ai-news-filter-all\s*\{[^}]*box-shadow:\s*inset 0 0 0 1px var\(--rule\)/);
-  assert.match(css, /\.ai-news-filter-co\s*\{/);
+  assert.match(css, /\.ai-news-filter-co,\s*\n\.ai-news-filter-src\s*\{/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*color:\s*var\(--ink\)/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-weight:\s*700/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*1em/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*left:\s*0/);
   const source = fs.readFileSync(new URL('../src/lib/ai-news-category-filter.mjs', import.meta.url), 'utf8');
-  assert.match(source, /addLabel\(row,\s*'分类'\)/);
-  assert.match(source, /addLabel\(companyRow,\s*'来源'\)/);
+  assert.match(source, /addLabel\(row,\s*'文章类型'\)/);
+  assert.match(source, /addLabel\(sourceRow,\s*'来源类型'\)/);
+  assert.match(source, /addLabel\(companyRow,\s*'来源公司'\)/);
+  assert.match(css, /\.ai-news-tag,\s*\n\.prose h4 \.ai-news-src\s*\{[^}]*color:\s*var\(--muted\)/);
 });
 
 test('a category and a company both have to match, and an empty section hides', () => {

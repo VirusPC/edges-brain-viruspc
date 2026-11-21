@@ -1,5 +1,6 @@
 ---
 import '../styles/note-card.css';
+import { sourceGroup } from '../lib/ai-news-category-filter.mjs';
 
 interface Section {
   label: string;
@@ -34,6 +35,7 @@ const {
 
 const showFold = sections.length > 0;
 const tagList = sources.join(' · ');
+const sourceType = sourceGroup(sources[0] || '');
 ---
 
 <article class="note-card article-card">
@@ -48,6 +50,13 @@ const tagList = sources.join(' · ');
         <span class="ai-news-filter-cat" data-cat={category}>
           {category}
         </span>
+      ) : null
+    }
+    {
+      sourceType ? (
+        <button type="button" class="ai-news-filter-src ai-news-src" data-src={sourceType} aria-pressed="false">
+          {sourceType}
+        </button>
       ) : null
     }
     {

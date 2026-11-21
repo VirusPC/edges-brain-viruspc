@@ -20,6 +20,8 @@ const source = [
   '',
   '#### &lt;Agent 与 Harness&gt;&lt;DeepSeek&gt;&lt;MCP&gt;[带自由标签](https://example.com/d)',
   '',
+  '#### &lt;OpenAI&gt;[只有公司标签](https://example.com/e)',
+  '',
 ].join('\n');
 
 test('leading heading labels become a data attribute and leave the title text', async () => {
@@ -38,6 +40,7 @@ test('leading heading labels become a data attribute and leave the title text', 
   assert.match(html, /<h4\b[^>]*\bdata-cat="Data Agent"[^>]*>\s*<a href="https:\/\/example.com\/b">高德：从业务问题到可信数据<\/a>\s*<\/h4>/);
   assert.match(html, /<h4\b[^>]*\bdata-cat="开源"[^>]*>\s*MiniMax 没有包进链接\s*<\/h4>/);
   assert.match(html, /<h4\b[^>]*\bdata-cat="Agent 与 Harness"[^>]*\bdata-tags="DeepSeek · MCP"[^>]*>\s*<a href="https:\/\/example.com\/d">带自由标签<\/a>\s*<\/h4>/);
+  assert.match(html, /<h4\b(?![^>]*data-cat)[^>]*\bdata-tags="OpenAI"[^>]*>\s*<a href="https:\/\/example.com\/e">只有公司标签<\/a>\s*<\/h4>/);
   assert.match(html, /<h4\b[^>]*>\s*整体排名\s*<\/h4>/);
   assert.match(html, /<h4\b[^>]*>\s*<a href="https:\/\/example.com\/c">没有前缀的标题<\/a>\s*<\/h4>/);
   assert.match(html, /<h4 id="见-开源-这种不是开头">见 (?:&lt;|&#x3C;)开源(?:>|&gt;) 这种不是开头<\/h4>/);
@@ -61,6 +64,7 @@ test('leading heading labels become a data attribute and leave the title text', 
     '没有前缀的标题',
     '见 <开源> 这种不是开头',
     '带自由标签',
+    '只有公司标签',
   ]);
   assert.equal(texts.filter((text) => text.startsWith('<')).length, 0);
   assert.equal(texts.includes('研发提效'), false);

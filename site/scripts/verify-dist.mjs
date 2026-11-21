@@ -231,7 +231,7 @@ assert.match(latestIssue, /<h1>\s*2026-11-06 AI 资讯\s*<\/h1>/);
 assert.match(latestIssue, /覆盖 2026-10-30～11-05/);
 const latestToc = latestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(latestToc, 'latest issue is missing the chapter toc');
-for (const heading of ['〇、薅羊毛', '一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章', '国内', '国际']) {
+for (const heading of ['〇、薅羊毛', '一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章', '国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
   assert.match(latestToc[0], new RegExp(heading));
 }
 assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current|&lt;|&#x3C;|data-cat/);
@@ -282,8 +282,9 @@ assert.doesNotMatch(newestIssue, /北京时间/);
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、精选文章/);
-assert.match(newestToc[0], />国内</);
-assert.match(newestToc[0], />国际</);
+for (const heading of ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
+  assert.match(newestToc[0], new RegExp(`>${heading}<`));
+}
 assert.doesNotMatch(newestToc[0], /国内进展|国际进展/);
 assert.match(newestToc[0], /二、模型进展/);
 assert.doesNotMatch(newestToc[0], /模型发布/);
@@ -411,8 +412,11 @@ assert.doesNotMatch(toc20[0], /薅羊毛/);
 for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章']) {
   assert.match(toc20[0], new RegExp(heading));
 }
-assert.match(toc20[0], />国内</);
-assert.match(toc20[0], />国际</);
+for (const heading of ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
+  assert.match(toc20[0], new RegExp(`>${heading}<`));
+}
+assert.doesNotMatch(toc20[0], />国内</);
+assert.doesNotMatch(toc20[0], />国际</);
 const headingAt20 = [...issue20.matchAll(/<h2\b[^>]*>[\s\S]*?<\/h2>/g)];
 const projectAt20 = headingAt20.find((match) => match[0].includes('三、项目开源'))?.index ?? -1;
 const selectedAt20 = headingAt20.find((match) => match[0].includes('四、精选文章'))?.index ?? -1;
