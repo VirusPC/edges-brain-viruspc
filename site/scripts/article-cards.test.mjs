@@ -165,6 +165,31 @@ test('project cards stay out of the selected-article filter', () => {
   assert.deepEqual(collected.groups[0].items[0].tags, ['Hugging Face']);
 });
 
+test('under-construction chapters stay outside the selected-article filter', () => {
+  const chapter = element('h2');
+  chapter.textContent = '四、精选文章';
+  const section = element('h3');
+  section.textContent = '国外非模型厂';
+  const heading = element('h4', { 'data-cat': '架构', 'data-tags': 'AWS' });
+  heading.textContent = 'AgentCore';
+  const card = element('article', { class: 'note-card' }, [heading]);
+  const tweets = element('h2');
+  tweets.textContent = '五、精选推文建设中';
+  const podcasts = element('h2');
+  podcasts.textContent = '六、精选播客建设中';
+  const root = {
+    querySelectorAll(selector) {
+      assert.equal(selector, 'h2');
+      return [chapter, tweets, podcasts];
+    },
+  };
+  chain([chapter, section, card, tweets, podcasts]);
+  const collected = collectChapter(root);
+  assert.equal(collected.groups.length, 1);
+  assert.equal(collected.groups[0].items.length, 1);
+  assert.deepEqual(collected.groups[0].items[0].nodes, [card]);
+});
+
 test('a note card is one selected-article item', () => {
   const heading = element('h4', { 'data-cat': '架构', 'data-tags': 'Anthropic' });
   heading.textContent = 'Building always-on agents';

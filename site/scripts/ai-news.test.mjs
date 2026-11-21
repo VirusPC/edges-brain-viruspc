@@ -127,6 +127,14 @@ test('item titles link to the source and quote blocks are gone', () => {
       assert.doesNotMatch(body, /同一周腾讯另有两篇|其他短讯/);
       assert.match(body, /^## 四、精选文章$/m);
       assert.doesNotMatch(body, /^## [四五]、(?:国内|国际)进展$/m);
+      assert.match(body, /^## 五、精选推文\n\n## 六、精选播客\n?$/m);
+      const tweets = body.split(/^## 五、精选推文$/m)[1] ?? '';
+      assert.match(tweets, /^\s*## 六、精选播客\s*$/);
+      assert.doesNotMatch(tweets, /https?:\/\/|#### |\[[^\]]+\]\(/);
+      assert.match(
+        body,
+        /<!-- provenance\s*\{"rules":null,"data":\{"repo":"VirusPC\/ai-news-data","commit":"5e2e06f851fc5317cd3cb845fbec2eb920bbde59","path":"issues\/2026-11-20","kind":"tree"\}\}\s*-->/,
+      );
       const selected = body.split(/^## 四、精选文章$/m)[1]?.split(/^## /m)[0] ?? '';
       assert.deepEqual(
         [...selected.matchAll(/^### (.+)$/gm)].map((match) => match[1]),

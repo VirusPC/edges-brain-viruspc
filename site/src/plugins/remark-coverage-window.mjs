@@ -14,7 +14,7 @@ const INFO_ICON = '<svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg
  * @param {string} text
  * @returns {string | null}
  */
-export function coverageCardHtml(text) {
+export function coverageCardHtml(text, provenance = null) {
   const source = String(text).trim();
   const utc = UTC_WINDOW.exec(source);
   if (utc) {
@@ -23,7 +23,7 @@ export function coverageCardHtml(text) {
       zone: '北京时间',
       generated: utc[5],
       excludeDay: true,
-    });
+    }, provenance);
   }
   const days = DAY_WINDOW.exec(source);
   if (days) {
@@ -32,7 +32,7 @@ export function coverageCardHtml(text) {
       zone: '',
       generated: days[3],
       excludeDay: false,
-    });
+    }, provenance);
   }
   return null;
 }
@@ -41,13 +41,16 @@ export function coverageCardHtml(text) {
  * @param {any} tree
  */
 export function shiftCoverageWindows(tree) {
+  const provenance = takeProvenance(tree);
   const children = tree?.children;
   if (!Array.isArray(children)) return;
+  let attached = false;
   for (let index = 0; index < children.length; index += 1) {
     const node = children[index];
     if (node?.type !== 'paragraph') continue;
-    const html = coverageCardHtml(plain(node));
+    const html = coverageCardHtml(plain(node), attached ? null : provenance);
     if (!html) continue;
+    attached = true;
     children[index] = { type: 'html', value: html };
   }
 }
@@ -63,10 +66,14 @@ export function remarkCoverageWindow() {
 /**
  * @param {{ windowLabel: string, zone: string, generated: string, excludeDay: boolean }} fields
  */
-function remarkCard(fields) {
+function remarkCard(fields, provenance) {
   const rows = [row('覆盖窗口', fields.windowLabel, true)];
   if (fields.zone) rows.push(row('时区', fields.zone, false));
   rows.push(row('生成日', fields.generated, false));
+  if (provenance) {
+    rows.push(rowHtml('生成规则', rulesHtml(normalizeRules(provenance.rules))));
+    rows.push(rowHtml('数据版本', dataHtml(normalizeData(provenance.data))));
+  }
   const note = fields.excludeDay ? '<p class="info-card-note">不含生成当天</p>' : '';
   return `<aside class="info-card"><p class="info-card-label">${INFO_ICON}<span>备注</span></p><dl class="info-card-rows">${rows.join('')}</dl>${note}</aside>`;
 }
@@ -79,6 +86,89 @@ function remarkCard(fields) {
 function row(label, value, mark) {
   const body = mark ? `<mark class="note-card-hl">${escapeHtml(value)}</mark>` : escapeHtml(value);
   return `<div><dt>${escapeHtml(label)}</dt><dd>${body}</dd></div>`;
+}
+
+function rowHtml(label, html) {
+  return `<div><dt>${escapeHtml(label)}</dt><dd class="info-card-wrap">${html}</dd></div>`;
+}
+
+const PROVENANCE_COMMENT = /<!--\s*provenance\s*([\s\S]*?)-->/;
+const COMMIT_SHA = /^[0-9a-f]{40}$/;
+const GITHUB_REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+
+/**
+ * Read one provenance comment and drop it from the tree.
+ * A missing comment stays null, so older issues keep the card they already have.
+ * @param {any} tree
+ */
+function takeProvenance(tree) {
+  const children = tree?.children;
+  if (!Array.isArray(children)) return null;
+  for (let index = 0; index < children.length; index += 1) {
+    const node = children[index];
+    if (node?.type !== 'html') continue;
+    const match = PROVENANCE_COMMENT.exec(String(node.value || ''));
+    if (!match) continue;
+    const rest = String(node.value).replace(match[0], '').trim();
+    if (rest) node.value = rest;
+    else children.splice(index, 1);
+    let parsed;
+    try {
+      parsed = JSON.parse(match[1]);
+    } catch (error) {
+      throw new Error(`provenance comment is not JSON: ${error.message}`);
+    }
+    return {
+      rules: normalizeRules(parsed?.rules),
+      data: normalizeData(parsed?.data),
+    };
+  }
+  return null;
+}
+
+function normalizeRules(rules) {
+  if (!rules || typeof rules !== 'object') return null;
+  const repo = String(rules.repo || '');
+  const commit = String(rules.commit || '').toLowerCase();
+  const routine = cleanPath(rules.routine);
+  const skill = cleanPath(rules.skill);
+  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || (!routine && !skill)) return null;
+  return { repo, commit, routine, skill };
+}
+
+function normalizeData(data) {
+  if (!data || typeof data !== 'object') return null;
+  const repo = String(data.repo || '');
+  const commit = String(data.commit || '').toLowerCase();
+  const path = cleanPath(data.path);
+  const kind = data.kind === 'blob' ? 'blob' : 'tree';
+  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || !path) return null;
+  return { repo, commit, path, kind };
+}
+
+function cleanPath(value) {
+  const path = String(value || '').replaceAll('\\', '/').replace(/^\/+/, '');
+  if (!path || path.includes('..') || path.includes('://') || path.includes('?') || path.includes('#')) return '';
+  return path;
+}
+
+function rulesHtml(rules) {
+  if (!rules) return '未记录';
+  const links = [];
+  if (rules.routine) links.push(sourceLink(rules, rules.routine, 'blob'));
+  if (rules.skill) links.push(sourceLink(rules, rules.skill, 'blob'));
+  return links.length ? links.join(' ') : '未记录';
+}
+
+function dataHtml(data) {
+  if (!data) return '未记录';
+  return sourceLink(data, data.path, data.kind);
+}
+
+function sourceLink(source, path, kind) {
+  const href = `https://github.com/${source.repo}/${kind}/${source.commit}/${path.split('/').map(encodeURIComponent).join('/')}`;
+  const label = `${source.commit.slice(0, 7)} ${path}`;
+  return `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
 }
 
 /**
