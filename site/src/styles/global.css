@@ -534,19 +534,19 @@ body.is-post.has-toc .sidenote {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f5496 28%, transparent);
 }
 
+.prose :is(h2, h3, h4, h5, h6)[data-cat="架构"]::before {
+  background: color-mix(in srgb, #5c4d8a 14%, var(--paper));
+  color: #5c4d8a;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #5c4d8a 28%, transparent);
+}
+
 .prose :is(h2, h3, h4, h5, h6)[data-cat="产品"]::before {
   background: color-mix(in srgb, #b4541f 14%, var(--note-wash));
   color: #b4541f;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #b4541f 24%, transparent);
 }
 
-.prose :is(h2, h3, h4, h5, h6)[data-cat="Agent 与 Harness"]::before {
-  background: color-mix(in srgb, #5c4d8a 14%, var(--paper));
-  color: #5c4d8a;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #5c4d8a 28%, transparent);
-}
-
-.prose :is(h2, h3, h4, h5, h6)[data-cat="工程实践"]::before {
+.prose :is(h2, h3, h4, h5, h6)[data-cat="实践"]::before {
   background: color-mix(in srgb, #2f6f4e 14%, var(--paper));
   color: #2f6f4e;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #2f6f4e 28%, transparent);
@@ -558,7 +558,7 @@ body.is-post.has-toc .sidenote {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #0f6e6e 28%, transparent);
 }
 
-.prose :is(h2, h3, h4, h5, h6)[data-cat="行业"]::before {
+.prose :is(h2, h3, h4, h5, h6)[data-cat="其他"]::before {
   background: color-mix(in srgb, #6b4f3a 14%, var(--paper));
   color: #6b4f3a;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #6b4f3a 28%, transparent);
@@ -647,38 +647,38 @@ body.is-post.has-toc .sidenote {
 .keyword-cloud .kw-mid { fill: var(--kw-mid); font-weight: 400; }
 .keyword-cloud .kw-low { fill: var(--kw-low); font-weight: 400; }
 
-.remark-card {
-  --remark-hl: rgba(255, 214, 102, 0.55);
-  margin: 0 0 1.15rem;
+.info-card {
+  margin: 0.15rem 0 1.15rem;
   padding: 0.7rem 0.85rem 0.75rem;
   border: 1px solid var(--panel-line);
   border-radius: var(--ai-news-radius);
   background: var(--panel);
   color: var(--panel-ink);
+  font-family: var(--sans, ui-sans-serif, sans-serif);
   font-size: 0.8em;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
-.prose .remark-card-label {
+.prose .info-card p { margin: 0; }
+
+.prose .info-card-label {
   display: flex;
   align-items: center;
   gap: 0.35em;
-  margin: 0 0 0.45rem;
-  color: var(--panel-label);
+  margin: 0 0 0.4rem;
+  color: var(--note);
   font-weight: 650;
 }
 
-.remark-card-icon {
+.info-card-icon {
   width: 1.05em;
   height: 1.05em;
   flex: none;
 }
 
-.remark-card-rows {
-  margin: 0;
-}
+.info-card-rows { margin: 0; }
 
-.remark-card-rows > div {
+.info-card-rows > div {
   display: grid;
   grid-template-columns: 4.8em max-content;
   column-gap: 0.7rem;
@@ -686,39 +686,44 @@ body.is-post.has-toc .sidenote {
   padding: 0.08rem 0;
 }
 
-.remark-card dt {
+.info-card dt {
   margin: 0;
   color: var(--panel-label);
   font-weight: 650;
 }
 
-.remark-card dd {
+.info-card dd {
   margin: 0;
   min-width: 0;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
-.remark-card mark,
-.remark-mark {
-  padding: 0 1px;
-  background: linear-gradient(
-    transparent 58%,
-    var(--remark-hl) 58%,
-    var(--remark-hl) 90%,
-    transparent 90%
-  );
-  color: inherit;
+.info-card ul {
+  margin: 0;
+  padding-left: 1.15rem;
 }
 
-.prose .remark-card-note {
-  margin: 0.35rem 0 0;
-  color: var(--panel-muted);
+.info-card li {
+  margin: 0.16rem 0;
+  line-height: 1.5;
 }
+
+.info-card li:first-child { margin-top: 0; }
+.info-card li:last-child { margin-bottom: 0; }
+.info-card strong { font-weight: 650; }
+
+.prose .info-card-note,
+.info-card-note {
+  margin: 0.4rem 0 0;
+  color: var(--note-label);
+}
+
+.info-card-note a { color: inherit; }
 
 @media (max-width: 560px) {
   .keyword-cloud { padding: 12px 12px 10px; }
-  .remark-card { padding: 0.6rem 0.7rem 0.65rem; }
+  .info-card { padding: 0.6rem 0.7rem 0.65rem; }
 }
 
 .model-board {
@@ -1126,17 +1131,8 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   --kw-outline: #c4a27a;
 }
 
-:root[data-theme="dark"] .remark-card {
-  --remark-hl: rgba(214, 160, 60, 0.32);
-}
-
-:root[data-theme="dark"] .remark-mark {
-  background: linear-gradient(
-    transparent 55%,
-    var(--remark-hl) 55%,
-    var(--remark-hl) 90%,
-    transparent 90%
-  );
+:root[data-theme="dark"] .info-card-label {
+  color: #e09a62;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1174,17 +1170,8 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
     --kw-outline: #c4a27a;
   }
 
-  :root:not([data-theme="light"]) .remark-card {
-    --remark-hl: rgba(214, 160, 60, 0.32);
-  }
-
-  :root:not([data-theme="light"]) .remark-mark {
-    background: linear-gradient(
-      transparent 55%,
-      var(--remark-hl) 55%,
-      var(--remark-hl) 90%,
-      transparent 90%
-    );
+  :root:not([data-theme="light"]) .info-card-label {
+    color: #e09a62;
   }
 }
 

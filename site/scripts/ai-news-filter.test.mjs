@@ -27,7 +27,7 @@ const sections = [
   },
   {
     id: 'intl',
-    items: [{ id: 'c', cat: '行业', tags: ['Cursor'] }],
+    items: [{ id: 'c', cat: '其他', tags: ['Cursor'] }],
   },
 ];
 
@@ -35,14 +35,16 @@ test('a page with no primary category offers no filter chips', () => {
   assert.deepEqual(categoriesPresent(['研发提效', 'Harness', '交付闭环']), []);
   assert.deepEqual(categoriesPresent(['产品', '产品合作', '开源']), ['产品', '开源']);
   assert.deepEqual(filterChips('2026-11-13', ['产品', '开源']), ['产品', '开源']);
+  assert.deepEqual(filterChips('2026-11-13', ['其他', '架构', '实践']), ['架构', '实践', '其他']);
   assert.deepEqual(filterChips('2026-11-06', ['审查', '云端']), []);
+  assert.deepEqual(filterChips('2026-11-06', ['Agent 与 Harness', '工程实践', '行业']), []);
   assert.deepEqual(filterChips('2026-11-20', ['产品', '开源']), [
     '模型',
+    '架构',
     '产品',
-    'Agent 与 Harness',
-    '工程实践',
+    '实践',
     '开源',
-    '行业',
+    '其他',
   ]);
 });
 
@@ -170,7 +172,12 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /--wood-edge:\s*#8a5a34/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*color:\s*var\(--wood-title\)/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-weight:\s*700/);
-  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*1em/);
+  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*16px/);
+  assert.match(css, /\.ai-news-filter button\s*\{[^}]*font-size:\s*14px/);
+  assert.match(css, /\.ai-news-filter button\s*\{[^}]*line-height:\s*1\.2/);
+  assert.doesNotMatch(css, /\.ai-news-filter button\s*\{[^}]*font:\s*inherit/);
+  assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*14px 14px 12px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*padding:\s*12px 10px 10px/);
   assert.match(css, /transform:\s*rotate\(-0\.5deg\)/);
   assert.match(css, /filter:\s*url\("#wood-rough"\)/);
   assert.match(css, /\.ai-news-filter-seam path\s*\{[^}]*vector-effect:\s*non-scaling-stroke/);

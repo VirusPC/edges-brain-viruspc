@@ -95,9 +95,8 @@ function speedRow(model) {
  */
 function effectRow(model) {
   const aa = model?.aa;
-  const fit = model?.best_for?.text ? `适合：${model.best_for.text}（原文）` : '';
   if (!aa || aa.intelligence_index == null || aa.rank == null) {
-    return { text: esc(fit || '暂无'), source: fit ? '原文' : '暂无' };
+    return { text: '暂无', source: '暂无' };
   }
   const parts = [
     `智力指数 ${formatNumber(aa.intelligence_index)}，第 ${aa.rank}/${aa.rank_of ?? '暂无'}`,
@@ -106,7 +105,6 @@ function effectRow(model) {
   if (model?.name === 'Gemini 4 Neon') {
     parts.push('原文写 Extra High 档 61 分、第 3；榜上的 Xhigh 是 61.4，第 6/156');
   }
-  if (fit) parts.push(fit);
   return { text: esc(parts.join('。')), source: 'AA' };
 }
 

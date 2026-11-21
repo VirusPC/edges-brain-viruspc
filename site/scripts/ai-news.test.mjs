@@ -119,8 +119,8 @@ test('item titles link to the source and quote blocks are gone', () => {
       );
       for (const title of [
         '&lt;开源&gt;&lt;腾讯&gt;[登上 GitHub Trending｜腾讯开源 LoopForge]',
-        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[用 Super-agent 的理念拆解 Octop 团队模式]',
-        '&lt;Agent 与 Harness&gt;&lt;腾讯&gt;[不只是 Memory：Ontology 如何让 Coding Agent 越用越懂项目]',
+        '&lt;架构&gt;&lt;腾讯&gt;[用 Super-agent 的理念拆解 Octop 团队模式]',
+        '&lt;架构&gt;&lt;腾讯&gt;[不只是 Memory：Ontology 如何让 Coding Agent 越用越懂项目]',
       ]) {
         assert.ok(body.includes(`#### ${title}`), title);
       }
@@ -194,7 +194,7 @@ test('item titles link to the source and quote blocks are gone', () => {
   assert.doesNotMatch(latest, /^#### \[整体排名\]/m);
 });
 
-const PRIMARY_CATEGORIES = ['模型', '产品', 'Agent 与 Harness', '工程实践', '开源', '行业'];
+const PRIMARY_CATEGORIES = ['模型', '架构', '产品', '实践', '开源', '其他'];
 
 function progressItems(body, heading) {
   const chunk = body.split(new RegExp(`^## ${heading}$`, 'm'))[1]?.split(/^## /m)[0] ?? '';
@@ -243,6 +243,24 @@ test('a missing keyword chapter is legacy even when the date is recent', () => {
     '## 二、模型进展',
   ].join('\n');
   assert.equal(summaryLine(cloudOnly, false), '');
+});
+
+test('model release notes use the shared info card', () => {
+  for (const name of ['2026-11-13-ai-news.md', '2026-11-20-ai-news.md']) {
+    const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
+    assert.match(body, /<aside class="info-card">/, name);
+    assert.match(body, /<span>发布要点<\/span>/, name);
+    assert.match(body, /class="info-card-note">来源：/, name);
+    assert.match(body, /<mark class="note-card-hl">/, name);
+    assert.doesNotMatch(body, /release-points/, name);
+  }
+  const rules = fs.readFileSync(
+    path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/04-榜单与图.md'),
+    'utf8',
+  );
+  assert.match(rules, /<aside class="info-card">/);
+  assert.match(rules, /note-card-hl/);
+  assert.doesNotMatch(rules, /release-points/);
 });
 
 test('published issues do not introduce the trending top-five sentence', () => {

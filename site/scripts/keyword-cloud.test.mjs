@@ -34,15 +34,13 @@ test('2026-11-20 tiers follow weight, not alphabetical order', () => {
   const json = body.match(/<!--\s*keywords-cloud\s*([\s\S]*?)-->/)[1];
   const words = JSON.parse(json).map((item) => ({ word: item.word, weight: keywordWeight(item) }));
   const tier = Object.fromEntries(assignWeightTiers(words).map((word) => [word.word, word.tier]));
-  assert.equal(tier['Gemini 4 Neon'], 'top');
-  assert.equal(tier['GPT-6.2 Astra / Sol'], 'high');
-  assert.equal(tier['Qwen4-Max'], tier['工具检索']);
-  assert.equal(tier['Devin Bots'], tier['验证闭环']);
-  assert.equal(tier['Cursor 安全事件'], tier['DeepSeek 应用 API']);
-  assert.equal(tier['Grok Bot'], tier['llama.cpp v1.0']);
-  assert.equal(tier['Grok Bot'], 'low');
-  assert.equal(fontSize(4.4), 52);
-  assert.ok(keywordWeight({ word: 'Gemini 4 Neon', score: 5, mentions: 2, sources: 3 }) > keywordWeight({ word: 'GPT-6.2 Astra / Sol', score: 5, mentions: 1, sources: 2 }));
+  assert.equal(tier['GPT-6.2 Astra'], tier['Gemini 4 Neon']);
+  assert.equal(tier['Gemini 4 Neon'], tier['GPT-6.2 Sol']);
+  assert.equal(tier['Skill 自进化'], tier['LoopForge']);
+  const top = words.filter((word) => tier[word.word] === 'top').map((word) => word.weight);
+  assert.ok(top.length >= 1);
+  assert.ok(top.every((weight) => weight === top[0]));
+  assert.ok(Math.max(...words.map((word) => word.weight)) === top[0]);
 });
 
 test('the svg has tier classes and no baked background or outline', () => {
@@ -79,7 +77,7 @@ test('ai news cards share one radius token', () => {
   assert.match(css, /\.model-board\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
   assert.match(css, /\.model-facts\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
   assert.match(css, /\.prose \.article-card\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
-  assert.match(css, /\.remark-card\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
+  assert.match(css, /\.info-card\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);
   assert.match(css, /\.keyword-cloud-outline rect\s*\{[^}]*rx:\s*var\(--ai-news-radius\)/);
   assert.doesNotMatch(css, /border-radius:\s*0\.6rem/);
   const plugin = fs.readFileSync(new URL('../src/plugins/rehype-keyword-cloud.mjs', import.meta.url), 'utf8');
@@ -132,29 +130,20 @@ test('published clouds keep the measured positions when the bold font is install
     t.skip('keyword cloud font or canvas is not installed');
     return;
   }
-  const expected = {
-    '2026-11-20': [
-      ['Gemini 4 Neon', 68, -160, 52],
-      ['GPT-6.2 Astra / Sol', 18, -107, 46],
-      ['Grok Bot', -362, -58, 26],
-    ],
-    '2026-11-06': [
-      ['交付闭环', 68, -160, 49],
-      ['上下文工程', 18, -101, 44],
-      ['Pierre', 97, -61, 24],
-    ],
-  };
   const font = { fontFile, fontFamily: 'Noto Sans CJK SC', fontWeight: 700 };
-  for (const [date, rows] of Object.entries(expected)) {
+  for (const date of ['2026-11-06', '2026-11-13', '2026-11-20']) {
     const words = cloud.wordsFromMarkdown(path.join(repoRoot, 'ai-news', `${date}-ai-news.md`));
     const placed = cloud.placeKeywords(words, font, 1);
+    const svg = fs.readFileSync(path.join(repoRoot, 'ai-news', `keywords-cloud-${date}.svg`), 'utf8');
     const byText = new Map(placed.map((word) => [word.text, word]));
-    for (const [text, x, y, size] of rows) {
+    const drawn = [...svg.matchAll(/<text[^>]*x="([^"]+)" y="([^"]+)"[^>]*font-size="([^"]+)"[^>]*>([^<]+)<\/text>/g)];
+    assert.equal(drawn.length, words.length, date);
+    for (const [, x, y, size, text] of drawn) {
       const got = byText.get(text);
-      assert.ok(got, text);
-      assert.equal(got.x, x, text);
-      assert.equal(got.y, y, text);
-      assert.equal(got.size, size, text);
+      assert.ok(got, `${date} ${text}`);
+      assert.equal(String(got.x), x, text);
+      assert.equal(String(got.y), y, text);
+      assert.equal(String(got.size), size, text);
     }
   }
 });

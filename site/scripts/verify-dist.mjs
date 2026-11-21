@@ -280,8 +280,8 @@ assertCategoryPills(latestIssue, [
 
 const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
 assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
-assert.match(newestIssue, /class="remark-card"/);
-assert.match(newestIssue, /<mark class="remark-mark">11-06 → 11-12<\/mark>/);
+assert.match(newestIssue, /class="info-card"/);
+assert.match(newestIssue, /<mark class="note-card-hl">11-06 → 11-12<\/mark>/);
 assert.match(newestIssue, /<dt>生成日<\/dt><dd>2026-11-13<\/dd>/);
 assert.doesNotMatch(newestIssue, /覆盖窗口：2026-11-06～2026-11-12（生成日 2026-11-13）。/);
 assert.doesNotMatch(newestIssue, /北京时间/);
@@ -365,17 +365,20 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
 assert.match(issue20, /class="keyword-cloud"/);
-assert.match(issue20, /aria-label="Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots、常驻 Agent、软件工厂、Skill 自进化与评测、工具检索"/);
+assert.match(issue20, /aria-label="GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、常驻 Agent、本体、软件工厂、Qwen4-Max、Devin Bots、验证闭环、Skill 自进化、LoopForge、沙箱"/);
+const keywordAlt20 = issue20.match(/aria-label="(GPT-6\.2 Astra、Gemini 4 Neon、[^"]*)"/);
+assert.ok(keywordAlt20, '2026-11-20 is missing the keyword cloud label');
+assert.doesNotMatch(keywordAlt20[1], /Claude Code|Codex|OpenRouter|LangSmith|llama\.cpp|Grok Bot|DeepSeek|\bKiro\b|Octop/);
 assert.match(issue20, /class="kw-top"/);
-assert.doesNotMatch(issue20, /<p>\s*Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max/);
+assert.doesNotMatch(issue20, /<p>\s*GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol/);
+assert.doesNotMatch(aiNewsList, /GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、常驻 Agent/);
 assert.match(issue20, /class="post-kicker"[\s\S]*2026-11-20[\s\S]*覆盖 2026-11-13～11-19/);
-assert.match(issue20, /class="remark-card"/);
-assert.match(issue20, /<mark class="remark-mark">11-13 08:00 → 11-20 07:59<\/mark>/);
-assert.match(issue20, /<dt>时区<\/dt><dd>北京时间<\/dd>/);
-assert.match(issue20, /<dt>生成日<\/dt><dd>2026-11-20<\/dd>/);
-assert.match(issue20, /不含生成当天/);
+assert.match(issue20, /class="info-card"/);
+assert.match(issue20, /<mark class="note-card-hl">11-13 08:00 → 11-20 07:59<\/mark>/);
+assert.match(issue20, /class="info-card-note">不含生成当天/);
+assert.match(issue20, /class="info-card-label"[\s\S]*发布要点/);
+assert.doesNotMatch(issue20, /release-points/);
 assert.doesNotMatch(issue20, /前五是|这期看的是一周榜/);
-assert.doesNotMatch(aiNewsList, /Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots/);
 assert.doesNotMatch(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
 assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
@@ -475,8 +478,8 @@ assert.equal((issue20.match(/微信原文这次没打开|这次没打开原文/g
 const selectedHeadings20 = issue20.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];
 for (const [cat, tag, title] of [
   ['开源', '腾讯', 'LoopForge'],
-  ['Agent 与 Harness', '腾讯', 'Octop'],
-  ['Agent 与 Harness', '腾讯', 'Ontology'],
+  ['架构', '腾讯', 'Octop'],
+  ['架构', '腾讯', 'Ontology'],
 ]) {
   assert.ok(
     selectedHeadings20.some((heading) => heading.includes(`data-cat="${cat}"`)

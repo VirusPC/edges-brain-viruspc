@@ -1,6 +1,6 @@
 /** Client-side filter for the AI 资讯「精选文章」 chapter. */
 
-export const PRIMARY_CATEGORIES = ['模型', '产品', 'Agent 与 Harness', '工程实践', '开源', '行业'];
+export const PRIMARY_CATEGORIES = ['模型', '架构', '产品', '实践', '开源', '其他'];
 const PRIMARY = new Set(PRIMARY_CATEGORIES);
 
 export function splitTags(value) {

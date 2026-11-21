@@ -3,7 +3,7 @@ import path from 'node:path';
 const UTC_WINDOW = /^覆盖窗口：(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) 至 (\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})（UTC；生成日 (\d{4}-\d{2}-\d{2})，不含当天）。$/;
 const DAY_WINDOW = /^覆盖窗口：(\d{4}-\d{2}-\d{2})～(\d{4}-\d{2}-\d{2})（生成日 (\d{4}-\d{2}-\d{2})）。$/;
 
-const INFO_ICON = '<svg class="remark-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>';
+const INFO_ICON = '<svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>';
 
 /**
  * Turn a coverage-window line into a remark card.
@@ -67,8 +67,8 @@ function remarkCard(fields) {
   const rows = [row('覆盖窗口', fields.windowLabel, true)];
   if (fields.zone) rows.push(row('时区', fields.zone, false));
   rows.push(row('生成日', fields.generated, false));
-  const note = fields.excludeDay ? '<p class="remark-card-note">不含生成当天</p>' : '';
-  return `<aside class="remark-card"><p class="remark-card-label">${INFO_ICON}<span>备注</span></p><dl class="remark-card-rows">${rows.join('')}</dl>${note}</aside>`;
+  const note = fields.excludeDay ? '<p class="info-card-note">不含生成当天</p>' : '';
+  return `<aside class="info-card"><p class="info-card-label">${INFO_ICON}<span>备注</span></p><dl class="info-card-rows">${rows.join('')}</dl>${note}</aside>`;
 }
 
 /**
@@ -77,7 +77,7 @@ function remarkCard(fields) {
  * @param {boolean} mark
  */
 function row(label, value, mark) {
-  const body = mark ? `<mark class="remark-mark">${escapeHtml(value)}</mark>` : escapeHtml(value);
+  const body = mark ? `<mark class="note-card-hl">${escapeHtml(value)}</mark>` : escapeHtml(value);
   return `<div><dt>${escapeHtml(label)}</dt><dd>${body}</dd></div>`;
 }
 

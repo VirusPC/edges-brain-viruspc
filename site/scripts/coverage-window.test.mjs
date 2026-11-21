@@ -8,9 +8,10 @@ const older = '覆盖窗口：2026-11-06～2026-11-12（生成日 2026-11-13）�
 test('a UTC coverage window becomes a Beijing remark card', () => {
   const html = coverageCardHtml(source);
   assert.ok(html);
-  assert.match(html, /^<aside class="remark-card">/);
+  assert.match(html, /^<aside class="info-card">/);
   assert.match(html, /备注/);
-  assert.match(html, /<mark class="remark-mark">11-13 08:00 → 11-20 07:59<\/mark>/);
+  assert.match(html, /<mark class="note-card-hl">11-13 08:00 → 11-20 07:59<\/mark>/);
+  assert.match(html, /class="info-card-note">不含生成当天/);
   assert.match(html, /<dt>时区<\/dt><dd>北京时间<\/dd>/);
   assert.match(html, /<dt>生成日<\/dt><dd>2026-11-20<\/dd>/);
   assert.match(html, /不含生成当天/);
@@ -21,14 +22,14 @@ test('adding eight hours can cross into the next year', () => {
   const html = coverageCardHtml(
     '覆盖窗口：2026-12-31 10:00:00 至 2026-12-31 20:00:00（UTC；生成日 2027-01-01，不含当天）。',
   );
-  assert.match(html, /<mark class="remark-mark">2026-12-31 18:00 → 2027-01-01 04:00<\/mark>/);
+  assert.match(html, /<mark class="note-card-hl">2026-12-31 18:00 → 2027-01-01 04:00<\/mark>/);
   assert.match(html, /<dt>生成日<\/dt><dd>2027-01-01<\/dd>/);
 });
 
 test('a date-only coverage line becomes a remark card without inventing a timezone', () => {
   const html = coverageCardHtml(older);
-  assert.match(html, /^<aside class="remark-card">/);
-  assert.match(html, /<mark class="remark-mark">11-06 → 11-12<\/mark>/);
+  assert.match(html, /^<aside class="info-card">/);
+  assert.match(html, /<mark class="note-card-hl">11-06 → 11-12<\/mark>/);
   assert.match(html, /<dt>生成日<\/dt><dd>2026-11-13<\/dd>/);
   assert.doesNotMatch(html, /时区|北京时间|不含生成当天/);
 });

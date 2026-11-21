@@ -53,6 +53,14 @@ box 把不含密钥的 JSON 写到：
 
 日期与周报生成日相同。这只是 box 到云端的交接，不是另一份真源。入库位置仍是数据仓的 `issues/YYYY-MM-DD/`。
 
+## 关键词
+
+产品名和品牌名只收这一期覆盖窗口里新发布、或第一次公开的。窗口之前就有的产品，哪怕这期很多篇都提到，也不写进词云。Codex、Claude Code、OpenRouter 就是这种。
+
+文章里的概念和已有说法可以留，例如常驻 Agent、本体、软件工厂、Skill 自进化、验证闭环。模型进展里本周新发布的模型，用它的官方名，可以留。不要把两件事拼成一个新词。
+
+选词之外的计分和画图仍看 Skill 的榜单与图。
+
 ## 订阅源兜底
 
 订阅真源仍是 Skill 目录的 [OPML](../../../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml) 与 [meta.json](../../../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.meta.json)。这一节只约定兜底。
