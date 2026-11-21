@@ -168,6 +168,29 @@ export function dateForProjectDocument(relPosix) {
 }
 
 /**
+ * Date used to sort and label a project row.
+ * The newest publishable document date wins. Those dates are the same ones
+ * `dateForProjectDocument` already assigns, so a row never shows an older day
+ * than the article that put it first. The top-level folder prefix is only a
+ * fallback when no document has a date.
+ *
+ * @param {Array<Date | null | undefined>} documentDates
+ * @param {Date | null | undefined} [folderDate]
+ * @returns {Date | null}
+ */
+export function dateForProjectRow(documentDates, folderDate) {
+  /** @type {Date | null} */
+  let latest = null;
+  for (const date of documentDates) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) continue;
+    if (latest == null || date.getTime() > latest.getTime()) latest = date;
+  }
+  if (latest) return latest;
+  if (folderDate instanceof Date && !Number.isNaN(folderDate.getTime())) return folderDate;
+  return null;
+}
+
+/**
  * Name used when a document has no heading. INDEX/README fall back to their directory.
  *
  * @param {string} projectId

@@ -1,5 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { listProjectFolders, projectsRoot, sortProjects, titleForProject } from './projects.mjs';
+import { dateForProjectRow, listProjectFolders, projectsRoot, sortProjects, titleForProject } from './projects.mjs';
 
 export type PostEntry = CollectionEntry<'posts'>;
 export type NoteEntry = CollectionEntry<'notes'>;
@@ -37,16 +37,23 @@ export async function getProjectSummaries(): Promise<
   { title: string; hrefId?: string; date?: Date }[]
 > {
   const docs = await getProjects();
-  const hubByProject = new Map<string, ProjectEntry>();
+  const byProject = new Map<string, ProjectEntry[]>();
   for (const doc of docs) {
-    if (doc.data.isHub && doc.data.hasPage) hubByProject.set(doc.data.projectId, doc);
+    const list = byProject.get(doc.data.projectId) ?? [];
+    list.push(doc);
+    byProject.set(doc.data.projectId, list);
   }
   const rows = listProjectFolders(projectsRoot()).map((folder) => {
-    const hub = hubByProject.get(folder.id);
+    const projectDocs = byProject.get(folder.id) ?? [];
+    const hub = projectDocs.find((doc) => doc.data.isHub && doc.data.hasPage);
+    const date = dateForProjectRow(
+      projectDocs.map((doc) => doc.data.date),
+      folder.date,
+    );
     return {
       title: hub?.data.projectTitle ?? titleForProject(folder.id, '', ''),
       hrefId: hub ? hub.id : undefined,
-      date: folder.date ?? undefined,
+      date: date ?? undefined,
     };
   });
   return sortProjects(rows);
