@@ -230,4 +230,16 @@ test('a missing keyword chapter is legacy even when the date is recent', () => {
   assert.equal(summaryLine(body, true), '1 篇');
   assert.equal(summaryLine('没有列表', true), '');
   assert.equal(summaryLine('## 一、本周关键词\n\n<br/>\n', false), '');
+  const cloudOnly = [
+    '## 一、本周关键词',
+    '',
+    '![Gemini 4 Neon、GPT-6.2](keywords-cloud.png)',
+    '',
+    '<!-- keywords-cloud',
+    '[{"word":"Gemini 4 Neon"}]',
+    '-->',
+    '',
+    '## 二、模型进展',
+  ].join('\n');
+  assert.equal(summaryLine(cloudOnly, false), '');
 });
