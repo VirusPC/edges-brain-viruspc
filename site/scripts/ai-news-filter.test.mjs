@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import {
+  COMPANY_CLASS,
   categoriesPresent,
   companiesPresent,
   filterChips,
@@ -75,12 +76,55 @@ test('search keeps unrelated params and can share both filters', () => {
   );
 });
 
-test('company chips follow the first time each publisher appears', () => {
+test('company chips put domestic before foreign, then model, AI, and internet', () => {
   assert.deepEqual(
-    companiesPresent([['DeepSeek'], ['腾讯', '淘宝'], ['淘宝', '百度']]),
-    ['DeepSeek', '腾讯', '淘宝', '百度'],
+    companiesPresent([[
+      'Google', 'Warp', 'ggml', '美团', 'OpenAI', '阿里', 'Hugging Face',
+      'AWS', 'LangChain', '火山引擎', 'Amp', '腾讯', 'Cognition', '百度',
+      'Lovable', 'Anthropic', 'Cursor', 'DeepSeek',
+    ]]),
+    [
+      'DeepSeek',
+      '阿里', '百度', '火山引擎', '美团', '腾讯',
+      'Anthropic', 'OpenAI',
+      'Amp', 'Cognition', 'Cursor', 'ggml', 'Hugging Face', 'LangChain', 'Lovable', 'Warp',
+      'AWS', 'Google',
+    ],
+  );
+  assert.deepEqual(
+    companiesPresent([['Warp', '阿里'], ['DeepSeek', 'Warp']]),
+    ['DeepSeek', '阿里', 'Warp'],
   );
   assert.deepEqual(companiesPresent([[], []]), []);
+});
+
+test('companies missing from the table sort last, in zh-CN order', () => {
+  assert.deepEqual(
+    companiesPresent([['Zed', '腾讯', 'Notion'], ['腾讯', '小红书']]),
+    ['腾讯', '小红书', 'Notion', 'Zed'],
+  );
+});
+
+test('every published company tag is listed in the source table', () => {
+  const dir = new URL('../../ai-news/', import.meta.url);
+  const files = fs.readdirSync(dir).filter((name) => /^\d{4}-\d{2}-\d{2}-ai-news\.md$/.test(name));
+  assert.ok(files.length >= 1);
+  const published = new Set();
+  for (const name of files) {
+    const text = fs.readFileSync(new URL(name, dir), 'utf8');
+    for (const line of text.split('\n')) {
+      if (!line.startsWith('#### ')) continue;
+      const head = line.slice('#### '.length).split('[')[0];
+      const labels = [...head.matchAll(/(?:<([^<>\n"]{1,32})>|&lt;([^&]+?)&gt;)/g)]
+        .map((match) => (match[1] ?? match[2]).trim())
+        .filter(Boolean);
+      for (const tag of labels.slice(1)) published.add(tag);
+    }
+  }
+  const missing = [...published].filter((tag) => !COMPANY_CLASS[tag]);
+  assert.deepEqual(missing, []);
+  assert.ok(published.has('阿里'));
+  assert.equal(published.has('淘宝'), false);
 });
 
 test('a stuck filter should return to the chapter, a resting one should not', () => {

@@ -23,7 +23,53 @@ export function filterChips(date, names) {
   return present;
 }
 
-/** Company names in first-seen order. Repeats stay on the first chip. */
+/**
+ * Publishers on the 来源 row.
+ * Sort is domestic then foreign, and within that model labs, AI-native
+ * companies, then traditional internet. The same cell uses zh-CN collation
+ * (pinyin, then case-insensitive Latin). Names missing here sort last.
+ */
+export const COMPANY_CLASS = {
+  DeepSeek: { region: 'cn', kind: 'model' },
+  阿里: { region: 'cn', kind: 'internet' },
+  百度: { region: 'cn', kind: 'internet' },
+  火山引擎: { region: 'cn', kind: 'internet' },
+  美团: { region: 'cn', kind: 'internet' },
+  腾讯: { region: 'cn', kind: 'internet' },
+  Anthropic: { region: 'intl', kind: 'model' },
+  OpenAI: { region: 'intl', kind: 'model' },
+  Amp: { region: 'intl', kind: 'ai' },
+  Cognition: { region: 'intl', kind: 'ai' },
+  Cursor: { region: 'intl', kind: 'ai' },
+  ggml: { region: 'intl', kind: 'ai' },
+  'Hugging Face': { region: 'intl', kind: 'ai' },
+  LangChain: { region: 'intl', kind: 'ai' },
+  Lovable: { region: 'intl', kind: 'ai' },
+  Warp: { region: 'intl', kind: 'ai' },
+  AWS: { region: 'intl', kind: 'internet' },
+  Google: { region: 'intl', kind: 'internet' },
+};
+
+const COMPANY_REGION_RANK = { cn: 0, intl: 1 };
+const COMPANY_KIND_RANK = { model: 0, ai: 1, internet: 2 };
+const UNLISTED_REGION = 2;
+const UNLISTED_KIND = 3;
+
+function companyRank(name) {
+  const info = COMPANY_CLASS[name];
+  if (!info) return [UNLISTED_REGION, UNLISTED_KIND];
+  return [COMPANY_REGION_RANK[info.region], COMPANY_KIND_RANK[info.kind]];
+}
+
+function compareCompanies(a, b) {
+  const [regionA, kindA] = companyRank(a);
+  const [regionB, kindB] = companyRank(b);
+  if (regionA !== regionB) return regionA - regionB;
+  if (kindA !== kindB) return kindA - kindB;
+  return a.localeCompare(b, 'zh-CN', { sensitivity: 'base' });
+}
+
+/** Unique company names in 来源 order. Repeats stay on the first chip. */
 export function companiesPresent(tagLists) {
   const seen = new Set();
   const names = [];
@@ -34,7 +80,7 @@ export function companiesPresent(tagLists) {
       names.push(tag);
     }
   }
-  return names;
+  return names.sort(compareCompanies);
 }
 
 export function parseFilter(search) {
