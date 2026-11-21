@@ -734,13 +734,14 @@ body.is-post.has-toc .sidenote {
 
 .info-card dd.info-card-wrap {
   white-space: normal;
-  overflow-wrap: anywhere;
 }
 
 .info-card a {
   color: inherit;
   overflow-wrap: anywhere;
 }
+
+.info-card-current { white-space: nowrap; }
 
 .info-card ul {
   margin: 0;

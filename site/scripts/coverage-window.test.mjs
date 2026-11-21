@@ -41,6 +41,52 @@ test('other sentences stay out of the card', () => {
   assert.equal(coverageCardHtml('覆盖窗口：还没写完'), null);
 });
 
+test('a current routine link is labeled as current and does not claim the skill was recorded', () => {
+  const commit = '12133e826f9adad0d9677487a6c56ce7bcdfee42';
+  const html = coverageCardHtml(source, {
+    rules: null,
+    routineCurrent: {
+      repo: 'VirusPC/edges-brain-viruspc',
+      commit,
+      path: '.edges/routines/weekly-ai-blogs-digest/INDEX.md',
+      name: 'weekly-ai-blogs-digest',
+    },
+    data: {
+      repo: 'VirusPC/ai-news-data',
+      commit: '5e2e06f851fc5317cd3cb845fbec2eb920bbde59',
+      path: 'issues/2026-11-20',
+      kind: 'tree',
+    },
+  });
+  assert.match(html, /<dt>生成规则<\/dt><dd class="info-card-wrap">/);
+  assert.match(html, new RegExp(`blob/${commit}/\\.edges/routines/weekly-ai-blogs-digest/INDEX\\.md`));
+  assert.match(html, />12133e8 weekly-ai-blogs-digest</);
+  assert.match(html, /<span class="info-card-current">（当前版本）<\/span> · skill 未记录/);
+  assert.doesNotMatch(html, /<dt>生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
+  assert.doesNotMatch(html, /\/blob\/main\/|\/tree\/main\//);
+});
+
+test('a recorded execution commit stays unlabeled as current', () => {
+  const commit = '0123456789abcdef0123456789abcdef01234567';
+  const html = coverageCardHtml(source, {
+    rules: {
+      repo: 'VirusPC/edges-brain-viruspc',
+      commit,
+      routine: '.edges/routines/weekly-ai-blogs-digest/INDEX.md',
+      skill: 'skills/managed/weekly-ai-blogs-digest/SKILL.md',
+    },
+    routineCurrent: {
+      repo: 'VirusPC/edges-brain-viruspc',
+      commit: '12133e826f9adad0d9677487a6c56ce7bcdfee42',
+      path: '.edges/routines/weekly-ai-blogs-digest/INDEX.md',
+      name: 'weekly-ai-blogs-digest',
+    },
+    data: null,
+  });
+  assert.match(html, new RegExp(`blob/${commit}/\\.edges/routines/weekly-ai-blogs-digest/INDEX\\.md`));
+  assert.doesNotMatch(html, /当前版本|12133e8|skill 未记录/);
+});
+
 test('a recorded data snapshot is linked by full SHA, and a missing rules commit stays unrecorded', () => {
   const html = coverageCardHtml(source, {
     rules: null,
@@ -107,8 +153,8 @@ test('provenance rows can wrap inside the remark card', () => {
   const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
   assert.match(css, /\.info-card-rows > div\s*\{[^}]*grid-template-columns:\s*4\.8em minmax\(0,\s*1fr\)/);
   assert.match(css, /\.info-card dd\.info-card-wrap\s*\{[^}]*white-space:\s*normal/);
-  assert.match(css, /\.info-card dd\.info-card-wrap\s*\{[^}]*overflow-wrap:\s*anywhere/);
   assert.match(css, /\.info-card a\s*\{[^}]*overflow-wrap:\s*anywhere/);
+  assert.match(css, /\.info-card-current\s*\{[^}]*white-space:\s*nowrap/);
 });
 
 test('only a matching paragraph in the digest is replaced', () => {

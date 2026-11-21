@@ -71,7 +71,10 @@ function remarkCard(fields, provenance) {
   if (fields.zone) rows.push(row('时区', fields.zone, false));
   rows.push(row('生成日', fields.generated, false));
   if (provenance) {
-    rows.push(rowHtml('生成规则', rulesHtml(normalizeRules(provenance.rules))));
+    rows.push(rowHtml('生成规则', rulesHtml(
+      normalizeRules(provenance.rules),
+      normalizeRoutineCurrent(provenance.routineCurrent),
+    )));
     rows.push(rowHtml('数据版本', dataHtml(normalizeData(provenance.data))));
   }
   const note = fields.excludeDay ? '<p class="info-card-note">不含生成当天</p>' : '';
@@ -120,6 +123,7 @@ function takeProvenance(tree) {
     }
     return {
       rules: normalizeRules(parsed?.rules),
+      routineCurrent: normalizeRoutineCurrent(parsed?.routineCurrent),
       data: normalizeData(parsed?.data),
     };
   }
@@ -152,12 +156,26 @@ function cleanPath(value) {
   return path;
 }
 
-function rulesHtml(rules) {
-  if (!rules) return '未记录';
-  const links = [];
-  if (rules.routine) links.push(sourceLink(rules, rules.routine, 'blob'));
-  if (rules.skill) links.push(sourceLink(rules, rules.skill, 'blob'));
-  return links.length ? links.join(' ') : '未记录';
+function normalizeRoutineCurrent(value) {
+  if (!value || typeof value !== 'object') return null;
+  const repo = String(value.repo || '');
+  const commit = String(value.commit || '').toLowerCase();
+  const path = cleanPath(value.path);
+  const name = String(value.name || '').trim();
+  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || !path || !/^[A-Za-z0-9_.-]+$/.test(name)) return null;
+  return { repo, commit, path, name };
+}
+
+function rulesHtml(rules, routineCurrent) {
+  if (rules) {
+    const links = [];
+    if (rules.routine) links.push(sourceLink(rules, rules.routine, 'blob'));
+    if (rules.skill) links.push(sourceLink(rules, rules.skill, 'blob'));
+    if (links.length) return links.join(' ');
+  }
+  if (!routineCurrent) return '未记录';
+  const text = `${routineCurrent.commit.slice(0, 7)} ${routineCurrent.name}`;
+  return `${sourceLink(routineCurrent, routineCurrent.path, 'blob', text)}<span class="info-card-current">（当前版本）</span> · skill 未记录`;
 }
 
 function dataHtml(data) {
@@ -165,9 +183,9 @@ function dataHtml(data) {
   return sourceLink(data, data.path, data.kind);
 }
 
-function sourceLink(source, path, kind) {
+function sourceLink(source, path, kind, text) {
   const href = `https://github.com/${source.repo}/${kind}/${source.commit}/${path.split('/').map(encodeURIComponent).join('/')}`;
-  const label = `${source.commit.slice(0, 7)} ${path}`;
+  const label = text || `${source.commit.slice(0, 7)} ${path}`;
   return `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
 }
 
