@@ -70,9 +70,11 @@ test('note card css stays serif and does not restyle the filter bar', () => {
   assert.doesNotMatch(css, /text-align:\s*right/);
   assert.match(css, /@media \(max-width:\s*520px\)/);
   assert.match(css, /\.note-card-k\s*\{[^}]*font-weight:\s*400/);
-  assert.match(css, /data-theme="dark"\] \.note-card-hl\s*\{[^}]*color:\s*#24180a/);
-  assert.match(css, /data-theme="dark"\] \.note-card-hl\s*\{[^}]*background:\s*#ffd56a/);
-  assert.doesNotMatch(css, /rgba\(255,\s*214,\s*102,\s*0\.38\)/);
+  assert.match(css, /--note-hl:\s*rgba\(214,\s*160,\s*60,\s*0\.32\)/);
+  assert.match(css, /transparent 55%/);
+  assert.match(css, /--note-gap-section:\s*16px/);
+  assert.match(css, /--note-leading:\s*1\.68/);
+  assert.doesNotMatch(css, /#24180a|#ffd56a/);
   assert.match(css, /white-space:\s*nowrap/);
   assert.match(css, /\.note-card-hl/);
   assert.doesNotMatch(css, /\.ai-news-filter\s*\{/);
