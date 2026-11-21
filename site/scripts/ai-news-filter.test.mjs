@@ -110,6 +110,11 @@ test('a source type limits companies, keeps a matching company, and drops one th
     { cat: '模型', src: '国内模型厂', tag: 'DeepSeek' },
   );
   assert.deepEqual(
+    nextFilter({ cat: '模型', src: '国内非模型厂', tag: '字节' }, { kind: 'cat', value: '模型' }),
+    { cat: '', src: '国内非模型厂', tag: '字节' },
+  );
+  assert.deepEqual(parseFilter('?cat=架构&tag=火山引擎'), { cat: '架构', src: '国内非模型厂', tag: '字节' });
+  assert.deepEqual(
     nextFilter({ cat: '模型', src: '国内模型厂', tag: 'DeepSeek' }, { kind: 'all', row: 'tag' }),
     { cat: '模型', src: '国内模型厂', tag: '' },
   );
@@ -203,7 +208,8 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /\.ai-news-selected\s*\{[^}]*display:\s*flow-root/);
   assert.match(css, /position:\s*sticky/);
   assert.match(css, /top:\s*var\(--ai-news-filter-top,\s*0px\)/);
-  assert.match(css, /\.ai-news-filter\s*\{[^}]*background:\s*var\(--wood-bot\)/);
+  assert.match(css, /\.ai-news-filter\s*\{[^}]*background:\s*transparent/);
+  assert.match(css, /\.ai-news-filter-board::before\s*\{[^}]*linear-gradient\(180deg, var\(--wood-top\), var\(--wood-bot\)\)/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*flex-wrap:\s*nowrap/);
   assert.match(css, /overflow-x:\s*auto/);
   assert.match(css, /\.ai-news-filter-all,\s*\n\.ai-news-filter-co,\s*\n\.ai-news-filter-src\s*\{[^}]*background:\s*var\(--wood-chip\)/);
@@ -256,6 +262,8 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(source, /preserveAspectRatio: 'none'/);
   assert.match(css, /\.prose h4 \.ai-news-tag,\s*\n\.prose h4 \.ai-news-src\s*\{[^}]*background:\s*var\(--wood-chip\)/);
   assert.match(css, /\.prose h4 \.ai-news-tag\[aria-pressed='true'\],\s*\n\.prose h4 \.ai-news-src\[aria-pressed='true'\]\s*\{[^}]*box-shadow:\s*inset 0 0 0 2\.5px var\(--wood-on-line\)/);
+  assert.match(source, /querySelectorAll\('\.ai-news-cat'\)/);
+  assert.match(source, /kind: 'cat', value: category\.dataset\.cat/);
   assert.match(source, /querySelectorAll\('\.ai-news-src'\)/);
   assert.match(source, /querySelectorAll\('\.ai-news-tag'\)/);
   assert.match(source, /addEventListener\?\.\('popstate'/);

@@ -47,9 +47,9 @@ const sourceType = sourceGroup(sources[0] || '');
   >
     {
       category ? (
-        <span class="ai-news-filter-cat" data-cat={category}>
+        <button type="button" class="ai-news-filter-cat ai-news-cat" data-cat={category} aria-pressed="false">
           {category}
-        </span>
+        </button>
       ) : null
     }
     {

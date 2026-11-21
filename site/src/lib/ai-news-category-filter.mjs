@@ -305,6 +305,9 @@ function syncPressed(bar, groups, filter) {
     else if (kind === 'tag') on = filter.tag === button.dataset.tag;
     button.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
+  for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...tagRoot(item).querySelectorAll('.ai-news-cat')]))) {
+    button.setAttribute('aria-pressed', filter.cat && filter.cat === button.dataset.cat ? 'true' : 'false');
+  }
   for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...tagRoot(item).querySelectorAll('.ai-news-src')]))) {
     button.setAttribute('aria-pressed', filter.src && filter.src === button.dataset.src ? 'true' : 'false');
   }
@@ -579,6 +582,11 @@ export function mountCategoryFilter(doc) {
   });
 
   root.addEventListener('click', (event) => {
+    const category = event.target.closest('.ai-news-cat');
+    if (category && root.contains(category)) {
+      choose({ kind: 'cat', value: category.dataset.cat });
+      return;
+    }
     const source = event.target.closest('.ai-news-src');
     if (source && root.contains(source)) {
       choose({ kind: 'src', value: source.dataset.src });
