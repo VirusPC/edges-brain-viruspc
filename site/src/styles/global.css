@@ -374,6 +374,84 @@ body.is-post.has-toc .sidenote {
   margin-bottom: 0.4rem;
 }
 
+.project-fold {
+  margin: 0;
+}
+
+.project-fold > summary {
+  cursor: pointer;
+  color: var(--summary);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.45;
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 0.35rem 0 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.project-fold > summary::marker,
+.project-fold[open] > summary::marker,
+.project-fold > summary::-webkit-details-marker,
+.project-fold[open] > summary::-webkit-details-marker {
+  color: var(--summary);
+}
+
+.project-fold > summary:hover,
+.project-fold[open] > summary:hover,
+.project-fold > summary:hover::marker,
+.project-fold[open] > summary:hover::marker,
+.project-fold > summary:hover::-webkit-details-marker,
+.project-fold[open] > summary:hover::-webkit-details-marker {
+  color: var(--summary-hover);
+}
+
+.project-fold > summary:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.project-fold-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: calc(100% - 1.5rem);
+  vertical-align: middle;
+}
+
+.project-fold-toggle {
+  flex: none;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.project-fold[open] .project-fold-open-label,
+.project-fold:not([open]) .project-fold-close-label {
+  display: none;
+}
+
+.project-fold-line > h2 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.project-fold-count {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 .list-month > h3 {
   margin: 1.15rem 0 0.35rem;
   font-size: 1.05rem;
@@ -865,6 +943,20 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   .prose details.article-more > summary {
     padding: 0.28rem 0;
     line-height: 1.45;
+  }
+
+  .project-fold > summary {
+    font-size: 1.05rem;
+    padding: 0.55rem 0 0.45rem;
+  }
+
+  .project-fold-toggle {
+    font-size: 1.05rem;
+  }
+
+  .project-fold-line {
+    width: calc(100% - 1.7rem);
+    gap: 0.5rem;
   }
 
   .prose .article-card {

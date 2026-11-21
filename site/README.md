@@ -34,7 +34,7 @@
 
 - **Posts：** `posts/` 下的 Markdown，忽略 `README.md`（那是目录约定，不是一篇成稿）。可选 frontmatter：`title`、`date`、`description`、`draft: true`（为 true 时不发布）。没有 frontmatter 时，标题取文首标题，日期取文件名前缀 `YYYY-MM-DD`。AI 不写入 `posts/`。
 - **Notes：** 只收录 `notes/<YYYY-MM-DD…>/INDEX.md`。文件夹名以真实日期开头即可，`2026-10-29--slug` 与较早的 `2026-05-01-个人效率` 都会收录。不收录未标日期的目录（如 `1. memory`）、点目录，以及直接放在 `notes/` 下、没有 `INDEX.md` 的单个文件。没有 `publish` 开关，符合条件的笔记全部发布。标题优先用 frontmatter 或文首标题，否则用文件夹 slug；日期只用文件夹前缀。列表、首页和正文页的标题如果仍以 `YYYY-MM-DD--`、`YYYY-MM-DD-` 或 `YYYY-MM-DD ` 开头，会去掉这段前缀；地址仍是文件夹名。
-- **Projects：** `/projects` 按顶层目录分节。每节下列出该目录里的 Markdown（含子目录；跳过点目录和 `node_modules`）。根上的 `INDEX.md`（没有则 `README.md`）是这一节的 hub，地址是 `/projects/<目录>`；其它文件是 `/projects/<目录>/<相对路径>`（`INDEX.md` 收成所在目录）。PDF 只在列表里链到 GitHub 上的文件，不生成正文页。文档日期取文件名或最近的日期目录，不继承项目目录的日期。项目节本身仍按目录名前缀 `YYYY-MM-DD` 排序，没有日期的按标题排。
+- **Projects：** `/projects` 按顶层目录分节。每节下列出该目录里的 Markdown（含子目录；跳过点目录和 `node_modules`）。根上的 `INDEX.md`（没有则 `README.md`）是这一节的 hub，地址是 `/projects/<目录>`；其它文件是 `/projects/<目录>/<相对路径>`（`INDEX.md` 收成所在目录）。PDF 只在列表里链到 GitHub 上的文件，不生成正文页。文档日期取文件名或最近的日期目录，不继承项目目录的日期。首页项目行和 `/projects` 的分节按该项目里可发布文档的最新日期排序；首页同一日期也显示在行上。没有任何文档日期时才回退到目录名前缀 `YYYY-MM-DD`。两边都没有日期的按标题排。`/projects` 每节默认收起文档列表，点项目名展开或收起这一节，各节互不影响。
 - **不发布** `edges/`。
 
 笔记里的本地图片会按文件相对路径解析（含 Obsidian `![[...]]`，能在笔记目录或仓库根找到文件时）。找不到的本地图改成替代文字，不让整站构建失败。

@@ -121,9 +121,22 @@ assert.match(postsPage, /class="post-list"|class="empty"/);
 const projectPage = fs.readFileSync(path.join(dist, 'projects/index.html'), 'utf8');
 assert.match(projectPage, /class="post-list"/);
 assert.match(projectPage, /class="archive-year"/);
+assert.match(projectPage, /<details class="project-fold">/);
+assert.match(projectPage, /class="project-fold-open-label">展开</);
+assert.match(projectPage, /class="project-fold-close-label">收起</);
+assert.doesNotMatch(projectPage, /<details class="project-fold"[^>]*\bopen\b/);
+const projectCss = fs.readFileSync(path.join(siteRoot, 'src/styles/global.css'), 'utf8');
+assert.match(projectCss, /\.project-fold > summary::marker[\s\S]*?color:\s*var\(--summary\)/);
+assert.doesNotMatch(projectCss, /\.project-fold > summary::-webkit-details-marker\s*\{\s*display:\s*none/);
+assert.equal(
+  (projectPage.match(/class="archive-year"/g) || []).length,
+  (projectPage.match(/class="project-fold"/g) || []).length,
+);
 assert.match(projectPage, /prompt-caching/);
 assert.match(projectPage, /github\.com\/VirusPC\/edges-brain-viruspc\/blob\/main\/projects\/memory\//);
 assert.doesNotMatch(projectPage, /class="dash"|entry-list|note-kicker/);
+assert.doesNotMatch(notesPage, /project-fold/);
+assert.doesNotMatch(postsPage, /project-fold/);
 
 const grokNote = path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/index.html');
 const grokHtml = fs.readFileSync(grokNote, 'utf8');

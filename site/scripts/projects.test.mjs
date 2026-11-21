@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import {
   dateForProjectDocument,
+  dateForProjectRow,
   listProjectDocuments,
   listProjectFolders,
   routeIdFor,
@@ -89,6 +90,73 @@ test('hub document stays first inside a project', () => {
   assert.deepEqual(
     sorted.map((item) => item.title),
     ['hub', 'later', 'earlier'],
+  );
+});
+
+test('project row date is the newest document date, else the folder prefix', () => {
+  const folder = new Date('2026-09-13T00:00:00.000Z');
+  const newerFolder = new Date('2026-11-20T00:00:00.000Z');
+  const article = new Date('2026-11-18T00:00:00.000Z');
+  const earlier = new Date('2026-11-09T00:00:00.000Z');
+
+  assert.equal(
+    dateForProjectRow([null, earlier, article], folder)?.toISOString(),
+    article.toISOString(),
+  );
+  assert.equal(
+    dateForProjectRow([earlier], newerFolder)?.toISOString(),
+    earlier.toISOString(),
+  );
+  assert.equal(dateForProjectRow([null, undefined], folder)?.toISOString(), folder.toISOString());
+  assert.equal(dateForProjectRow([], null), null);
+  assert.equal(dateForProjectRow([new Date(Number.NaN)], null), null);
+});
+
+test('a project row uses the newest nested document, not the folder prefix', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'project-row-date-'));
+  const dated = path.join(root, '2026-11-09--dsh');
+  fs.mkdirSync(path.join(dated, 'notes', '2026-11-18--topic'), { recursive: true });
+  fs.writeFileSync(path.join(dated, 'INDEX.md'), '# dsh\n');
+  fs.writeFileSync(path.join(dated, 'notes', '2026-11-18--topic', 'INDEX.md'), '# Topic\n');
+  const undatedFolder = path.join(root, 'agent-infra');
+  fs.mkdirSync(path.join(undatedFolder, 'notes', '2026-11-17--topic'), { recursive: true });
+  fs.writeFileSync(path.join(undatedFolder, 'INDEX.md'), '# Agent\n');
+  fs.writeFileSync(path.join(undatedFolder, 'notes', '2026-11-17--topic', 'INDEX.md'), '# Topic\n');
+  const folderOnly = path.join(root, '2026-09-09--empty');
+  fs.mkdirSync(folderOnly);
+  fs.writeFileSync(path.join(folderOnly, 'INDEX.md'), '# Empty\n');
+  const neither = path.join(root, 'benchmark');
+  fs.mkdirSync(neither);
+  fs.writeFileSync(path.join(neither, 'README.md'), '# Benchmark\n');
+
+  const folders = listProjectFolders(root);
+  const docs = listProjectDocuments(root);
+  const rows = sortProjects(
+    folders.map((folder) => ({
+      title: folder.id,
+      date: dateForProjectRow(
+        docs.filter((doc) => doc.projectId === folder.id).map((doc) => doc.date),
+        folder.date,
+      ),
+    })),
+  );
+  assert.deepEqual(
+    rows.map((row) => ({
+      title: row.title,
+      date: row.date ? row.date.toISOString().slice(0, 10) : null,
+    })),
+    [
+      { title: '2026-11-09--dsh', date: '2026-11-18' },
+      { title: 'agent-infra', date: '2026-11-17' },
+      { title: '2026-09-09--empty', date: '2026-09-09' },
+      { title: 'benchmark', date: null },
+    ],
+  );
+  const hub = docs.find((doc) => doc.projectId === '2026-11-09--dsh' && doc.isHub);
+  assert.equal(hub?.date, null);
+  assert.equal(
+    dateForProjectDocument('notes/2026-11-18--topic/INDEX.md')?.toISOString().slice(0, 10),
+    '2026-11-18',
   );
 });
 
