@@ -625,19 +625,22 @@ for (const rel of rels.filter((item) => item.endsWith('.html'))) {
 }
 assert.ok(layoutPages > 0, 'expected BaseLayout pages with a section nav');
 
-assert.equal(giscusReady(), false, 'giscus must stay disabled until a discussion category id is filled in');
+assert.equal(giscusReady(), true, 'giscus category id is filled in');
 const feedbackButton = /<a class="site-feedback" data-feedback-link href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/issues\/new\?template=reader-feedback\.yml" target="_blank" rel="noopener noreferrer">/;
+const distFiles = rels.map((rel) => fs.readFileSync(path.join(dist, rel), 'utf8'));
+assert.ok(distFiles.some((file) => file.includes('DIC_kwDOQzfxSc4DLqmP')), 'built site is missing the Comments category id');
 for (const rel of rels.filter((item) => item.endsWith('.html'))) {
   const html = fs.readFileSync(path.join(dist, rel), 'utf8');
   assert.equal(html.match(/class="site-feedback"/g)?.length ?? 0, 1, `${rel} feedback button count`);
   assert.match(html, feedbackButton, `${rel} feedback link`);
-  assert.doesNotMatch(html, /giscus\.app/, `${rel} must not load giscus while the category id is empty`);
+  assert.doesNotMatch(html, /src="https:\/\/giscus\.app\/client\.js"/, `${rel} loads giscus before the comments are near the screen`);
+  assert.doesNotMatch(html, /尚未启用 GitHub Discussions/, `${rel} still says Discussions are off`);
 }
 for (const rel of detailPages) {
   const html = fs.readFileSync(path.join(dist, rel), 'utf8');
   assert.match(html, /data-reader-comments/, `${rel} comments`);
-  assert.match(html, /尚未启用 GitHub Discussions/, `${rel} comments fallback`);
-  assert.doesNotMatch(html, /data-giscus/, `${rel} must not mount an empty giscus frame`);
+  assert.match(html, /data-giscus/, `${rel} giscus slot`);
+  assert.match(html, /留言使用 GitHub 账号/, `${rel} login note`);
 }
 for (const rel of ['index.html', 'posts/index.html', 'notes/index.html', 'projects/index.html', 'ai-news/index.html', 'about/index.html']) {
   const html = fs.readFileSync(path.join(dist, rel), 'utf8');

@@ -12,12 +12,12 @@ import {
 } from '../src/lib/reader-feedback.mjs';
 import { giscusScriptAttributes, postGiscusTheme } from '../src/lib/giscus-client.mjs';
 
-test('comments stay off until a real discussion category id exists', () => {
+test('giscus uses the Comments category that exists on the repository', () => {
   assert.equal(GISCUS.repoId, 'R_kgDOQzfxSQ');
-  assert.equal(GISCUS.category, '');
-  assert.equal(GISCUS.categoryId, '');
-  assert.equal(giscusReady(), false);
-  assert.equal(giscusReady({ ...GISCUS, category: '评论', categoryId: 'category-id' }), true);
+  assert.equal(GISCUS.category, 'Comments');
+  assert.equal(GISCUS.categoryId, 'DIC_kwDOQzfxSc4DLqmP');
+  assert.equal(giscusReady(), true);
+  assert.equal(giscusReady({ ...GISCUS, categoryId: '' }), false);
 });
 
 test('a discussion follows the site path, including the base and one trailing slash', () => {
@@ -52,6 +52,8 @@ test('giscus theme follows the site switch and messages stay on the giscus origi
   const attrs = giscusScriptAttributes('/edges-brain-viruspc/posts/a', 'dark');
   assert.equal(attrs['data-mapping'], 'specific');
   assert.equal(attrs['data-term'], '/edges-brain-viruspc/posts/a/');
+  assert.equal(attrs['data-category'], 'Comments');
+  assert.equal(attrs['data-category-id'], 'DIC_kwDOQzfxSc4DLqmP');
   assert.equal(attrs['data-lang'], 'zh-CN');
   assert.equal(attrs['data-loading'], 'lazy');
   assert.equal(attrs.src, 'https://giscus.app/client.js');

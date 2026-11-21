@@ -4,16 +4,12 @@ export const REPO_ID = 'R_kgDOQzfxSQ';
 export const GISCUS_ORIGIN = 'https://giscus.app';
 export const ISSUE_TEMPLATE = 'reader-feedback.yml';
 
-/**
- * Discussions are off, so there is no category id to read.
- * Leave both empty until a person enables Discussions, creates a category,
- * installs https://github.com/apps/giscus and pastes the ids from https://giscus.app.
- */
+/** Comments category id read from GitHub after Discussions were enabled. */
 export const GISCUS = {
   repo: REPO,
   repoId: REPO_ID,
-  category: '',
-  categoryId: '',
+  category: 'Comments',
+  categoryId: 'DIC_kwDOQzfxSc4DLqmP',
   lang: 'zh-CN',
 };
 
