@@ -85,7 +85,7 @@ test('project items become cards and the trending heading stays outside', () => 
   const gist = { type: 'element', tagName: 'p', properties: {}, children: [text('一句')] };
   const details = { type: 'raw', value: '<details class="article-more"></details>' };
   const selected = heading('h4', 'llama.cpp');
-  selected.properties = { dataCat: '开源', dataTags: 'ggml' };
+  selected.properties = { dataCat: '开源', dataTags: 'Hugging Face' };
   const tree = {
     type: 'root',
     children: [
@@ -147,7 +147,7 @@ test('project cards stay out of the selected-article filter', () => {
   selectedChapter.textContent = '四、精选文章';
   const section = element('h3');
   section.textContent = '国际';
-  const articleHeading = element('h4', { 'data-cat': '开源', 'data-tags': 'ggml' });
+  const articleHeading = element('h4', { 'data-cat': '开源', 'data-tags': 'Hugging Face' });
   articleHeading.textContent = 'llama.cpp';
   const articleCard = element('div', { class: 'article-card' }, [articleHeading]);
   const root = {
@@ -162,7 +162,7 @@ test('project cards stay out of the selected-article filter', () => {
   assert.equal(collected.groups[0].items.length, 1);
   assert.equal(collected.groups[0].items[0].nodes[0], articleCard);
   assert.equal(collected.groups[0].items[0].cat, '开源');
-  assert.deepEqual(collected.groups[0].items[0].tags, ['ggml']);
+  assert.deepEqual(collected.groups[0].items[0].tags, ['Hugging Face']);
 });
 
 test('a note card is one selected-article item', () => {

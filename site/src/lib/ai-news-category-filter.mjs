@@ -25,33 +25,34 @@ export function filterChips(date, names) {
 
 /**
  * Publishers on the 来源 row.
- * Sort is domestic then foreign, and within that model labs, AI-native
- * companies, then traditional internet. The same cell uses zh-CN collation
- * (pinyin, then case-insensitive Latin). Names missing here sort last.
+ * Domestic before foreign. Within a region: pure model labs, incumbents
+ * with their own foundation model, AI product companies, then traditional
+ * internet with no foundation model. The same cell uses zh-CN collation.
+ * `basis` is the public model name or the reason for the cell. Names
+ * missing here sort last.
  */
 export const COMPANY_CLASS = {
-  DeepSeek: { region: 'cn', kind: 'model' },
-  阿里: { region: 'cn', kind: 'internet' },
-  百度: { region: 'cn', kind: 'internet' },
-  火山引擎: { region: 'cn', kind: 'internet' },
-  美团: { region: 'cn', kind: 'internet' },
-  腾讯: { region: 'cn', kind: 'internet' },
-  Anthropic: { region: 'intl', kind: 'model' },
-  OpenAI: { region: 'intl', kind: 'model' },
-  Amp: { region: 'intl', kind: 'ai' },
-  Cognition: { region: 'intl', kind: 'ai' },
-  Cursor: { region: 'intl', kind: 'ai' },
-  ggml: { region: 'intl', kind: 'ai' },
-  'Hugging Face': { region: 'intl', kind: 'ai' },
-  LangChain: { region: 'intl', kind: 'ai' },
-  Lovable: { region: 'intl', kind: 'ai' },
-  Warp: { region: 'intl', kind: 'ai' },
-  AWS: { region: 'intl', kind: 'internet' },
-  Google: { region: 'intl', kind: 'internet' },
+  DeepSeek: { region: 'cn', kind: 'pure', basis: 'DeepSeek 系列' },
+  阿里: { region: 'cn', kind: 'house', basis: '通义千问（Qwen）' },
+  百度: { region: 'cn', kind: 'house', basis: '文心（ERNIE）' },
+  火山引擎: { region: 'cn', kind: 'house', basis: '豆包（字节跳动自研，火山引擎提供）' },
+  美团: { region: 'cn', kind: 'house', basis: 'LongCat' },
+  腾讯: { region: 'cn', kind: 'house', basis: '混元（Hunyuan）' },
+  Anthropic: { region: 'intl', kind: 'pure', basis: 'Claude' },
+  OpenAI: { region: 'intl', kind: 'pure', basis: 'GPT' },
+  AWS: { region: 'intl', kind: 'house', basis: 'Amazon Nova' },
+  Google: { region: 'intl', kind: 'house', basis: 'Gemini' },
+  Amp: { region: 'intl', kind: 'ai', basis: '编程产品，未核到自研基座模型' },
+  Cognition: { region: 'intl', kind: 'ai', basis: 'Devin；另有 SWE 编码模型，未见从零预训练的通用基座' },
+  Cursor: { region: 'intl', kind: 'ai', basis: 'Composer 公开基座是 Kimi，不是从零预训练' },
+  'Hugging Face': { region: 'intl', kind: 'ai', basis: '模型平台；博客上的组织账号也标这里' },
+  LangChain: { region: 'intl', kind: 'ai', basis: 'Agent 框架，未核到自研基座模型' },
+  Lovable: { region: 'intl', kind: 'ai', basis: '应用生成产品，未核到自研基座模型' },
+  Warp: { region: 'intl', kind: 'ai', basis: '终端与软件工厂产品，未核到自研基座模型' },
 };
 
 const COMPANY_REGION_RANK = { cn: 0, intl: 1 };
-const COMPANY_KIND_RANK = { model: 0, ai: 1, internet: 2 };
+const COMPANY_KIND_RANK = { pure: 0, house: 1, ai: 2, internet: 3 };
 const UNLISTED_REGION = 2;
 const UNLISTED_KIND = 3;
 

@@ -76,10 +76,10 @@ test('search keeps unrelated params and can share both filters', () => {
   );
 });
 
-test('company chips put domestic before foreign, then model, AI, and internet', () => {
+test('company chips put domestic before foreign, then pure, house, AI, and internet', () => {
   assert.deepEqual(
     companiesPresent([[
-      'Google', 'Warp', 'ggml', '美团', 'OpenAI', '阿里', 'Hugging Face',
+      'Google', 'Warp', '美团', 'OpenAI', '阿里', 'Hugging Face',
       'AWS', 'LangChain', '火山引擎', 'Amp', '腾讯', 'Cognition', '百度',
       'Lovable', 'Anthropic', 'Cursor', 'DeepSeek',
     ]]),
@@ -87,10 +87,15 @@ test('company chips put domestic before foreign, then model, AI, and internet', 
       'DeepSeek',
       '阿里', '百度', '火山引擎', '美团', '腾讯',
       'Anthropic', 'OpenAI',
-      'Amp', 'Cognition', 'Cursor', 'ggml', 'Hugging Face', 'LangChain', 'Lovable', 'Warp',
       'AWS', 'Google',
+      'Amp', 'Cognition', 'Cursor', 'Hugging Face', 'LangChain', 'Lovable', 'Warp',
     ],
   );
+  for (const info of Object.values(COMPANY_CLASS)) {
+    assert.equal(typeof info.basis, 'string');
+    assert.ok(info.basis.length > 0);
+  }
+  assert.equal(Object.hasOwn(COMPANY_CLASS, 'ggml'), false);
   assert.deepEqual(
     companiesPresent([['Warp', '阿里'], ['DeepSeek', 'Warp']]),
     ['DeepSeek', '阿里', 'Warp'],
@@ -124,7 +129,9 @@ test('every published company tag is listed in the source table', () => {
   const missing = [...published].filter((tag) => !COMPANY_CLASS[tag]);
   assert.deepEqual(missing, []);
   assert.ok(published.has('阿里'));
+  assert.ok(published.has('Hugging Face'));
   assert.equal(published.has('淘宝'), false);
+  assert.equal(published.has('ggml'), false);
 });
 
 test('a stuck filter should return to the chapter, a resting one should not', () => {
