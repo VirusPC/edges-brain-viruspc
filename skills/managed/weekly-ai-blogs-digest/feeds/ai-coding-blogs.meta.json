@@ -713,7 +713,7 @@
       "listUrls": [
         "https://www.kimi.com/blog/"
       ],
-      "htmlUrl": "https://www.kimi.com/en/blog/",
+      "htmlUrl": "https://www.kimi.com/blog/",
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml",
       "articleHosts": [
         "kimi.com"
@@ -723,9 +723,9 @@
       "bestblogs": {
         "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml",
         "adopted": true,
-        "note": "BestBlogs 的 Wechat2RSS 公众号转换。2026-10-31 用户确认订入。不是 kimi.com 研究博客，列表页仍是退路。"
+        "note": "BestBlogs 的 Wechat2RSS 公众号转换。2026-10-31 用户确认订入。不是 kimi.com 研究博客。官网没有原生 RSS，列表页只是主源报错或停更后的退路。"
       },
-      "notes": "kimi.com/blog 没有 alternate。订的是微信公众号转换。英文研究博客仍走 https://www.kimi.com/en/blog/ 。"
+      "notes": "主源是微信公众号转换。2026-11-21 HTTP 200，最新一条是 2026-11-12（UTC 仍是 11-12），相对 11-13～11-19 窗口未停更，不并入官网列表。官网研究博客 https://www.kimi.com/blog/ 、https://www.kimi.com/en/blog/ 与 https://www.kimi.ai/blog 是同一份目录（都有 kimi-k3-1-pro，日期 2026-10-24），没有官方 RSS：/blog/rss.xml 跳回英文博客 HTML，/feed 跳回首页。platform.kimi.ai/blog 是另一份更旧的平台文章（最新 2026-02-25），不是这份研究目录，不单独订。"
     },
     {
       "id": "fsck",
@@ -844,7 +844,8 @@
       "title": "MiniMax 稀宇科技",
       "lane": "mixed",
       "listUrls": [
-        "https://minimaxi.com/blog"
+        "https://www.minimax.io/blog",
+        "https://www.minimax.cn/blog"
       ],
       "htmlUrl": "https://www.minimax.io/blog",
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml",
@@ -858,9 +859,54 @@
       "bestblogs": {
         "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml",
         "adopted": true,
-        "note": "BestBlogs 的 Wechat2RSS 公众号转换。2026-10-31 用户确认订入。不是 minimax 官网博客，列表页仍是退路。"
+        "note": "BestBlogs 的 Wechat2RSS 公众号转换。2026-10-31 用户确认订入。不是官网博客。官网没有原生 RSS，列表页只是主源报错或停更后的退路。"
       },
-      "notes": "minimaxi.com/blog 会跳到 minimax.cn/blog，无原生 feed。订的是微信公众号转换。官网博客仍走列表页。"
+      "notes": "主源是微信公众号转换。2026-11-21 HTTP 200，最新一条是 2026-11-10，相对 11-13～11-19 窗口未停更，不并入官网列表。minimaxi.com/blog 会跳到 minimax.cn/blog，不再当作列表页。可用列表是 https://www.minimax.io/blog（英文）和 https://www.minimax.cn/blog（中文），2026-11-21 都是 HTTP 200，都有 2026-11-20 的日期；英文页另见 2026-11-11，中文页的日期集不完全相同。/blog/rss.xml 与 /blog/feed 为 404，/rss.xml 跳回首页，没有官方 RSS。"
+    },
+    {
+      "id": "glm",
+      "title": "GLM",
+      "lane": "mixed",
+      "listUrls": [
+        "https://www.zhipuai.cn/zh/research",
+        "https://www.zhipuai.cn/en/research"
+      ],
+      "htmlUrl": "https://www.zhipuai.cn/zh/research",
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/433d2134dca54d80804daf32e8be546155be3300.xml",
+      "articleHosts": [
+        "zhipuai.cn",
+        "z.ai"
+      ],
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/433d2134dca54d80804daf32e8be546155be3300.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，频道名「智谱」。官网研究列表只是退路，不是第二条 source。"
+      },
+      "notes": "主源是微信。2026-11-21 HTTP 200，频道名「智谱」，最新一条是 2026-09-18，相对 11-19 已停更。没有官方 RSS。https://z.ai/blog 索引是 404，不作为列表页；单篇文章如 /blog/glm-legal 能打开，但是脚本壳。可用列表是 https://www.zhipuai.cn/zh/research 与 /en/research，2026-11-21 都是 HTTP 200，页面里最新日期约 2026-09-10，没有 11-13～11-19 的条目。主源停更后列表页也补不到本期窗口内的文章。"
+    },
+    {
+      "id": "stepfun",
+      "title": "StepFun",
+      "lane": "mixed",
+      "listUrls": [
+        "https://www.stepfun.com/news"
+      ],
+      "htmlUrl": "https://www.stepfun.com/news",
+      "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/3e2714d06aa36142e8ed6b3f4e5cf9090a069dd2.xml",
+      "articleHosts": [
+        "stepfun.com",
+        "stepfun.ai"
+      ],
+      "feedOrigin": "bestblogs-wechat2rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://wechat2rss.bestblogs.dev/feed/3e2714d06aa36142e8ed6b3f4e5cf9090a069dd2.xml",
+        "adopted": true,
+        "note": "BestBlogs Wechat2RSS，频道名「阶跃StepFun」。官网新闻列表只是退路。"
+      },
+      "notes": "主源是微信。2026-11-21 HTTP 200，频道名「阶跃StepFun」，最新一条是 2026-11-04（上线 Qoder），相对 11-13～11-19 窗口未停更，不并入官网列表。没有官方 RSS：/news/rss 与 /feed 返回的是站点 SPA 壳，不是 feed。https://www.stepfun.com/news 是 HTTP 200 的空壳，简单客户端看不到文章条目。技术博客单篇可开（platform.stepfun.com 与 platform.stepfun.ai 的 /blog/inside-step-5-preview 同文），但 /blog 索引是 404，https://static.stepfun.com/blog/ 正文为空。没有可用的技术博客目录页，不能扫全。"
     },
     {
       "id": "bytedance-tech",
