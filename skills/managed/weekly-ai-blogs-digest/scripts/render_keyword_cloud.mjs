@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 /**
- * 把周报关键词画成 SVG，再用同一份字体文件导出 PNG。
+ * 把周报关键词画成透明 SVG，再用同一套字体导出 PNG。
  *
  * 输入是 JSON [{word, weight}]，或周报 markdown 里「一、本周关键词」章。
  * 章内若有 <!-- keywords-cloud ... -->，其中的 JSON 数组优先。
  * 已有 weight 就直接用；否则按 score、mentions、sources 计算。
  * sources 在写入 JSON 时按标题链接和短述行内链接的 hostname 计数
  * （scripts/source_hostnames.mjs）。这里不从正文重算，避免链接换位置后把已有 weight 清掉。
+ *
+ * 排版测量固定用预设的粗体（ink-sans 是 Noto Sans CJK SC 700），
+ * 中档和低档只在上色时改成常规字重，位置和字号不动。
+ * SVG 不铺底、不画外框。外框由站点包一层手绘轮廓。
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -15,14 +19,23 @@ import { pathToFileURL } from "node:url";
 import { createCanvas, GlobalFonts } from "@napi-rs/canvas";
 import { Resvg } from "@resvg/resvg-js";
 import CloudLayout from "d3-cloud";
+import {
+  CROP_PADDING,
+  INK_TIERS,
+  assignWeightTiers,
+  fontSize,
+  keywordWeight,
+  renderCloudSvg,
+} from "./keyword_cloud_style.mjs";
+
 export { sourceHostnames } from "./source_hostnames.mjs";
+export { assignWeightTiers, fontSize, keywordWeight, renderCloudSvg, CROP_PADDING };
 
 const PALETTES = {
   "ink-sans": {
     fontFamily: "Noto Sans CJK SC",
     fontWeight: 700,
-    background: "#fffcf7",
-    fills: ["#b4541f", "#1c1b19", "#1c1b19", "#3d3a34", "#3d3a34", "#5c574e"],
+    tiers: INK_TIERS,
     fontFiles: [
       "/usr/share/fonts/opentype/noto/NotoSansCJKsc-Bold.otf",
       "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
@@ -30,12 +43,23 @@ const PALETTES = {
       "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
       path.join(homedir(), ".local/share/fonts/NotoSansCJKsc-Bold.otf"),
     ],
+    regularFiles: [
+      "/usr/share/fonts/opentype/noto/NotoSansCJKsc-Regular.otf",
+      "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "/usr/share/fonts/truetype/noto/NotoSansCJKsc-Regular.otf",
+      "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+      path.join(homedir(), ".local/share/fonts/NotoSansCJKsc-Regular.otf"),
+    ],
   },
   "serif-earth": {
     fontFamily: "Noto Serif CJK SC",
     fontWeight: 400,
-    background: "#f8efe4",
-    fills: ["#9a3412", "#6d3a22", "#6d3a22", "#3d3228", "#3d3228", "#8a5a3a"],
+    tiers: {
+      top: { fill: "#9a3412", fontWeight: 400 },
+      high: { fill: "#3d3228", fontWeight: 400 },
+      mid: { fill: "#6d3a22", fontWeight: 400 },
+      low: { fill: "#8a5a3a", fontWeight: 400 },
+    },
     fontFiles: [
       "/usr/share/fonts/opentype/noto/NotoSerifCJKsc-Regular.otf",
       "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
@@ -46,8 +70,12 @@ const PALETTES = {
   "wenkai-pine": {
     fontFamily: "LXGW WenKai",
     fontWeight: 400,
-    background: "#f4f7f5",
-    fills: ["#1b4332", "#1c1b19", "#1f6b4a", "#245c48", "#245c48", "#3d6b58"],
+    tiers: {
+      top: { fill: "#1b4332", fontWeight: 400 },
+      high: { fill: "#1c1b19", fontWeight: 400 },
+      mid: { fill: "#245c48", fontWeight: 400 },
+      low: { fill: "#3d6b58", fontWeight: 400 },
+    },
     fontFiles: [
       "/usr/share/fonts/truetype/lxgw/LXGWWenKai-Regular.ttf",
       "/usr/local/share/fonts/LXGWWenKai-Regular.ttf",
@@ -69,9 +97,9 @@ function usage() {
 
 选项:
   --palette ink-sans|serif-earth|wenkai-pine   默认 ink-sans
-  --font-file <路径>     测量和 PNG 共用的字体文件
+  --font-file <路径>     测量和 PNG 粗体共用的字体文件
   --font-family <名称>   须与字体文件的家族名一致，默认随预设
-  --font-weight <数字>   默认随预设
+  --font-weight <数字>   排版测量用的字重，默认随预设
   --seed <整数>          默认 1
   --no-png
 `;
@@ -126,37 +154,14 @@ function fail(message) {
   process.exit(1);
 }
 
-function round1(value) {
-  return Math.round(value * 10) / 10;
-}
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-export function keywordWeight(item) {
-  if (item.weight != null && item.weight !== "") {
-    const weight = Number(item.weight);
-    if (!Number.isFinite(weight)) fail(`权重不是数字: ${item.word}`);
-    return clamp(round1(weight), 1, 5);
-  }
-  const score = item.score == null ? 1 : Number(item.score);
-  const mentions = item.mentions == null ? 0 : Number(item.mentions);
-  const sources = item.sources == null ? 0 : Number(item.sources);
-  if (![score, mentions, sources].every(Number.isFinite)) fail(`分数或计数不是数字: ${item.word}`);
-  const mentionPart = (Math.min(mentions, 4) / 4) * 5;
-  const sourcePart = (Math.min(sources, 3) / 3) * 5;
-  return clamp(round1(0.6 * score + 0.25 * mentionPart + 0.15 * sourcePart), 1, 5);
-}
-
-export function fontSize(weight) {
-  return Math.round(18 + ((weight - 1) / 4) * 40);
-}
-
 function normalizeWord(item) {
   const word = String(item.word ?? item.text ?? "").trim();
   if (!word) fail("有一条关键词是空的");
-  return { word, weight: keywordWeight({ ...item, word }) };
+  try {
+    return { word, weight: keywordWeight({ ...item, word }) };
+  } catch (error) {
+    fail(error.message);
+  }
 }
 
 function wordsFromJson(file) {
@@ -173,7 +178,7 @@ function sectionText(markdown) {
   return next === -1 ? rest : rest.slice(0, next);
 }
 
-function wordsFromMarkdown(file) {
+export function wordsFromMarkdown(file) {
   const section = sectionText(readFileSync(file, "utf8"));
   const comment = section.match(/<!--\s*keywords-cloud\s*([\s\S]*?)-->/);
   if (comment) {
@@ -206,14 +211,6 @@ function mulberry32(seed) {
   };
 }
 
-function escapeXml(value) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
 function resolveFont(args, preset) {
   const fontFile = args.fontFile || preset.fontFiles.find((file) => existsSync(file));
   if (!fontFile || !existsSync(fontFile)) {
@@ -221,8 +218,10 @@ function resolveFont(args, preset) {
       `找不到字体文件。安装对应字体，或传入 --font-file。\n预设 ${args.palette} 会查找:\n${preset.fontFiles.join("\n")}`,
     );
   }
+  const regularFile = (preset.regularFiles || []).find((file) => existsSync(file)) || null;
   return {
     fontFile,
+    regularFile,
     fontFamily: args.fontFamily || preset.fontFamily,
     fontWeight: args.fontWeight ?? preset.fontWeight,
   };
@@ -260,23 +259,39 @@ function layoutWords(words, font, seed, width, height) {
   return { placed, bounds: layout.bounds() };
 }
 
-function renderSvg(preset, font, placed, width, height, originX, originY) {
-  const bySize = [...placed].sort((a, b) => b.size - a.size || a.text.localeCompare(b.text, "zh"));
-  const colorOf = new Map(
-    bySize.map((word, index) => [word.text, preset.fills[Math.min(index, preset.fills.length - 1)]]),
+export function placeKeywords(words, font, seed = 1) {
+  if (!GlobalFonts.has(font.fontFamily)) {
+    const registered = GlobalFonts.registerFromPath(font.fontFile, font.fontFamily);
+    if (!registered) fail(`无法注册字体: ${font.fontFile}`);
+  }
+  for (const [width, height] of LAYOUT_BOXES) {
+    const packed = layoutWords(words, font, seed, width, height);
+    if (packed) {
+      return packed.placed.map((word) => ({
+        text: word.text,
+        x: word.x,
+        y: word.y,
+        size: word.size,
+      }));
+    }
+  }
+  return null;
+}
+
+function renderPacked(preset, font, packed) {
+  const [min, max] = packed.bounds;
+  const width = Math.ceil(max.x - min.x) + CROP_PADDING * 2;
+  const height = Math.ceil(max.y - min.y) + CROP_PADDING * 2;
+  const svg = renderCloudSvg(
+    preset,
+    font,
+    packed.placed,
+    width,
+    height,
+    CROP_PADDING - min.x,
+    CROP_PADDING - min.y,
   );
-  const texts = placed.map((word) => {
-    const fill = colorOf.get(word.text);
-    return `<text x="${word.x}" y="${word.y}" text-anchor="middle" dominant-baseline="alphabetic" font-size="${word.size}" fill="${fill}">${escapeXml(word.text)}</text>`;
-  });
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="100%" height="100%" fill="${preset.background}"/>
-  <g transform="translate(${originX} ${originY})" font-family="${escapeXml(font.fontFamily)}" font-weight="${font.fontWeight}">
-    ${texts.join("\n    ")}
-  </g>
-</svg>
-`;
+  return { svg, width, height };
 }
 
 function main() {
@@ -297,21 +312,18 @@ function main() {
     fail(`放不下: ${widest.word}`);
   }
 
-  const margin = 36;
-  const [min, max] = packed.bounds;
-  const width = Math.ceil(max.x - min.x) + margin * 2;
-  const height = Math.ceil(max.y - min.y) + margin * 2;
-  const svg = renderSvg(preset, font, packed.placed, width, height, margin - min.x, margin - min.y);
+  const { svg } = renderPacked(preset, font, packed);
   mkdirSync(path.dirname(path.resolve(args.outSvg)), { recursive: true });
   writeFileSync(args.outSvg, svg);
   console.log(`SVG: ${args.outSvg}`);
 
   if (!args.png) return;
   const pngPath = args.outPng || args.outSvg.replace(/\.svg$/i, ".png");
+  const fontFiles = [...new Set([font.fontFile, font.regularFile].filter(Boolean))];
   const resvg = new Resvg(svg, {
     fitTo: { mode: "zoom", value: 2 },
     font: {
-      fontFiles: [font.fontFile],
+      fontFiles,
       loadSystemFonts: false,
       defaultFontFamily: font.fontFamily,
       sansSerifFamily: font.fontFamily,
@@ -323,4 +335,5 @@ function main() {
   console.log(`PNG: ${pngPath} via @resvg/resvg-js`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main();
+const entry = process.argv[1];
+if (entry && import.meta.url === pathToFileURL(entry).href) main();

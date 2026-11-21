@@ -158,6 +158,7 @@ test('item titles link to the source and quote blocks are gone', () => {
       assert.doesNotMatch(selected, /微信原文这次没打开|这次没打开原文/);
       const projects = body.split(/^## 三、项目开源$/m)[1].split(/^## 四、/m)[0];
       assert.match(projects, /GitHub Trending（weekly \/ all 前 5）/);
+      assert.doesNotMatch(projects, /前五是|这期看的是一周榜/);
       const projectItems = projects.split(/^#### /m).slice(1);
       assert.equal(projectItems.length, 6);
       assert.match(projectItems[0], /^GitHub Trending（weekly \/ all 前 5）/);
@@ -242,4 +243,39 @@ test('a missing keyword chapter is legacy even when the date is recent', () => {
     '## 二、模型进展',
   ].join('\n');
   assert.equal(summaryLine(cloudOnly, false), '');
+});
+
+test('model release notes use the shared info card', () => {
+  for (const name of ['2026-11-13-ai-news.md', '2026-11-20-ai-news.md']) {
+    const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
+    assert.match(body, /<aside class="info-card">/, name);
+    assert.match(body, /<span>发布要点<\/span>/, name);
+    assert.match(body, /class="info-card-note">来源：/, name);
+    assert.match(body, /<mark class="note-card-hl">/, name);
+    assert.doesNotMatch(body, /release-points/, name);
+  }
+  const rules = fs.readFileSync(
+    path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/04-榜单与图.md'),
+    'utf8',
+  );
+  assert.match(rules, /<aside class="info-card">/);
+  assert.match(rules, /note-card-hl/);
+  assert.doesNotMatch(rules, /release-points/);
+});
+
+test('published issues do not introduce the trending top-five sentence', () => {
+  for (const name of listAiNewsFiles(aiNewsRoot)) {
+    const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
+    const projects = body.split(/^##[ \t]*三、项目开源[ \t]*$/m)[1]?.split(/^## /m)[0] ?? '';
+    assert.doesNotMatch(projects, /前五是|这期看的是一周榜/, name);
+  }
+  for (const rel of [
+    'skills/managed/weekly-ai-blogs-digest/references/03-并行写总结.md',
+    'skills/managed/weekly-ai-blogs-digest/references/04-榜单与图.md',
+    'skills/managed/weekly-ai-blogs-digest/references/05-排版与开-PR.md',
+    'ai-news/README.md',
+  ]) {
+    const text = fs.readFileSync(path.join(repoRoot, rel), 'utf8');
+    assert.match(text, /不要写概括前五/, rel);
+  }
 });

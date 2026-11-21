@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="747" height="447" viewBox="0 0 747 447">
-  <rect width="100%" height="100%" fill="#fffcf7"/>
-  <g transform="translate(470 280)" font-family="Noto Sans CJK SC" font-weight="700">
-    <text x="68" y="-160" text-anchor="middle" dominant-baseline="alphabetic" font-size="52" fill="#b4541f">常驻 Agent</text>
-    <text x="14" y="-92" text-anchor="middle" dominant-baseline="alphabetic" font-size="47" fill="#1c1b19">本体</text>
-    <text x="-119" y="-34" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#1c1b19">Devin Bots</text>
-    <text x="-31" y="20" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#3d3a34">Gemini 4 Neon</text>
-    <text x="-197" y="-89" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#3d3a34">GPT-6.2 Astra</text>
-    <text x="-212" y="-141" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" fill="#5c574e">GPT-6.2 Sol</text>
-    <text x="-339" y="-36" text-anchor="middle" dominant-baseline="alphabetic" font-size="44" fill="#5c574e">软件工厂</text>
-    <text x="-175" y="-197" text-anchor="middle" dominant-baseline="alphabetic" font-size="44" fill="#5c574e">验证闭环</text>
-    <text x="-7" y="69" text-anchor="middle" dominant-baseline="alphabetic" font-size="43" fill="#5c574e">Qwen4-Max</text>
-    <text x="135" y="-30" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">LoopForge</text>
-    <text x="47" y="118" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" fill="#5c574e">Skill 自进化</text>
-    <text x="189" y="34" text-anchor="middle" dominant-baseline="alphabetic" font-size="37" fill="#5c574e">沙箱</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="699" height="399" viewBox="0 0 699 399">
+  <g transform="translate(446 256)" font-family="Noto Sans CJK SC">
+    <text class="kw-top" x="68" y="-160" text-anchor="middle" dominant-baseline="alphabetic" font-size="52" font-weight="700" fill="#b4541f">常驻 Agent</text>
+    <text class="kw-high" x="14" y="-92" text-anchor="middle" dominant-baseline="alphabetic" font-size="47" font-weight="700" fill="#1c1b19">本体</text>
+    <text class="kw-high" x="-119" y="-34" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" font-weight="700" fill="#1c1b19">Devin Bots</text>
+    <text class="kw-high" x="-31" y="20" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" font-weight="700" fill="#1c1b19">Gemini 4 Neon</text>
+    <text class="kw-high" x="-197" y="-89" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" font-weight="700" fill="#1c1b19">GPT-6.2 Astra</text>
+    <text class="kw-high" x="-212" y="-141" text-anchor="middle" dominant-baseline="alphabetic" font-size="46" font-weight="700" fill="#1c1b19">GPT-6.2 Sol</text>
+    <text class="kw-mid" x="-339" y="-36" text-anchor="middle" dominant-baseline="alphabetic" font-size="44" font-weight="400" fill="#5c574e">软件工厂</text>
+    <text class="kw-mid" x="-175" y="-197" text-anchor="middle" dominant-baseline="alphabetic" font-size="44" font-weight="400" fill="#5c574e">验证闭环</text>
+    <text class="kw-mid" x="-7" y="69" text-anchor="middle" dominant-baseline="alphabetic" font-size="43" font-weight="400" fill="#5c574e">Qwen4-Max</text>
+    <text class="kw-low" x="135" y="-30" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" font-weight="400" fill="#746f65">LoopForge</text>
+    <text class="kw-low" x="47" y="118" text-anchor="middle" dominant-baseline="alphabetic" font-size="38" font-weight="400" fill="#746f65">Skill 自进化</text>
+    <text class="kw-low" x="189" y="34" text-anchor="middle" dominant-baseline="alphabetic" font-size="37" font-weight="400" fill="#746f65">沙箱</text>
   </g>
 </svg>

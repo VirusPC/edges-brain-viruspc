@@ -1,8 +1,12 @@
 /* Small additions on the existing article card. The card frame stays in global.css. */
 
-.note-card {
+.note-card,
+.info-card {
   --note-hl: rgba(255, 214, 102, 0.55);
   --note-label: #8a6a58;
+}
+
+.note-card {
   --note-body: #24221e;
   --note-leading: 1.68;
   --note-gap-tight: 4px;
@@ -162,9 +166,13 @@
   }
 }
 
-:root[data-theme="dark"] .note-card {
+:root[data-theme="dark"] .note-card,
+:root[data-theme="dark"] .info-card {
   --note-hl: rgba(214, 160, 60, 0.32);
   --note-label: #d2b8a4;
+}
+
+:root[data-theme="dark"] .note-card {
   --note-body: var(--panel-ink);
 }
 
@@ -222,9 +230,13 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .note-card {
+  :root:not([data-theme="light"]) .note-card,
+  :root:not([data-theme="light"]) .info-card {
     --note-hl: rgba(214, 160, 60, 0.32);
     --note-label: #d2b8a4;
+  }
+
+  :root:not([data-theme="light"]) .note-card {
     --note-body: var(--panel-ink);
   }
 
