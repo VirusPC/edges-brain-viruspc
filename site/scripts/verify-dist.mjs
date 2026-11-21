@@ -358,9 +358,9 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
-assert.match(issue20, /alt="Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots、常驻 Agent、软件工厂、Skill 自进化与评测、工具检索"/);
-assert.doesNotMatch(issue20, /<p>\s*Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max/);
-assert.doesNotMatch(aiNewsList, /Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots/);
+assert.match(issue20, /alt="GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、Claude Code、常驻 Agent、Codex、OpenRouter、本体、软件工厂、Qwen4-Max、Devin Bots、Kiro、验证闭环、LangSmith、Skill 自进化、LoopForge、Octop、沙箱、DeepSeek、Grok Bot、llama\.cpp"/);
+assert.doesNotMatch(issue20, /<p>\s*GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol/);
+assert.doesNotMatch(aiNewsList, /GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、Claude Code/);
 assert.match(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
 assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
