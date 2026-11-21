@@ -1,0 +1,277 @@
+/* Small additions on the existing article card. The card frame stays in global.css. */
+
+.note-card {
+  --note-hl: rgba(255, 214, 102, 0.55);
+  --note-label: #8a6a58;
+  --note-body: #24221e;
+  --note-leading: 1.68;
+  --note-gap-tight: 4px;
+  --note-gap-title: 8px;
+  --note-gap-tldr: 10px;
+  --note-gap-fold: 12px;
+  --note-gap-section: 16px;
+  --note-pad-y: 16px;
+  --note-gap-card: 20px;
+  font-family: var(--serif);
+}
+
+.prose .note-card h4.note-card-title::before,
+.prose .note-card h4.note-card-title::after {
+  content: none !important;
+  display: none !important;
+}
+
+.prose .note-card h4 .ai-news-filter-cat,
+.prose .note-card h4 .ai-news-filter-co {
+  flex: none;
+  font-family: var(--serif);
+}
+
+.prose .note-card h4 .ai-news-filter-cat {
+  order: 0;
+}
+
+.prose .note-card h4 .ai-news-filter-co.ai-news-tag {
+  order: 1;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.12em 0.5em 0.14em;
+  background: var(--paper);
+  color: var(--ink-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent);
+  font-size: 0.78em;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.prose .note-card h4 .ai-news-filter-co.ai-news-tag[aria-pressed='true'] {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px currentColor;
+  text-decoration: none;
+}
+
+.prose .note-card h4 .ai-news-tag:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.note-card-lede mark,
+.note-card-hl {
+  padding: 0 1px;
+  background: linear-gradient(
+    transparent 58%,
+    var(--note-hl) 58%,
+    var(--note-hl) 90%,
+    transparent 90%
+  );
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.prose .note-card.article-card {
+  margin: 0 0 var(--note-gap-card);
+  padding-top: var(--note-pad-y);
+  padding-bottom: var(--note-pad-y);
+}
+
+.prose .note-card h4.note-card-title {
+  margin: 0 0 var(--note-gap-title);
+}
+
+.prose .note-card .note-card-lede {
+  margin: 0 0 var(--note-gap-tldr);
+  line-height: var(--note-leading);
+}
+
+.prose .note-card details.article-more {
+  margin: 0;
+}
+
+.prose .note-card details.article-more > summary,
+.prose .note-card details.article-more[open] > summary {
+  margin: 0;
+}
+
+.prose .note-card details.article-more > .note-card-sec {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75rem;
+  align-items: baseline;
+  margin: var(--note-gap-section) 0 0;
+}
+
+.prose .note-card details.article-more > .note-card-sec:first-of-type {
+  margin-top: var(--note-gap-fold);
+}
+
+.prose .note-card details.article-more > .note-card-sec:last-child {
+  margin-bottom: 0;
+}
+
+.prose .note-card details.article-more > .note-card-sec.is-wide {
+  grid-template-columns: 1fr;
+}
+
+.note-card-k {
+  margin: 0;
+  color: var(--note-label);
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: var(--note-leading);
+  width: 5.5em;
+  letter-spacing: 0.02em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.prose .note-card .note-card-sec p {
+  margin: 0;
+  color: var(--note-body);
+  font-size: 16.5px;
+  font-weight: 500;
+  line-height: var(--note-leading);
+}
+
+@media (max-width: 560px) {
+  .prose .note-card.article-card {
+    margin-bottom: var(--note-gap-card);
+    padding-top: var(--note-pad-y);
+    padding-bottom: var(--note-pad-y);
+  }
+}
+
+@media (max-width: 520px) {
+  .prose .note-card details.article-more > .note-card-sec {
+    grid-template-columns: 1fr;
+    row-gap: var(--note-gap-tight);
+  }
+
+  .note-card-k {
+    text-align: left;
+  }
+}
+
+:root[data-theme="dark"] .note-card {
+  --note-hl: rgba(214, 160, 60, 0.32);
+  --note-label: #d2b8a4;
+  --note-body: var(--panel-ink);
+}
+
+:root[data-theme="dark"] .note-card-lede mark,
+:root[data-theme="dark"] .note-card-hl {
+  color: inherit;
+  background: linear-gradient(
+    transparent 55%,
+    var(--note-hl) 55%,
+    var(--note-hl) 90%,
+    transparent 90%
+  );
+}
+
+:root[data-theme="dark"] .ai-news-filter-cat {
+  background: #3a2a22;
+  color: #f0c2a8;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f0c2a8 70%, transparent);
+}
+
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="模型"] {
+  background: #243044;
+  color: #c5d7f5;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5d7f5 70%, transparent);
+}
+
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="产品"] {
+  background: #3a2a22;
+  color: #f3cbb8;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #f3cbb8 70%, transparent);
+}
+
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="Agent 与 Harness"] {
+  background: #2c2840;
+  color: #ddd4f5;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ddd4f5 72%, transparent);
+}
+
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="工程实践"] {
+  background: #1e3329;
+  color: #c5ead8;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5ead8 70%, transparent);
+}
+
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="开源"] {
+  background: #1c3333;
+  color: #c5e8e8;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5e8e8 70%, transparent);
+}
+
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="行业"] {
+  background: #332820;
+  color: #ead4c4;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ead4c4 70%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .note-card {
+    --note-hl: rgba(214, 160, 60, 0.32);
+    --note-label: #d2b8a4;
+    --note-body: var(--panel-ink);
+  }
+
+  :root:not([data-theme="light"]) .note-card-lede mark,
+  :root:not([data-theme="light"]) .note-card-hl {
+    color: inherit;
+    background: linear-gradient(
+      transparent 55%,
+      var(--note-hl) 55%,
+      var(--note-hl) 90%,
+      transparent 90%
+    );
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter-cat {
+    background: #3a2a22;
+    color: #f0c2a8;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #f0c2a8 70%, transparent);
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="模型"] {
+    background: #243044;
+    color: #c5d7f5;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5d7f5 70%, transparent);
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="产品"] {
+    background: #3a2a22;
+    color: #f3cbb8;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #f3cbb8 70%, transparent);
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="Agent 与 Harness"] {
+    background: #2c2840;
+    color: #ddd4f5;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #ddd4f5 72%, transparent);
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="工程实践"] {
+    background: #1e3329;
+    color: #c5ead8;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5ead8 70%, transparent);
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="开源"] {
+    background: #1c3333;
+    color: #c5e8e8;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5e8e8 70%, transparent);
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="行业"] {
+    background: #332820;
+    color: #ead4c4;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #ead4c4 70%, transparent);
+  }
+}

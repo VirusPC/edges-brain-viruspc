@@ -425,22 +425,26 @@ assert.equal(projectFolded20.length, 5);
 assert.equal(selectedFolded20.length, 31);
 for (const block of projectFolded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
-  for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
-    assert.match(block[1], new RegExp(`<strong>${label}</strong>`));
+  for (const label of ['什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作']) {
+    assert.match(block[1], new RegExp(`class="note-card-k">${label}</div>`));
   }
+  assert.doesNotMatch(block[1], /class="note-card-k">解决什么问题<\/div>/);
+  assert.match(block[1], /class="note-card-hl"/);
   assert.doesNotMatch(block[1], /后续可以怎么做|相关进展：|在解决什么问题|怎么解决：|与其他进展的关联|和最近的进展|做 agent infra|做业务时/);
 }
 for (const block of selectedFolded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
-  for (const label of ['解决什么问题：', '如何解决：', '效果怎样：', '洞察与启发：', '相关工作：']) {
-    assert.match(block[1], new RegExp(`<strong>${label}</strong>`));
+  for (const label of ['什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作']) {
+    assert.match(block[1], new RegExp(`class="note-card-k">${label}</div>`));
   }
+  assert.doesNotMatch(block[1], /class="note-card-k">解决什么问题<\/div>/);
+  assert.match(block[1], /class="note-card-hl"/);
   assert.doesNotMatch(block[1], /在解决什么问题|怎么解决：|后续可以怎么做|相关进展：|和最近的进展|与其他进展的关联|做 agent infra|做业务时|微信原文这次没打开|这次没打开原文/);
 }
-assert.equal((projectHtml20.match(/class="article-card"/g) || []).length, 5);
-assert.equal((selectedHtml20.match(/class="article-card"/g) || []).length, 34);
+assert.equal((projectHtml20.match(/class="note-card article-card"/g) || []).length, 5);
+assert.equal((selectedHtml20.match(/class="note-card article-card"/g) || []).length, 34);
 assert.match(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
-assert.doesNotMatch(projectHtml20.slice(0, projectHtml20.indexOf('GitHub Trending')), /article-card/);
+assert.doesNotMatch(projectHtml20.slice(0, projectHtml20.indexOf('GitHub Trending')), /note-card/);
 assert.doesNotMatch(projectHtml20, /data-cat=/);
 assert.match(selectedHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);
