@@ -358,9 +358,12 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
-assert.match(issue20, /alt="GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、Claude Code、常驻 Agent、Codex、OpenRouter、本体、软件工厂、Qwen4-Max、Devin Bots、Kiro、验证闭环、LangSmith、Skill 自进化、LoopForge、Octop、沙箱、DeepSeek、Grok Bot、llama\.cpp"/);
+assert.match(issue20, /alt="GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、常驻 Agent、本体、软件工厂、Qwen4-Max、Devin Bots、验证闭环、Skill 自进化、LoopForge、沙箱"/);
+const keywordAlt20 = issue20.match(/alt="(GPT-6\.2 Astra、Gemini 4 Neon、[^"]*)"/);
+assert.ok(keywordAlt20, '2026-11-20 is missing the keyword cloud alt');
+assert.doesNotMatch(keywordAlt20[1], /Claude Code|Codex|OpenRouter|LangSmith|llama\.cpp|Grok Bot|DeepSeek|\bKiro\b|Octop/);
 assert.doesNotMatch(issue20, /<p>\s*GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol/);
-assert.doesNotMatch(aiNewsList, /GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、Claude Code/);
+assert.doesNotMatch(aiNewsList, /GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、常驻 Agent/);
 assert.match(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
 assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
