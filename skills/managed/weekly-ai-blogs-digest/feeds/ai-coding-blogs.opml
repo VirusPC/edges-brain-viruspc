@@ -14,7 +14,11 @@
       <outline text="OpenAI News" title="OpenAI News" type="rss" xmlUrl="https://openai.com/news/rss.xml" htmlUrl="https://openai.com/news/"/>
       <outline text="Google AI Blog" title="Google AI Blog" type="rss" xmlUrl="https://blog.google/innovation-and-ai/technology/ai/rss/" htmlUrl="https://blog.google/innovation-and-ai/technology/ai/"/>
       <outline text="Meta AI Blog" title="Meta AI Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml" htmlUrl="https://ai.meta.com/blog/"/>
-      <outline text="xAI News" title="xAI News" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml" htmlUrl="https://x.ai/news"/>
+      <outline text="Meta AI Blog（RSSHub 备源）" title="Meta AI Blog（RSSHub 备源）" type="rss" xmlUrl="https://rsshub.bestblogs.dev/meta/ai/blog" htmlUrl="https://ai.meta.com/blog/"/>
+      <outline text="Engineering at Meta" title="Engineering at Meta" type="rss" xmlUrl="https://engineering.fb.com/feed/" htmlUrl="https://engineering.fb.com/"/>
+      <outline text="xAI News" title="xAI News" type="rss" xmlUrl="https://raw.githubusercontent.com/0xSMW/rss-feeds/main/feeds/feed_xai_news.xml" htmlUrl="https://x.ai/news"/>
+      <outline text="xAI News（Olshansk 备源）" title="xAI News（Olshansk 备源）" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml" htmlUrl="https://x.ai/news"/>
+      <outline text="xAI News（XGo @xai 备源）" title="xAI News（XGo @xai 备源）" type="rss" xmlUrl="https://api.xgo.ing/rss/user/3953aa71e87a422eb9d7bf6ff1c7c43e" htmlUrl="https://x.ai/news"/>
       <outline text="ManusAI" title="ManusAI" type="rss" xmlUrl="https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab" htmlUrl="https://manus.im/blog"/>
       <outline text="Cursor Blog" title="Cursor Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml" htmlUrl="https://cursor.com/blog"/>
       <outline text="Devin Blog" title="Devin Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml" htmlUrl="https://devin.ai/blog"/>
@@ -33,7 +37,9 @@
       <outline text="Zed Blog" title="Zed Blog" type="rss" xmlUrl="https://zed.dev/blog.rss" htmlUrl="https://zed.dev/blog"/>
       <outline text="CodeRabbit Blog" title="CodeRabbit Blog" type="rss" xmlUrl="https://www.coderabbit.ai/feed" htmlUrl="https://www.coderabbit.ai/blog"/>
       <outline text="Warp Blog" title="Warp Blog" type="rss" xmlUrl="https://www.warp.dev/blog/feed.xml" htmlUrl="https://www.warp.dev/blog"/>
-      <outline text="月之暗面 Kimi" title="月之暗面 Kimi" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml" htmlUrl="https://www.kimi.com/en/blog/"/>
+      <outline text="月之暗面 Kimi" title="月之暗面 Kimi" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml" htmlUrl="https://www.kimi.com/blog/"/>
+      <outline text="GLM" title="GLM" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/433d2134dca54d80804daf32e8be546155be3300.xml" htmlUrl="https://www.zhipuai.cn/zh/research"/>
+      <outline text="StepFun" title="StepFun" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/3e2714d06aa36142e8ed6b3f4e5cf9090a069dd2.xml" htmlUrl="https://www.stepfun.com/news"/>
       <outline text="Massively Parallel Procrastination" title="Massively Parallel Procrastination" type="rss" xmlUrl="https://blog.fsck.com/feed/rss.xml" htmlUrl="https://blog.fsck.com/"/>
       <outline text="宝玉的分享" title="宝玉的分享" type="rss" xmlUrl="https://baoyu.io/feed.xml" htmlUrl="https://baoyu.io/"/>
       <outline text="Google Antigravity Blog" title="Google Antigravity Blog" type="rss" xmlUrl="https://antigravity.google/blog/rss.xml" htmlUrl="https://antigravity.google/blog"/>

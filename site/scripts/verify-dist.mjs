@@ -446,13 +446,13 @@ for (const block of selectedFolded20) {
   assert.doesNotMatch(block[1], /在解决什么问题|怎么解决：|后续可以怎么做|相关进展：|和最近的进展|与其他进展的关联|做 agent infra|做业务时|微信原文这次没打开|这次没打开原文/);
 }
 assert.equal((projectHtml20.match(/class="note-card article-card"/g) || []).length, 5);
-assert.equal((selectedHtml20.match(/class="note-card article-card"/g) || []).length, 34);
+assert.equal((selectedHtml20.match(/class="note-card article-card"/g) || []).length, 36);
 assert.match(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
 assert.doesNotMatch(projectHtml20.slice(0, projectHtml20.indexOf('GitHub Trending')), /note-card/);
 assert.doesNotMatch(projectHtml20, /data-cat=/);
 assert.match(selectedHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);
-assert.equal((issue20.match(/订阅源里只有这些/g) || []).length, 3);
+assert.equal((issue20.match(/订阅源里只有这些/g) || []).length, 5);
 assert.equal((issue20.match(/微信原文这次没打开|这次没打开原文/g) || []).length, 0);
 const selectedHeadings20 = issue20.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];
 for (const [cat, tag, title] of [

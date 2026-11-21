@@ -33,7 +33,7 @@ python3.12 -m venv /tmp/weekly-ai-blogs-digest-py312
 
 `scripts/requirements-leaderboard.txt` 固定 `pyarrow==17.0.0`。不要为了换解释器升级它。Debian/Ubuntu 上若 `venv` 报 ensurepip 不可用，先装 `python3.12-venv`。
 
-订阅真源是 [`feeds/ai-coding-blogs.opml`](../feeds/ai-coding-blogs.opml)。退路和备注在 [`feeds/ai-coding-blogs.meta.json`](../feeds/ai-coding-blogs.meta.json)。没有可用原生 feed 时，可以订公开的抓取 RSS 或 BestBlogs 转换源，并保留列表页退路。已经有原生 feed 的站不要再并一份抓取源。研究向的源不要新加。
+订阅真源是 [`feeds/ai-coding-blogs.opml`](../feeds/ai-coding-blogs.opml)。退路和备注在 [`feeds/ai-coding-blogs.meta.json`](../feeds/ai-coding-blogs.meta.json)。没有可用原生 feed 时，可以订公开的抓取 RSS 或 BestBlogs 转换源，并保留列表页退路。已经有原生 feed 的站不要再并一份抓取源。研究向的源不要新加。主源、备源和体检见 [订阅源兜底](../../../../.edges/routines/weekly-ai-blogs-digest/INDEX.md#订阅源兜底)。
 
 ## 命令
 
