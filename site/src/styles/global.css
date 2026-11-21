@@ -673,6 +673,49 @@ body.is-post.has-toc .sidenote {
   ry: var(--ai-news-radius);
 }
 
+.info-card,
+.model-board,
+.model-facts,
+.prose .article-card {
+  position: relative;
+}
+
+.rough-outline {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+  color: var(--panel-line);
+}
+
+.keyword-cloud-outline.rough-outline { color: inherit; }
+
+.info-card > .rough-outline,
+.model-board > .rough-outline,
+.model-facts > .rough-outline,
+.prose .article-card > .rough-outline {
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+}
+
+.rough-outline path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.info-card.has-rough-outline,
+.model-board.has-rough-outline,
+.model-facts.has-rough-outline,
+.prose .article-card.has-rough-outline {
+  border-color: transparent;
+}
+
+.keyword-cloud.has-rough-outline .keyword-cloud-outline rect { display: none; }
+
 .keyword-cloud-art-wrap { position: relative; }
 
 .keyword-cloud-art {
