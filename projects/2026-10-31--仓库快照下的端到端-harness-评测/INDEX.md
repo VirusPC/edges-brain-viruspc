@@ -66,6 +66,8 @@
 
 ## 调研材料
 
+- [Eval 论文十问阅读索引](notes/2026-11-21--eval-paper-ten-questions/INDEX.md) — 2026-11-21 的十篇评测论文阅读笔记，覆盖基准饱和、任务设计、裁判、验证和个性化评测。每篇保留完整十问；Agent-as-a-Judge 按 2024 年 arXiv:2410.10934v2 收录。
+
 - [Benchmark 论文论证与审稿问题](<../../.edges/projects/2026-11-01--agent-product-eval/notes/2026-11-09--benchmark-论文论证与审稿问题/INDEX.md>) — 以 NeurIPS、ICLR、ICML、ARR 官方指南整理研究价值、覆盖、标注、指标、统计、复现等论证及审稿自查；正文收于 Agent 产品评测 Project。
 
 - [Harbor 与 Inspect 深入对比](<notes/2026-10-31--harbor-%E4%B8%8E-inspect-%E6%B7%B1%E5%85%A5%E5%AF%B9%E6%AF%94/INDEX.md>) — 基于官方文档与固定提交源码，对比真实 Agent 执行、快照、材料加载、评分、轨迹、长期记忆及 Edges 接入边界。
