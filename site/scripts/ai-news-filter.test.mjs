@@ -5,6 +5,7 @@ import {
   COMPANY_ALIASES,
   SOURCE_ORDER,
   categoriesPresent,
+  canonicalCompany,
   companiesForSource,
   companiesPresent,
   sourceGroup,
@@ -134,11 +135,22 @@ test('company chips follow the hand-ordered groups', () => {
     [
       'DeepSeek',
       'Anthropic', 'OpenAI', 'Google',
-      '阿里', '腾讯', '火山引擎', '美团', '百度',
+      '阿里', '腾讯', '字节', '美团', '百度',
       'Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS',
     ],
   );
-  assert.equal(SOURCE_ORDER[SOURCE_ORDER.indexOf('火山引擎') + 1], '字节');
+  assert.equal(SOURCE_ORDER.includes('火山引擎'), false);
+  assert.equal(canonicalCompany('火山引擎'), '字节');
+  assert.equal(SOURCE_ORDER[SOURCE_ORDER.indexOf('腾讯') + 1], '字节');
+  assert.equal(sourceGroup('火山引擎'), '国内非模型厂');
+  assert.deepEqual(companiesPresent([['火山引擎', '字节', '腾讯']]), ['腾讯', '字节']);
+  assert.deepEqual(parseFilter('?tag=火山引擎'), { cat: '', src: '国内非模型厂', tag: '字节' });
+  assert.equal(itemMatches({ cat: '架构', tags: ['火山引擎'], src: '国内非模型厂' }, { tag: '字节' }), true);
+  assert.equal(itemMatches({ cat: '架构', tags: ['字节'], src: '国内非模型厂' }, { tag: '火山引擎' }), true);
+  assert.deepEqual(
+    nextFilter({ cat: '', src: '国内非模型厂', tag: '火山引擎' }, { kind: 'tag', value: '字节' }),
+    { cat: '', src: '国内非模型厂', tag: '' },
+  );
   assert.equal(SOURCE_ORDER.includes('ggml'), false);
   assert.deepEqual(
     companiesPresent([['Wrap', '月之暗面', 'XAI', 'Kimi'], ['Cogonition', 'Langchain', '智谱', '阶跃星辰']]),

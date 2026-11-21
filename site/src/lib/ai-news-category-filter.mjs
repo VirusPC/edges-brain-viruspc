@@ -30,7 +30,7 @@ export function filterChips(date, names) {
 export const SOURCE_GROUPS = [
   { name: '国内模型厂', companies: ['DeepSeek', 'Kimi', 'GLM', 'MiniMax', 'StepFun'] },
   { name: '国外模型厂', companies: ['Anthropic', 'OpenAI', 'Google', 'xAI', 'Meta'] },
-  { name: '国内非模型厂', companies: ['阿里', '腾讯', '火山引擎', '字节', '快手', '美团', '百度'] },
+  { name: '国内非模型厂', companies: ['阿里', '腾讯', '字节', '快手', '美团', '百度'] },
   { name: '国外非模型厂', companies: ['Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS', 'CodeRabbit', 'Zed', 'Latitude'] },
 ];
 
@@ -42,6 +42,7 @@ export const COMPANY_ALIASES = {
   智谱: 'GLM',
   阶跃星辰: 'StepFun',
   淘宝: '阿里',
+  火山引擎: '字节',
   ggml: 'Hugging Face',
   Cogonition: 'Cognition',
   Langchain: 'LangChain',
@@ -97,7 +98,7 @@ function blankFilter() {
 export function parseFilter(search) {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
   const cat = params.get('cat') || '';
-  const tag = (params.get('tag') || '').trim();
+  const tag = canonicalCompany((params.get('tag') || '').trim());
   let src = params.get('src') || '';
   const group = tag ? sourceGroup(tag) : '';
   if (group) src = group;
@@ -109,7 +110,11 @@ export function parseFilter(search) {
 }
 
 export function nextFilter(current, action) {
-  const next = { cat: current?.cat || '', src: current?.src || '', tag: current?.tag || '' };
+  const next = {
+    cat: current?.cat || '',
+    src: current?.src || '',
+    tag: current?.tag ? canonicalCompany(current.tag) : '',
+  };
   if (!action || action.kind === 'all') {
     if (action?.row === 'cat') next.cat = '';
     else if (action?.row === 'tag') next.tag = '';
@@ -155,7 +160,7 @@ export function isFilterStuck(barTop, stickyTop, tolerance = 2) {
 export function itemMatches(item, filter) {
   if (filter?.cat && item.cat !== filter.cat) return false;
   if (filter?.src && item.src !== filter.src) return false;
-  if (filter?.tag && !(item.tags || []).includes(filter.tag)) return false;
+  if (filter?.tag && !(item.tags || []).map(canonicalCompany).includes(canonicalCompany(filter.tag))) return false;
   return true;
 }
 
