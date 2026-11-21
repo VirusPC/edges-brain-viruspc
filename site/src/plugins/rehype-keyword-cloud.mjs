@@ -1,6 +1,7 @@
 /**
  * Replace a keyword-cloud image with an inline SVG.
- * The file stays transparent and unframed. The hand-drawn outline is the wrapper.
+ * The file stays transparent and unframed. The rect is the no-JS outline.
+ * The page replaces it with a Rough.js path.
  * Dark mode recolors `.kw-*` from the page stylesheet.
  */
 import fs from 'node:fs';
@@ -97,13 +98,7 @@ export function cloudHtml(svg, alt) {
   const label = escapeHtml(alt.trim() || '本周关键词');
   return `<div class="keyword-cloud">
 <svg class="keyword-cloud-outline" aria-hidden="true" focusable="false">
-<defs>
-<filter id="rough" filterUnits="objectBoundingBox" x="-8%" y="-14%" width="116%" height="128%">
-<feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="2" result="noise"></feTurbulence>
-<feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2"></feDisplacementMap>
-</filter>
-</defs>
-<rect filter="url(#rough)"></rect>
+<rect></rect>
 </svg>
 <div class="keyword-cloud-art-wrap" role="img" aria-label="${label}">
 ${svg}

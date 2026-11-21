@@ -262,9 +262,12 @@ exists(arenaRel);
 assert.match(latestIssue, /class="keyword-cloud"/);
 assert.match(latestIssue, /aria-label="交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab"/);
 assert.match(latestIssue, /class="kw-top"/);
-assert.match(latestIssue, /id="rough"/);
-assert.match(latestIssue, /baseFrequency="0\.03"/);
-assert.match(latestIssue, /scale="2\.2"/);
+assert.match(latestIssue, /class="keyword-cloud-outline"[^>]*>\s*<rect><\/rect>/);
+assert.doesNotMatch(latestIssue, /feTurbulence|feDisplacementMap|id="rough"/);
+assert.match(
+  files.filter((file) => file.endsWith('.js')).map((file) => fs.readFileSync(file, 'utf8')).join('\n'),
+  /disableMultiStroke/,
+);
 assert.doesNotMatch(latestIssue, /keywords-cloud-2026-11-06\.png/);
 const cloudAt = latestIssue.indexOf('class="keyword-cloud"');
 assert.ok(cloudAt > 0, 'latest issue is missing the keyword cloud');

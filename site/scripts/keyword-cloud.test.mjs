@@ -81,9 +81,8 @@ test('ai news cards share one radius token', () => {
   assert.match(css, /\.keyword-cloud-outline rect\s*\{[^}]*rx:\s*var\(--ai-news-radius\)/);
   assert.doesNotMatch(css, /border-radius:\s*0\.6rem/);
   const plugin = fs.readFileSync(new URL('../src/plugins/rehype-keyword-cloud.mjs', import.meta.url), 'utf8');
-  assert.match(plugin, /baseFrequency="0\.03"/);
-  assert.match(plugin, /scale="2\.2"/);
-  assert.match(plugin, /id="rough"/);
+  assert.match(plugin, /<rect><\/rect>/);
+  assert.doesNotMatch(plugin, /feTurbulence|feDisplacementMap|id="rough"/);
 });
 
 test('a keyword cloud image is inlined from the sibling svg', () => {
