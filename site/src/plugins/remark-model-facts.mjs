@@ -4,7 +4,7 @@ import { factsHtmlForHeading, loadModelReleases } from '../lib/model-releases.mj
 
 /**
  * Insert the generation-day price / speed / effect card under each model
- * heading in 「模型发布」. The prose stays. Issues without a snapshot are unchanged.
+ * heading in 「二、模型进展」. The prose stays. Issues without a snapshot are unchanged.
  *
  * @param {{ repoRoot?: string }} [options]
  */
@@ -35,11 +35,11 @@ export function insertModelFacts(tree, models) {
     if (node?.type !== 'heading') continue;
     const text = plain(node);
     if (node.depth === 2) {
+      if (text === '二、模型进展') {
+        inSection = true;
+        continue;
+      }
       if (inSection) break;
-      continue;
-    }
-    if (node.depth === 3 && text === '模型发布') {
-      inSection = true;
       continue;
     }
     if (!inSection || node.depth !== 4) continue;

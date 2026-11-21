@@ -19,9 +19,11 @@ const PLATFORM_RANK = new Map([
 /**
  * Mark leaderboard images under 「二、模型进展」 and drop the platform
  * headings so the rehype pass can fold those blocks into one dropdown.
- * The markdown headings and filenames stay as the weekly skill writes them.
+ * A 「模型发布」 heading is dropped too: model entries stay in this chapter
+ * with no extra TOC entry. The markdown filenames stay as the weekly skill
+ * writes them.
  * A chart with neither a snapshot nor an image never gets here: the skill
- * omits that block, and a heading with no chart image is left untouched.
+ * omits that block, and any other heading with no chart image is left untouched.
  *
  * @param {{ repoRoot?: string }} [options]
  */
@@ -45,7 +47,10 @@ export function remarkModelCharts(options = {}) {
 
     for (const block of blocks) {
       const headingText = block.heading ? plainText(block.heading) : '';
-      if (headingText === '模型发布') continue;
+      if (headingText === '模型发布') {
+        if (block.heading) remove.push(block.headingIndex);
+        continue;
+      }
       const charts = chartsIn(block.nodes, headingText);
       if (charts.length === 0) continue;
       if (block.heading && PLATFORM_HEADINGS.has(headingText)) remove.push(block.headingIndex);
@@ -104,7 +109,7 @@ export function remarkModelCharts(options = {}) {
 
 /**
  * When Artificial Analysis is present, render it before LLM Arena, then
- * OpenRouter, then 模型发布. Issues without that section keep their source order.
+ * OpenRouter, then the model entries. Issues without that section keep their source order.
  *
  * @param {any[]} children
  * @param {{ start: number, end: number }} range

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 /**
- * Generation-day snapshot for 「模型发布」. Missing file means no cards.
+ * Generation-day snapshot for model entries under 「二、模型进展」. Missing file means no cards.
  *
  * @param {string | null} dataRoot
  * @param {string} issueDate
