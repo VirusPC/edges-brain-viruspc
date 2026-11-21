@@ -3,19 +3,35 @@
 }
 
 .ai-news-filter {
+  --wood-top: #ecd9b8;
+  --wood-bot: #e6cfa8;
+  --wood-edge: #8a5a34;
+  --wood-lip: #b88a5e;
+  --wood-shadow: rgba(80, 50, 20, 0.18);
+  --wood-title: #6e3220;
+  --wood-seam: rgba(105, 65, 30, 0.38);
+  --wood-seam-hi: rgba(255, 246, 228, 0.75);
+  --wood-chip: #fffaf0;
+  --wood-chip-line: #bba98f;
+  --wood-on-line: #3a2a1c;
+  --wood-on-ink: #2a1d12;
+  --wood-label-bg: #e6cfa8;
+  --wood-grain: 0.28;
   position: sticky;
   top: var(--ai-news-filter-top, 0px);
   z-index: 3;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin: 0 0 0.85rem;
-  padding: 0.4rem 0 0.5rem;
-  background: var(--paper);
-  box-shadow: 0 1px 0 var(--rule);
+  gap: 0;
+  margin: 6px 8px 1.15rem;
+  padding: 22px 18px 16px;
+  background: var(--wood-bot);
 }
 
 .ai-news-filter-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -24,13 +40,92 @@
 
 .ai-news-filter-label {
   flex: none;
-  color: var(--ink);
+  color: var(--wood-title);
   font-size: 1em;
   font-weight: 700;
   line-height: 1.35;
   letter-spacing: 0;
-  background: var(--paper);
+  background: transparent;
   cursor: default;
+}
+
+.ai-news-filter-board {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transform: rotate(-0.5deg);
+}
+
+.ai-news-filter-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(
+      178deg,
+      rgba(120, 80, 40, 0) 0 9px,
+      rgba(120, 80, 40, 0.07) 9px 10px,
+      rgba(120, 80, 40, 0) 10px 23px,
+      rgba(120, 80, 40, 0.05) 23px 24px
+    ),
+    linear-gradient(180deg, var(--wood-top), var(--wood-bot));
+  border: 2px solid var(--wood-edge);
+  box-shadow: 0 3px 0 var(--wood-lip), 0 8px 18px var(--wood-shadow);
+  filter: url("#wood-rough");
+}
+
+.ai-news-filter-board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: var(--wood-bot);
+  opacity: var(--wood-grain);
+  mix-blend-mode: multiply;
+  filter: url("#wood-grain");
+}
+
+.ai-news-filter-nail {
+  position: absolute;
+  top: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d9d5cc, #8d877c 55%, #5c574f);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.ai-news-filter-nail.l { left: 10px; }
+.ai-news-filter-nail.r { right: 10px; }
+
+.ai-news-filter-seam {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 8px;
+  margin: 5px 0;
+  overflow: visible;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.ai-news-filter-seam path {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ai-news-filter-seam .groove {
+  stroke: var(--wood-seam);
+  stroke-width: 1.3px;
+}
+
+.ai-news-filter-seam .lip {
+  stroke: var(--wood-seam-hi);
+  stroke-width: 1px;
 }
 
 @media (max-width: 560px) {
@@ -52,51 +147,79 @@
     z-index: 1;
     margin-right: -0.4rem;
     padding-right: 0.4rem;
+    background: var(--wood-label-bg);
   }
+
+  .ai-news-filter {
+    margin-inline: 4px;
+    padding: 20px 12px 14px;
+  }
+
+  .ai-news-filter-nail.l { left: 8px; }
+  .ai-news-filter-nail.r { right: 8px; }
 }
 
 .ai-news-filter button {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
   flex: none;
   font: inherit;
   cursor: pointer;
 }
 
-.ai-news-filter-all {
-  border: 0;
-  border-radius: 999px;
-  padding: 0.12em 0.55em 0.14em;
-  background: transparent;
-  color: var(--ink-soft);
-  box-shadow: inset 0 0 0 1px var(--rule);
-  font-size: 0.78em;
+.ai-news-filter button .ai-news-filter-face,
+.ai-news-filter button::after {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+
+.ai-news-filter button .ai-news-filter-face {
+  text-align: center;
+  font-weight: 400;
+}
+
+.ai-news-filter button::after {
+  content: attr(data-label);
   font-weight: 600;
-  line-height: 1.35;
+  visibility: hidden;
+  pointer-events: none;
 }
 
-.ai-news-filter-all[aria-pressed='true'] {
-  color: var(--ink);
-  box-shadow: inset 0 0 0 2px var(--ink);
+.ai-news-filter button[aria-pressed='true'] .ai-news-filter-face {
+  font-weight: 600;
 }
 
+.ai-news-filter-all,
 .ai-news-filter-co,
 .ai-news-filter-src {
   border: 0;
   border-radius: 999px;
-  padding: 0.12em 0.5em 0.14em;
-  background: transparent;
+  background: var(--wood-chip);
   color: var(--ink-soft);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--wood-chip-line);
   font-size: 0.78em;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.35;
   letter-spacing: 0;
   white-space: nowrap;
 }
 
-.ai-news-filter-co[aria-pressed='true'],
-.ai-news-filter-src[aria-pressed='true'] {
-  color: var(--ink);
-  box-shadow: inset 0 0 0 2px currentColor;
+.ai-news-filter-all {
+  padding: 0.12em 0.55em 0.14em;
+}
+
+.ai-news-filter-co,
+.ai-news-filter-src {
+  padding: 0.12em 0.5em 0.14em;
+}
+
+.ai-news-filter .ai-news-filter-all[aria-pressed='true'],
+.ai-news-filter .ai-news-filter-co[aria-pressed='true'],
+.ai-news-filter .ai-news-filter-src[aria-pressed='true'] {
+  color: var(--wood-on-ink);
+  box-shadow: inset 0 0 0 2.5px var(--wood-on-line);
+  font-weight: 600;
 }
 
 .ai-news-filter-cat {
@@ -108,7 +231,7 @@
   color: var(--note);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--note) 24%, transparent);
   font-size: 0.78em;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.35;
   letter-spacing: 0;
   white-space: nowrap;
@@ -150,11 +273,20 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #6b4f3a 28%, transparent);
 }
 
-.ai-news-filter-cat[aria-pressed='true'] {
-  box-shadow: inset 0 0 0 2px currentColor;
+.ai-news-filter .ai-news-filter-cat[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2.5px var(--wood-on-line);
 }
 
+.ai-news-filter .ai-news-filter-cat[data-cat='模型'][aria-pressed='true'] { color: #1a3d7a; }
+.ai-news-filter .ai-news-filter-cat[data-cat='产品'][aria-pressed='true'] { color: #8c3e12; }
+.ai-news-filter .ai-news-filter-cat[data-cat='Agent 与 Harness'][aria-pressed='true'] { color: #3d3268; }
+.ai-news-filter .ai-news-filter-cat[data-cat='工程实践'][aria-pressed='true'] { color: #1b4f34; }
+.ai-news-filter .ai-news-filter-cat[data-cat='开源'][aria-pressed='true'] { color: #0a4f4f; }
+.ai-news-filter .ai-news-filter-cat[data-cat='行业'][aria-pressed='true'] { color: #4a3424; }
+
 .ai-news-filter-status {
+  position: relative;
+  z-index: 1;
   flex-basis: 100%;
   margin: 0.15rem 0 0;
   color: var(--muted);
@@ -163,6 +295,63 @@
 
 .ai-news-filter-status[hidden] {
   display: none !important;
+}
+
+.ai-news-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+:root[data-theme="dark"] .ai-news-filter {
+  --wood-top: #4a3526;
+  --wood-bot: #3a281c;
+  --wood-edge: #c4a27a;
+  --wood-lip: #2a1c14;
+  --wood-shadow: rgba(0, 0, 0, 0.45);
+  --wood-title: #f0d2b8;
+  --wood-seam: rgba(0, 0, 0, 0.45);
+  --wood-seam-hi: rgba(255, 230, 200, 0.35);
+  --wood-chip: #53402f;
+  --wood-chip-line: #c6aa8c;
+  --wood-on-line: #f3e4d4;
+  --wood-on-ink: #fff8f1;
+  --wood-label-bg: #3a281c;
+  --wood-grain: 0.16;
+}
+
+:root[data-theme="dark"] .ai-news-filter .ai-news-filter-cat[data-cat='模型'][aria-pressed='true'] { color: #e8f1ff; }
+:root[data-theme="dark"] .ai-news-filter .ai-news-filter-cat[data-cat='产品'][aria-pressed='true'] { color: #ffe6d8; }
+:root[data-theme="dark"] .ai-news-filter .ai-news-filter-cat[data-cat='Agent 与 Harness'][aria-pressed='true'] { color: #f6f1ff; }
+:root[data-theme="dark"] .ai-news-filter .ai-news-filter-cat[data-cat='工程实践'][aria-pressed='true'] { color: #e7fff2; }
+:root[data-theme="dark"] .ai-news-filter .ai-news-filter-cat[data-cat='开源'][aria-pressed='true'] { color: #e9ffff; }
+:root[data-theme="dark"] .ai-news-filter .ai-news-filter-cat[data-cat='行业'][aria-pressed='true'] { color: #fff1e6; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ai-news-filter {
+    --wood-top: #4a3526;
+    --wood-bot: #3a281c;
+    --wood-edge: #c4a27a;
+    --wood-lip: #2a1c14;
+    --wood-shadow: rgba(0, 0, 0, 0.45);
+    --wood-title: #f0d2b8;
+    --wood-seam: rgba(0, 0, 0, 0.45);
+    --wood-seam-hi: rgba(255, 230, 200, 0.35);
+    --wood-chip: #53402f;
+    --wood-chip-line: #c6aa8c;
+    --wood-on-line: #f3e4d4;
+    --wood-on-ink: #fff8f1;
+    --wood-label-bg: #3a281c;
+    --wood-grain: 0.16;
+  }
+
+  :root:not([data-theme="light"]) .ai-news-filter .ai-news-filter-cat[data-cat='模型'][aria-pressed='true'] { color: #e8f1ff; }
+  :root:not([data-theme="light"]) .ai-news-filter .ai-news-filter-cat[data-cat='产品'][aria-pressed='true'] { color: #ffe6d8; }
+  :root:not([data-theme="light"]) .ai-news-filter .ai-news-filter-cat[data-cat='Agent 与 Harness'][aria-pressed='true'] { color: #f6f1ff; }
+  :root:not([data-theme="light"]) .ai-news-filter .ai-news-filter-cat[data-cat='工程实践'][aria-pressed='true'] { color: #e7fff2; }
+  :root:not([data-theme="light"]) .ai-news-filter .ai-news-filter-cat[data-cat='开源'][aria-pressed='true'] { color: #e9ffff; }
+  :root:not([data-theme="light"]) .ai-news-filter .ai-news-filter-cat[data-cat='行业'][aria-pressed='true'] { color: #fff1e6; }
 }
 
 .prose h4.has-tag-buttons::after {

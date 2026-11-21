@@ -81,6 +81,22 @@ test('note card css stays serif and does not restyle the filter bar', () => {
     css,
     /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src,\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag \{/,
   );
+  assert.match(
+    css,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src\[aria-pressed='true'\],\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*font-weight:\s*600/,
+  );
+  assert.match(
+    css,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src\[aria-pressed='true'\],\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*box-shadow:\s*inset 0 0 0 1px color-mix/,
+  );
+  assert.match(
+    css,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src\[aria-pressed='true'\],\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*color:\s*var\(--ink-soft\)/,
+  );
+  assert.doesNotMatch(
+    css,
+    /\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag\[aria-pressed='true'\] \{[^}]*font-weight:\s*700/,
+  );
   assert.doesNotMatch(css, /\.ai-news-filter\s*\{/);
   assert.match(filter, /\.ai-news-filter-cat\[data-cat='模型'\]/);
   assert.match(filter, /\.ai-news-filter\s*\{/);

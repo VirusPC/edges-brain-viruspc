@@ -51,8 +51,10 @@
 
 .prose .note-card h4 .ai-news-filter-src.ai-news-src[aria-pressed='true'],
 .prose .note-card h4 .ai-news-filter-co.ai-news-tag[aria-pressed='true'] {
-  color: var(--ink);
-  box-shadow: inset 0 0 0 2px currentColor;
+  color: var(--ink-soft);
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent);
+  font-weight: 600;
   text-decoration: none;
 }
 
