@@ -297,6 +297,19 @@ h2 {
   vertical-align: 0.15em;
 }
 
+.prose h2:has(> .tag) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.45rem;
+  row-gap: 0.28rem;
+}
+
+.prose h2:has(> .tag) > .tag,
+.toc a + .tag {
+  margin-left: 0;
+}
+
 .toc {
   margin: 0;
   font-size: 0.82rem;

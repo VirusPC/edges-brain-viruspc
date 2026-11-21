@@ -9,7 +9,7 @@ const LEGACY = {
  * Fold the old top-level 「国内进展」「国际进展」 into one chapter,
  * 「精选文章」, with those places as second-level headings.
  * A file that already has 「精选文章」 is left as written.
- * Later content-form chapters (推特, 播客) stay sibling h2s and are not folded.
+ * 「精选推文」 and 「精选播客」 stay sibling h2s and are not folded.
  *
  * @param {any} tree
  */

@@ -8,6 +8,7 @@ import { remarkCoverageWindow } from './src/plugins/remark-coverage-window.mjs';
 import { remarkLocalAssets } from './src/plugins/remark-local-assets.mjs';
 import { remarkModelCharts } from './src/plugins/remark-model-charts.mjs';
 import { remarkModelFacts } from './src/plugins/remark-model-facts.mjs';
+import { remarkConstructionChapters } from './src/plugins/remark-construction-chapters.mjs';
 import { remarkSelectedArticles } from './src/plugins/remark-selected-articles.mjs';
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
@@ -28,7 +29,7 @@ export default defineConfig({
   markdown: {
     gfm: true,
     smartypants: false,
-    remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
+    remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles, remarkConstructionChapters],
     rehypePlugins: [rehypeSidenotes, rehypeModelCharts, rehypeArticleCards],
   },
 });
