@@ -64,9 +64,15 @@ test('note card css stays serif and does not restyle the filter bar', () => {
   assert.match(css, /font-family:\s*var\(--serif\)/);
   assert.doesNotMatch(css, /Caveat|Ma Shan Zheng|马善政|var\(--hand\)/);
   assert.doesNotMatch(css, /rotate\(|repeating-linear-gradient|note-card-tape/);
-  assert.match(css, /grid-template-columns:\s*6\.4em/);
+  assert.match(css, /grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+  assert.match(css, /\.note-card-k\s*\{[^}]*width:\s*5\.5em/);
+  assert.match(css, /\.note-card-k\s*\{[^}]*text-align:\s*left/);
+  assert.doesNotMatch(css, /text-align:\s*right/);
   assert.match(css, /@media \(max-width:\s*520px\)/);
   assert.match(css, /\.note-card-k\s*\{[^}]*font-weight:\s*400/);
+  assert.match(css, /data-theme="dark"\] \.note-card-hl\s*\{[^}]*color:\s*#24180a/);
+  assert.match(css, /data-theme="dark"\] \.note-card-hl\s*\{[^}]*background:\s*#ffd56a/);
+  assert.doesNotMatch(css, /rgba\(255,\s*214,\s*102,\s*0\.38\)/);
   assert.match(css, /white-space:\s*nowrap/);
   assert.match(css, /\.note-card-hl/);
   assert.doesNotMatch(css, /\.ai-news-filter\s*\{/);

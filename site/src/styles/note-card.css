@@ -66,8 +66,8 @@
 
 .prose .note-card details.article-more > .note-card-sec {
   display: grid;
-  grid-template-columns: 6.4em minmax(0, 1fr);
-  column-gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75rem;
   align-items: baseline;
   margin: 8px 0 10px;
 }
@@ -87,8 +87,9 @@
   font-size: 14px;
   font-weight: 400;
   line-height: 1.8;
-  letter-spacing: 0.06em;
-  text-align: right;
+  width: 5.5em;
+  letter-spacing: 0.02em;
+  text-align: left;
   white-space: nowrap;
 }
 
@@ -112,15 +113,25 @@
 }
 
 :root[data-theme="dark"] .note-card {
-  --note-hl: rgba(255, 214, 102, 0.38);
   --note-label: #d2b8a4;
   --note-body: var(--panel-ink);
 }
 
+:root[data-theme="dark"] .note-card-lede mark,
+:root[data-theme="dark"] .note-card-hl {
+  color: #24180a;
+  background: #ffd56a;
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .note-card {
-    --note-hl: rgba(255, 214, 102, 0.38);
     --note-label: #d2b8a4;
     --note-body: var(--panel-ink);
+  }
+
+  :root:not([data-theme="light"]) .note-card-lede mark,
+  :root:not([data-theme="light"]) .note-card-hl {
+    color: #24180a;
+    background: #ffd56a;
   }
 }
