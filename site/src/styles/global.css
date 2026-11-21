@@ -82,7 +82,7 @@ a { color: inherit; }
 .frame {
   width: min(48rem, 100%);
   margin-inline: auto;
-  padding: 1.75rem 1.25rem 4.5rem;
+  padding: 1.75rem 1.25rem calc(5.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 body.is-home .frame { width: min(80rem, 100%); }
@@ -367,7 +367,8 @@ h2 {
 
 .post.has-toc .post-head,
 .post.has-toc .prose,
-.post.has-toc .source {
+.post.has-toc .source,
+.post.has-toc .reader-comments {
   grid-column: 1;
   max-width: none;
 }
@@ -1092,6 +1093,57 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
 
 .colophon a { color: inherit; }
 
+.reader-comments {
+  margin: 2.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  max-width: 40rem;
+}
+
+.reader-comments p {
+  margin: 0 0 0.7rem;
+  color: var(--ink-soft);
+}
+
+.reader-comments a { color: var(--prose-link); }
+
+.site-feedback {
+  position: fixed;
+  z-index: 4;
+  right: max(0.85rem, env(safe-area-inset-right, 0px));
+  bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 92%, var(--ink) 8%);
+  color: var(--ink-soft);
+  font: 500 0.92rem/1 var(--serif);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-feedback svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.site-feedback:hover { color: var(--ink); }
+
+.site-feedback:focus-visible {
+  outline: 2px solid var(--wood-edge);
+  outline-offset: 3px;
+}
+
 .colophon-links {
   display: flex;
   flex-wrap: wrap;
@@ -1135,10 +1187,12 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   }
   .post.has-toc .post-head,
   .post.has-toc .source,
+  .post.has-toc .reader-comments,
   .post.has-toc .toc {
     max-width: 100%;
   }
   .post.has-toc .source { order: 4; }
+  .post.has-toc .reader-comments { order: 5; }
 
   body.is-post .sidenote,
   body.is-post.has-toc .sidenote {
