@@ -2,10 +2,14 @@
 """Read the AI Coding OPML subscription list and emit lean article JSON.
 
 OPML is the subscription source of truth. ``feeds/ai-coding-blogs.meta.json``
-holds agent-only notes (lane, fallback policy, BestBlogs match, hosts). Sources
-without a usable feed are not in the OPML; this script lists them under
-``fallbacks`` and does not scrape their HTML. A short feed body stays short:
-this script never opens the article page to fill it in.
+holds agent-only notes (lane, fallback policy, BestBlogs match, hosts).
+``publisher`` plus ``role`` (``primary`` / ``backup``) groups one publisher's
+feeds. A backup is its own source. When the primary errors, is empty, or its
+newest item is older than about a month, backup items are merged; otherwise
+they stay in the health report only. Sources without a usable feed are not in
+the OPML; this script lists them under ``fallbacks`` and does not scrape their
+HTML. A short feed body stays short: this script never opens the article page
+to fill it in.
 
 Install: Python 3.12 venv, then ``pip install -r requirements.txt`` (feedparser).
 The skill section「运行环境」也把榜单依赖装进同一个环境。
@@ -28,6 +32,7 @@ import re
 import subprocess
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -46,6 +51,8 @@ THIN_CHARS = 280  # 只标记 feed 正文偏短，不触发文章页补抓
 PREVIEW_CHARS = 400
 DEFAULT_TIMEOUT = 40
 DEFAULT_WORKERS = 6
+STOPPED_DAYS = 31  # 最新条目早于约一个月
+TITLE_PREFIX_MIN = 16
 
 
 class _TextExtractor(HTMLParser):
@@ -244,6 +251,7 @@ def check_pair(feeds: list[dict], meta: dict) -> list[str]:
     allowed_lanes = set((meta.get("lanes") or {"product": "", "tech": "", "mixed": "", "special": ""}).keys())
     ids: list[str] = []
     meta_urls: list[str] = []
+    publishers: dict[str, dict[str, list[str]]] = {}
     for source in meta["sources"]:
         sid = source.get("id") or ""
         if not sid:
@@ -262,6 +270,22 @@ def check_pair(feeds: list[dict], meta: dict) -> list[str]:
             errors.append(f"meta {sid} 标了 native 但没有 xmlUrl")
         if not source.get("fallback") and not xml_url:
             errors.append(f"meta {sid} 既没有 feed 也没有 fallback")
+        publisher = (source.get("publisher") or "").strip()
+        role = (source.get("role") or "").strip()
+        if bool(publisher) != bool(role):
+            errors.append(f"meta {sid} 的 publisher 与 role 要一起写")
+        elif role and role not in ("primary", "backup"):
+            errors.append(f"meta {sid} 的 role 无效: {role!r}")
+        elif publisher:
+            slot = publishers.setdefault(publisher, {"primary": [], "backup": []})
+            slot[role].append(sid)
+            if role == "backup" and not xml_url:
+                errors.append(f"meta {sid} 是备源，但没有 xmlUrl")
+    for publisher, slot in publishers.items():
+        if len(slot["primary"]) != 1:
+            errors.append(f"publisher {publisher} 要有且只有一个主源，现在是 {slot['primary']}")
+        if not slot["backup"]:
+            errors.append(f"publisher {publisher} 没有备源")
     if len(ids) != len(set(ids)):
         errors.append("meta source id 重复")
     if len(meta_urls) != len(set(meta_urls)):
@@ -465,17 +489,155 @@ def to_item(entry: dict, source_id: str, lane: str | None = None) -> dict:
     return item
 
 
+def normalize_title(title: str) -> str:
+    text = unicodedata.normalize("NFKC", title or "")
+    text = text.casefold()
+    text = re.sub(r"\s+", " ", text).strip()
+    return text.strip(" .!?。！？:：,，;；\"'“”‘’")
+
+
+def titles_match(left: str, right: str) -> bool:
+    """完全相同，或较短标题后紧跟句末标点才算同一篇。"""
+    if not left or not right:
+        return False
+    if left == right:
+        return True
+    short, long = (left, right) if len(left) <= len(right) else (right, left)
+    if len(short) < TITLE_PREFIX_MIN or not long.startswith(short):
+        return False
+    return long[len(short)] in ".!?。！？:："
+
+
 def dedupe_items(items: list[dict]) -> list[dict]:
-    best: dict[str, dict] = {}
+    by_link: dict[str, dict] = {}
     for item in items:
         key = normalize_link(item["link"])
-        current = best.get(key)
-        if current is None or len(item["summary"]) > len(current["summary"]):
-            best[key] = item
-    ordered = list(best.values())
-    ordered.sort(key=lambda item: item["title"].lower())
-    ordered.sort(key=lambda item: item["date"], reverse=True)
-    return ordered
+        current = by_link.get(key)
+        if current is None or len(item.get("summary") or "") > len(current.get("summary") or ""):
+            by_link[key] = item
+    seen_links: set[str] = set()
+    url_kept: list[dict] = []
+    for item in items:
+        key = normalize_link(item["link"])
+        if key in seen_links:
+            continue
+        seen_links.add(key)
+        url_kept.append(by_link[key])
+    kept: list[dict] = []
+    for item in url_kept:
+        title = normalize_title(item.get("title") or "")
+        match_at = None
+        if title:
+            for index, prev in enumerate(kept):
+                if titles_match(title, normalize_title(prev.get("title") or "")):
+                    match_at = index
+                    break
+        if match_at is None:
+            kept.append(item)
+            continue
+        prev = kept[match_at]
+        if len(item.get("summary") or "") > len(prev.get("summary") or ""):
+            kept[match_at] = item
+    kept.sort(key=lambda item: (item.get("title") or "").lower())
+    kept.sort(key=lambda item: item.get("date") or "", reverse=True)
+    return kept
+
+
+def source_issues(report: dict, until: str) -> list[str]:
+    """报错、0 条、最新条目早于约一个月。快照源只看报错和 0 条。"""
+    if report.get("error"):
+        return ["error"]
+    if not report.get("entries_total"):
+        return ["empty"]
+    if report.get("snapshot"):
+        return []
+    newest = report.get("newest")
+    if not newest:
+        return []
+    age = (date.fromisoformat(until) - date.fromisoformat(newest)).days
+    if age > STOPPED_DAYS:
+        return ["stopped"]
+    return []
+
+
+def publisher_plan(meta: dict) -> dict[str, dict]:
+    plan: dict[str, dict] = {}
+    for source in meta["sources"]:
+        publisher = (source.get("publisher") or "").strip()
+        role = (source.get("role") or "").strip()
+        if not publisher or role not in ("primary", "backup"):
+            continue
+        slot = plan.setdefault(publisher, {"primary": None, "backups": []})
+        if role == "primary":
+            slot["primary"] = source["id"]
+        else:
+            slot["backups"].append(source["id"])
+    return plan
+
+
+_UNUSABLE = ("error", "empty", "stopped", "missing")
+
+
+def inclusion_plan(reports: list[dict], meta: dict, until: str) -> tuple[dict[str, bool], dict[str, list[str]], list[dict]]:
+    issues = {report["id"]: source_issues(report, until) for report in reports}
+    include = {report["id"]: True for report in reports}
+    groups = []
+    for publisher, slot in publisher_plan(meta).items():
+        primary = slot["primary"]
+        primary_issues = issues.get(primary, ["missing"])
+        unusable = any(flag in primary_issues for flag in _UNUSABLE)
+        used: list[str] = []
+        for backup in slot["backups"]:
+            if backup not in include:
+                continue
+            include[backup] = unusable
+            if unusable:
+                used.append(backup)
+        backup_failed = [
+            backup
+            for backup in slot["backups"]
+            if any(flag in issues.get(backup, ["missing"]) for flag in _UNUSABLE)
+        ]
+        groups.append(
+            {
+                "publisher": publisher,
+                "primary": primary,
+                "primaryIssues": primary_issues,
+                "usedBackups": used,
+                "needsListPage": unusable and len(backup_failed) == len(slot["backups"]),
+            }
+        )
+    return include, issues, groups
+
+
+def date_conflicts(items: list[dict]) -> list[dict]:
+    groups: list[list[dict]] = []
+    for item in items:
+        title = normalize_title(item.get("title") or "")
+        if len(title) < TITLE_PREFIX_MIN:
+            continue
+        placed = False
+        for group in groups:
+            if titles_match(title, normalize_title(group[0].get("title") or "")):
+                group.append(item)
+                placed = True
+                break
+        if not placed:
+            groups.append([item])
+    conflicts = []
+    for group in groups:
+        dates = {(item.get("date") or "") for item in group}
+        if len(group) > 1 and len(dates) > 1:
+            conflicts.append(
+                {
+                    "title": group[0].get("title") or "",
+                    "items": [
+                        {"date": item.get("date") or "", "link": item.get("link") or "", "source": item.get("source") or ""}
+                        for item in group
+                    ],
+                }
+            )
+    return conflicts
 
 
 def fallback_rows(meta: dict) -> list[dict]:
@@ -484,17 +646,19 @@ def fallback_rows(meta: dict) -> list[dict]:
         fallback = source.get("fallback")
         if not fallback:
             continue
-        rows.append(
-            {
-                "id": source["id"],
-                "title": source.get("title") or source["id"],
-                "listUrls": source.get("listUrls") or [],
-                "fallback": fallback,
-                "role": "backup" if source.get("xmlUrl") else "only",
-                "lane": source.get("lane"),
-                "notes": source.get("notes") or "",
-            }
-        )
+        row = {
+            "id": source["id"],
+            "title": source.get("title") or source["id"],
+            "listUrls": source.get("listUrls") or [],
+            "fallback": fallback,
+            "role": "backup" if source.get("xmlUrl") else "only",
+            "lane": source.get("lane"),
+            "notes": source.get("notes") or "",
+        }
+        if source.get("publisher"):
+            row["publisher"] = source["publisher"]
+            row["feedRole"] = source.get("role")
+        rows.append(row)
     return rows
 
 
@@ -584,19 +748,23 @@ def build_payload(reports: list[dict], meta: dict, since: str, until: str, elaps
     feed_bytes = 0
     errors = 0
     meta_by_id = {source["id"]: source for source in meta["sources"]}
+    include, issues, groups = inclusion_plan(reports, meta, until)
     for report in reports:
         feed_bytes += report["bytes"]
         if report["error"]:
             errors += 1
         meta_source = meta_by_id.get(report["id"], {})
         lane = meta_source.get("lane") or None
-        for entry in report["entries"]:
-            items.append(to_item(entry, report["id"], lane))
+        if include.get(report["id"], True):
+            for entry in report["entries"]:
+                items.append(to_item(entry, report["id"], lane))
         sources.append(
             {
                 "id": report["id"],
                 "xmlUrl": report["xmlUrl"],
                 "lane": meta_source.get("lane"),
+                "publisher": meta_source.get("publisher"),
+                "role": meta_source.get("role"),
                 "feedOrigin": meta_source.get("feedOrigin"),
                 "fallback": meta_source.get("fallback"),
                 "bytes": report["bytes"],
@@ -609,8 +777,11 @@ def build_payload(reports: list[dict], meta: dict, since: str, until: str, elaps
                 "truncated": report["truncated"],
                 "stale": report["stale"],
                 "snapshot": bool(report.get("snapshot")),
+                "issues": issues.get(report["id"]) or [],
+                "included": include.get(report["id"], True),
             }
         )
+    conflicts = date_conflicts(items)
     items = dedupe_items(items)
     lean = json.dumps(items, ensure_ascii=False, separators=(",", ":"))
     summary_lengths = [len(item["summary"]) for item in items]
@@ -630,6 +801,22 @@ def build_payload(reports: list[dict], meta: dict, since: str, until: str, elaps
             "lean_tokens_est": len(lean) // 4,
         },
         "sources": sources,
+        "health": [
+            {
+                "id": row["id"],
+                "publisher": row.get("publisher"),
+                "role": row.get("role"),
+                "issues": row["issues"],
+                "newest": row["newest"],
+                "entries_total": row["entries_total"],
+                "error": row["error"],
+                "included": row["included"],
+            }
+            for row in sources
+            if row["issues"]
+        ],
+        "publisherFallback": groups,
+        "dateConflicts": conflicts,
         "fallbacks": fallback_rows(meta),
         "items": items,
     }
@@ -662,6 +849,119 @@ def run_fetch(feeds: list[dict], meta: dict, since: str, until: str, timeout: in
     return reports, elapsed_ms
 
 
+def _report(sid: str, entries: list[dict], *, error: str | None = None, snapshot: bool = False) -> dict:
+    dates = [entry["date"] for entry in entries]
+    return {
+        "id": sid,
+        "title": sid,
+        "xmlUrl": f"https://example.com/{sid}.xml",
+        "bytes": 1,
+        "elapsed_ms": 1,
+        "error": error,
+        "entries_total": 0 if error else len(entries),
+        "newest": max(dates) if dates and not error else None,
+        "oldest": min(dates) if dates and not error else None,
+        "truncated": False,
+        "stale": False,
+        "snapshot": snapshot,
+        "entries": [] if error else entries,
+    }
+
+
+def _entry(title: str, link: str, day: str, body: str) -> dict:
+    return {"title": title, "date": day, "link": link, "body": body}
+
+
+def assert_fallback_rules() -> None:
+    assert normalize_title("  Introducing Grok Bot 1.0. ") == "introducing grok bot 1.0"
+    assert titles_match(
+        normalize_title("Introducing Grok Bot 1.0"),
+        normalize_title("Introducing Grok Bot 1.0. Bots can be shared and are more collaborative."),
+    )
+    assert not titles_match(normalize_title("How we built X"), normalize_title("How we built X for ads"))
+    primary_body = "x" * 400
+    backup_body = "y" * 80
+    tweet_body = "z" * 50
+    meta = {
+        "sources": [
+            {"id": "xai", "publisher": "xai", "role": "primary", "lane": "product", "xmlUrl": "https://example.com/xai.xml", "fallback": "list-page"},
+            {"id": "xai-b", "publisher": "xai", "role": "backup", "lane": "product", "xmlUrl": "https://example.com/xai-b.xml", "fallback": "list-page"},
+        ]
+    }
+    fresh = _report("xai", [_entry("Accounting", "https://x.ai/news/accounting", "2026-11-16", primary_body)])
+    backup = _report(
+        "xai-b",
+        [
+            _entry("Accounting", "https://x.ai/news/accounting/", "2026-11-02", backup_body),
+            _entry("Introducing Grok Bot 1.0. Bots can be shared.", "https://x.com/xai/status/1", "2026-11-16", tweet_body),
+        ],
+    )
+    payload = build_payload([fresh, backup], meta, "2026-11-13", "2026-11-19", 1, None)
+    assert payload["publisherFallback"][0]["usedBackups"] == []
+    assert [item["link"] for item in payload["items"]] == ["https://x.ai/news/accounting"]
+    assert payload["health"] == []
+    stopped = _report("xai", [_entry("Old", "https://x.ai/news/old", "2026-09-28", "old")])
+    stopped_payload = build_payload([stopped, backup], meta, "2026-11-13", "2026-11-19", 1, None)
+    assert stopped_payload["publisherFallback"][0]["usedBackups"] == ["xai-b"]
+    assert stopped_payload["publisherFallback"][0]["needsListPage"] is False
+    assert any(row["id"] == "xai" and row["issues"] == ["stopped"] for row in stopped_payload["health"])
+    titles = {item["title"] for item in stopped_payload["items"]}
+    assert "Introducing Grok Bot 1.0. Bots can be shared." in titles
+    longer = _report("xai", [_entry("Introducing Grok Bot 1.0", "https://x.ai/news/bot", "2026-11-16", primary_body)])
+    # 主源报错后备源才进入合并；两条标题规范化后是同一篇，留下正文更完整的一条。
+    longer["error"] = "HTTPError"
+    longer["entries_total"] = 0
+    longer["entries"] = []
+    longer["newest"] = None
+    merged = build_payload(
+        [
+            longer,
+            _report("xai-b", [_entry("Introducing Grok Bot 1.0", "https://x.ai/news/bot", "2026-11-11", primary_body), _entry("Introducing Grok Bot 1.0. Bots can be shared.", "https://x.com/xai/status/1", "2026-11-11", tweet_body)]),
+        ],
+        meta,
+        "2026-11-13",
+        "2026-11-19",
+        1,
+        None,
+    )
+    assert len(merged["items"]) == 1
+    assert merged["items"][0]["link"] == "https://x.ai/news/bot"
+    assert merged["items"][0]["summary"] == primary_body
+    assert merged["dateConflicts"] == []
+    conflicted = build_payload(
+        [
+            _report("xai", [], error="down"),
+            _report(
+                "xai-b",
+                [
+                    _entry("Introducing Grok Bot 1.0", "https://x.ai/news/bot", "2026-11-02", primary_body),
+                    _entry("Introducing Grok Bot 1.0. Extra sentence.", "https://x.com/xai/status/9", "2026-11-11", primary_body),
+                ],
+            ),
+        ],
+        meta,
+        "2026-11-13",
+        "2026-11-19",
+        1,
+        None,
+    )
+    assert len(conflicted["dateConflicts"]) == 1
+    assert {row["date"] for row in conflicted["dateConflicts"][0]["items"]} == {"2026-11-02", "2026-11-11"}
+    empty = _report("xai", [])
+    empty_payload = build_payload([empty, backup], meta, "2026-11-13", "2026-11-19", 1, None)
+    assert any(row["issues"] == ["empty"] for row in empty_payload["health"])
+    assert empty_payload["publisherFallback"][0]["usedBackups"] == ["xai-b"]
+    broken = {
+        "sources": [
+            {"id": "a", "publisher": "lab", "role": "primary"},
+            {"id": "b", "publisher": "lab", "role": "primary", "xmlUrl": "https://example.com/b.xml"},
+        ]
+    }
+    pair_errors = check_pair([], broken)
+    assert any("只有一个主源" in err for err in pair_errors), pair_errors
+    assert not titles_match("hello", "hello. more words here please")
+
+
 def self_test() -> int:
     feeds = load_opml(DEFAULT_OPML)
     meta = load_meta(DEFAULT_META)
@@ -684,6 +984,25 @@ def self_test() -> int:
     assert got_trending == expected_trending, got_trending
     opml_trending = [feed["xmlUrl"] for feed in feeds if "GitHubTrendingRSS" in feed["xmlUrl"]]
     assert opml_trending == list(expected_trending.values()), opml_trending
+    by_id = {source["id"]: source for source in meta["sources"]}
+    assert by_id["xai-news"]["xmlUrl"] == "https://raw.githubusercontent.com/0xSMW/rss-feeds/main/feeds/feed_xai_news.xml"
+    assert by_id["xai-news"]["role"] == "primary" and by_id["xai-news"]["publisher"] == "xai"
+    assert by_id["xai-news-olshansk"]["xmlUrl"] == "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml"
+    assert by_id["xai-news-olshansk"]["role"] == "backup"
+    assert by_id["xai-news-xgo"]["xmlUrl"] == "https://api.xgo.ing/rss/user/3953aa71e87a422eb9d7bf6ff1c7c43e"
+    assert by_id["meta-ai"]["publisher"] == "meta-ai" and by_id["meta-ai"]["role"] == "primary"
+    assert by_id["meta-ai-rsshub"]["xmlUrl"] == "https://rsshub.bestblogs.dev/meta/ai/blog"
+    assert by_id["meta-ai-rsshub"]["role"] == "backup"
+    assert not by_id["meta-ai-research"].get("xmlUrl")
+    assert by_id["meta-ai-research"]["fallback"] == "list-page"
+    assert by_id["meta-engineering"]["xmlUrl"] == "https://engineering.fb.com/feed/"
+    urls = " ".join(source.get("xmlUrl") or "" for source in meta["sources"])
+    assert "rsshub.app" not in urls
+    assert "about.fb.com" not in urls
+    assert "research.fb.com" not in urls
+    assert "feedseek" not in urls
+    assert "trvny" not in urls
+    assert_fallback_rules()
 
     sample = b"""<?xml version="1.0"?>
     <rss version="2.0"><channel>
@@ -875,6 +1194,7 @@ def self_test() -> int:
         "https://huggingface.co/blog/x",
         "https://example.com/bare",
     ]
+    assert_fallback_rules()
     print("self-test ok")
     return 0
 
@@ -959,6 +1279,12 @@ def main(argv: list[str] | None = None) -> int:
         f"lean_tokens_est={stats['lean_tokens_est']} elapsed_ms={payload['elapsed_ms']}",
         file=sys.stderr,
     )
+    health = payload.get("health") or []
+    if health:
+        print(
+            "health " + ", ".join(f"{row['id']}={'/'.join(row['issues'])}" for row in health),
+            file=sys.stderr,
+        )
     if stats["errors"] and stats["feeds"] == stats["errors"]:
         return 1
     return 0

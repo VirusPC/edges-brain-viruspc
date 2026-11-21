@@ -1,7 +1,7 @@
 {
   "version": 1,
   "checkedAt": "2026-11-01",
-  "policy": "OPML 收录阅读器能导入的 feed。优先站点原生 RSS/Atom（feedOrigin=native）。没有可用原生 feed 时，可以订 Olshansk/rss-feeds 发布在 GitHub raw 上的抓取 RSS（feedOrigin=third-party-scrape-rss，约每小时更新），或 BestBlogs 对上的转换源（RSSHub、XGo.ing、Wechat2RSS），并保留列表页退路。已经有可用原生 feed 的站不要再并一份抓取源（OpenAI News、Google AI Blog 保持原生，不并入 Olshansk 的 openai_main / google_ai）。研究向和红队源（Anthropic research/red、Goodfire、FAR.AI、Eleuther、Transluce、Timaeus 等）不订。每条 source 有 lane：product、tech、mixed 或 special。",
+  "policy": "OPML 收录阅读器能导入的 feed。优先站点原生 RSS/Atom（feedOrigin=native）。没有可用原生 feed 时，可以订 Olshansk/rss-feeds 发布在 GitHub raw 上的抓取 RSS（feedOrigin=third-party-scrape-rss，约每小时更新），或 BestBlogs 对上的转换源（RSSHub、XGo.ing、Wechat2RSS），并保留列表页退路。已经有可用原生 feed 的站不要再并一份抓取源（OpenAI News、Google AI Blog 保持原生，不并入 Olshansk 的 openai_main / google_ai）。研究向和红队源（Anthropic research/red、Goodfire、FAR.AI、Eleuther、Transluce、Timaeus 等）不订。每条 source 有 lane：product、tech、mixed 或 special。同一发文方用 publisher 分组，role 为 primary 或 backup。备源是另一条 source，不写进 fallback。",
   "lanes": {
     "product": "发布、功能、定价、面向用户的产品博客和 changelog。",
     "tech": "工程博客、实现、基础设施、深入的 how-to。",
@@ -13,7 +13,7 @@
     "rawBase": "https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/",
     "registry": "feeds.yaml",
     "checkedAt": "2026-11-01",
-    "note": "第三方抓列表生成的 RSS。feed 文件名形如 feed_<id>.xml。registry 里 enabled:false 的源默认不订；xAI News 按本次要求例外保留，并在该条 notes 写明可能过期。未订 Windsurf changelog：补丁版本太碎。"
+    "note": "第三方抓列表生成的 RSS。feed 文件名形如 feed_<id>.xml。registry 里 enabled:false 的源默认不订。xAI 主源已改到 0xSMW/rss-feeds；Olshansk 的 feed_xainews.xml 留作备源，registry 仍标暂停。未订 Windsurf changelog：补丁版本太碎。"
   },
   "bestblogsLookup": {
     "repo": "https://github.com/ginobefun/BestBlogs",
@@ -141,6 +141,8 @@
       "id": "meta-ai",
       "title": "Meta AI Blog",
       "lane": "mixed",
+      "publisher": "meta-ai",
+      "role": "primary",
       "listUrls": [
         "https://ai.meta.com/blog/"
       ],
@@ -151,14 +153,92 @@
       "bestblogs": {
         "matchedXmlUrl": null,
         "adopted": false,
-        "note": "2026-11-01 这条改订 Olshansk 抓取 RSS，不订 BestBlogs 转换源。"
+        "note": "旧博客主源仍是 Olshansk。备源是独立 source meta-ai-rsshub，不把 RSSHub 地址写进这条的 fallback。"
       },
-      "notes": "Olshansk/rss-feeds 的 feed_meta_ai.xml（selenium 抓取，不是官网 RSS）。2026-11-01 核对 200；当时最新一条是 2026-07-27，可能滞后，列表页仍要补。内容混有 Muse 等产品，以及 SAM / DINO 等视觉帖。按本次要求订入，接受 CV 噪声，写周报时按篇取舍。"
+      "notes": "主源。Olshansk/rss-feeds 的 feed_meta_ai.xml（selenium 抓取，不是官网 RSS）。ai.meta.com/blog 在 2026-07-27 之后停更。2026-11-21 这份 XML 仍返回 200。内容混有 Muse 等产品，以及 SAM / DINO 等视觉帖。Muse 系列改看 meta-ai-research。不订 about.fb.com，也不订已不可用的 research.fb.com。"
+    },
+    {
+      "id": "meta-ai-rsshub",
+      "title": "Meta AI Blog（RSSHub 备源）",
+      "lane": "mixed",
+      "publisher": "meta-ai",
+      "role": "backup",
+      "listUrls": [
+        "https://ai.meta.com/blog/"
+      ],
+      "htmlUrl": "https://ai.meta.com/blog/",
+      "xmlUrl": "https://rsshub.bestblogs.dev/meta/ai/blog",
+      "feedOrigin": "bestblogs-rsshub",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://rsshub.bestblogs.dev/meta/ai/blog",
+        "adopted": true,
+        "note": "rsshub.app/meta/ai/blog 返回 403。改订 rsshub.bestblogs.dev。"
+      },
+      "notes": "备源，对应 meta-ai 旧博客。2026-11-21 HTTP 200。最新仍停在 2026-07-26，和主源一样停更。主源报错或停更时才并入条目。"
+    },
+    {
+      "id": "meta-ai-research",
+      "title": "Meta AI Research",
+      "lane": "product",
+      "listUrls": [
+        "https://research.meta.ai/blog"
+      ],
+      "htmlUrl": "https://research.meta.ai/blog",
+      "xmlUrl": null,
+      "feedOrigin": "none",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "research.meta.ai/blog 没有 RSS。"
+      },
+      "notes": "Muse 系列主源。无 RSS，退路是列表页。2026-11-21 列表页 HTTP 200，sitemap https://research.meta.ai/sitemap.xml HTTP 200。sitemap 的 lastmod 与列表日期一致，例如 muse-ember 为 2026-11-09。这个日期只写在 notes 里，脚本不拉 sitemap。不订 research.fb.com。"
+    },
+    {
+      "id": "meta-engineering",
+      "title": "Engineering at Meta",
+      "lane": "tech",
+      "listUrls": [
+        "https://engineering.fb.com/"
+      ],
+      "htmlUrl": "https://engineering.fb.com/",
+      "xmlUrl": "https://engineering.fb.com/feed/",
+      "feedOrigin": "native",
+      "fallback": null,
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "官网原生 feed。不是 ai.meta.com/blog 的备源，也不再并一份同页抓取源。"
+      },
+      "notes": "Meta 工程博客，原生 RSS。2026-11-21 HTTP 200。和停更的 ai.meta.com/blog、research.meta.ai/blog 不是同一份列表。"
     },
     {
       "id": "xai-news",
       "title": "xAI News",
       "lane": "product",
+      "publisher": "xai",
+      "role": "primary",
+      "listUrls": [
+        "https://x.ai/news"
+      ],
+      "htmlUrl": "https://x.ai/news",
+      "xmlUrl": "https://raw.githubusercontent.com/0xSMW/rss-feeds/main/feeds/feed_xai_news.xml",
+      "feedOrigin": "third-party-scrape-rss",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": null,
+        "adopted": false,
+        "note": "不订 trvny feedseek 的 xai.xml。"
+      },
+      "notes": "主源。0xSMW/rss-feeds 的 feed_xai_news.xml，2026-11-21 HTTP 200。日期不可靠，且没有 incident-sweep。日期以官网列表或 https://x.ai/sitemap.xml 的 lastmod 为准。sitemap 对简单 HTTP 客户端 403，浏览器可打开。2026-11-21 用浏览器读到：incident-sweep 的 lastmod 是 2026-10-20；grok-bot-1-0 的 lastmod 是 2026-11-11，feed 写成 2026-11-02；grok-bot-accounting 的 lastmod 是 2026-11-16，与 feed 一致。备源是 xai-news-olshansk 和 xai-news-xgo。"
+    },
+    {
+      "id": "xai-news-olshansk",
+      "title": "xAI News（Olshansk 备源）",
+      "lane": "product",
+      "publisher": "xai",
+      "role": "backup",
       "listUrls": [
         "https://x.ai/news"
       ],
@@ -169,9 +249,29 @@
       "bestblogs": {
         "matchedXmlUrl": null,
         "adopted": false,
-        "note": "暂停源，不改去订 BestBlogs。主源仍是 Olshansk 已发布的 feed_xainews.xml。"
+        "note": "Olshansk registry 把 xainews 标成暂停。留作备源，不改回主源。"
       },
-      "notes": "Olshansk registry 把 xainews 标成暂停更新（CI 里浏览器导航超时），已发布的 XML 仍在。2026-11-01 拉取 200，当时最新一条是 2026-09-28，可能过期。列表页 https://x.ai/news 对简单 HTTP 客户端可能 403；打不开时以 feed 为准，能开再补 feed 没有的条目。"
+      "notes": "备源。Olshansk registry 暂停更新（CI 里浏览器导航超时），已发布的 XML 仍在。2026-11-21 HTTP 200，最新一条仍是 2026-09-28。主源报错或停更时才并入。列表页 https://x.ai/news 对简单 HTTP 客户端可能 403。"
+    },
+    {
+      "id": "xai-news-xgo",
+      "title": "xAI News（XGo @xai 备源）",
+      "lane": "product",
+      "publisher": "xai",
+      "role": "backup",
+      "listUrls": [
+        "https://x.ai/news"
+      ],
+      "htmlUrl": "https://x.ai/news",
+      "xmlUrl": "https://api.xgo.ing/rss/user/3953aa71e87a422eb9d7bf6ff1c7c43e",
+      "feedOrigin": "bestblogs-xgo",
+      "fallback": "list-page",
+      "bestblogs": {
+        "matchedXmlUrl": "https://api.xgo.ing/rss/user/3953aa71e87a422eb9d7bf6ff1c7c43e",
+        "adopted": true,
+        "note": "XGo.ing 的 @xai 推文。channel 标题是 SpaceX Super Intelligence(@xai)。按标题和新闻稿去重。"
+      },
+      "notes": "备源。XGo @xai 推文，2026-11-21 HTTP 200。条目链接在 x.com，标题常常带上推文正文。和新闻稿合并时按规范化标题去重。主源可用时不并入条目。"
     },
     {
       "id": "manus",

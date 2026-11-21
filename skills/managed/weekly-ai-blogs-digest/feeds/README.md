@@ -8,6 +8,8 @@ Artificial Analysis 和 LLM Arena 不是 OPML。见 skill 里的「非博客数�
 
 [`ai-coding-blogs.meta.json`](ai-coding-blogs.meta.json) 只给 Agent 看：`lane`、退路、BestBlogs 对照、Olshansk 抓取源和过期 feed 说明。阅读器不需要 `lane`，OPML 里不写。
 
+同一发文方的备源是另一条 source：自己的 `xmlUrl`，`publisher` 相同，`role` 为 `primary` 或 `backup`。`fallback` 只写退路类型（如 `list-page`），不写备源地址。只写在 notes 里的 URL，脚本不拉。运行约定见 [订阅源兜底](../../../../.edges/routines/weekly-ai-blogs-digest/INDEX.md#订阅源兜底)。
+
 每条 source 有 `lane`：
 
 - `product`：发布、功能、定价、面向用户的产品博客和 changelog。周报放进「产品动态」。

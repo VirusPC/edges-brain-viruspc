@@ -52,3 +52,19 @@ box 把不含密钥的 JSON 写到：
 `/cursor/stores/bot/ai-news-data/YYYY-MM-DD/`
 
 日期与周报生成日相同。这只是 box 到云端的交接，不是另一份真源。入库位置仍是数据仓的 `issues/YYYY-MM-DD/`。
+
+## 订阅源兜底
+
+订阅真源仍是 Skill 目录的 [OPML](../../../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml) 与 [meta.json](../../../skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.meta.json)。这一节只约定兜底。
+
+同一发文方保留一个主源，另加若干备源。优先官方原生 RSS 或 Atom。没有原生源，或原生源停更时，用公开抓取 RSS 和转换源彼此作备源。列表页和 `listUrls` 是该发文方全部 feed 报错或停更之后的最后退路。已经有可用原生 feed 的站，不再并一份抓同一页的源。
+
+现有字段下，备源是一条独立 source，并写入 OPML。`publisher` 标发文方，`role` 为 `primary` 或 `backup`。`fallback` 只表示退路类型。只写在 notes 里的 URL，运行时不拉。
+
+每次运行先体检。报错、条目为 0、最新条目早于约一个月的源，写入当期快照的 `health`，并在说明里照实写。没有拉到的就写没有拉到。
+
+主源报错或停更时，用该发文方的备源。备源再失败，走列表页。列表页也补不到的，在 notes 写明。
+
+多源合并先按规范化 URL 去重，再按规范化标题去重，留下正文更完整的一条。标题在去掉首尾空白和句末标点、合并空白并忽略大小写之后相同；较短的一条至少 16 个字符，且较长一条紧跟着句末标点时，也视为同一篇。日期对不上时，以官网列表或 sitemap 为准。
+
+同一发文方连续两期主源和备源都失败时，在当期说明里提示换源。运行时不改 OPML。

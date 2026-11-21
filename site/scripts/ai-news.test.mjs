@@ -133,7 +133,7 @@ test('item titles link to the source and quote blocks are gone', () => {
         ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂'],
       );
       const items = selected.split(/^#### /m).slice(1);
-      assert.equal(items.length, 34);
+      assert.equal(items.length, 36);
       let folded = 0;
       let unread = 0;
       for (const item of items) {
@@ -153,8 +153,8 @@ test('item titles link to the source and quote blocks are gone', () => {
         folded += 1;
       }
       assert.equal(folded, 31);
-      assert.equal(unread, 3);
-      assert.equal((selected.match(/订阅源里只有这些/g) || []).length, 3);
+      assert.equal(unread, 5);
+      assert.equal((selected.match(/订阅源里只有这些/g) || []).length, 5);
       assert.doesNotMatch(selected, /微信原文这次没打开|这次没打开原文/);
       const projects = body.split(/^## 三、项目开源$/m)[1].split(/^## 四、/m)[0];
       assert.match(projects, /GitHub Trending（weekly \/ all 前 5）/);
