@@ -673,6 +673,61 @@ body.is-post.has-toc .sidenote {
   white-space: nowrap;
 }
 
+.prose .release-points {
+  --release-label: #8a6a58;
+  --release-hl: rgba(255, 214, 102, 0.55);
+  margin: 0.15rem 0 1.45rem;
+  color: var(--ink);
+  font-family: var(--serif);
+}
+
+.prose .release-points p {
+  margin: 0;
+  line-height: 1.68;
+}
+
+.prose .release-points-k {
+  margin: 0 0 8px;
+  color: var(--release-label);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.prose .release-points ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.prose .release-points li {
+  margin: 0.5rem 0;
+  line-height: 1.68;
+}
+
+.prose .release-points li:first-child { margin-top: 0; }
+.prose .release-points li:last-child { margin-bottom: 0; }
+
+.prose .release-points strong { font-weight: 650; }
+
+.prose .release-points mark {
+  padding: 0 1px;
+  background: linear-gradient(
+    transparent 58%,
+    var(--release-hl) 58%,
+    var(--release-hl) 90%,
+    transparent 90%
+  );
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.prose .release-points-src {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .prose details.article-more {
   margin: 0.15rem 0 1.05rem;
 }
@@ -996,6 +1051,11 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   --more-line: color-mix(in srgb, var(--ink) 28%, transparent);
 }
 
+:root[data-theme="dark"] .prose .release-points {
+  --release-label: #d2b8a4;
+  --release-hl: rgba(214, 160, 60, 0.32);
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
@@ -1024,6 +1084,11 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
     --sidenote-line: var(--rule);
     --sidenote-open-bg: color-mix(in srgb, var(--note) 24%, var(--paper));
     --more-line: color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+
+  :root:not([data-theme="light"]) .prose .release-points {
+    --release-label: #d2b8a4;
+    --release-hl: rgba(214, 160, 60, 0.32);
   }
 }
 
