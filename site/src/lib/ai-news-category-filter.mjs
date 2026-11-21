@@ -24,46 +24,25 @@ export function filterChips(date, names) {
 }
 
 /**
- * Hand-ordered 来源 chips. Aliases collapse onto the canonical name.
- * Names missing from both lists stay in first-seen order after these.
+ * Hand-ordered 来源. Aliases collapse onto the canonical company.
+ * Names missing from the lists stay in first-seen order after these.
  */
-export const SOURCE_ORDER = [
-  // 国内模型厂
-  'DeepSeek',
-  'Kimi',
-  'GLM',
-  'MiniMax',
-  'StepFun',
-  // 国内其他AI厂
-  '阿里',
-  '腾讯',
-  '火山引擎',
-  '字节',
-  '快手',
-  '美团',
-  '百度',
-  // 国外模型厂
-  'Anthropic',
-  'OpenAI',
-  'Google',
-  'xAI',
-  'Meta',
-  // 国外其他AI厂
-  'Cursor',
-  'Cognition',
-  'Amp',
-  'LangChain',
-  'Warp',
-  'Lovable',
-  'Hugging Face',
-  'AWS',
+export const SOURCE_GROUPS = [
+  { name: '国内模型厂', companies: ['DeepSeek', 'Kimi', 'GLM', 'MiniMax', 'StepFun'] },
+  { name: '国外模型厂', companies: ['Anthropic', 'OpenAI', 'Google', 'xAI', 'Meta'] },
+  { name: '国内非模型厂', companies: ['阿里', '腾讯', '火山引擎', '字节', '快手', '美团', '百度'] },
+  { name: '国外非模型厂', companies: ['Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS', 'CodeRabbit', 'Zed', 'Latitude'] },
 ];
+
+export const SOURCE_ORDER = SOURCE_GROUPS.flatMap((group) => group.companies);
 
 /** Spellings that share one canonical chip. */
 export const COMPANY_ALIASES = {
   月之暗面: 'Kimi',
   智谱: 'GLM',
   阶跃星辰: 'StepFun',
+  淘宝: '阿里',
+  ggml: 'Hugging Face',
   Cogonition: 'Cognition',
   Langchain: 'LangChain',
   Wrap: 'Warp',
@@ -71,9 +50,15 @@ export const COMPANY_ALIASES = {
 };
 
 const COMPANY_RANK = new Map(SOURCE_ORDER.map((name, index) => [name, index]));
+const GROUP_OF = new Map(SOURCE_GROUPS.flatMap((group) => group.companies.map((name) => [name, group.name])));
+const GROUP_NAMES = new Set(SOURCE_GROUPS.map((group) => group.name));
 
-function canonicalCompany(name) {
+export function canonicalCompany(name) {
   return COMPANY_ALIASES[name] || name;
+}
+
+export function sourceGroup(name) {
+  return GROUP_OF.get(canonicalCompany(name)) || '';
 }
 
 /** Unique company names in 来源 order. Repeats and aliases share one chip. */
@@ -99,23 +84,47 @@ export function companiesPresent(tagLists) {
   return listed.concat(rest);
 }
 
+function blankFilter() {
+  return { cat: '', src: '', tag: '' };
+}
+
 export function parseFilter(search) {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
   const cat = params.get('cat') || '';
   const tag = (params.get('tag') || '').trim();
-  return { cat: PRIMARY.has(cat) ? cat : '', tag };
+  let src = params.get('src') || '';
+  const group = tag ? sourceGroup(tag) : '';
+  if (group) src = group;
+  return {
+    cat: PRIMARY.has(cat) ? cat : '',
+    src: GROUP_NAMES.has(src) ? src : '',
+    tag,
+  };
 }
 
 export function nextFilter(current, action) {
-  const next = { cat: current?.cat || '', tag: current?.tag || '' };
+  const next = { cat: current?.cat || '', src: current?.src || '', tag: current?.tag || '' };
   if (!action || action.kind === 'all') {
     if (action?.row === 'cat') next.cat = '';
     else if (action?.row === 'tag') next.tag = '';
-    else return { cat: '', tag: '' };
+    else if (action?.row === 'src') return { ...next, src: '', tag: '' };
+    else return blankFilter();
     return next;
   }
   if (action.kind === 'cat') next.cat = next.cat === action.value ? '' : action.value;
-  if (action.kind === 'tag') next.tag = next.tag === action.value ? '' : action.value;
+  if (action.kind === 'src') {
+    if (next.src === action.value) return { ...next, src: '', tag: '' };
+    next.src = action.value;
+    if (next.tag && sourceGroup(next.tag) !== next.src) next.tag = '';
+  }
+  if (action.kind === 'tag') {
+    if (next.tag === action.value) next.tag = '';
+    else {
+      next.tag = action.value;
+      const group = sourceGroup(action.value);
+      if (group) next.src = group;
+    }
+  }
   return next;
 }
 
@@ -123,8 +132,10 @@ export function toSearch(filter, currentSearch = '') {
   const raw = currentSearch.startsWith('?') ? currentSearch.slice(1) : currentSearch;
   const params = new URLSearchParams(raw);
   params.delete('cat');
+  params.delete('src');
   params.delete('tag');
   if (filter?.cat) params.set('cat', filter.cat);
+  if (filter?.src) params.set('src', filter.src);
   if (filter?.tag) params.set('tag', filter.tag);
   const text = params.toString();
   return text ? `?${text}` : '';
@@ -137,12 +148,13 @@ export function isFilterStuck(barTop, stickyTop, tolerance = 2) {
 
 export function itemMatches(item, filter) {
   if (filter?.cat && item.cat !== filter.cat) return false;
+  if (filter?.src && item.src !== filter.src) return false;
   if (filter?.tag && !(item.tags || []).includes(filter.tag)) return false;
   return true;
 }
 
 export function sectionPlan(sections, filter) {
-  const active = Boolean(filter?.cat || filter?.tag);
+  const active = Boolean(filter?.cat || filter?.src || filter?.tag);
   const planned = sections.map((section) => {
     const items = section.items.map((item) => ({ id: item.id, show: itemMatches(item, filter) }));
     const show = !active || items.some((item) => item.show);
@@ -194,25 +206,13 @@ export function collectChapter(root) {
     } else if (isWrappedCard(cursor) && group) {
       const heading = cursor.querySelector('h4');
       if (heading) {
-        item = {
-          id: `${group.id}-${group.items.length}`,
-          heading,
-          nodes: [cursor],
-          cat: heading.getAttribute('data-cat') || '',
-          tags: splitTags(heading.getAttribute('data-tags')),
-        };
+        item = itemFrom(group, heading, [cursor]);
         group.items.push(item);
       } else {
         item = null;
       }
     } else if (cursor.tagName === 'H4' && group) {
-      item = {
-        id: `${group.id}-${group.items.length}`,
-        heading: cursor,
-        nodes: [cursor],
-        cat: cursor.getAttribute('data-cat') || '',
-        tags: splitTags(cursor.getAttribute('data-tags')),
-      };
+      item = itemFrom(group, cursor, [cursor]);
       group.items.push(item);
     } else if (item) {
       item.nodes.push(cursor);
@@ -220,6 +220,18 @@ export function collectChapter(root) {
     cursor = cursor.nextElementSibling;
   }
   return { heading, groups };
+}
+
+function itemFrom(group, heading, nodes) {
+  const tags = splitTags(heading.getAttribute('data-tags')).map(canonicalCompany);
+  return {
+    id: `${group.id}-${group.items.length}`,
+    heading,
+    nodes,
+    cat: heading.getAttribute('data-cat') || '',
+    tags,
+    src: sourceGroup(tags[0] || '') || (GROUP_NAMES.has(textOf(group.heading)) ? textOf(group.heading) : ''),
+  };
 }
 
 function setShown(node, show) {
@@ -239,21 +251,32 @@ function tagRoot(item) {
 function paintTags(groups) {
   for (const section of groups) {
     for (const item of section.items) {
-      const heading = item.heading;
       const host = tagRoot(item);
-      if (!item.tags.length || host.querySelector('.ai-news-tag')) continue;
-      const link = heading.querySelector('a');
+      if ((!item.src && !item.tags.length) || host.querySelector('.ai-news-tag, .ai-news-src')) continue;
+      const link = host.querySelector('a');
+      const place = (button) => {
+        if (link) host.insertBefore(button, link);
+        else host.append(button);
+      };
+      if (item.src) {
+        const source = host.ownerDocument.createElement('button');
+        source.type = 'button';
+        source.className = 'ai-news-filter-src ai-news-src';
+        source.dataset.src = item.src;
+        source.textContent = item.src;
+        source.setAttribute('aria-pressed', 'false');
+        place(source);
+      }
       for (const tag of item.tags) {
-        const button = heading.ownerDocument.createElement('button');
+        const button = host.ownerDocument.createElement('button');
         button.type = 'button';
-        button.className = 'ai-news-tag';
+        button.className = 'ai-news-filter-co ai-news-tag';
         button.dataset.tag = tag;
         button.textContent = tag;
         button.setAttribute('aria-pressed', 'false');
-        if (link) heading.insertBefore(button, link);
-        else heading.append(button);
+        place(button);
       }
-      heading.classList.add('has-tag-buttons');
+      host.classList.add('has-tag-buttons');
     }
   }
 }
@@ -262,13 +285,23 @@ function syncPressed(bar, groups, filter) {
   for (const button of bar.querySelectorAll('button')) {
     const kind = button.dataset.filter;
     let on = false;
-    if (kind === 'all') on = button.dataset.row === 'tag' ? !filter.tag : !filter.cat;
-    else if (kind === 'cat') on = filter.cat === button.dataset.cat;
+    if (kind === 'all') {
+      if (button.dataset.row === 'tag') on = !filter.tag;
+      else if (button.dataset.row === 'src') on = !filter.src;
+      else on = !filter.cat;
+    } else if (kind === 'cat') on = filter.cat === button.dataset.cat;
+    else if (kind === 'src') on = filter.src === button.dataset.src;
     else if (kind === 'tag') on = filter.tag === button.dataset.tag;
     button.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
+  for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...tagRoot(item).querySelectorAll('.ai-news-src')]))) {
+    button.setAttribute('aria-pressed', filter.src && filter.src === button.dataset.src ? 'true' : 'false');
+  }
   for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...tagRoot(item).querySelectorAll('.ai-news-tag')]))) {
     button.setAttribute('aria-pressed', filter.tag && filter.tag === button.dataset.tag ? 'true' : 'false');
+  }
+  for (const button of bar.querySelectorAll('.ai-news-filter-co')) {
+    button.hidden = Boolean(filter.src) && sourceGroup(button.dataset.tag) !== filter.src;
   }
 }
 
@@ -282,7 +315,7 @@ function applyDom(groups, status, filter) {
       for (const node of item.nodes) setShown(node, show);
     });
   });
-  status.hidden = !(filter?.cat || filter?.tag) || plan.any;
+  status.hidden = !(filter?.cat || filter?.src || filter?.tag) || plan.any;
 }
 
 export function mountCategoryFilter(doc) {
@@ -323,8 +356,8 @@ export function mountCategoryFilter(doc) {
   const row = doc.createElement('div');
   row.className = 'ai-news-filter-row';
   row.setAttribute('role', 'group');
-  row.setAttribute('aria-label', '分类');
-  addLabel(row, '分类');
+  row.setAttribute('aria-label', '文章类型');
+  addLabel(row, '文章类型');
   addAll(row, 'cat');
   for (const name of present) {
     const button = doc.createElement('button');
@@ -339,11 +372,29 @@ export function mountCategoryFilter(doc) {
 
   const companies = companiesPresent(chapter.groups.map((group) => group.items.flatMap((item) => item.tags)));
   if (companies.length > 0) {
+    const presentGroups = SOURCE_GROUPS.filter((group) => companies.some((name) => sourceGroup(name) === group.name));
+    const sourceRow = doc.createElement('div');
+    sourceRow.className = 'ai-news-filter-row';
+    sourceRow.setAttribute('role', 'group');
+    sourceRow.setAttribute('aria-label', '来源类型');
+    addLabel(sourceRow, '来源类型');
+    addAll(sourceRow, 'src');
+    for (const group of presentGroups) {
+      const button = doc.createElement('button');
+      button.type = 'button';
+      button.className = 'ai-news-filter-src';
+      button.dataset.filter = 'src';
+      button.dataset.src = group.name;
+      button.textContent = group.name;
+      sourceRow.append(button);
+    }
+    bar.append(sourceRow);
+
     const companyRow = doc.createElement('div');
     companyRow.className = 'ai-news-filter-row';
     companyRow.setAttribute('role', 'group');
-    companyRow.setAttribute('aria-label', '来源');
-    addLabel(companyRow, '来源');
+    companyRow.setAttribute('aria-label', '来源公司');
+    addLabel(companyRow, '来源公司');
     addAll(companyRow, 'tag');
     for (const name of companies) {
       const button = doc.createElement('button');
@@ -401,10 +452,16 @@ export function mountCategoryFilter(doc) {
     const kind = button.dataset.filter;
     if (kind === 'all') choose({ kind: 'all', row: button.dataset.row });
     else if (kind === 'cat') choose({ kind: 'cat', value: button.dataset.cat });
+    else if (kind === 'src') choose({ kind: 'src', value: button.dataset.src });
     else if (kind === 'tag') choose({ kind: 'tag', value: button.dataset.tag });
   });
 
   root.addEventListener('click', (event) => {
+    const source = event.target.closest('.ai-news-src');
+    if (source && root.contains(source)) {
+      choose({ kind: 'src', value: source.dataset.src });
+      return;
+    }
     const button = event.target.closest('.ai-news-tag');
     if (!button || !root.contains(button)) return;
     choose({ kind: 'tag', value: button.dataset.tag });

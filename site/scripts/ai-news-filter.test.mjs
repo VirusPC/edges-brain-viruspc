@@ -6,6 +6,7 @@ import {
   SOURCE_ORDER,
   categoriesPresent,
   companiesPresent,
+  sourceGroup,
   filterChips,
   isFilterStuck,
   itemMatches,
@@ -45,26 +46,36 @@ test('a page with no primary category offers no filter chips', () => {
   ]);
 });
 
-test('the query string keeps a primary and a company together', () => {
-  assert.deepEqual(parseFilter(''), { cat: '', tag: '' });
-  assert.deepEqual(parseFilter('?cat=产品'), { cat: '产品', tag: '' });
-  assert.deepEqual(parseFilter('?cat=研发提效'), { cat: '', tag: '' });
-  assert.deepEqual(parseFilter('?tag=DeepSeek'), { cat: '', tag: 'DeepSeek' });
-  assert.deepEqual(parseFilter('?cat=产品&tag=DeepSeek'), { cat: '产品', tag: 'DeepSeek' });
-  assert.deepEqual(parseFilter('?cat=不存在&tag=腾讯'), { cat: '', tag: '腾讯' });
+test('the query string keeps a primary, a source type, and a company together', () => {
+  assert.deepEqual(parseFilter(''), { cat: '', src: '', tag: '' });
+  assert.deepEqual(parseFilter('?cat=产品'), { cat: '产品', src: '', tag: '' });
+  assert.deepEqual(parseFilter('?cat=研发提效'), { cat: '', src: '', tag: '' });
+  assert.deepEqual(parseFilter('?tag=DeepSeek'), { cat: '', src: '国内模型厂', tag: 'DeepSeek' });
+  assert.deepEqual(parseFilter('?cat=产品&tag=DeepSeek'), { cat: '产品', src: '国内模型厂', tag: 'DeepSeek' });
+  assert.deepEqual(parseFilter('?cat=不存在&tag=腾讯'), { cat: '', src: '国内非模型厂', tag: '腾讯' });
+  assert.deepEqual(parseFilter('?src=国外模型厂&tag=阿里'), { cat: '', src: '国内非模型厂', tag: '阿里' });
 });
 
-test('choosing the active filter again clears only that row', () => {
-  const both = { cat: '产品', tag: '腾讯' };
-  assert.deepEqual(nextFilter(both, { kind: 'cat', value: '产品' }), { cat: '', tag: '腾讯' });
-  assert.deepEqual(nextFilter(both, { kind: 'tag', value: '腾讯' }), { cat: '产品', tag: '' });
-  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'cat' }), { cat: '', tag: '腾讯' });
-  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'tag' }), { cat: '产品', tag: '' });
-  assert.deepEqual(nextFilter(both, { kind: 'all' }), { cat: '', tag: '' });
-  assert.deepEqual(nextFilter({ cat: '产品', tag: '' }, { kind: 'tag', value: '百度' }), {
+test('choosing a company sets its source type, and clearing the type clears the company', () => {
+  const both = { cat: '产品', src: '国内非模型厂', tag: '腾讯' };
+  assert.deepEqual(nextFilter(both, { kind: 'cat', value: '产品' }), { cat: '', src: '国内非模型厂', tag: '腾讯' });
+  assert.deepEqual(nextFilter(both, { kind: 'tag', value: '腾讯' }), { cat: '产品', src: '国内非模型厂', tag: '' });
+  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'cat' }), { cat: '', src: '国内非模型厂', tag: '腾讯' });
+  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'tag' }), { cat: '产品', src: '国内非模型厂', tag: '' });
+  assert.deepEqual(nextFilter(both, { kind: 'all', row: 'src' }), { cat: '产品', src: '', tag: '' });
+  assert.deepEqual(nextFilter(both, { kind: 'all' }), { cat: '', src: '', tag: '' });
+  assert.deepEqual(nextFilter({ cat: '产品', src: '', tag: '' }, { kind: 'tag', value: 'Google' }), {
     cat: '产品',
-    tag: '百度',
+    src: '国外模型厂',
+    tag: 'Google',
   });
+  assert.deepEqual(nextFilter({ cat: '', src: '国内非模型厂', tag: '阿里' }, { kind: 'src', value: '国外模型厂' }), {
+    cat: '',
+    src: '国外模型厂',
+    tag: '',
+  });
+  assert.equal(sourceGroup('阿里'), '国内非模型厂');
+  assert.equal(sourceGroup('字节'), '国内非模型厂');
 });
 
 test('search keeps unrelated params and can share both filters', () => {
@@ -86,8 +97,8 @@ test('company chips follow the hand-ordered groups', () => {
     ]]),
     [
       'DeepSeek',
-      '阿里', '腾讯', '火山引擎', '美团', '百度',
       'Anthropic', 'OpenAI', 'Google',
+      '阿里', '腾讯', '火山引擎', '美团', '百度',
       'Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS',
     ],
   );
@@ -149,15 +160,17 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /overflow-x:\s*auto/);
   assert.match(css, /\.ai-news-filter-all\s*\{[^}]*background:\s*transparent/);
   assert.match(css, /\.ai-news-filter-all\s*\{[^}]*box-shadow:\s*inset 0 0 0 1px var\(--rule\)/);
-  assert.match(css, /\.ai-news-filter-co\s*\{/);
+  assert.match(css, /\.ai-news-filter-co,\s*\n\.ai-news-filter-src\s*\{/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*color:\s*var\(--ink\)/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-weight:\s*700/);
   assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*1em/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*left:\s*0/);
   const source = fs.readFileSync(new URL('../src/lib/ai-news-category-filter.mjs', import.meta.url), 'utf8');
-  assert.match(source, /addLabel\(row,\s*'分类'\)/);
-  assert.match(source, /addLabel\(companyRow,\s*'来源'\)/);
+  assert.match(source, /addLabel\(row,\s*'文章类型'\)/);
+  assert.match(source, /addLabel\(sourceRow,\s*'来源类型'\)/);
+  assert.match(source, /addLabel\(companyRow,\s*'来源公司'\)/);
+  assert.match(css, /\.ai-news-tag,\s*\n\.prose h4 \.ai-news-src\s*\{[^}]*color:\s*var\(--muted\)/);
 });
 
 test('a category and a company both have to match, and an empty section hides', () => {
