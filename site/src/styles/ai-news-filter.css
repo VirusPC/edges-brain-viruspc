@@ -167,6 +167,10 @@
   .ai-news-filter-nail.r { right: 8px; }
 }
 
+.ai-news-filter button[hidden] {
+  display: none !important;
+}
+
 .ai-news-filter button {
   position: relative;
   z-index: 1;
