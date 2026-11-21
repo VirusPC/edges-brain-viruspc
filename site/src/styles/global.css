@@ -769,6 +769,7 @@ body.is-post.has-toc .sidenote {
 
 .model-facts-name {
   margin: 0 0 0.45rem;
+  color: var(--ink);
   font-size: 0.98rem;
   font-weight: 650;
 }
