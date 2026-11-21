@@ -1,0 +1,30 @@
+---
+import NoteCard from './NoteCard.astro';
+import { splitNoteCards } from '../lib/note-card-model.mjs';
+
+interface Props {
+  html: string;
+}
+
+const { html } = Astro.props;
+const blocks = splitNoteCards(html);
+---
+
+{
+  blocks.map((block) =>
+    block.kind === 'card' ? (
+      <NoteCard
+        category={block.card.category}
+        sources={block.card.sources}
+        title={block.card.title}
+        href={block.card.href}
+        headingId={block.card.headingId}
+        ledeHtml={block.card.ledeHtml}
+        sections={block.card.sections}
+        extraHtml={block.card.extraHtml}
+      />
+    ) : (
+      <Fragment set:html={block.html} />
+    ),
+  )
+}

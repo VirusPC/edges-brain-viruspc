@@ -1,0 +1,79 @@
+---
+import '../styles/note-card.css';
+
+interface Section {
+  label: string;
+  html: string;
+  highlight?: boolean;
+}
+
+interface Props {
+  category?: string;
+  sources?: string[];
+  title: string;
+  href?: string;
+  headingId?: string;
+  /** One-line summary HTML. May include `<mark>` for the single highlighter phrase. */
+  ledeHtml?: string;
+  /** Folded notes. Omitted when the source has no 「完整总结」. */
+  sections?: Section[];
+  /** Leftover body for cards that are not the five-part note. */
+  extraHtml?: string;
+}
+
+const {
+  category = '',
+  sources = [],
+  title,
+  href = '',
+  headingId = '',
+  ledeHtml = '',
+  sections = [],
+  extraHtml = '',
+} = Astro.props;
+
+const showFold = sections.length > 0;
+const tagList = sources.join(' · ');
+---
+
+<article class="note-card article-card">
+  <h4
+    class="note-card-title"
+    id={headingId || undefined}
+    data-cat={category || undefined}
+    data-tags={tagList || undefined}
+  >
+    {
+      category ? (
+        <span class="ai-news-filter-cat" data-cat={category}>
+          {category}
+        </span>
+      ) : null
+    }
+    {
+      sources.map((source) => (
+        <button type="button" class="ai-news-filter-co ai-news-tag" data-tag={source} aria-pressed="false">
+          {source}
+        </button>
+      ))
+    }
+    {href ? <a href={href}>{title}</a> : title}
+  </h4>
+  {ledeHtml ? <div class="note-card-ledes" set:html={ledeHtml} /> : null}
+  {extraHtml ? <div class="note-card-extra" set:html={extraHtml} /> : null}
+  {
+    showFold ? (
+      <details class="article-more">
+        <summary>完整总结</summary>
+        {sections.map((section) => (
+          <div class:list={['note-card-sec', { 'is-wide': !section.label }]}>
+            {section.label ? <div class="note-card-k">{section.label}</div> : null}
+            <p>
+              {section.highlight ? <mark class="note-card-hl" set:html={section.html} /> : <Fragment set:html={section.html} />}
+            </p>
+          </div>
+        ))}
+      </details>
+    ) : null
+  }
+</article>

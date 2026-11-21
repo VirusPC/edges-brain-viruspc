@@ -1,0 +1,126 @@
+/* Small additions on the existing article card. The card frame stays in global.css. */
+
+.note-card {
+  --note-hl: rgba(255, 214, 102, 0.55);
+  --note-label: #8a6a58;
+  --note-body: #24221e;
+  font-family: var(--serif);
+}
+
+.prose .note-card h4.note-card-title::before,
+.prose .note-card h4.note-card-title::after {
+  content: none !important;
+  display: none !important;
+}
+
+.prose .note-card h4 .ai-news-filter-cat,
+.prose .note-card h4 .ai-news-filter-co {
+  flex: none;
+  font-family: var(--serif);
+}
+
+.prose .note-card h4 .ai-news-filter-cat {
+  order: 0;
+}
+
+.prose .note-card h4 .ai-news-filter-co.ai-news-tag {
+  order: 1;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.12em 0.5em 0.14em;
+  background: var(--paper);
+  color: var(--ink-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent);
+  font-size: 0.78em;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.prose .note-card h4 .ai-news-filter-co.ai-news-tag[aria-pressed='true'] {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px currentColor;
+  text-decoration: none;
+}
+
+.prose .note-card h4 .ai-news-tag:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.note-card-lede mark,
+.note-card-hl {
+  padding: 0 1px;
+  background: linear-gradient(
+    transparent 58%,
+    var(--note-hl) 58%,
+    var(--note-hl) 90%,
+    transparent 90%
+  );
+  color: inherit;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.prose .note-card details.article-more > .note-card-sec {
+  display: grid;
+  grid-template-columns: 6.4em minmax(0, 1fr);
+  column-gap: 14px;
+  align-items: baseline;
+  margin: 8px 0 10px;
+}
+
+.prose .note-card details.article-more > .note-card-sec:last-child {
+  margin-bottom: 0;
+}
+
+.prose .note-card details.article-more > .note-card-sec.is-wide {
+  grid-template-columns: 1fr;
+}
+
+.note-card-k {
+  margin: 0;
+  color: var(--note-label);
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: 0.06em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.prose .note-card .note-card-sec p {
+  margin: 0;
+  color: var(--note-body);
+  font-size: 16.5px;
+  font-weight: 500;
+  line-height: 1.8;
+}
+
+@media (max-width: 520px) {
+  .prose .note-card details.article-more > .note-card-sec {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+  }
+
+  .note-card-k {
+    text-align: left;
+  }
+}
+
+:root[data-theme="dark"] .note-card {
+  --note-hl: rgba(255, 214, 102, 0.38);
+  --note-label: #d2b8a4;
+  --note-body: var(--panel-ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .note-card {
+    --note-hl: rgba(255, 214, 102, 0.38);
+    --note-label: #d2b8a4;
+    --note-body: var(--panel-ink);
+  }
+}

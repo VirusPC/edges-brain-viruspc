@@ -165,6 +165,28 @@ test('project cards stay out of the selected-article filter', () => {
   assert.deepEqual(collected.groups[0].items[0].tags, ['ggml']);
 });
 
+test('a note card is one selected-article item', () => {
+  const heading = element('h4', { 'data-cat': 'Agent 与 Harness', 'data-tags': 'Anthropic' });
+  heading.textContent = 'Building always-on agents';
+  const card = element('article', { class: 'note-card' }, [heading]);
+  const chapter = element('h2');
+  chapter.textContent = '四、精选文章';
+  const section = element('h3');
+  section.textContent = '国际';
+  const root = {
+    querySelectorAll(selector) {
+      assert.equal(selector, 'h2');
+      return [chapter];
+    },
+  };
+  chain([chapter, section, card]);
+  const collected = collectChapter(root);
+  assert.equal(collected.groups[0].items.length, 1);
+  assert.deepEqual(collected.groups[0].items[0].nodes, [card]);
+  assert.equal(collected.groups[0].items[0].cat, 'Agent 与 Harness');
+  assert.deepEqual(collected.groups[0].items[0].tags, ['Anthropic']);
+});
+
 test('the summary arrow stays the warm accent when open and when closed', () => {
   const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
   assert.match(css, /\.prose details\.article-more > summary,\s*\.prose details\.article-more\[open\] > summary\s*\{[^}]*color:\s*var\(--summary\)/);

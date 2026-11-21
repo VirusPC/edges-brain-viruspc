@@ -9,4 +9,5 @@
 ## 本层内容
 
 - [站点验收要同时看手机、电脑、浅色和暗色](<project_site_viewport_and_theme/INDEX.md>) — 改 site/ 的样式、组件、排版或交互时打开：验收必须覆盖手机和电脑，以及浅色和暗色。
+- [笔记卡设计原则](<project_note_card_design/INDEX.md>) — 改 AI News 笔记卡（项目开源、精选文章）时打开：沿用原卡片，只加同款胶囊、省着用的荧光笔和左栏小标题。
 <!-- edges-entries-local:end -->

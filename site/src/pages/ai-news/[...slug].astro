@@ -1,5 +1,7 @@
 ---
 import { render } from 'astro:content';
+import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+import AiNewsProse from '../../components/AiNewsProse.astro';
 import ArticlePage from '../../components/ArticlePage.astro';
 import { getAiNews } from '../../lib/entries';
 import { formatCoverage } from '../../lib/ai-news.mjs';
@@ -15,6 +17,8 @@ export async function getStaticPaths() {
 
 const { issue } = Astro.props;
 const { Content, headings } = await render(issue);
+const container = await AstroContainer.create();
+const html = await container.renderToString(Content);
 const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverageEnd);
 ---
 
@@ -29,7 +33,7 @@ const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverage
   source={githubBlob(issue.data.sourcePath)}
   rss={{ title: 'AI 资讯', href: siteUrl('/ai-news/rss.xml') }}
 >
-  <Content />
+  <AiNewsProse html={html} />
 </ArticlePage>
 
 <script>

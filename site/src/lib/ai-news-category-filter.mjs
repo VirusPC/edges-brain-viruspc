@@ -129,7 +129,7 @@ export function collectChapter(root) {
       group = { id: String(groups.length), heading: cursor, items: [] };
       groups.push(group);
       item = null;
-    } else if (cursor.classList?.contains('article-card') && group) {
+    } else if (isWrappedCard(cursor) && group) {
       const heading = cursor.querySelector('h4');
       if (heading) {
         item = {
@@ -164,11 +164,22 @@ function setShown(node, show) {
   node.classList.toggle('ai-news-filter-hidden', !show);
 }
 
+function isWrappedCard(node) {
+  return Boolean(node?.classList?.contains('article-card') || node?.classList?.contains('note-card'));
+}
+
+function tagRoot(item) {
+  const card = item.nodes?.[0];
+  if (card?.classList?.contains('note-card')) return card;
+  return item.heading;
+}
+
 function paintTags(groups) {
   for (const section of groups) {
     for (const item of section.items) {
       const heading = item.heading;
-      if (!item.tags.length || heading.querySelector('.ai-news-tag')) continue;
+      const host = tagRoot(item);
+      if (!item.tags.length || host.querySelector('.ai-news-tag')) continue;
       const link = heading.querySelector('a');
       for (const tag of item.tags) {
         const button = heading.ownerDocument.createElement('button');
@@ -194,7 +205,7 @@ function syncPressed(bar, groups, filter) {
     else if (kind === 'tag') on = filter.tag === button.dataset.tag;
     button.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
-  for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...item.heading.querySelectorAll('.ai-news-tag')]))) {
+  for (const button of groups.flatMap((group) => group.items.flatMap((item) => [...tagRoot(item).querySelectorAll('.ai-news-tag')]))) {
     button.setAttribute('aria-pressed', filter.tag && filter.tag === button.dataset.tag ? 'true' : 'false');
   }
 }
