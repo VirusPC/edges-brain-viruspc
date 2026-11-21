@@ -191,19 +191,19 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5d7f5 70%, transparent);
 }
 
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="架构"] {
+  background: #2c2840;
+  color: #ddd4f5;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ddd4f5 72%, transparent);
+}
+
 :root[data-theme="dark"] .ai-news-filter-cat[data-cat="产品"] {
   background: #3a2a22;
   color: #f3cbb8;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #f3cbb8 70%, transparent);
 }
 
-:root[data-theme="dark"] .ai-news-filter-cat[data-cat="Agent 与 Harness"] {
-  background: #2c2840;
-  color: #ddd4f5;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ddd4f5 72%, transparent);
-}
-
-:root[data-theme="dark"] .ai-news-filter-cat[data-cat="工程实践"] {
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="实践"] {
   background: #1e3329;
   color: #c5ead8;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5ead8 70%, transparent);
@@ -215,7 +215,7 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5e8e8 70%, transparent);
 }
 
-:root[data-theme="dark"] .ai-news-filter-cat[data-cat="行业"] {
+:root[data-theme="dark"] .ai-news-filter-cat[data-cat="其他"] {
   background: #332820;
   color: #ead4c4;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #ead4c4 70%, transparent);
@@ -251,19 +251,19 @@
     box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5d7f5 70%, transparent);
   }
 
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="架构"] {
+    background: #2c2840;
+    color: #ddd4f5;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, #ddd4f5 72%, transparent);
+  }
+
   :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="产品"] {
     background: #3a2a22;
     color: #f3cbb8;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, #f3cbb8 70%, transparent);
   }
 
-  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="Agent 与 Harness"] {
-    background: #2c2840;
-    color: #ddd4f5;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, #ddd4f5 72%, transparent);
-  }
-
-  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="工程实践"] {
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="实践"] {
     background: #1e3329;
     color: #c5ead8;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5ead8 70%, transparent);
@@ -275,7 +275,7 @@
     box-shadow: inset 0 0 0 1px color-mix(in srgb, #c5e8e8 70%, transparent);
   }
 
-  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="行业"] {
+  :root:not([data-theme="light"]) .ai-news-filter-cat[data-cat="其他"] {
     background: #332820;
     color: #ead4c4;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, #ead4c4 70%, transparent);

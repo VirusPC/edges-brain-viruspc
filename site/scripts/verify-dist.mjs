@@ -463,8 +463,8 @@ assert.equal((issue20.match(/微信原文这次没打开|这次没打开原文/g
 const selectedHeadings20 = issue20.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];
 for (const [cat, tag, title] of [
   ['开源', '腾讯', 'LoopForge'],
-  ['Agent 与 Harness', '腾讯', 'Octop'],
-  ['Agent 与 Harness', '腾讯', 'Ontology'],
+  ['架构', '腾讯', 'Octop'],
+  ['架构', '腾讯', 'Ontology'],
 ]) {
   assert.ok(
     selectedHeadings20.some((heading) => heading.includes(`data-cat="${cat}"`)
