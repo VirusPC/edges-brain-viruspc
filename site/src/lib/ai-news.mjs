@@ -49,11 +49,27 @@ export function summaryLine(body, legacy) {
     const count = countArticles(body);
     return count > 0 ? `${count} 篇` : '';
   }
-  const match = /^##[ \t]*一、本周关键词[ \t]*\r?\n+([^\r\n]+)/m.exec(body);
-  if (!match) return '';
-  const line = match[1].trim();
-  if (!line || /^<br\s*\/?>$/i.test(line) || /^[-*]{3,}$/.test(line)) return '';
-  return line;
+  const heading = /^##[ \t]*一、本周关键词[ \t]*$/m.exec(body);
+  if (!heading || heading.index == null) return '';
+  const rest = body.slice(heading.index + heading[0].length);
+  const next = rest.search(/^##[ \t]/m);
+  const section = next === -1 ? rest : rest.slice(0, next);
+  let inComment = false;
+  for (const raw of section.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (inComment) {
+      if (line.includes('-->')) inComment = false;
+      continue;
+    }
+    if (line.startsWith('<!--')) {
+      if (!line.includes('-->')) inComment = true;
+      continue;
+    }
+    if (!line || /^<br\s*\/?>$/i.test(line) || /^[-*]{3,}$/.test(line)) continue;
+    if (/^!\[[^\]]*\]\([^)]+\)$/.test(line)) continue;
+    return line;
+  }
+  return '';
 }
 
 /**

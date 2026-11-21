@@ -358,6 +358,9 @@ assert.equal(chartSpecs(backfillIssue).length, 0);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
+assert.match(issue20, /alt="Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots、常驻 Agent、软件工厂、Skill 自进化与评测、工具检索"/);
+assert.doesNotMatch(issue20, /<p>\s*Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max/);
+assert.doesNotMatch(aiNewsList, /Gemini 4 Neon、GPT-6\.2 Astra \/ Sol、Qwen4-Max、Devin Bots/);
 assert.match(issue20, /覆盖窗口：2026-11-13 08:00:00 至 2026-11-20 07:59:59（北京时间；生成日 2026-11-20）。/);
 assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/);
 assert.deepEqual(optionLabels(issue20), [
@@ -426,7 +429,7 @@ const selectedHtml20 = issue20.slice(selectedAt20);
 const projectFolded20 = [...projectHtml20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
 const selectedFolded20 = [...selectedHtml20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
 assert.equal(projectFolded20.length, 5);
-assert.equal(selectedFolded20.length, 31);
+assert.equal(selectedFolded20.length, 33);
 for (const block of projectFolded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
   for (const label of ['什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作']) {
@@ -452,7 +455,7 @@ assert.doesNotMatch(projectHtml20.slice(0, projectHtml20.indexOf('GitHub Trendin
 assert.doesNotMatch(projectHtml20, /data-cat=/);
 assert.match(selectedHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);
-assert.equal((issue20.match(/订阅源里只有这些/g) || []).length, 5);
+assert.equal((issue20.match(/订阅源里只有这些/g) || []).length, 3);
 assert.equal((issue20.match(/微信原文这次没打开|这次没打开原文/g) || []).length, 0);
 const selectedHeadings20 = issue20.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];
 for (const [cat, tag, title] of [

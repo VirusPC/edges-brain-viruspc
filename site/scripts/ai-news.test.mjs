@@ -152,9 +152,9 @@ test('item titles link to the source and quote blocks are gone', () => {
         }
         folded += 1;
       }
-      assert.equal(folded, 31);
-      assert.equal(unread, 5);
-      assert.equal((selected.match(/订阅源里只有这些/g) || []).length, 5);
+      assert.equal(folded, 33);
+      assert.equal(unread, 3);
+      assert.equal((selected.match(/订阅源里只有这些/g) || []).length, 3);
       assert.doesNotMatch(selected, /微信原文这次没打开|这次没打开原文/);
       const projects = body.split(/^## 三、项目开源$/m)[1].split(/^## 四、/m)[0];
       assert.match(projects, /GitHub Trending（weekly \/ all 前 5）/);
@@ -230,4 +230,16 @@ test('a missing keyword chapter is legacy even when the date is recent', () => {
   assert.equal(summaryLine(body, true), '1 篇');
   assert.equal(summaryLine('没有列表', true), '');
   assert.equal(summaryLine('## 一、本周关键词\n\n<br/>\n', false), '');
+  const cloudOnly = [
+    '## 一、本周关键词',
+    '',
+    '![Gemini 4 Neon、GPT-6.2](keywords-cloud.png)',
+    '',
+    '<!-- keywords-cloud',
+    '[{"word":"Gemini 4 Neon"}]',
+    '-->',
+    '',
+    '## 二、模型进展',
+  ].join('\n');
+  assert.equal(summaryLine(cloudOnly, false), '');
 });
