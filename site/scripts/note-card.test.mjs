@@ -77,6 +77,10 @@ test('note card css stays serif and does not restyle the filter bar', () => {
   assert.doesNotMatch(css, /#24180a|#ffd56a/);
   assert.match(css, /white-space:\s*nowrap/);
   assert.match(css, /\.note-card-hl/);
+  assert.match(
+    css,
+    /\.prose \.note-card h4 \.ai-news-filter-src\.ai-news-src,\s*\n\.prose \.note-card h4 \.ai-news-filter-co\.ai-news-tag \{/,
+  );
   assert.doesNotMatch(css, /\.ai-news-filter\s*\{/);
   assert.match(filter, /\.ai-news-filter-cat\[data-cat='模型'\]/);
   assert.match(filter, /\.ai-news-filter\s*\{/);
