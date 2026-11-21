@@ -45,6 +45,30 @@ test('an issue that only has international keeps that chapter number', () => {
   assert.equal(text(tree.children[1]), '国际');
 });
 
+test('construction chapters stay siblings after the folded selected-articles chapter', () => {
+  const tree = {
+    type: 'root',
+    children: [
+      heading(2, '四、国内进展'),
+      { type: 'paragraph', children: [{ type: 'text', value: '国内条目' }] },
+      heading(2, '五、国际进展'),
+      { type: 'paragraph', children: [{ type: 'text', value: '国际条目' }] },
+      heading(2, '五、精选推文'),
+      { type: 'paragraph', children: [{ type: 'text', value: '建设中，敬请期待' }] },
+      heading(2, '六、精选播客'),
+      { type: 'paragraph', children: [{ type: 'text', value: '建设中，敬请期待' }] },
+    ],
+  };
+  foldSelectedArticles(tree);
+  assert.deepEqual(tree.children.filter((node) => node.type === 'heading').map((node) => [node.depth, text(node)]), [
+    [2, '四、精选文章'],
+    [3, '国内'],
+    [3, '国际'],
+    [2, '五、精选推文'],
+    [2, '六、精选播客'],
+  ]);
+});
+
 test('a chapter already named 精选文章 is not folded again', () => {
   const tree = {
     type: 'root',

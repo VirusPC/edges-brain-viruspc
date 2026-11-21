@@ -25,6 +25,7 @@ interface Props {
 
 const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss, tocDepth = 2 } = Astro.props;
 const iso = date ? formatISODate(date) : '';
+const constructionChapter = (text: string) => /精选推文$|精选播客$/.test(text);
 const sections: { slug: string; text: string; children: { slug: string; text: string }[] }[] = [];
 for (const heading of headings) {
   if (!heading.slug || !heading.text) continue;
@@ -44,6 +45,7 @@ for (const heading of headings) {
           sections.map((item) => (
             <li>
               <a href={`#${item.slug}`}>{item.text}</a>
+              {constructionChapter(item.text) ? <span class="tag">建设中</span> : null}
               {item.children.length > 0 ? (
                 <ol>
                   {item.children.map((child) => (

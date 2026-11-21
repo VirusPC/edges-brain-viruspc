@@ -408,15 +408,26 @@ const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(toc20, '2026-11-20 is missing the chapter toc');
 assert.doesNotMatch(issue20, /薅羊毛/);
 assert.doesNotMatch(toc20[0], /薅羊毛/);
-for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章']) {
+for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章', '五、精选推文', '六、精选播客']) {
   assert.match(toc20[0], new RegExp(heading));
 }
+assert.match(toc20[0], /五、精选推文<\/a>\s*<span class="tag">建设中<\/span>/);
+assert.match(toc20[0], /六、精选播客<\/a>\s*<span class="tag">建设中<\/span>/);
+assert.match(issue20, /<h2\b[^>]*>五、精选推文<span class="tag">建设中<\/span><\/h2>/);
+assert.match(issue20, /<h2\b[^>]*>六、精选播客<span class="tag">建设中<\/span><\/h2>/);
 assert.match(toc20[0], />国内</);
 assert.match(toc20[0], />国际</);
 const headingAt20 = [...issue20.matchAll(/<h2\b[^>]*>[\s\S]*?<\/h2>/g)];
 const projectAt20 = headingAt20.find((match) => match[0].includes('三、项目开源'))?.index ?? -1;
 const selectedAt20 = headingAt20.find((match) => match[0].includes('四、精选文章'))?.index ?? -1;
+const tweetsAt20 = headingAt20.find((match) => match[0].includes('五、精选推文'))?.index ?? -1;
+const podcastsAt20 = headingAt20.find((match) => match[0].includes('六、精选播客'))?.index ?? -1;
 assert.ok(projectAt20 > 0 && selectedAt20 > projectAt20, '2026-11-20 chapter headings are out of order');
+assert.ok(selectedAt20 < tweetsAt20 && tweetsAt20 < podcastsAt20, '2026-11-20 construction chapters are out of order');
+const construction20 = issue20.slice(tweetsAt20, issue20.indexOf('<p class="source">', tweetsAt20));
+assert.equal((construction20.match(/建设中，敬请期待/g) || []).length, 2);
+assert.equal((construction20.match(/class="article-card"/g) || []).length, 0);
+assert.doesNotMatch(construction20, /https?:\/\//);
 const projectHtml20 = issue20.slice(projectAt20, selectedAt20);
 const selectedHtml20 = issue20.slice(selectedAt20);
 const projectFolded20 = [...projectHtml20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
@@ -509,6 +520,20 @@ for (const rel of detailPages) {
   const nav = chapterToc(html);
   assert.ok(nav, `${rel} is missing the chapter toc`);
   assert.match(html, /class="post has-toc"/, `${rel} article layout`);
+  if (rel.startsWith('ai-news/')) {
+    const articleAt = nav[0].indexOf('精选文章');
+    const tweetsAt = nav[0].indexOf('精选推文');
+    const podcastsAt = nav[0].indexOf('精选播客');
+    assert.ok(
+      articleAt >= 0 && articleAt < tweetsAt && tweetsAt < podcastsAt,
+      `${rel} toc is missing the construction chapters`,
+    );
+    assert.match(nav[0], /精选推文<\/a>\s*<span class="tag">建设中<\/span>/, rel);
+    assert.match(nav[0], /精选播客<\/a>\s*<span class="tag">建设中<\/span>/, rel);
+    assert.match(html, /精选推文<span class="tag">建设中<\/span>/, rel);
+    assert.match(html, /精选播客<span class="tag">建设中<\/span>/, rel);
+    assert.equal((html.match(/建设中，敬请期待/g) || []).length, 2, rel);
+  }
   for (const href of nav[0].matchAll(/href="#([^"]*)"/g)) {
     let id = href[1];
     try {

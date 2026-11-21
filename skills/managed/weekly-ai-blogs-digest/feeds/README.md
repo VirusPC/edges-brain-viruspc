@@ -26,4 +26,4 @@ Artificial Analysis 和 LLM Arena 不是 OPML。见 skill 里的「非博客数�
 5. 给这条 source 写 `lane`（`product`、`tech` 或 `mixed`）。GitHub Trending 用 `special`。
 6. 改完后，用 skill「运行环境」里的 Python 3.12 跑 `../scripts/fetch_feeds.py --check`。
 
-播客不进这份 OPML。周报 skill 仍只在「本周风向」里点名播客。
+播客不进这份 OPML。精选播客章先留建设中，不在这里订节目。
