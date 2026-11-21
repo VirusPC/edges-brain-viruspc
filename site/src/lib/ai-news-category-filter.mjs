@@ -24,64 +24,79 @@ export function filterChips(date, names) {
 }
 
 /**
- * Publishers on the 来源 row.
- * Domestic before foreign. Within a region: pure model labs, incumbents
- * with their own foundation model, AI product companies, then traditional
- * internet with no foundation model. The same cell uses zh-CN collation.
- * `basis` is the public model name or the reason for the cell. Names
- * missing here sort last.
+ * Hand-ordered 来源 chips. Aliases collapse onto the canonical name.
+ * Names missing from both lists stay in first-seen order after these.
  */
-export const COMPANY_CLASS = {
-  DeepSeek: { region: 'cn', kind: 'pure', basis: 'DeepSeek 系列' },
-  阿里: { region: 'cn', kind: 'house', basis: '通义千问（Qwen）' },
-  百度: { region: 'cn', kind: 'house', basis: '文心（ERNIE）' },
-  火山引擎: { region: 'cn', kind: 'house', basis: '豆包（字节跳动自研，火山引擎提供）' },
-  美团: { region: 'cn', kind: 'house', basis: 'LongCat' },
-  腾讯: { region: 'cn', kind: 'house', basis: '混元（Hunyuan）' },
-  Anthropic: { region: 'intl', kind: 'pure', basis: 'Claude' },
-  OpenAI: { region: 'intl', kind: 'pure', basis: 'GPT' },
-  AWS: { region: 'intl', kind: 'house', basis: 'Amazon Nova' },
-  Google: { region: 'intl', kind: 'house', basis: 'Gemini' },
-  Amp: { region: 'intl', kind: 'ai', basis: '编程产品，未核到自研基座模型' },
-  Cognition: { region: 'intl', kind: 'ai', basis: 'Devin；另有 SWE 编码模型，未见从零预训练的通用基座' },
-  Cursor: { region: 'intl', kind: 'ai', basis: 'Composer 公开基座是 Kimi，不是从零预训练' },
-  'Hugging Face': { region: 'intl', kind: 'ai', basis: '模型平台；博客上的组织账号也标这里' },
-  LangChain: { region: 'intl', kind: 'ai', basis: 'Agent 框架，未核到自研基座模型' },
-  Lovable: { region: 'intl', kind: 'ai', basis: '应用生成产品，未核到自研基座模型' },
-  Warp: { region: 'intl', kind: 'ai', basis: '终端与软件工厂产品，未核到自研基座模型' },
+export const SOURCE_ORDER = [
+  // 国内模型厂
+  'DeepSeek',
+  'Kimi',
+  'GLM',
+  'MiniMax',
+  'StepFun',
+  // 国内其他AI厂
+  '阿里',
+  '腾讯',
+  '火山引擎',
+  '字节',
+  '快手',
+  '美团',
+  '百度',
+  // 国外模型厂
+  'Anthropic',
+  'OpenAI',
+  'Google',
+  'xAI',
+  'Meta',
+  // 国外其他AI厂
+  'Cursor',
+  'Cognition',
+  'Amp',
+  'LangChain',
+  'Warp',
+  'Lovable',
+  'Hugging Face',
+  'AWS',
+];
+
+/** Spellings that share one canonical chip. */
+export const COMPANY_ALIASES = {
+  月之暗面: 'Kimi',
+  智谱: 'GLM',
+  阶跃星辰: 'StepFun',
+  Cogonition: 'Cognition',
+  Langchain: 'LangChain',
+  Wrap: 'Warp',
+  XAI: 'xAI',
 };
 
-const COMPANY_REGION_RANK = { cn: 0, intl: 1 };
-const COMPANY_KIND_RANK = { pure: 0, house: 1, ai: 2, internet: 3 };
-const UNLISTED_REGION = 2;
-const UNLISTED_KIND = 3;
+const COMPANY_RANK = new Map(SOURCE_ORDER.map((name, index) => [name, index]));
 
-function companyRank(name) {
-  const info = COMPANY_CLASS[name];
-  if (!info) return [UNLISTED_REGION, UNLISTED_KIND];
-  return [COMPANY_REGION_RANK[info.region], COMPANY_KIND_RANK[info.kind]];
+function canonicalCompany(name) {
+  return COMPANY_ALIASES[name] || name;
 }
 
-function compareCompanies(a, b) {
-  const [regionA, kindA] = companyRank(a);
-  const [regionB, kindB] = companyRank(b);
-  if (regionA !== regionB) return regionA - regionB;
-  if (kindA !== kindB) return kindA - kindB;
-  return a.localeCompare(b, 'zh-CN', { sensitivity: 'base' });
-}
-
-/** Unique company names in 来源 order. Repeats stay on the first chip. */
+/** Unique company names in 来源 order. Repeats and aliases share one chip. */
 export function companiesPresent(tagLists) {
   const seen = new Set();
   const names = [];
   for (const tags of tagLists) {
     for (const tag of tags || []) {
-      if (!tag || seen.has(tag)) continue;
-      seen.add(tag);
-      names.push(tag);
+      if (!tag) continue;
+      const name = canonicalCompany(tag);
+      if (seen.has(name)) continue;
+      seen.add(name);
+      names.push(name);
     }
   }
-  return names.sort(compareCompanies);
+  const listed = [];
+  const rest = [];
+  for (const name of names) {
+    if (COMPANY_RANK.has(name)) listed.push(name);
+    else rest.push(name);
+  }
+  listed.sort((a, b) => COMPANY_RANK.get(a) - COMPANY_RANK.get(b));
+  return listed.concat(rest);
 }
 
 export function parseFilter(search) {

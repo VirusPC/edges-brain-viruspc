@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import {
-  COMPANY_CLASS,
+  COMPANY_ALIASES,
+  SOURCE_ORDER,
   categoriesPresent,
   companiesPresent,
   filterChips,
@@ -76,7 +77,7 @@ test('search keeps unrelated params and can share both filters', () => {
   );
 });
 
-test('company chips put domestic before foreign, then pure, house, AI, and internet', () => {
+test('company chips follow the hand-ordered groups', () => {
   assert.deepEqual(
     companiesPresent([[
       'Google', 'Warp', '美团', 'OpenAI', '阿里', 'Hugging Face',
@@ -85,28 +86,24 @@ test('company chips put domestic before foreign, then pure, house, AI, and inter
     ]]),
     [
       'DeepSeek',
-      '阿里', '百度', '火山引擎', '美团', '腾讯',
-      'Anthropic', 'OpenAI',
-      'AWS', 'Google',
-      'Amp', 'Cognition', 'Cursor', 'Hugging Face', 'LangChain', 'Lovable', 'Warp',
+      '阿里', '腾讯', '火山引擎', '美团', '百度',
+      'Anthropic', 'OpenAI', 'Google',
+      'Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS',
     ],
   );
-  for (const info of Object.values(COMPANY_CLASS)) {
-    assert.equal(typeof info.basis, 'string');
-    assert.ok(info.basis.length > 0);
-  }
-  assert.equal(Object.hasOwn(COMPANY_CLASS, 'ggml'), false);
+  assert.equal(SOURCE_ORDER[SOURCE_ORDER.indexOf('火山引擎') + 1], '字节');
+  assert.equal(SOURCE_ORDER.includes('ggml'), false);
   assert.deepEqual(
-    companiesPresent([['Warp', '阿里'], ['DeepSeek', 'Warp']]),
-    ['DeepSeek', '阿里', 'Warp'],
+    companiesPresent([['Wrap', '月之暗面', 'XAI', 'Kimi'], ['Cogonition', 'Langchain', '智谱', '阶跃星辰']]),
+    ['Kimi', 'GLM', 'StepFun', 'xAI', 'Cognition', 'LangChain', 'Warp'],
   );
   assert.deepEqual(companiesPresent([[], []]), []);
 });
 
-test('companies missing from the table sort last, in zh-CN order', () => {
+test('companies missing from the table sort last, in first-seen order', () => {
   assert.deepEqual(
     companiesPresent([['Zed', '腾讯', 'Notion'], ['腾讯', '小红书']]),
-    ['腾讯', '小红书', 'Notion', 'Zed'],
+    ['腾讯', 'Zed', 'Notion', '小红书'],
   );
 });
 
@@ -126,7 +123,8 @@ test('every published company tag is listed in the source table', () => {
       for (const tag of labels.slice(1)) published.add(tag);
     }
   }
-  const missing = [...published].filter((tag) => !COMPANY_CLASS[tag]);
+  const known = new Set([...SOURCE_ORDER, ...Object.keys(COMPANY_ALIASES)]);
+  const missing = [...published].filter((tag) => !known.has(tag));
   assert.deepEqual(missing, []);
   assert.ok(published.has('阿里'));
   assert.ok(published.has('Hugging Face'));
