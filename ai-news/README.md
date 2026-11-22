@@ -28,7 +28,7 @@
 ## 维护约定
 
 1. 周报生成后直接提交到本目录，并更新本索引。
-2. 抓取先存进 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`。快照只记 feed 给出的正文，不为偏短条目打开文章页。写周报和补总结只读这份快照：选文看 `feeds.index.json`，正文用 `fetch_feeds.py --pick` 读 `feeds.json`。订阅源只有简介时按这个长度写；不够写五段就只留一句话，并写明订阅源里只有这些。GitHub Trending 只写 weekly / all 前 5。
+2. 目标流程以 Skill 的准备、清洗、总结为准，数据进 `issues/YYYY-MM-DD/` 的 `raw/`、`usable/`、`page/`。现行脚本仍把抓取写在期次根目录。不为偏短条目打开文章页。订阅源只有简介时按这个长度写。旧期还没有迁到这三个目录。
 3. 一句话概括尽量短。折叠的完整总结按 skill 的五段写，每段一两句，不编数字。AI Coding 相关条目在概括或后续建议里点出研发落点。
 4. 执行模板以 [`skills/managed/weekly-ai-blogs-digest/SKILL.md`](../skills/managed/weekly-ai-blogs-digest/SKILL.md) 为准。播客和推文都不进 OPML。精选推文、精选播客两章先标建设中，不采集、不写条目。窗口里确有相关播客时，仍只在关键词或相关章节点名，不写入这两章。
 5. 覆盖窗口后面的 provenance 注释记下生成来源：运行前解析出的 routine / skill 提交，以及数据仓已经存在的快照提交。没有记录的一侧写 `null`，站点显示「未记录」。不要用周报稿自己的提交倒推。2026-11-20 记下数据快照 `5e2e06f851fc5317cd3cb845fbec2eb920bbde59` 的 `issues/2026-11-20`。执行时的 skill 未记录。routine 按用户指定指向当前 main `12133e826f9adad0d9677487a6c56ce7bcdfee42` 的 `.edges/routines/weekly-ai-blogs-digest/INDEX.md`，卡片标「当前版本」，不是那期的执行版本。2026-10-23、2026-10-30、2026-11-06、2026-11-13 记下规则提交 `f800a6055b75ae4a22859d370a1af9d3cd4fdce8` 和数据提交 `ca169d949f7b1b42cd8a9328923b90077e2507fe`。更早各期不回填。

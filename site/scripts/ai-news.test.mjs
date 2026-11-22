@@ -300,7 +300,7 @@ test('model release notes use the shared info card', () => {
     assert.doesNotMatch(body, /release-points/, name);
   }
   const rules = fs.readFileSync(
-    path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/04-榜单与图.md'),
+    path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/summarize/models.md'),
     'utf8',
   );
   assert.match(rules, /<aside class="info-card">/);
@@ -315,9 +315,9 @@ test('published issues do not introduce the trending top-five sentence', () => {
     assert.doesNotMatch(projects, /前五是|这期看的是一周榜/, name);
   }
   for (const rel of [
-    'skills/managed/weekly-ai-blogs-digest/references/03-并行写总结.md',
-    'skills/managed/weekly-ai-blogs-digest/references/04-榜单与图.md',
-    'skills/managed/weekly-ai-blogs-digest/references/05-排版与开-PR.md',
+    'skills/managed/weekly-ai-blogs-digest/references/summarize/projects.md',
+    'skills/managed/weekly-ai-blogs-digest/references/summarize/models.md',
+    'skills/managed/weekly-ai-blogs-digest/references/summarize/page.md',
     'ai-news/README.md',
   ]) {
     const text = fs.readFileSync(path.join(repoRoot, rel), 'utf8');

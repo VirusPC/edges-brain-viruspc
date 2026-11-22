@@ -33,7 +33,7 @@ AI News 的项目开源卡和精选文章卡共用 `site/src/components/NoteCard
 
 **How to apply:**
 - 项目开源和精选文章都走 `NoteCard.astro`。间距只改 `--note-gap-*`、`--note-pad-y`、`--note-leading`。
-- 新周报在 `skills/managed/weekly-ai-blogs-digest/references/03-并行写总结.md` 写总结时就把 `<mark>` 写进一句话。不要在站点里补关键词。
+- 新周报在 `skills/managed/weekly-ai-blogs-digest/references/summarize/articles.md` 写总结时就把 `<mark>` 写进一句话。不要在站点里补关键词。
 - 暗色荧光笔不要改回实心黄或深色字。暗色分类色只加在暗色主题上。
 - 小标题显示名仍在展示层映射。源稿继续写「解决什么问题：」。
 - 木牌颜色只改 `.ai-news-filter` 上的 `--wood-*`。显式暗色和系统暗色都要设。
