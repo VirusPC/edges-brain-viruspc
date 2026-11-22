@@ -91,6 +91,8 @@ test('keyword line and legacy article counts follow the digest shape', () => {
     ['2026-10-23-ai-news.md', 'https://claude.com/resources/articles/claude-security-now-scans-continuously-and-tracks-fixes'],
     ['2026-10-23-ai-news.md', 'https://aws.amazon.com/blogs/machine-learning/discover-tools-at-runtime-with-aws-agent-registry/'],
     ['2026-10-23-ai-news.md', 'https://blog.qoder.com/qoder-fasttech'],
+    ['2026-10-23-ai-news.md', 'https://mp.weixin.qq.com/s?__biz=MzAxNDEwNjk5OQ==&mid=2650546508&idx=1&sn=2b2b8c196cc45f7043b59d2c5c3ce81c'],
+    ['2026-10-30-ai-news.md', 'https://mp.weixin.qq.com/s?__biz=MjM5ODYwMjI2MA==&mid=2649804831&idx=1&sn=bcfae266ff83331edd3f2a72643592d3'],
     ['2026-10-30-ai-news.md', 'https://tech.meituan.com/2026/10/29/AI-Coding-IN-Distributed-Storage-System.html'],
     ['2026-10-30-ai-news.md', 'https://antigravity.google/blog/plugin-marketplace-in-antigravity'],
     ['2026-11-06-ai-news.md', 'https://mp.weixin.qq.com/s?__biz=MzI1MzYzMjE0MQ==&mid=2247523892&idx=1&sn=f210923b89308ffa03e248ab36043d7b'],
@@ -114,7 +116,10 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   const issue1030 = fs.readFileSync(path.join(aiNewsRoot, '2026-10-30-ai-news.md'), 'utf8');
   assert.equal(issue1030.includes('managed-deep-agents-browser-use-and-asynchronous-subagents'), false);
   for (const notesName of ['2026-10-23-ai-news.notes.md', '2026-10-30-ai-news.notes.md', '2026-11-06-ai-news.notes.md']) {
-    assert.match(fs.readFileSync(path.join(aiNewsRoot, notesName), 'utf8'), /缺数据仍未恢复/);
+    const notes = fs.readFileSync(path.join(aiNewsRoot, notesName), 'utf8');
+    assert.match(notes, /缺数据仍未恢复/);
+    assert.match(notes, /04dc5ebcbbeb1be3f41dd9cc62800996a82ae159/);
+    assert.match(notes, /没有全部补齐/);
   }
   const selectionRules = fs.readFileSync(path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/02-选文.md'), 'utf8');
   assert.match(selectionRules, /没有篇数、来源组或公司上限/);
