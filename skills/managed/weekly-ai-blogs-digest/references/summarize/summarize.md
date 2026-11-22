@@ -1,0 +1,15 @@
+# 数据总结
+
+输入是本期 `cleaned/`。输出是 `issues/YYYY-MM-DD/summary/`。
+
+三路等层级、并行，互不代替：
+
+- [精选文章](articles.md)
+- [开源项目](projects.md)
+- [模型经验与榜单](models.md)
+
+然后按这个顺序：
+
+1. [汇合三路展示内容](merge.md)
+2. [关键词](keywords.md)
+3. [整页校验](check.md)

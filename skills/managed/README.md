@@ -12,6 +12,6 @@
 - [paper-10-questions](paper-10-questions/SKILL.md) — 当用户想要系统性地阅读、分析、审阅、总结或批判一篇学术论文时使用。应用沈向洋的「论文十问」做结构化分析。
 - [summarize-ai-article](summarize-ai-article/SKILL.md) — 当用户想要快速理解一篇 AI 技术文章的核心时使用：问题、解法、效果，加上后续行动建议和与最新进展的关联。要落盘的完整笔记改用 summarize-ai-article-ultra。
 - [summarize-ai-article-ultra](summarize-ai-article-ultra/SKILL.md) — 当用户想把一篇文章或页面整理成可归档的中文结构化笔记时使用。按 Facts、Insights、Actions 组织，输出 `YYYY-MM-DD--主题简述.md`。
-- [weekly-ai-blogs-digest](weekly-ai-blogs-digest/SKILL.md) — 汇总一段时间内的 AI / AI Coding 进展。先把完整抓取存进 ai-news-data，再只从快照选文、写总结、排版。步骤在 `references/`。
+- [weekly-ai-blogs-digest](weekly-ai-blogs-digest/SKILL.md) — 汇总一段时间内的 AI / AI Coding 进展。按准备、清洗、总结三阶段写入 ai-news-data。阶段入口在 `references/`。
 - [langfuse-memory-ask-audit](langfuse-memory-ask-audit/SKILL.md) — 从自建 Langfuse 抽取 `edges-memory-ask` 相关 traces 的真实工具执行链，汇总启发式模式，并可写入/更新观测用 Dataset。
 - [llm-arena-marked-chart](llm-arena-marked-chart/SKILL.md) — 当需要把 LLM Arena（或同类）排行榜画成带红圈/NEW 标注的 SVG 与 PNG 时使用。输入 Arena JSON 或显式模型名，输出矢量源和导出图。

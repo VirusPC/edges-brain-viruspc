@@ -2,13 +2,13 @@
 
 阅读器要导入的是 [`ai-coding-blogs.opml`](ai-coding-blogs.opml)。里面是 feed（`type="rss"` + `xmlUrl`），Folo 或其他 OPML 阅读器可以直接导入。英文博客在「AI Coding Blogs」，国内团队在「国内技术团队」，GitHub Trending 在「GitHub Trending」。脚本这些分组都拉。周报不再收「薅羊毛」，OPML 里没有这一组。
 
-GitHub Trending 用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的一周榜（全部、Python、TypeScript）。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，日期用 channel 的 `pubDate`。订阅 id 是 `github-trending-weekly-all`、`github-trending-weekly-python`、`github-trending-weekly-typescript`。正文只写 all 的前 5。摘录文件仍叫 `github-trending.json`，内容是 weekly / all，不再摘 daily。
+GitHub Trending 用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的一周榜（全部、Python、TypeScript）。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，日期用 channel 的 `pubDate`。订阅 id 是 `github-trending-weekly-all`、`github-trending-weekly-python`、`github-trending-weekly-typescript`。三份都抓。all 的名次以 XML 原始顺序为准。展示哪些仓库由总结阶段决定，见 [开源项目](../references/summarize/projects.md)。
 
-Artificial Analysis 和 LLM Arena 不是 OPML。见 skill 里的「非博客数据」，脚本在 `scripts/fetch_artificial_analysis.py` 和 `scripts/fetch_llm_arena.py`。
+Artificial Analysis 和 LLM Arena 不是 OPML。见 [模型与榜单](../references/prepare/models.md)。脚本在 `scripts/fetch_artificial_analysis.py` 和 `scripts/fetch_llm_arena.py`。
 
 [`ai-coding-blogs.meta.json`](ai-coding-blogs.meta.json) 只给 Agent 看：`lane`、退路、BestBlogs 对照、Olshansk 抓取源和过期 feed 说明。阅读器不需要 `lane`，OPML 里不写。
 
-同一发文方的备源是另一条 source：自己的 `xmlUrl`，`publisher` 相同，`role` 为 `primary` 或 `backup`。`fallback` 只写退路类型（如 `list-page`），不写备源地址。只写在 notes 里的 URL，脚本不拉。运行约定见 [订阅源兜底](../../../../.edges/routines/weekly-ai-blogs-digest/INDEX.md#订阅源兜底)。
+同一发文方的备源是另一条 source：自己的 `xmlUrl`，`publisher` 相同，`role` 为 `primary` 或 `backup`。`fallback` 只写退路类型（如 `list-page`），不写备源地址。只写在 notes 里的 URL，脚本不拉。运行约定见 [订阅退路](../references/prepare/articles.md#订阅退路)。
 
 每条 source 有 `lane`：
 
