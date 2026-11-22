@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "source",
+    "title",
+    "link",
+    "sentence",
+    "category",
+    "company"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "link": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sentence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "enum": [
+        "模型",
+        "架构",
+        "产品",
+        "实践",
+        "开源",
+        "其他"
+      ]
+    },
+    "company": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "解决什么问题": {
+          "type": "string"
+        },
+        "如何解决": {
+          "type": "string"
+        },
+        "效果怎样": {
+          "type": "string"
+        },
+        "洞察与启发": {
+          "type": "string"
+        },
+        "相关工作": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

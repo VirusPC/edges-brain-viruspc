@@ -1,6 +1,6 @@
 # 数据总结
 
-输入是本期 `cleaned/`。输出是 `issues/YYYY-MM-DD/summary/`。
+输入是本期 `cleaned/`。输出是 `issues/YYYY-MM-DD/summary/`。完整目录见 [数据存储](../../SKILL.md#数据存储)。
 
 三路等层级、并行，互不代替：
 

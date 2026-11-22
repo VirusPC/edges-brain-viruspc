@@ -1,5 +1,13 @@
 # 整页校验
 
+清洗校验通过，三路卡片和关键词映射都写完之后，跑整页校验。通过才把 `summary/` 交给博客：
+
+```bash
+python3 scripts/summarize/check/validate.py /path/to/ai-news-data/issues/YYYY-MM-DD
+```
+
+在本 skill 目录执行。清洗校验没通过时，这条命令直接失败。脚本按 [数据存储](../../SKILL.md#数据存储) 和 `schemas/summary/` 检查 `summary/index.json`、条目来源是否回指 `cleaned/`，以及关键词映射里的 ID 是否都存在。
+
 三路卡片和关键词映射都在之后，写 `summary/index.json`。它只排章节和 ID，不另写一套摘要。三路内容必须还在，关键词不能替换它们。缺了内容 ID 的映射不能用旧稿补上。
 
 章节顺序：
