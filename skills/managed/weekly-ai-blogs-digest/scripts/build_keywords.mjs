@@ -529,7 +529,9 @@ export function buildKeywordDocument(issuesRoot, issue, meta = {}) {
     }];
   });
 
-  words.sort((a, b) => b.weight - a.weight || b.mentions - a.mentions || a.word.localeCompare(b.word, "zh"));
+  markTheme(words);
+  if (meta.themeLabel) applyThemeLabel(words, meta.themeLabel);
+  words.sort(byPresentation);
   const capped = capWords(words);
 
   return {
@@ -556,13 +558,57 @@ export function buildKeywordDocument(issuesRoot, issue, meta = {}) {
 /**
  * @param {{ kind: string, weight: number, mentions: number, word: string }[]} words
  */
+/**
+ * 主题只从概念里选。sources 更高的优先，相同再比 mentions。
+ * 型号和产品不因为 score 更高而成为主题。没有概念就不标。
+ * @param {{ kind: string, sources: number, mentions: number, word: string, theme?: boolean }[]} words
+ */
+export function markTheme(words) {
+  for (const item of words) delete item.theme;
+  const concepts = words.filter((item) => item.kind === "concept");
+  if (!concepts.length) return null;
+  concepts.sort((a, b) => b.sources - a.sources || b.mentions - a.mentions || a.word.localeCompare(b.word, "zh"));
+  concepts[0].theme = true;
+  return concepts[0].word;
+}
+
+/**
+ * 清洗时把已选中的主题写成读者表达。证据短语必须就是这条主题，不能另造话题。
+ * @param {{ word: string, theme?: boolean, example?: string, evidence?: string }[]} words
+ * @param {{ evidence: string, word: string }} label
+ */
+export function applyThemeLabel(words, label) {
+  const evidence = String(label?.evidence || "").trim();
+  const word = String(label?.word || "").trim();
+  if (!evidence || !word) throw new Error("主题清洗要有 evidence 和 word");
+  const theme = words.find((item) => item.theme);
+  if (!theme) throw new Error("没有主题，不能改写");
+  if (theme.word.toLowerCase() !== evidence.toLowerCase()) {
+    throw new Error(`主题是 ${theme.word}，和证据 ${evidence} 对不上`);
+  }
+  if (words.some((item) => item !== theme && item.word.toLowerCase() === word.toLowerCase())) {
+    throw new Error("主题表达和另一条词重复");
+  }
+  theme.evidence = evidence;
+  theme.word = word;
+  return words;
+}
+
+function byPresentation(a, b) {
+  return Number(Boolean(b.theme)) - Number(Boolean(a.theme))
+    || b.weight - a.weight
+    || b.mentions - a.mentions
+    || a.word.localeCompare(b.word, "zh");
+}
+
 function capWords(words) {
-  const models = words.filter((item) => item.kind === "model");
-  const rest = words.filter((item) => item.kind !== "model");
-  const room = Math.max(0, 16 - models.length);
+  const theme = words.filter((item) => item.theme);
+  const models = words.filter((item) => item.kind === "model" && !item.theme);
+  const rest = words.filter((item) => item.kind !== "model" && !item.theme);
+  const room = Math.max(0, 16 - models.length - theme.length);
   const keptRest = rest.slice(0, room);
   const omitted = rest.slice(room);
-  return { kept: [...models, ...keptRest].sort((a, b) => b.weight - a.weight || b.mentions - a.mentions || a.word.localeCompare(b.word, "zh")), omitted };
+  return { kept: [...theme, ...models, ...keptRest].sort(byPresentation), omitted };
 }
 
 /**
@@ -591,7 +637,7 @@ function countMentions(entries, urls, item) {
  * @param {any} item
  */
 function publicWord(item) {
-  return {
+  const word = {
     word: item.word,
     kind: item.kind,
     score: item.score,
@@ -601,6 +647,9 @@ function publicWord(item) {
     hosts: item.hosts,
     example: item.example,
   };
+  if (item.theme) word.theme = true;
+  if (item.evidence) word.evidence = item.evidence;
+  return word;
 }
 
 /**

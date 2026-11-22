@@ -265,7 +265,8 @@ assert.ok(arenaSrc, 'latest issue is missing the arena image');
 const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 exists(arenaRel);
 assert.match(latestIssue, /class="keyword-cloud"/);
-assert.match(latestIssue, /aria-label="SWE-2 Flash、Gemini Omni 1\.2 Flash、GPT-6 Cyber、Hy4、Images 2\.6、LongCat-2\.5、Step 5 Preview、Devin Review 2\.0、Deep Agents"/);
+assert.match(latestIssue, /aria-label="Deep Agents、SWE-2 Flash、Devin Review 2\.0、Gemini Omni 1\.2 Flash、GPT-6 Cyber、Hy4、Images 2\.6、LongCat-2\.5、Step 5 Preview"/);
+assert.match(latestIssue, /class="kw-top"[^>]*>Deep Agents</);
 assert.match(latestIssue, /class="kw-top"/);
 assert.match(latestIssue, /class="keyword-cloud-outline"[^>]*>\s*<rect><\/rect>/);
 assert.doesNotMatch(latestIssue, /feTurbulence|feDisplacementMap|id="rough"/);
@@ -282,7 +283,12 @@ assert.match(latestIssue, /href="https:\/\/linux\.do\/t\/topic\/3101137"/);
 assert.doesNotMatch(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
 assert.match(latestIssue, /data-model-board/);
 assert.deepEqual(optionLabels(latestIssue), ['LLM Arena']);
-assert.equal(chartSpecs(latestIssue).length, 0);
+const latestSpecs = chartSpecs(latestIssue);
+assert.equal(latestSpecs.length, 1);
+assert.equal(latestSpecs[0].kind, 'llm-arena');
+assert.equal(latestSpecs[0].publishDate, '2026-10-28');
+assert.equal(latestSpecs[0].items.length, 15);
+assert.ok(latestSpecs[0].items.some((item) => item.name === 'Gemini 4 Carbon (High)' && item.highlight));
 assert.doesNotMatch(latestIssue, /原始链接/);
 assertCategoryPills(latestIssue, [
   ['交付闭环', 'OpenAI 收购 Pierre'],
@@ -360,6 +366,11 @@ for (const alt of [
   exists(src[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0]);
 }
 
+const issue1030 = fs.readFileSync(path.join(dist, 'ai-news/2026-10-30/index.html'), 'utf8');
+assert.match(issue1030, /class="keyword-cloud"/);
+assert.match(issue1030, /class="kw-top"[^>]*>software factory</);
+assert.doesNotMatch(issue1030, /class="kw-top"[^>]*>GPT-6\.1 Terra</);
+
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
 assert.match(backfillIssue, /<h1>\s*2026-10-23 AI 资讯\s*<\/h1>/);
 assert.doesNotMatch(backfillIssue, /旧版/);
@@ -371,13 +382,20 @@ assert.ok(backfillToc, '2026-10-23 is missing the chapter toc');
 assert.match(backfillToc[0], /二、模型进展/);
 assert.match(backfillIssue, /alt="LLM Arena Top15 2026-10-22"/);
 assert.deepEqual(optionLabels(backfillIssue), ['LLM Arena']);
-assert.equal(chartSpecs(backfillIssue).length, 0);
+const backfillSpecs = chartSpecs(backfillIssue);
+assert.equal(backfillSpecs.length, 1);
+assert.equal(backfillSpecs[0].kind, 'llm-arena');
+assert.equal(backfillSpecs[0].publishDate, '2026-10-22');
+assert.equal(backfillSpecs[0].items.length, 15);
+assert.equal(backfillSpecs[0].items.some((item) => item.highlight), false);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
 assert.match(issue20, /class="keyword-cloud"/);
-assert.match(issue20, /aria-label="Gemini 4 Neon、Devin Bots、Devin Apps、GPT-6\.2 Astra、GPT-6\.2 Sol、Rumble-2-Flash、always-on agents、software factory、ChatGPT Wallet、CodeRabbit Verify、Data Annotation Queues、LoopForge、Warp Learn"/);
-const keywordAlt20 = issue20.match(/aria-label="(Gemini 4 Neon、Devin Bots、[^"]*)"/);
+assert.match(issue20, /aria-label="常驻 Agent、Devin Bots、Devin Apps、Gemini 4 Neon、software factory、GPT-6\.2 Astra、GPT-6\.2 Sol、ChatGPT Wallet、CodeRabbit Verify、Data Annotation Queues、LoopForge、Rumble-2-Flash、Warp Learn"/);
+assert.match(issue20, /class="kw-top"[^>]*>常驻 Agent</);
+assert.doesNotMatch(issue20, /class="kw-top"[^>]*>Gemini 4 Neon</);
+const keywordAlt20 = issue20.match(/aria-label="(常驻 Agent、Devin Bots、[^"]*)"/);
 assert.ok(keywordAlt20, '2026-11-20 is missing the keyword cloud label');
 assert.doesNotMatch(keywordAlt20[1], /Claude Code|Codex|OpenRouter|LangSmith|llama\.cpp|Grok Bot|DeepSeek|\bKiro\b|Octop/);
 assert.match(issue20, /class="kw-top"/);
@@ -436,7 +454,9 @@ assert.match(issue20, /原文写 Extra High 档 61 分、第 3/);
 assert.match(issue20, /输入 \$1\.425 · 输出 \$4\.275 · 缓存读 \$0\.07125/);
 assert.match(issue20, /OpenRouter·Alibaba/);
 assert.match(issue20, /OpenAI 11 月 17 日发布/);
-assert.doesNotMatch(newestIssue, /class="model-facts"/);
+assert.match(newestIssue, /class="model-facts"/);
+assert.match(newestIssue, /class="keyword-cloud"/);
+assert.match(newestIssue, /class="kw-top"[^>]*>Agent Memory</);
 const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(toc20, '2026-11-20 is missing the chapter toc');
 assert.doesNotMatch(issue20, /薅羊毛/);

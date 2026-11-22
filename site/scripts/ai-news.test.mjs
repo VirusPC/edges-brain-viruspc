@@ -199,7 +199,9 @@ test('item titles link to the source and quote blocks are gone', () => {
     latest,
     /^#### &lt;交付闭环&gt;&lt;OpenAI&gt;\[OpenAI 收购 Pierre\]\(https:\/\/openai\.com\/index\/openai-to-acquire-pierre\)$/m,
   );
-  assert.match(latest, /"word": "SWE-2 Flash"[\s\S]*?"weight": 4\.2/);
+  assert.match(latest, /"word": "Deep Agents"[\s\S]*?"theme": true/);
+  assert.match(latest, /"word": "SWE-2 Flash"[\s\S]*?"weight": 3\n/);
+  assert.doesNotMatch(latest, /"word": "SWE-2 Flash"[\s\S]{0,240}"theme": true/);
   assert.doesNotMatch(latest, /"word": "Codex"|"word": "Claude Code"|"word": "OpenRouter"|"word": "交付闭环"/);
   assert.doesNotMatch(latest, /^#### \[整体排名\]/m);
 });
