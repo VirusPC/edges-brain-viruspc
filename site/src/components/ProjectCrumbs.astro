@@ -7,16 +7,17 @@ interface Crumb {
 
 interface Props {
   items: Crumb[];
+  label?: string;
 }
 
-const { items } = Astro.props;
+const { items, label = '项目路径' } = Astro.props;
 const middle = items.slice(1, -2);
 const compact = middle.length > 0;
 const parent = items.length >= 2 ? items[items.length - 2] : null;
 const current = items[items.length - 1];
 ---
 
-<nav class="project-crumbs" aria-label="项目路径">
+<nav class="project-crumbs" aria-label={label}>
   <ol class="project-crumbs-full">
     {
       items.map((item) => (

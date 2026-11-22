@@ -46,7 +46,7 @@ const links: NavLink[] = [
   { href: siteUrl('/posts'), label: 'Posts', key: 'posts' },
   { href: siteUrl('/notes'), label: 'Notes', key: 'notes' },
   { href: siteUrl('/projects'), label: 'Projects', key: 'projects' },
-  { href: 'https://edges.viruspc.tech/teaching/', label: 'Teaching', external: true },
+  { href: siteUrl('/teaching'), label: 'Teaching', key: 'teaching' },
   { href: siteUrl('/ai-news'), label: 'AI News', key: 'ai-news' },
   { href: siteUrl('/about'), label: 'About', key: 'about' },
 ];
@@ -54,7 +54,7 @@ const links: NavLink[] = [
 function current(link: NavLink) {
   if (link.external) return false;
   const target = link.href.replace(/\/$/, '');
-  if (link.key === 'posts' || link.key === 'notes' || link.key === 'projects' || link.key === 'ai-news') {
+  if (link.key === 'posts' || link.key === 'notes' || link.key === 'projects' || link.key === 'ai-news' || link.key === 'teaching') {
     return path === target || path.startsWith(`${target}/`);
   }
   return path === target;

@@ -629,11 +629,44 @@ for (const rel of rels.filter((item) => item.endsWith('.html'))) {
     `${rel} nav order`,
   );
   const teaching = items[navOrder.indexOf('Teaching')];
-  assert.match(teaching.attrs, /href="https:\/\/edges\.viruspc\.tech\/teaching\/"/, `${rel} Teaching href`);
-  assert.match(teaching.attrs, /\brel="noopener"/, `${rel} Teaching rel`);
-  assert.doesNotMatch(teaching.attrs, /is-current|aria-current/, `${rel} Teaching must not be current`);
+  assert.match(teaching.attrs, /href="\/edges-brain-viruspc\/teaching\/"/, `${rel} Teaching href`);
+  assert.doesNotMatch(teaching.attrs, /noopener/, `${rel} Teaching stays on this site`);
+  const onTeaching = rel === 'teaching/index.html' || rel.startsWith('teaching/');
+  if (onTeaching) assert.match(teaching.attrs, /aria-current="page"/, `${rel} Teaching current`);
+  else assert.doesNotMatch(teaching.attrs, /is-current|aria-current/, `${rel} Teaching must not be current`);
 }
 assert.ok(layoutPages > 0, 'expected BaseLayout pages with a section nav');
+
+exists('teaching/index.html');
+exists('teaching/agent-evals/index.html');
+exists('teaching/agent-evals/lesson-02/index.html');
+exists('teaching/agent-evals/lessons/0002-three-grader-types/index.html');
+exists('teaching/changelog/index.html');
+exists('teaching/link-external-repo/index.html');
+exists('teaching/obsidian-cli/index.html');
+exists('teaching/dsh-coding-agent-course/lessons/0002-agent-and-driver/index.html');
+exists('teaching/materials/index.html');
+const teachingHome = fs.readFileSync(path.join(dist, 'teaching/index.html'), 'utf8');
+assert.match(teachingHome, /agent-evals/);
+assert.match(teachingHome, /dsh-coding-agent-course/);
+assert.doesNotMatch(teachingHome, /完成率|progressbar|aria-valuenow/);
+const lessonTwo = fs.readFileSync(path.join(dist, 'teaching/agent-evals/lesson-02/index.html'), 'utf8');
+const lessonBody = lessonTwo.split('<div class="lesson"')[1] || '';
+assert.match(lessonTwo, /优先写确定性代码检查条件/);
+assert.match(lessonBody, /data-choice="B"/);
+assert.match(lessonBody, /function grade/);
+assert.doesNotMatch(lessonBody, /<style|rel="stylesheet"|--accent:\s*#9a3412|filter:\s*invert/);
+assert.doesNotMatch(lessonTwo, /data-reader-comments/);
+const parallel = fs.readFileSync(path.join(dist, 'teaching/agent-evals/lessons/0002-three-grader-types/index.html'), 'utf8');
+assert.match(parallel, /\/edges-brain-viruspc\/teaching\/agent-evals\/lesson-0[13]\//);
+const dshForm = fs.readFileSync(path.join(dist, 'teaching/dsh-coding-agent-course/lessons/0002-agent-and-driver/index.html'), 'utf8');
+assert.match(dshForm, /检查判断题/);
+assert.match(dshForm, /导出作答 Markdown/);
+assert.match(dshForm, /id="check"/);
+assert.match(dshForm, /id="export"/);
+const thin = fs.readFileSync(path.join(dist, 'teaching/changelog/index.html'), 'utf8');
+assert.match(thin, /changelog/);
+assert.doesNotMatch(thin, /占位课|假课/);
 
 assert.equal(giscusReady(), true, 'giscus category id is filled in');
 const feedbackButton = /<a class="site-feedback" data-feedback-link href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/issues\/new\?template=reader-feedback\.yml" target="_blank" rel="noopener noreferrer">/;

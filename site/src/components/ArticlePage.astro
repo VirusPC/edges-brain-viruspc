@@ -24,9 +24,11 @@ interface Props {
   /** Chapter list uses h2. AI news also lists h3, such as 国内 and 国际 under 精选文章. */
   tocDepth?: number;
   crumbs?: { label: string; href?: string; current?: boolean }[];
+  /** Teaching lessons opt out. Posts, notes, and project articles keep comments. */
+  comments?: boolean;
 }
 
-const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss, tocDepth = 2, crumbs = [] } = Astro.props;
+const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss, tocDepth = 2, crumbs = [], comments = true } = Astro.props;
 const iso = date ? formatISODate(date) : '';
 const sections: { slug: string; text: string; children: { slug: string; text: string }[] }[] = [];
 for (const heading of headings) {
@@ -77,7 +79,7 @@ for (const heading of headings) {
       <slot />
     </div>
     {source ? <p class="source"><a href={source}>Source</a></p> : null}
-    <ArticleComments />
+    {comments ? <ArticleComments /> : null}
   </article>
 </BaseLayout>
 

@@ -1,0 +1,28 @@
+---
+import TeachingBrowser from '../../components/TeachingBrowser.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { buildTeachingCatalog } from '../../lib/teaching.mjs';
+
+const catalog = buildTeachingCatalog();
+const rows = catalog.topics.map((topic) => ({
+  id: topic.id,
+  title: topic.title,
+  path: `teaching/${topic.id}`,
+  count: topic.lessons.length > 0 ? `${topic.lessons.length} 课` : '',
+  items: topic.lessons.map((lesson) => ({
+    title: lesson.title,
+    path: lesson.path,
+    number: lesson.number,
+  })),
+}));
+const hasMaterials = catalog.topics.some((topic) => topic.materials.length > 0);
+---
+
+<BaseLayout title="Teaching" description="Teaching lessons.">
+  <TeachingBrowser
+    title="Teaching"
+    rows={rows}
+    foot={hasMaterials ? { title: '课程资料', path: 'teaching/materials' } : null}
+    origin
+  />
+</BaseLayout>

@@ -1,0 +1,174 @@
+---
+import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { createMarkdownProcessor } from '@astrojs/markdown-remark';
+import matter from 'gray-matter';
+import ArticlePage from '../../components/ArticlePage.astro';
+import TeachingBrowser from '../../components/TeachingBrowser.astro';
+import TeachingLesson from '../../components/TeachingLesson.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { stripMatchingFirstHeading } from '../../lib/select.mjs';
+import { lessonStoresLocally, rewriteHtmlUrls, transformLessonHtml } from '../../lib/teaching-html.mjs';
+import { buildTeachingCatalog, publicHref, rewriteTeachingUrl } from '../../lib/teaching.mjs';
+
+export function getStaticPaths() {
+  const catalog = buildTeachingCatalog();
+  const seen = new Set<string>();
+  const paths: { params: { slug: string }; props: { kind: string; id: string } }[] = [];
+  const add = (slug: string, kind: string) => {
+    if (seen.has(slug)) throw new Error(`Duplicate teaching route ${slug}`);
+    seen.add(slug);
+    paths.push({ params: { slug }, props: { kind, id: slug } });
+  };
+  for (const topic of catalog.topics) add(topic.id, 'topic');
+  for (const page of catalog.pages) add(page.route, page.kind);
+  add('materials', 'materials');
+  return paths;
+}
+
+const catalog = buildTeachingCatalog();
+const base = import.meta.env.BASE_URL;
+const kind = Astro.props.kind;
+const id = Astro.props.id;
+const topic = catalog.topics.find((item) => item.id === (kind === 'topic' ? id : id.split('/')[0]));
+const page = catalog.pages.find((item) => item.route === id);
+
+function crumbsTo(current: { label: string; href?: string; current?: boolean }[]) {
+  return current;
+}
+
+let lesson: ReturnType<typeof transformLessonHtml> | null = null;
+let showTurn = false;
+let storesLocally = false;
+let markdownHtml = '';
+let markdownHeadings: { depth: number; slug: string; text: string }[] = [];
+
+if (kind === 'html' && page) {
+  const raw = fs.readFileSync(page.abs, 'utf8');
+  const sheet = cheatsheet(topic, page);
+  lesson = transformLessonHtml(raw, {
+    rewrite: (url) => rewriteTeachingUrl(catalog, page.rel, url, base),
+    cheatsheetHref: sheet,
+  });
+  storesLocally = lessonStoresLocally(raw, page.abs);
+  const prevHref = neighborHref(-1);
+  const nextHref = neighborHref(1);
+  showTurn = Boolean((prevHref && !lesson.html.includes(prevHref)) || (nextHref && !lesson.html.includes(nextHref)));
+}
+
+if (kind === 'md' && page) {
+  const parsed = matter(fs.readFileSync(page.abs, 'utf8'));
+  const body = stripMatchingFirstHeading(parsed.content, page.title);
+  const rendered = await renderMarkdown(body, page.abs);
+  markdownHtml = rewriteHtmlUrls(rendered.html, (url) => rewriteTeachingUrl(catalog, page.rel, url, base));
+  markdownHeadings = rendered.headings;
+}
+
+function cheatsheet(owner: typeof topic, current: NonNullable<typeof page>) {
+  if (!owner || current.role === 'reference' || current.kind !== 'html') return '';
+  const raw = fs.readFileSync(current.abs, 'utf8');
+  const linked = owner.references.find((item) => raw.includes(`${item.path.split('/').pop()}.html`));
+  const chosen = linked || (owner.references.length === 1 ? owner.references[0] : null);
+  return chosen ? publicHref(base, chosen.path) : '';
+}
+
+function lessonAt(offset: number) {
+  if (!topic || !page) return null;
+  const index = topic.lessons.findIndex((item) => item.path === `teaching/${page.route}`);
+  if (index < 0) return null;
+  return topic.lessons[index + offset] || null;
+}
+
+function neighborHref(offset: number) {
+  const item = lessonAt(offset);
+  return item ? publicHref(base, item.path) : '';
+}
+
+async function renderMarkdown(body: string, abs: string) {
+  const processor = await createMarkdownProcessor({
+    gfm: true,
+    smartypants: false,
+    remarkPlugins: [],
+    rehypePlugins: [],
+  });
+  const rendered = await processor.render(body, { fileURL: pathToFileURL(abs) });
+  const headings = (rendered.metadata?.headings || [])
+    .filter((heading) => heading && heading.slug && heading.text)
+    .map((heading) => ({
+      depth: heading.depth,
+      slug: heading.slug,
+      text: heading.text,
+    }));
+  return { html: rendered.code || '', headings };
+}
+
+const materialRows = catalog.topics
+  .filter((item) => item.materials.length > 0)
+  .map((item) => ({
+    id: item.id,
+    title: item.title,
+    path: `teaching/${item.id}`,
+    items: item.materials,
+  }));
+---
+
+{
+  kind === 'topic' && topic ? (
+    <BaseLayout title={topic.title}>
+      <TeachingBrowser
+        title={topic.title}
+        crumbs={crumbsTo([
+          { label: 'Teaching', href: publicHref(base, 'teaching') },
+          { label: topic.title, current: true },
+        ])}
+        items={topic.lessons}
+        extras={[
+          { heading: '次入口', items: topic.secondary },
+          { heading: '速查', items: topic.references },
+          { heading: '相关笔记', items: topic.notes },
+          { heading: '课程资料', items: topic.materials },
+        ]}
+      />
+    </BaseLayout>
+  ) : kind === 'materials' ? (
+    <BaseLayout title="课程资料">
+      <TeachingBrowser
+        title="课程资料"
+        crumbs={[
+          { label: 'Teaching', href: publicHref(base, 'teaching') },
+          { label: '课程资料', current: true },
+        ]}
+        rows={materialRows}
+      />
+    </BaseLayout>
+  ) : kind === 'html' && page && topic && lesson ? (
+    <TeachingLesson
+      title={lesson.title || page.title}
+      html={lesson.html}
+      crumbs={[
+        { label: 'Teaching', href: publicHref(base, 'teaching') },
+        { label: topic.title, href: publicHref(base, `teaching/${topic.id}`) },
+      ]}
+      prev={lessonAt(-1)}
+      next={lessonAt(1)}
+      showTurn={showTurn}
+      storesLocally={storesLocally}
+      origin={page.origin}
+      aliasHref={page.canonicalRoute ? publicHref(base, `teaching/${page.canonicalRoute}`) : ''}
+      aliasLabel={page.canonicalRoute ? '这是同一课的另一份入口，目录计在' : ''}
+    />
+  ) : kind === 'md' && page && topic ? (
+    <ArticlePage
+      title={page.title}
+      headings={markdownHeadings}
+      comments={false}
+      crumbs={[
+        { label: 'Teaching', href: publicHref(base, 'teaching') },
+        { label: topic.title, href: publicHref(base, `teaching/${topic.id}`) },
+        { label: page.title, current: true },
+      ]}
+    >
+      <Fragment set:html={markdownHtml} />
+    </ArticlePage>
+  ) : null
+}

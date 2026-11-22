@@ -1,0 +1,88 @@
+---
+import ProjectCrumbs from './ProjectCrumbs.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { publicHref } from '../lib/teaching.mjs';
+import '../styles/teaching.css';
+
+interface Crumb {
+  label: string;
+  href?: string;
+  current?: boolean;
+}
+
+interface Neighbor {
+  title: string;
+  path: string;
+}
+
+interface Props {
+  title: string;
+  html: string;
+  crumbs: Crumb[];
+  prev?: Neighbor | null;
+  next?: Neighbor | null;
+  showTurn?: boolean;
+  storesLocally?: boolean;
+  origin?: string;
+  aliasHref?: string;
+  aliasLabel?: string;
+}
+
+const {
+  title,
+  html,
+  crumbs,
+  prev = null,
+  next = null,
+  showTurn = false,
+  storesLocally = false,
+  origin = '',
+  aliasHref = '',
+  aliasLabel = '',
+} = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title={title}>
+  <article class="teaching-lesson">
+    <ProjectCrumbs items={crumbs} label="路径" />
+    {
+      aliasHref ? (
+        <p class="lesson-alias">
+          {aliasLabel}
+          <a href={aliasHref}>主入口</a>
+        </p>
+      ) : null
+    }
+    <div class="lesson" set:html={html} />
+    {
+      showTurn && (prev || next) ? (
+        <nav class="lesson-turn" aria-label="前后课">
+          {prev ? <a href={publicHref(base, prev.path)}>上一篇 · {prev.title}</a> : null}
+          {next ? <a href={publicHref(base, next.path)}>下一篇 · {next.title}</a> : null}
+        </nav>
+      ) : null
+    }
+    {
+      storesLocally && origin ? (
+        <p class="lesson-storage">
+          答题记录只留在这个浏览器的本站。
+          <a href={origin} rel="noopener noreferrer">独立教学站</a>
+          是另一个网址，那边的记录不会自动过来，这里也不会清掉它。
+        </p>
+      ) : null
+    }
+  </article>
+</BaseLayout>
+<script>
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('.lesson-sheet-size');
+    if (!(button instanceof HTMLButtonElement)) return;
+    const sheet = button.closest('.lesson-sheet');
+    if (!sheet) return;
+    const native = sheet.classList.toggle('is-native');
+    button.textContent = native ? '适应页宽' : '原尺寸';
+  });
+</script>

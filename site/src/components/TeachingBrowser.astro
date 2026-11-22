@@ -1,0 +1,171 @@
+---
+import ProjectCrumbs from './ProjectCrumbs.astro';
+import ProjectIcon from './ProjectIcon.astro';
+import { publicHref } from '../lib/teaching.mjs';
+import '../styles/teaching.css';
+
+interface LinkItem {
+  title: string;
+  path: string;
+  number?: string;
+}
+
+interface Row {
+  id: string;
+  title: string;
+  path: string;
+  count?: string;
+  items: LinkItem[];
+}
+
+interface Extra {
+  heading: string;
+  items: LinkItem[];
+}
+
+interface Crumb {
+  label: string;
+  href?: string;
+  current?: boolean;
+}
+
+interface Props {
+  title: string;
+  crumbs?: Crumb[];
+  rows?: Row[];
+  items?: LinkItem[];
+  extras?: Extra[];
+  foot?: LinkItem | null;
+  origin?: boolean;
+}
+
+const { title, crumbs = [], rows = [], items = [], extras = [], foot = null, origin = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+function hrefOf(item: LinkItem | { path: string }) {
+  return publicHref(base, item.path);
+}
+
+function domId(id: string) {
+  return `preview-${encodeURIComponent(id).replaceAll('%', '_')}`;
+}
+---
+
+<section class="project-browser teaching-browser" data-project-browser>
+  {crumbs.length > 0 ? <ProjectCrumbs items={crumbs} label="路径" /> : null}
+  <div class="project-heading">
+    <h1>{title}</h1>
+  </div>
+  {
+    rows.length > 0 ? (
+      <ol class="project-rows">
+        {rows.map((row) => {
+          const panelId = domId(row.id);
+          const expandable = row.items.length > 0;
+          return (
+            <li class="project-row" id={`topic-${row.id}`}>
+              <div class="project-row-main">
+                {expandable ? (
+                  <button
+                    type="button"
+                    class="project-chevron"
+                    data-project-toggle={row.id}
+                    data-project-title={row.title}
+                    aria-expanded="false"
+                    aria-controls={panelId}
+                    aria-label={`展开 ${row.title}`}
+                  >
+                    <ProjectIcon name="chevron" />
+                  </button>
+                ) : null}
+                <a class="project-title" href={hrefOf(row)}>
+                  <ProjectIcon name="folder" />
+                  <span class="project-title-text">{row.title}</span>
+                  <ProjectIcon name="arrow" />
+                </a>
+                <span class="project-date" />
+                {row.count ? <p class="project-counts">{row.count}</p> : null}
+              </div>
+              {
+                expandable ? (
+                  <div id={panelId} class="project-panel" data-project-panel hidden>
+                    <ol class="project-docs">
+                      {row.items.map((item) => (
+                        <li class="project-doc">
+                          {item.number ? <span class="teaching-num">{item.number}</span> : <span class="teaching-num" />}
+                          <a href={hrefOf(item)}>
+                            <ProjectIcon name="doc" />
+                            <span>{item.title}</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ) : null
+              }
+            </li>
+          );
+        })}
+      </ol>
+    ) : null
+  }
+  {
+    items.length > 0 ? (
+      <ol class="project-docs">
+        {items.map((item) => (
+          <li class="project-doc">
+            {item.number ? <span class="teaching-num">{item.number}</span> : <span class="teaching-num" />}
+            <a href={hrefOf(item)}>
+              <ProjectIcon name="doc" />
+              <span>{item.title}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    ) : null
+  }
+  {
+    extras.map((extra) =>
+      extra.items.length > 0 ? (
+        <section class="teaching-extra">
+          <h2>{extra.heading}</h2>
+          <ol class="project-docs">
+            {extra.items.map((item) => (
+              <li class="project-doc">
+                <span class="teaching-num" />
+                <a href={hrefOf(item)}>
+                  <ProjectIcon name="doc" />
+                  <span>{item.title}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null,
+    )
+  }
+  {
+    foot ? (
+      <ol class="project-docs">
+        <li class="project-doc">
+          <span class="teaching-num" />
+          <a href={hrefOf(foot)}>
+            <ProjectIcon name="doc" />
+            <span>{foot.title}</span>
+          </a>
+        </li>
+      </ol>
+    ) : null
+  }
+  {
+    origin ? (
+      <p class="teaching-origin">
+        <a href="https://edges.viruspc.tech/teaching/" rel="noopener noreferrer">独立教学站</a>
+        仍单独开着。那边已经写下的作答不会自动带到这里，也不会被清掉。
+      </p>
+    ) : null
+  }
+</section>
+<script>
+  import '../scripts/project-browser.mjs';
+</script>
