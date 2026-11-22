@@ -17,14 +17,14 @@
 ```bash
 PY=/tmp/weekly-ai-blogs-digest-py312/bin/python
 $PY scripts/fetch_artificial_analysis.py --limit 0 \
-  --out /path/to/ai-news-data/issues/YYYY-MM-DD/aa-language-models.json
-$PY scripts/fetch_llm_arena.py --until YYYY-MM-DD \
-  --out /path/to/ai-news-data/issues/YYYY-MM-DD/llm-arena-YYYY-MM-DD.json
-$PY scripts/fetch_openrouter.py --since YYYY-MM-DD --until YYYY-MM-DD \
-  --out-dir /path/to/ai-news-data/issues/YYYY-MM-DD
+  --out <数据仓库.本地检出>/issues/<生成日>/aa-language-models.json
+$PY scripts/fetch_llm_arena.py --until <生成日的 D-1> \
+  --out <数据仓库.本地检出>/issues/<生成日>/llm-arena-<榜单发布日>.json
+$PY scripts/fetch_openrouter.py --since <生成日的 D-7> --until <生成日的 D-1> \
+  --out-dir <数据仓库.本地检出>/issues/<生成日>
 $PY scripts/fetch_openrouter_endpoints.py \
-  --aa /path/to/ai-news-data/issues/YYYY-MM-DD/aa-language-models.json \
-  --out /path/to/ai-news-data/issues/YYYY-MM-DD/openrouter-official-endpoints.json
+  --aa <数据仓库.本地检出>/issues/<生成日>/aa-language-models.json \
+  --out <数据仓库.本地检出>/issues/<生成日>/openrouter-official-endpoints.json
 ```
 
 这些命令今天仍写期次根目录。AA 全量不按文章窗口过滤。Arena 和 OpenRouter 用量使用上面的窗口。

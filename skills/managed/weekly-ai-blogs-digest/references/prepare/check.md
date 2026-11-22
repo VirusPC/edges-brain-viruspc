@@ -3,7 +3,7 @@
 进入清洗之前先跑准备校验。通过才算本阶段完成，才把目录交给清洗：
 
 ```bash
-python3 scripts/prepare/check/validate.py /path/to/ai-news-data/issues/YYYY-MM-DD
+python3 scripts/prepare/check/validate.py <数据仓库.本地检出>/issues/<生成日>
 ```
 
 在本 skill 目录执行。脚本按 [数据存储](../../SKILL.md#数据存储) 和 `schemas/raw/` 检查：必需文件要么存在且符合 schema，要么在 `raw/gaps.json` 里有一条带 `path` 和 `reason` 的缺口。空文件不算数。

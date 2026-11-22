@@ -36,7 +36,7 @@ def validate(issue: Path) -> list[str]:
 
 def main(argv: list[str]) -> int:
     if len(argv) != 1:
-        print("用法: python3 scripts/prepare/check/validate.py issues/YYYY-MM-DD", file=sys.stderr)
+        print("用法: python3 scripts/prepare/check/validate.py <数据仓库.本地检出>/issues/<生成日>", file=sys.stderr)
         return 2
     errors = validate(Path(argv[0]))
     if errors:

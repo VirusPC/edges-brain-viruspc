@@ -36,7 +36,7 @@ def write_json(path: Path, payload) -> None:
 
 
 def stage(name: str, entry: str) -> dict:
-    return {"name": name, "rules": {"repo": "VirusPC/edges-brain-viruspc", "commit": COMMIT, "path": entry}}
+    return {"name": name, "rules": {"repo": "example/rules", "commit": COMMIT, "path": entry}}
 
 
 def write_issue(root: Path) -> Path:
@@ -209,7 +209,7 @@ class ValidateStages(unittest.TestCase):
     def test_schema_rejects_bad_stage_name(self) -> None:
         write_json(
             self.issue / "raw" / "stage.json",
-            {"name": "cleaned", "rules": {"repo": "VirusPC/edges-brain-viruspc", "commit": COMMIT, "path": PREPARE}},
+            {"name": "cleaned", "rules": {"repo": "example/rules", "commit": COMMIT, "path": PREPARE}},
         )
         self.assertTrue(validate_prepare(self.issue))
 
