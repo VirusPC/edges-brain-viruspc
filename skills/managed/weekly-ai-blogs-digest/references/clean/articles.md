@@ -4,8 +4,8 @@
 
 产出：
 
-- `usable/articles/index.json`：本期候选 ID 清单，供总结阶段阅读后再选
-- `usable/articles/{id}.json`：一条一个文件，含标题、日期、来源、可用正文
+- `cleaned/articles/index.json`：本期候选 ID 清单，供总结阶段阅读后再选
+- `cleaned/articles/{id}.json`：一条一个文件，含标题、日期、来源、可用正文
 
 订阅源偏短的正文保持原样，不在清洗时补写成五段。补录条目如果在 `raw/articles/backfill.json`，以原发日进入候选，不改日期。
 

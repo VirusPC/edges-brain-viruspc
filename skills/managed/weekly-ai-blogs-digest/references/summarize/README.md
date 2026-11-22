@@ -1,6 +1,6 @@
 # 数据总结
 
-只读本期 `usable/`。先并行写出三路展示内容，汇合之后才提炼关键词，最后做整页校验，写入 `issues/YYYY-MM-DD/page/`。汇合和关键词都在这一阶段里面，不是第四阶段。
+只读本期 `cleaned/`。先并行写出三路展示内容，汇合之后才提炼关键词，最后做整页校验，写入 `issues/YYYY-MM-DD/summary/`。汇合和关键词都在这一阶段里面，不是第四阶段。
 
 三路等层级，互不代替：
 
@@ -12,4 +12,4 @@
 
 整页校验见 [页面](page.md)。三路内容必须还在；关键词不能替换它们。缺了内容 ID 的映射不能用旧稿补上。
 
-`page/stage.json` 记下规则 commit 和本文件路径。说不清的条目写入 `page/gaps.json`。
+`summary/stage.json` 记下规则 commit 和本文件路径。说不清的条目写入 `summary/gaps.json`。

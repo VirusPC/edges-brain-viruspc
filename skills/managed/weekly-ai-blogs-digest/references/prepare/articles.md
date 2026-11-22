@@ -41,4 +41,4 @@ $PY scripts/fetch_feeds.py \
   --index-out /path/to/ai-news-data/issues/YYYY-MM-DD/feeds.index.json
 ```
 
-这条命令今天仍写期次根目录。索引是给现行选文用的薄文件，不是 `usable/` 的候选清单。
+这条命令今天仍写期次根目录。索引是给现行选文用的薄文件，不是 `cleaned/` 的候选清单。
