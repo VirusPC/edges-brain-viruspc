@@ -4,7 +4,7 @@ description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-di
 ---
 # 日程
 
-这条 Grok Bot routine 何时跑、密钥留在哪、结果交到哪。做事的步骤、数据依赖和重算只看 [SKILL.md](../../../skills/managed/weekly-ai-blogs-digest/SKILL.md) 及其 [数据流](../../../skills/managed/weekly-ai-blogs-digest/references/00-数据流.md)。这里不另画流程图，也不另写重算表。这不是跨厂商共用格式。
+这条 Grok Bot routine 何时跑、密钥留在哪、结果交到哪。流程只看 [SKILL.md](../../../skills/managed/weekly-ai-blogs-digest/SKILL.md)。这里不另画图，也不另写节点。这不是跨厂商共用格式。
 
 - cron: `0 9 * * 5`
 - timezone: Asia/Shanghai
@@ -32,7 +32,7 @@ description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-di
 
 - 交付：回到这条定时任务所在的对话。
 - 结果：周报 PR 写在本仓 `ai-news/`，快照 PR 写在 [VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data) 的 `issues/YYYY-MM-DD/`。两个 PR 都开着，不合并。回复里给出两个链接，以及这份快照缺了什么。
-- 生成来源：动手前把所选 ref 解析成的完整 commit，连同本文件路径 `.edges/routines/weekly-ai-blogs-digest/INDEX.md` 和 skill 路径 `skills/managed/weekly-ai-blogs-digest/SKILL.md`，写入周报正文的 provenance 注释。数据快照用数据仓里已经存在的那次提交和 `issues/YYYY-MM-DD`，`kind` 为 `tree`。没解析到或没落库的一侧写 `null`。不要把即将提交的周报稿自己的 commit 填进去。格式见 skill 的排版一步。
+- 生成来源：动手前把所选 ref 解析成的完整 commit，连同本文件路径 `.edges/routines/weekly-ai-blogs-digest/INDEX.md` 和 skill 路径 `skills/managed/weekly-ai-blogs-digest/SKILL.md`，写入页面表的 provenance。数据快照用数据仓里已经存在的那次提交和 `issues/YYYY-MM-DD`，`kind` 为 `tree`。没解析到或没落库的一侧写 `null`。不要把即将提交的周报稿自己的 commit 填进去。格式见 Skill 的页面节点。
 
 ### 密钥
 
@@ -56,7 +56,7 @@ box 把不含密钥的 JSON 写到：
 
 ## 调用门槛
 
-定时运行使用 Skill 的日常初跑。数据 PR 的分支能读到当期快照，就可以选文和写总结。两个 PR 都开着，不合并。不把合并数据 PR 当作开始撰写的前提。
+定时运行使用 Skill 的那张图。快照可消费之后才选文和写榜图说明。两个 PR 都开着，不合并，也不发布。不把合并数据 PR 当作开始选文的前提。
 
 调用方在当次任务里写明的顺序只对那一次生效。历史补数可以在那次任务里指定先核验数据并入库、再写正文。周五定时没有这句话，仍然是分支可读后撰写。
 
@@ -64,7 +64,7 @@ box 把不含密钥的 JSON 写到：
 
 ## 关键词
 
-关键词是当期快照的一部分，撰写只读。输入、重算和展示见 Skill 的 [数据流](../../../skills/managed/weekly-ai-blogs-digest/references/00-数据流.md)。
+关键词、选文、总结和页面表的位置见 Skill。这里不重复。
 
 ## 订阅源兜底
 

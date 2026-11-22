@@ -1,26 +1,94 @@
 ---
 name: weekly-ai-blogs-digest
-description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。先把完整抓取存进 VirusPC/ai-news-data，再只从这份快照选文、写总结、排版并开 PR。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
+description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。先把抓取和后续节点的表写入 VirusPC/ai-news-data，再由页面表交给站点渲染。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
 ---
 
 # AI 资讯周报
 
-一个 skill，五步。本文件只写顺序和入口。每步的命令、边界和版式在 `references/`。
+生成日为 D。覆盖窗口是 D-7 到 D-1 的完整 UTC 日（含两端，不含 D）。快照在 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`。目录、版本引用和失效后重算见 [产物](references/产物.md)。
 
-生成日为 D。覆盖窗口是 D-7 到 D-1 的完整 UTC 日（含两端，不含 D）。快照目录是 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`，日期与周报文件名相同。写正文和补已有周报的总结时，只读这份快照，不重新抓 feed。
+下面这张图就是流程。实线是数据，虚线是控制门槛。互不指向的节点可以并行。实线上游变了，只重算实线下游，并再校验；没有实线连着的不动。
 
-## 数据流
+```mermaid
+flowchart TD
+  window["窗口"]
+  opml["OPML + meta"]
+  prior["更早条目文本"]
+  full["feeds-full 可选"]
+  feeds["feeds"]
+  index["索引"]
+  trend["trending"]
+  aa["AA"]
+  arena["Arena"]
+  oruse["OR 用量"]
+  orprice["OR 官方报价"]
+  facts["发布事实"]
+  ends["官方端点"]
+  releases["模型发布"]
+  keywords["关键词"]
+  manifest["manifest"]
+  backfill["补录"]
+  snap["快照可消费"]
+  select["选文"]
+  summary["总结"]
+  boards["榜图说明"]
+  page["页面"]
+  report["周报 PR"]
 
-手动和定时都按同一条依赖。总图、节点的输入输出，以及输入变了以后重算哪些下游，写在 [数据流](references/00-数据流.md)。这里不另画一张图。
+  window --> feeds
+  opml --> feeds
+  feeds --> index
+  feeds --> trend
+  window --> arena
+  window --> oruse
+  window -.-> aa
+  aa --> ends
+  aa --> releases
+  ends --> releases
+  orprice -->|"无原文价时"| releases
+  facts --> releases
+  feeds --> keywords
+  full --> keywords
+  prior --> keywords
+  releases -->|"官方名"| keywords
+  feeds -.-> snap
+  index -.-> snap
+  trend -.-> snap
+  aa -.-> snap
+  arena -.-> snap
+  oruse -.-> snap
+  ends -.-> snap
+  releases -.-> snap
+  keywords -.-> snap
+  manifest -.-> snap
+  backfill -.->|"若有"| snap
+  snap -.-> select
+  snap -.-> boards
+  index --> select
+  trend --> select
+  backfill --> select
+  select --> summary
+  feeds --> summary
+  backfill --> summary
+  aa --> boards
+  arena --> boards
+  oruse --> boards
+  releases --> boards
+  summary --> page
+  boards --> page
+  keywords --> page
+  page --> report
+```
 
-## 步骤
+节点正文：
 
-1. [采集数据并存入 ai-news-data](references/01-采集数据并存入-ai-news-data.md)。RSS 全文、索引、GitHub Trending、Artificial Analysis、LLM Arena、OpenRouter、官方端点目录、模型发布 facts（含价格排名和速度排名），以及本期 `keywords.json`，并更新 `manifest.json`。密钥只走环境变量。
-2. [选文](references/02-选文.md)。只打开索引和 Trending 名次，不把整份全文读进上下文。
-3. [并行写总结](references/03-并行写总结.md)。子 Agent 用 `--pick` 读快照里的 RSS 正文。订阅源偏短就按短文写，不开网页。
-4. [榜单与图](references/04-榜单与图.md)。用快照里已有的榜单和模型发布数据画图。词云只读快照里的 `keywords.json`，不从正文现选词，也不再预先导出 SVG 或 PNG。模型发布的价格名次和速度名次用快照里写好的 `rank`，不在撰写时现算。图下写给读者的一句变化或格局；来源和快照时间只进说明文件。缺文件就省略对应小节，不现场重抓。
-5. [排版与开 PR](references/05-排版与开-PR.md)。按固定章节写入 `ai-news/`，精选文章后保留建设中的精选推文和精选播客。覆盖窗口后写上生成来源注释：运行前解析出的 routine / skill 提交，以及已经落库的数据快照提交。更新索引和说明文件，开 PR，不合并。
+- [采集](references/采集.md) 写 feeds、索引、trending
+- [榜单](references/榜单.md) 写 AA、Arena、OpenRouter、端点、模型发布，以及榜图说明
+- [关键词](references/关键词.md)
+- [选文](references/选文.md)
+- [总结](references/总结.md)
+- [页面](references/页面.md)
 
-写周报时侧重 Agent 与产品。研究向、红队、纯学术长文可以不写。融资、IPO、营收、定价套餐、厂商客户案例等营销内容不收，除非里面有具体技术或产品细节。优惠和白嫖不写进周报。
+写的时候侧重 Agent 与产品。研究向、红队、纯学术长文可以不写。融资、IPO、营收、定价套餐、厂商客户案例等营销内容不收，除非里面有具体技术或产品细节。优惠和白嫖不写。判断依据是内容，不是 URL 路径。不要编造数字、名次或快照里没有的事实。
 
-不要编造数字、名次或快照里没有的事实。
+默认定时停在数据 PR 和周报 PR，两份都打开，不自动合并，也不发布。发布门槛在页面节点。
