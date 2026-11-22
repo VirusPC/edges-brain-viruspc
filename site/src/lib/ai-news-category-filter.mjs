@@ -31,7 +31,7 @@ export const SOURCE_GROUPS = [
   { name: '国内模型厂', companies: ['DeepSeek', 'Kimi', 'GLM', 'MiniMax', 'StepFun'] },
   { name: '国外模型厂', companies: ['Anthropic', 'OpenAI', 'Google', 'xAI', 'Meta'] },
   { name: '国内非模型厂', companies: ['阿里', '腾讯', '字节', '快手', '美团', '百度'] },
-  { name: '国外非模型厂', companies: ['Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS', 'CodeRabbit', 'Zed', 'Latitude'] },
+  { name: '国外非模型厂', companies: ['Cursor', 'Cognition', 'Amp', 'LangChain', 'Warp', 'Lovable', 'Hugging Face', 'AWS', 'CodeRabbit', 'Zed', 'Latitude', 'lucumr'] },
 ];
 
 export const SOURCE_ORDER = SOURCE_GROUPS.flatMap((group) => group.companies);

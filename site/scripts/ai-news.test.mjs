@@ -27,7 +27,6 @@ const backfillKeywords = {
   '2026-10-02-ai-news.md': 'GPT-6.1 Sol 与 dots',
   '2026-10-09-ai-news.md': 'GPT-6 面向所有人，Claude Haiku 5.5',
   '2026-10-16-ai-news.md': 'Gemini 4 Argon 进入 Antigravity',
-  '2026-10-23-ai-news.md': 'MiniMax M3.1 Flash，DeepSeek V4.1 Flash',
 };
 
 test('issue files are the dated digests, not the readme, charts, or notes', () => {
@@ -72,6 +71,13 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   const previous = fs.readFileSync(path.join(aiNewsRoot, '2026-10-30-ai-news.md'), 'utf8');
   assert.equal(summaryLine(previous, false), '');
 
+  const october = fs.readFileSync(path.join(aiNewsRoot, '2026-10-23-ai-news.md'), 'utf8');
+  assert.equal(summaryLine(october, false), '');
+  assert.match(october, /<!-- keywords-cloud/);
+  assert.match(october, /"theme": true/);
+  assert.match(october, /解决什么问题/);
+  assert.doesNotMatch(october, /本期于 2026-11 按新版格式补录/);
+
   for (const [name, keyword] of Object.entries(backfillKeywords)) {
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
     assert.equal(isLegacyIssue(body), false, name);
@@ -98,10 +104,10 @@ test('item titles link to the source and quote blocks are gone', () => {
       const openrouter = model.indexOf('### OpenRouter');
       const releases = model.search(/^#### \[/m);
       assert.ok(
-        arena >= 0 && arena < analysis && analysis < openrouter && openrouter < releases,
+        analysis >= 0 && analysis < arena && arena < openrouter && openrouter < releases,
         name,
       );
-      assert.doesNotMatch(model.slice(arena, releases), /^#### /m, name);
+      assert.doesNotMatch(model.slice(analysis, releases), /^#### /m, name);
       assert.match(model.slice(releases), /^#### \[/m, name);
       assert.match(model, /openrouter-usage-top15-2026-11-13-marked\.png/);
       assert.match(model, /openrouter-programming-top15-2026-11-13-marked\.png/);
@@ -187,18 +193,11 @@ test('item titles link to the source and quote blocks are gone', () => {
   const latest = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-news.md'), 'utf8');
   assert.match(
     latest,
-    /^#### \[Kiroween 黑客松：报名可领约 4000 积分\]\(https:\/\/kiroween\.devpost\.com\)$/m,
+    /^#### &lt;产品&gt;&lt;Cognition&gt;\[Devin Review 2\.0\]\(https:\/\/devin\.ai\/blog\/devin-review-2\)$/m,
   );
-  assert.match(latest, /以官方 Devpost 页面为准。 \[社区帖\]\(https:\/\/linux\.do\/t\/topic\/3101137\)/);
-  assert.match(latest, /^#### \[BOTKEEP：3 个月免费托管\]\(https:\/\/linux\.do\/t\/topic\/3102454\)$/m);
-  assert.match(
-    latest,
-    /^- \*\*\[OpenAI Images 2\.6\]\(https:\/\/openai\.com\/index\/introducing-images-2-6\)\*\*：图像生成更新。$/m,
-  );
-  assert.match(
-    latest,
-    /^#### &lt;交付闭环&gt;&lt;OpenAI&gt;\[OpenAI 收购 Pierre\]\(https:\/\/openai\.com\/index\/openai-to-acquire-pierre\)$/m,
-  );
+  assert.match(latest, /Kimi Hosted Agents/);
+  assert.doesNotMatch(latest, /kiroween\.devpost\.com|linux\.do\/t\/topic\/3101137|BOTKEEP/);
+  assert.doesNotMatch(latest, /〇、薅羊毛/);
   assert.match(latest, /"word": "Deep Agents"[\s\S]*?"theme": true/);
   assert.match(latest, /"word": "SWE-2 Flash"[\s\S]*?"weight": 3\n/);
   assert.doesNotMatch(latest, /"word": "SWE-2 Flash"[\s\S]{0,240}"theme": true/);

@@ -229,17 +229,18 @@ assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/2026-11-06\/"/);
 assert.match(aiNewsList, /2026-10-30～11-05/);
 assert.doesNotMatch(aiNewsList, /交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab/);
 assert.match(aiNewsList, /2026-10-23 AI 资讯/);
-assert.match(aiNewsList, /MiniMax M3\.1 Flash，DeepSeek V4\.1 Flash/);
+assert.doesNotMatch(aiNewsList, /MiniMax M3\.1 Flash，DeepSeek V4\.1 Flash/);
 assert.match(aiNewsList, /href="\/edges-brain-viruspc\/ai-news\/rss\.xml"/);
 assert.doesNotMatch(aiNewsList, /class="tag">旧版/);
 
 const latestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-06/index.html'), 'utf8');
 assert.doesNotMatch(latestIssue, /每周五上午 9 点开始生成/);
 assert.match(latestIssue, /<h1>\s*2026-11-06 AI 资讯\s*<\/h1>/);
-assert.match(latestIssue, /覆盖 2026-10-30～11-05/);
+assert.match(latestIssue, /10-30 08:00 → 11-06 07:59/);
+assert.doesNotMatch(latestIssue, /〇、薅羊毛/);
 const latestToc = latestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(latestToc, 'latest issue is missing the chapter toc');
-for (const heading of ['〇、薅羊毛', '一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章', '国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
+for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章', '五、精选推文', '六、精选播客', '国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
   assert.match(latestToc[0], new RegExp(heading));
 }
 assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current|&lt;|&#x3C;|data-cat/);
@@ -278,8 +279,8 @@ assert.doesNotMatch(latestIssue, /keywords-cloud-2026-11-06\.png/);
 const cloudAt = latestIssue.indexOf('class="keyword-cloud"');
 assert.ok(cloudAt > 0, 'latest issue is missing the keyword cloud');
 assert.doesNotMatch(latestIssue.slice(cloudAt, cloudAt + 12000), /fffcf7/);
-assert.match(latestIssue, /href="https:\/\/kiroween\.devpost\.com"/);
-assert.match(latestIssue, /href="https:\/\/linux\.do\/t\/topic\/3101137"/);
+assert.match(latestIssue, /href="https:\/\/devin\.ai\/blog\/devin-review-2"/);
+assert.doesNotMatch(latestIssue, /kiroween\.devpost\.com|linux\.do\/t\/topic\/3101137/);
 assert.doesNotMatch(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
 assert.match(latestIssue, /data-model-board/);
 assert.deepEqual(optionLabels(latestIssue), ['LLM Arena']);
@@ -288,26 +289,28 @@ assert.equal(latestSpecs.length, 1);
 assert.equal(latestSpecs[0].kind, 'llm-arena');
 assert.equal(latestSpecs[0].publishDate, '2026-10-28');
 assert.equal(latestSpecs[0].items.length, 15);
-assert.ok(latestSpecs[0].items.some((item) => item.name === 'Gemini 4 Carbon (High)' && item.highlight));
+assert.ok(latestSpecs[0].items.some((item) => item.name === 'Gemini 4 Carbon (High)'));
+assert.equal(latestSpecs[0].items.some((item) => item.highlight), false);
 assert.doesNotMatch(latestIssue, /原始链接/);
 assertCategoryPills(latestIssue, [
-  ['交付闭环', 'OpenAI 收购 Pierre'],
-  ['代码评审', 'Devin Review 2.0'],
+  ['产品', 'Kimi Hosted Agents'],
+  ['架构', 'Make long-running agents faster with message threads'],
 ], []);
 
 const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
 assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
 assert.match(newestIssue, /class="info-card"/);
-assert.match(newestIssue, /<mark class="note-card-hl">11-06 → 11-12<\/mark>/);
+assert.match(newestIssue, /<mark class="note-card-hl">11-06 08:00 → 11-13 07:59<\/mark>/);
 assert.match(newestIssue, /<dt>生成日<\/dt><dd>2026-11-13<\/dd>/);
+assert.match(newestIssue, /<dt>时区<\/dt><dd>北京时间<\/dd>/);
 assert.doesNotMatch(newestIssue, /覆盖窗口：2026-11-06～2026-11-12（生成日 2026-11-13）。/);
-assert.doesNotMatch(newestIssue, /北京时间/);
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、精选文章/);
-for (const heading of ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
+for (const heading of ['国外模型厂', '国内非模型厂', '国外非模型厂']) {
   assert.match(newestToc[0], new RegExp(`>${heading}<`));
 }
+assert.doesNotMatch(newestToc[0], />国内模型厂</);
 assert.doesNotMatch(newestToc[0], /国内进展|国际进展/);
 assert.match(newestToc[0], /二、模型进展/);
 assert.doesNotMatch(newestToc[0], /模型发布/);
@@ -338,7 +341,7 @@ for (const spec of newestSpecs) {
   assert.equal(spec.items.length, 15, spec.kind);
   assert.equal(typeof spec.items[0].value, 'number', spec.kind);
 }
-assert.ok(newestSpecs[1].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.highlight));
+assert.ok(newestSpecs[1].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.rank === 15 && item.highlight === false));
 assert.equal(newestSpecs[1].publishDate, '2026-11-11');
 assert.ok(newestSpecs[0].items.some((item) => item.highlight && item.name.includes('Claude Fable 5.2')));
 assert.equal(newestSpecs[2].scaleZero, true);
@@ -351,8 +354,8 @@ const releaseAt = modelProgress.search(/<h4\b/);
 const boardAt = modelProgress.indexOf('data-model-board');
 assert.ok(boardAt >= 0 && releaseAt > boardAt, '2026-11-13 model entries follow the rankings');
 assertCategoryPills(newestIssue, [
-  ['研发提效', '授人以鱼不如授人以渔：我对企业级 AI 研发提效的思考与实践'],
-  ['Harness', '研发Loop的上下文优化与多Agent协作实践'],
+  ['架构', '研发 Loop 的上下文优化与多 Agent 协作'],
+  ['实践', 'WorkBuddy'],
 ], []);
 for (const alt of [
   'OpenRouter 本周用量 Top 15，2026-11-13',
@@ -374,8 +377,10 @@ assert.doesNotMatch(issue1030, /class="kw-top"[^>]*>GPT-6\.1 Terra</);
 const backfillIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-10-23/index.html'), 'utf8');
 assert.match(backfillIssue, /<h1>\s*2026-10-23 AI 资讯\s*<\/h1>/);
 assert.doesNotMatch(backfillIssue, /旧版/);
-assert.match(backfillIssue, /覆盖 2026-10-16～10-22/);
+assert.match(backfillIssue, /10-16 08:00 → 10-23 07:59/);
 assert.match(backfillIssue, /一、本周关键词/);
+assert.match(backfillIssue, /class="kw-top"[^>]*>Partner Network</);
+assert.match(backfillIssue, /五、精选推文/);
 assert.doesNotMatch(backfillIssue, /文章总结列表/);
 const backfillToc = backfillIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(backfillToc, '2026-10-23 is missing the chapter toc');
