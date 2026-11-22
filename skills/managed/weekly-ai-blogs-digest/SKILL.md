@@ -7,7 +7,7 @@ description: 当用户想要汇总一段时间内（默认过去一周）AI / AI
 
 生成日为 D。覆盖窗口是 D-7 到 D-1 的完整 UTC 日（含两端，不含 D）。一期数据放在 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`，里面固定三个目录：`raw/`、`cleaned/`、`summary/`。同一期重跑就地更新这三个目录，Git 保留历史，不另建 run 目录。
 
-这是已确认的目标结构。现行采集脚本仍把文件写在期次根目录，博客仍读取 `ai-news/*.md`。旧期没有迁进这三个目录，站点也还没有改成只读 `summary/`。
+这是已确认的目标结构。采集脚本仍把文件写在期次根目录，博客仍读取 `ai-news/*.md`。下面的目录树和 `schemas/` 是这份结构的契约，分阶段校验按它验收。旧期没有迁进这三个目录，站点也还没有改成只读 `summary/`。
 
 三阶段按顺序做。上一阶段汇合校验通过，才把目录交给下一阶段。阶段内部没有依赖的任务可以并行。上游或规则 commit 变了，只重算引用它的下游，再校验；没有引用关系的分支不动。不另做调度引擎或数据库。
 
@@ -30,6 +30,83 @@ flowchart LR
 稳定内容 ID 跟着内容走：文章用规范化后的链接，项目用仓库地址，模型用官方名。榜单条目用榜单名加模型官方名。不用文件路径，也不用写入顺序。这里不另定哈希算法。
 
 每个阶段目录有 `stage.json` 和 `gaps.json`。`stage.json` 的 name 用目录名 `raw`、`cleaned` 或 `summary`，并记下规则仓库、40 位 commit，以及本阶段入口 `prepare.md`、`clean.md` 或 `summarize.md`。`gaps.json` 记下缺口和原因。来源引用写在各条文件里。空文件不能当成这份数据已经准备好。来源对不上或文件损坏时，记入缺口，不能标成可以正常渲染。
+
+## 数据存储
+
+一期数据在 `issues/YYYY-MM-DD/`。完整目录如下。没有单独文件名的官方发布原文，抓不到就写进 `raw/gaps.json`。`feeds.index.json` 仍是现行选文用的薄文件，写在期次根目录，不属于这棵树。
+
+```text
+issues/YYYY-MM-DD/
+  raw/
+    stage.json
+    gaps.json
+    window.json
+    articles/
+      feeds.json
+      backfill.json
+    projects/
+      github-trending.json
+      releases.json
+    models/
+      aa-language-models.json
+      llm-arena-<榜单发布日>.json
+      openrouter-rankings-daily.json
+      openrouter-rankings-programming.json
+      openrouter-app-rankings.json
+      openrouter-app-rankings-coding.json
+      openrouter-official-endpoints.json
+  cleaned/
+    stage.json
+    gaps.json
+    articles/
+      index.json
+      {id}.json
+    projects/
+      index.json
+      {id}.json
+    models/
+      index.json
+      {id}.json
+      boards/
+        {id}.json
+  summary/
+    stage.json
+    gaps.json
+    index.json
+    keywords.json
+    articles/
+      {id}.json
+    projects/
+      {id}.json
+    models/
+      {id}.json
+      boards/
+        {id}.json
+```
+
+`articles/backfill.json` 只在用户点名补录时出现。`openrouter-app-rankings-coding.json` 是旁路，缺了不用写缺口。其余列出的文件，要么落盘，要么在该阶段 `gaps.json` 里有一条 `path` 和 `reason`。`stage.json` 本身不能用缺口代替。空文件、以及 `skipped: true` 的模型快照，都不算落盘。
+
+`{id}.json` 的文件名不是 ID。ID 写在文件里：文章是规范化链接，项目是仓库地址，模型是官方名，榜单条目是榜单名加模型官方名。`index.json` 只列这些 ID。
+
+契约在 `schemas/raw/`、`schemas/cleaned/`、`schemas/summary/`。校验脚本按子阶段放在 `scripts/prepare/`、`scripts/clean/`、`scripts/summarize/`，公共代码在 `scripts/lib/`。已经在用的采集、榜单和关键词脚本仍留在 `scripts/` 根目录，输出路径不变。
+
+| 子阶段 | 校验脚本 | Schema |
+| --- | --- | --- |
+| [prepare/window.md](references/prepare/window.md) | `scripts/prepare/window/validate.py` | `schemas/raw/window.schema.json` |
+| [prepare/articles.md](references/prepare/articles.md) | `scripts/prepare/articles/validate.py` | `schemas/raw/articles/feeds.schema.json`、`schemas/raw/articles/backfill.schema.json` |
+| [prepare/projects.md](references/prepare/projects.md) | `scripts/prepare/projects/validate.py` | `schemas/raw/projects/github-trending.schema.json`、`schemas/raw/projects/releases.schema.json` |
+| [prepare/models.md](references/prepare/models.md) | `scripts/prepare/models/validate.py` | `schemas/raw/models/*.schema.json` |
+| [prepare/check.md](references/prepare/check.md) | `scripts/prepare/check/validate.py` | `schemas/raw/stage.schema.json`、`schemas/raw/gaps.schema.json` |
+| [clean/articles.md](references/clean/articles.md) | `scripts/clean/articles/validate.py` | `schemas/cleaned/articles/index.schema.json`、`schemas/cleaned/articles/item.schema.json` |
+| [clean/projects.md](references/clean/projects.md) | `scripts/clean/projects/validate.py` | `schemas/cleaned/projects/index.schema.json`、`schemas/cleaned/projects/item.schema.json` |
+| [clean/models.md](references/clean/models.md) | `scripts/clean/models/validate.py` | `schemas/cleaned/models/index.schema.json`、`schemas/cleaned/models/item.schema.json`、`schemas/cleaned/models/board.schema.json` |
+| [clean/check.md](references/clean/check.md) | `scripts/clean/check/validate.py` | `schemas/cleaned/stage.schema.json`、`schemas/cleaned/gaps.schema.json` |
+| [summarize/articles.md](references/summarize/articles.md) | `scripts/summarize/articles/validate.py` | `schemas/summary/articles/item.schema.json` |
+| [summarize/projects.md](references/summarize/projects.md) | `scripts/summarize/projects/validate.py` | `schemas/summary/projects/item.schema.json` |
+| [summarize/models.md](references/summarize/models.md) | `scripts/summarize/models/validate.py` | `schemas/summary/models/item.schema.json`、`schemas/summary/models/board.schema.json` |
+| [summarize/merge.md](references/summarize/merge.md) | `scripts/summarize/merge/validate.py` | 不另建文件，检查三路 ID 不重复 |
+| [summarize/keywords.md](references/summarize/keywords.md) | `scripts/summarize/keywords/validate.py` | `schemas/summary/keywords.schema.json` |
+| [summarize/check.md](references/summarize/check.md) | `scripts/summarize/check/validate.py` | `schemas/summary/index.schema.json`、`schemas/summary/stage.schema.json`、`schemas/summary/gaps.schema.json` |
 
 博客只读 `summary/`：按 `summary/index.json` 排版，用其中的榜单数据画图，并使用已经写好的关键词映射。不选文，不写摘要，不推断关键词和条目的关系。按关键词筛选的界面本次不做。
 

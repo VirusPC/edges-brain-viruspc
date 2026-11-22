@@ -1,6 +1,6 @@
 # 数据清洗
 
-输入是本期 `raw/`。输出是 `issues/YYYY-MM-DD/cleaned/`。不覆盖 `raw/`。
+输入是本期 `raw/`。输出是 `issues/YYYY-MM-DD/cleaned/`。不覆盖 `raw/`。完整目录见 [数据存储](../../SKILL.md#数据存储)。
 
 三路并行：
 
