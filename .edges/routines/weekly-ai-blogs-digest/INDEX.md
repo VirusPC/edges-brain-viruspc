@@ -77,3 +77,13 @@ box 把不含密钥的 JSON 写到：
 多源合并先按规范化 URL 去重，再按规范化标题去重，留下正文更完整的一条。标题在去掉首尾空白和句末标点、合并空白并忽略大小写之后相同；较短的一条至少 16 个字符，且较长一条紧跟着句末标点时，也视为同一篇。日期对不上时，以官网列表或 sitemap 为准。
 
 同一发文方连续两期主源和备源都失败时，在当期说明里提示换源。运行时不改 OPML。
+
+## 非博客历史
+
+OPML 仍是博客订阅的真源。这一节不是新的 OPML 源，脚本也不会因为写在这里就去拉。
+
+OpenRouter 的历史用量首选官方 Data API，需要 `OPENROUTER_API_KEY`。公开榜只有 Today、This Week、This Month，历史图是周一桶并且只显示 Top 9 + Others，没有自定义历史榜或下载。官网浏览是能力有限的最后退路，不能当成完整周榜。`rankings-daily` 每天是 Top 50 加一行 other；脚本再聚合成 15 条，不是无损周榜。`category=programming&period=week` 是采样周，不是公开页按编程语言画的图。
+
+Artificial Analysis 公开榜 `https://artificialanalysis.ai/leaderboards/models` 能打开，没有重定向。控件是 Weights、Size、Price、Reasoning、Status:Current，没有 as-of。免费接口 HTTP 200 只说明密钥有效、当前目录能取到，不提供历史排名。Intelligence Index 的版本史是方法变更，不是过去的名次。`artificial_analysis_coding_index` 恒为 null，因为不再发布 Coding Index，不是采集失败。文档里 performance-over-time 和原始测量属于 Commercial。OpenAPI 下载是 schema。这只覆盖实际打开的榜页和 Data API 文档，不据此说所有商业产品都没有历史。当前值不写入历史期。
+
+GitHub Trending 没有官方历史接口。`since=weekly` 这个 URL 本身不能证明页面是 This week；浏览器里 Date range 为 Today 的捕获不能当周榜。能留下的历史只限文本写明 this week、并且保留页面顺序的捕获。按周增星重排的榜是另一种指标。这种捕获不是另一条 OPML。

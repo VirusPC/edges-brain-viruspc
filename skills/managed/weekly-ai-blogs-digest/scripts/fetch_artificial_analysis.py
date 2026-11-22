@@ -169,6 +169,7 @@ def lean_model(row: dict) -> dict:
         "slug": row.get("slug"),
         "creator": creator.get("name") if isinstance(creator, dict) else None,
         "intelligence_index": evaluations.get("artificial_analysis_intelligence_index"),
+        # AA no longer publishes Coding Index. Null is that product state, not a failed fetch.
         "coding_index": evaluations.get("artificial_analysis_coding_index"),
         "price_1m_input_tokens": pricing.get("price_1m_input_tokens"),
         "price_1m_output_tokens": pricing.get("price_1m_output_tokens"),

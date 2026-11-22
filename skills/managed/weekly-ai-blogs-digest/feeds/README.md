@@ -4,7 +4,7 @@
 
 GitHub Trending 用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的一周榜（全部、Python、TypeScript）。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，日期用 channel 的 `pubDate`。订阅 id 是 `github-trending-weekly-all`、`github-trending-weekly-python`、`github-trending-weekly-typescript`。正文只写 all 的前 5。摘录文件仍叫 `github-trending.json`，内容是 weekly / all，不再摘 daily。
 
-Artificial Analysis 和 LLM Arena 不是 OPML。见 skill 里的「非博客数据」，脚本在 `scripts/fetch_artificial_analysis.py` 和 `scripts/fetch_llm_arena.py`。
+Artificial Analysis 和 LLM Arena 不是 OPML。见 skill 里的「非博客数据」，脚本在 `scripts/fetch_artificial_analysis.py` 和 `scripts/fetch_llm_arena.py`。AA 公开榜没有 as-of；免费接口是当前目录。`artificial_analysis_coding_index` 恒为 null，因为不再发布 Coding Index，不是采集失败。OpenRouter 历史用量首选官方 Data API，公开榜浏览只是能力有限的最后退路。这两处都不是 OPML 源。
 
 [`ai-coding-blogs.meta.json`](ai-coding-blogs.meta.json) 只给 Agent 看：`lane`、退路、BestBlogs 对照、Olshansk 抓取源和过期 feed 说明。阅读器不需要 `lane`，OPML 里不写。
 

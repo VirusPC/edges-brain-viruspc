@@ -1073,7 +1073,7 @@
         "adopted": false,
         "note": "不是博客，不适用 BestBlogs。"
       },
-      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。since=weekly 这个 URL 不能证明页面是 This week；Date range 为 Today 的存档不能当周榜。按周增星重排的榜是另一种指标，不写进 OPML。"
     },
     {
       "id": "github-trending-weekly-python",
@@ -1093,7 +1093,7 @@
         "adopted": false,
         "note": "不是博客，不适用 BestBlogs。"
       },
-      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。since=weekly 这个 URL 不能证明页面是 This week；Date range 为 Today 的存档不能当周榜。按周增星重排的榜是另一种指标，不写进 OPML。"
     },
     {
       "id": "github-trending-weekly-typescript",
@@ -1113,7 +1113,7 @@
         "adopted": false,
         "note": "不是博客，不适用 BestBlogs。"
       },
-      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。since=weekly 这个 URL 不能证明页面是 This week；Date range 为 Today 的存档不能当周榜。按周增星重排的榜是另一种指标，不写进 OPML。"
     }
   ]
 }
