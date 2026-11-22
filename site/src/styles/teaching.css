@@ -1,0 +1,343 @@
+.teaching-browser .project-title {
+  font-size: 1.25rem;
+}
+
+.teaching-browser .project-doc a,
+.teaching-browser .teaching-num {
+  font-size: 1.0625rem;
+}
+
+.teaching-num {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  min-width: 1.6rem;
+}
+
+.teaching-extra {
+  margin-top: 1.4rem;
+}
+
+.teaching-extra h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.teaching-origin {
+  margin: 1.2rem 0 0;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.teaching-origin a {
+  color: var(--prose-link);
+}
+
+.teaching-lesson {
+  max-width: 45rem;
+}
+
+.lesson {
+  color: var(--ink);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.lesson h1 {
+  font-size: clamp(2.125rem, 4vw, 2.5rem);
+  line-height: 1.2;
+  margin: 0 0 0.45rem;
+}
+
+.lesson h2 {
+  margin: 1.6rem 0 0.55rem;
+  font-size: 1.35rem;
+  scroll-margin-top: 1rem;
+}
+
+.lesson h3 {
+  margin: 1.2rem 0 0.4rem;
+  font-size: 1.12rem;
+  scroll-margin-top: 1rem;
+}
+
+.lesson p,
+.lesson ul,
+.lesson ol,
+.lesson blockquote,
+.lesson pre,
+.lesson table,
+.lesson dl {
+  margin: 0 0 1rem;
+}
+
+.lesson :is(.kicker, .meta, .cite, .q-num) {
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.lesson a {
+  color: var(--prose-link);
+}
+
+.lesson :is(.page, .wrap, main) {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+
+.lesson :is(dl, table, .term, .term-grid, .card, .term-grid > *) {
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+
+.lesson :is(.term, .card, tr) {
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+}
+
+.lesson .term,
+.lesson .term-grid > .term,
+.lesson .card {
+  padding: 0.75rem 0;
+}
+
+.lesson dt {
+  font-weight: 600;
+}
+
+.lesson :is(th, td) {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.45rem 0.5rem 0.45rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.lesson-table,
+.lesson pre,
+.lesson .lesson-sheet {
+  max-width: 100%;
+}
+
+.lesson-table {
+  overflow-x: auto;
+}
+
+.lesson table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lesson pre,
+.lesson :not(pre) > code {
+  background: var(--code-bg);
+  font-family: var(--mono);
+}
+
+.lesson pre {
+  overflow-x: auto;
+  padding: 0.8rem 0.9rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.lesson :not(pre) > code {
+  font-size: 0.86em;
+  padding: 0.05em 0.3em;
+}
+
+.lesson :is(.callout, .note, aside, .footer-note) {
+  margin: 0 0 1rem;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border: 0;
+  border-left: 2px solid var(--rule-strong);
+  background: transparent;
+  color: inherit;
+}
+
+.lesson-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  align-items: center;
+  margin: 0.2rem 0 1.2rem;
+}
+
+.lesson-toc {
+  min-width: 0;
+}
+
+.lesson-toc > summary,
+.lesson-ref,
+.lesson-sheet-size,
+.lesson-turn a,
+.lesson button {
+  min-height: 44px;
+}
+
+.lesson-toc > summary,
+.lesson-ref {
+  display: inline-flex;
+  align-items: center;
+  color: var(--summary);
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.lesson-toc ol {
+  margin: 0.3rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.lesson button,
+.lesson-sheet-size {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: 0;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+}
+
+.lesson .options,
+.lesson .quiz-opts,
+.lesson form {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.lesson .opt,
+.lesson .quiz-opt {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+}
+
+.lesson :is(.key, .quiz-letter) {
+  min-width: 1.2rem;
+  color: var(--ink-soft);
+}
+
+.lesson button:focus-visible,
+.lesson a:focus-visible,
+.lesson-sheet-size:focus-visible,
+.lesson summary:focus-visible {
+  outline: 2px solid var(--rule-strong);
+  outline-offset: 2px;
+}
+
+.lesson button:disabled {
+  cursor: default;
+}
+
+.lesson :is(button.correct, button.is-correct, .feedback.ok, .feedback.show.ok, .quiz-feedback.ok) {
+  background: color-mix(in srgb, #1f7a4d 22%, var(--paper));
+  color: var(--ink);
+}
+
+.lesson :is(button.incorrect, button.is-wrong, .feedback.bad, .feedback.show.bad, .quiz-feedback.no) {
+  background: color-mix(in srgb, #9a3412 22%, var(--paper));
+  color: var(--ink);
+}
+
+.lesson .feedback,
+.lesson .quiz-feedback,
+.lesson .quiz-explain {
+  color: var(--ink);
+}
+
+.lesson .self-check-answer[hidden] {
+  display: none;
+}
+
+.lesson input,
+.lesson textarea,
+.lesson select {
+  width: 100%;
+  max-width: 100%;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+}
+
+.lesson input[type="radio"],
+.lesson input[type="checkbox"] {
+  width: auto;
+}
+
+.lesson textarea {
+  min-height: 6.5rem;
+}
+
+.lesson label {
+  display: block;
+  margin: 0.55rem 0;
+}
+
+.lesson-sheet {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  background: #fffcf7;
+  color: #1c1b19;
+  border: 1px solid var(--rule);
+  overflow-x: auto;
+}
+
+.lesson-sheet-frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.lesson-sheet.is-native .lesson-sheet-frame svg {
+  width: auto;
+  max-width: none;
+}
+
+.lesson-sheet-size {
+  margin-top: 0.55rem;
+  background: #fffcf7;
+  color: #1c1b19;
+}
+
+.lesson-turn {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1.6rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--rule);
+}
+
+.lesson-storage {
+  margin-top: 1rem;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+.lesson-alias {
+  margin: 0 0 0.8rem;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 720px) {
+  .teaching-browser .project-title {
+    font-size: 1.125rem;
+  }
+
+  .lesson h1 {
+    font-size: 2.125rem;
+  }
+}
