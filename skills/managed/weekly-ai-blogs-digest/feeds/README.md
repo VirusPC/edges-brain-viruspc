@@ -4,7 +4,7 @@
 
 GitHub Trending 用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的一周榜（全部、Python、TypeScript）。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，日期用 channel 的 `pubDate`。订阅 id 是 `github-trending-weekly-all`、`github-trending-weekly-python`、`github-trending-weekly-typescript`。三份都抓。all 的名次以 XML 原始顺序为准。展示哪些仓库由总结阶段决定，见 [开源项目](../references/summarize/projects.md)。
 
-Artificial Analysis 和 LLM Arena 不是 OPML。见 [模型与榜单](../references/prepare/models.md)。脚本在 `scripts/fetch_artificial_analysis.py` 和 `scripts/fetch_llm_arena.py`。
+Artificial Analysis 和 LLM Arena 不是 OPML。见 [模型与榜单](../references/prepare/models.md)。脚本在 `scripts/prepare/models/fetch_artificial_analysis.py` 和 `scripts/prepare/models/fetch_llm_arena.py`。
 
 [`ai-coding-blogs.meta.json`](ai-coding-blogs.meta.json) 只给 Agent 看：`lane`、退路、BestBlogs 对照、Olshansk 抓取源和过期 feed 说明。阅读器不需要 `lane`，OPML 里不写。
 
@@ -26,6 +26,6 @@ Artificial Analysis 和 LLM Arena 不是 OPML。见 [模型与榜单](../referen
 3. 还没有的话，到 [BestBlogs](https://github.com/ginobefun/BestBlogs) 的 `BestBlogs_RSS_Articles.opml`（以及根目录 `BestBlogs_RSS_ALL.opml`）里按域名找。对上了就写入 OPML。转换源可以订：`feedOrigin` 用 `bestblogs-rsshub`、`bestblogs-xgo` 或 `bestblogs-wechat2rss`，`bestblogs.adopted` 为 true，`fallback` 仍留 `list-page`。
 4. 上面都没有：OPML 不动，meta 里 `xmlUrl` 留空，`fallback` 写 `list-page`。列表页打不开再用浏览器。
 5. 给这条 source 写 `lane`（`product`、`tech` 或 `mixed`）。GitHub Trending 用 `special`。
-6. 改完后，用 skill「运行环境」里的 Python 3.12 跑 `../scripts/fetch_feeds.py --check`。
+6. 改完后，用 skill「运行环境」里的 Python 3.12 跑 `../scripts/prepare/articles/fetch_feeds.py --check`。
 
 播客和推文都不进这份 OPML。周报里「精选推文」「精选播客」先标建设中，不从这里采集。窗口里确有相关播客时，仍只在关键词或相关章节点名。

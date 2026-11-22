@@ -49,6 +49,9 @@
         }
       }
     },
+    "text": {
+      "type": "string"
+    },
     "effect": {
       "type": "object",
       "required": [

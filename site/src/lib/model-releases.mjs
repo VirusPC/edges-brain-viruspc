@@ -9,11 +9,19 @@ import path from 'node:path';
  */
 export function loadModelReleases(dataRoot, issueDate) {
   if (!dataRoot || !issueDate) return null;
-  const file = path.join(dataRoot, 'issues', issueDate, 'model-releases.json');
-  if (!fs.existsSync(file)) return null;
+  const dir = path.join(dataRoot, 'issues', issueDate, 'cleaned', 'models');
+  const indexPath = path.join(dir, 'index.json');
+  if (!fs.existsSync(indexPath)) return null;
   try {
-    const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
-    return Array.isArray(payload?.models) ? payload.models : [];
+    const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+    const ids = new Set(Array.isArray(index?.ids) ? index.ids : []);
+    const models = [];
+    for (const name of fs.readdirSync(dir).sort()) {
+      if (!name.endsWith('.json') || name === 'index.json') continue;
+      const model = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+      if (model && ids.has(model.id)) models.push(model);
+    }
+    return models;
   } catch {
     return null;
   }

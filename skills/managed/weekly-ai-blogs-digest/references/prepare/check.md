@@ -14,4 +14,4 @@ python3 scripts/prepare/check/validate.py issues/<生成日>
 
 同一期再跑准备时，覆盖 `raw/` 里对应文件。Git 保留旧提交。`cleaned/` 和 `summary/` 里引用了这次变化的条目随之失效，按依赖重做；没被引用的分支不动。
 
-现行脚本仍把结果写在期次根目录。根目录有文件，不等于 `raw/` 已经汇合完成。
+根目录有文件，不等于 `raw/` 已经汇合完成。

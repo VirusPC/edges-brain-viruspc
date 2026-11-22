@@ -6,10 +6,10 @@ import { formatISODate, noteDateFromName } from './select.mjs';
 
 const FILES = {
   'llm-arena': 'llm-arena.json',
-  aa: 'aa-language-models.json',
-  'openrouter-usage': 'openrouter-rankings-daily.json',
-  'openrouter-programming': 'openrouter-rankings-programming.json',
-  'openrouter-apps': 'openrouter-app-rankings.json',
+  aa: 'raw/models/aa-language-models.json',
+  'openrouter-usage': 'raw/models/openrouter-rankings-daily.json',
+  'openrouter-programming': 'raw/models/openrouter-rankings-programming.json',
+  'openrouter-apps': 'raw/models/openrouter-app-rankings.json',
 };
 
 const LABELS = {
@@ -203,7 +203,7 @@ export function seriesFromPayload(kind, payload, coverage, caption, catalog = nu
 function readArenaPayload(dataRoot, issueDate, caption, imageUrl) {
   const adopted = adoptedArenaDate(caption, imageUrl);
   if (!adopted) return null;
-  const dir = path.join(dataRoot, 'issues', issueDate);
+  const dir = path.join(dataRoot, 'issues', issueDate, 'raw', 'models');
   if (!fs.existsSync(dir)) return null;
   const files = fs.readdirSync(dir).filter((name) => /^llm-arena.*\.json$/i.test(name)).sort();
   /** @type {{ name: string, payload: any }[]} */

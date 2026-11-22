@@ -45,6 +45,9 @@
       "type": "string",
       "minLength": 1
     },
+    "text": {
+      "type": "string"
+    },
     "sections": {
       "type": "object",
       "additionalProperties": false,

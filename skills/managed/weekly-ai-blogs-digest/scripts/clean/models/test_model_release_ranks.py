@@ -17,7 +17,7 @@ from model_release_ranks import (  # noqa: E402
     speed_ranks,
 )
 
-FIXTURE = Path(__file__).resolve().parent / "fixtures" / "aa-intelligence-priced-2026-11-20.json"
+FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "aa-intelligence-priced-2026-11-20.json"
 
 
 def aa(slug: str, name: str, score: float, incoming: float, outgoing: float) -> dict:
