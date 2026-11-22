@@ -100,8 +100,8 @@ node scripts/build_keywords.mjs \
 
 选词只认快照里的连续片段，或 `model-releases.json` 的 `models[].name`。不读周报，也不把两件事拼成一个新词。
 
-- 新模型：`model-releases.json` 里的官方名。文件缺失或 `skipped` 时，只从发布标题里抽型号，例如 `Introducing …`、`正式发布`、`开源`、`上线`，或标题就以型号开头。`score` 为 5。`is now available in` 只是旧产品里上架，不抽。
-- 新产品：同一类标题里、窗口内第一次公开、而且不是阻断名单上的整词。`score` 为 4。`Codex`、`Claude Code`、`OpenRouter` 以及同类旧产品名（Cursor、Devin、Kiro、GitLab、ChatGPT、Claude、Gemini、Amp、Pierre、Kimi、千问、混元、LangSmith、llama.cpp、Grok Bot、DeepSeek、Octop）整词相等才排除。`Devin Bots` 这种新名字可以留。
+- 新模型：`model-releases.json` 里的官方名，以及发布标题里的型号，例如 `Introducing …`、`正式发布`、`开源`、`上线`，或标题就以型号开头。`score` 为 5。这两条路都先看更早一期的标题和正文：已经出现过的名字本期不收，预览过再正式上线也不再当新模型。`is now available in` 只是旧产品里上架，不抽。评测、benchmark、测试报告标题不抽模型名。名字里带 Security、Review、Code、Evaluation、Benchmark、Test、Tool 的版本名是功能或工具，算产品，不算模型。
+- 新产品：同一类标题里、窗口内第一次公开、而且不是阻断名单上的整词。`score` 为 4。`Codex`、`Claude Code`、`OpenRouter` 以及同类旧产品名（Cursor、Devin、Kiro、GitLab、ChatGPT、Claude、Gemini、Amp、Pierre、Kimi、千问、混元、LangSmith、llama.cpp、Grok Bot、DeepSeek、Octop）整词相等才排除。`Devin Bots` 这种新名字可以留。更早快照里已经出现过的名字不收。
 - 概念：至少两条标题里原样出现的说法。用快照里的词，不要把英文译成快照里没有的中文。`score` 为 3。
 
 `mentions` 是窗口内条目数。同一 link 用 `feeds.json` 和 `feeds-full.json` 里更长的 summary。`date` 必须落在 `feeds.json` 的 `window` 里。`linux-do-welfare` 不计数。`sources` 是这些条目链接的 hostname 数，同一主机只算一次。权重用 [榜单与图](04-榜单与图.md) 的公式，写进 `weight`。某条 mentions 为 0 就不收。

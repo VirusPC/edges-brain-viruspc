@@ -33,7 +33,8 @@ test('2026-11-20 tiers follow weight, not alphabetical order', () => {
   const json = body.match(/<!--\s*keywords-cloud\s*([\s\S]*?)-->/)[1];
   const words = JSON.parse(json).map((item) => ({ word: item.word, weight: keywordWeight(item) }));
   const tier = Object.fromEntries(assignWeightTiers(words).map((word) => [word.word, word.tier]));
-  assert.equal(tier['Qwen4-Max'], 'top');
+  assert.equal(tier['Gemini 4 Neon'], 'top');
+  assert.equal(words.some((word) => word.word === 'Qwen4-Max'), false);
   assert.equal(tier['GPT-6.2 Astra'], tier['GPT-6.2 Sol']);
   assert.equal(tier['Devin Bots'], tier['Devin Apps']);
   assert.equal(tier['GPT-6.2 Astra'], tier['Devin Bots']);
@@ -142,6 +143,7 @@ test('snapshot words lay out twice the same way when the bold font is installed'
   const second = cloud.renderKeywordCloudSvg(words, font, 1);
   assert.equal(first, second);
   assert.match(first, /class="kw-top"/);
-  assert.match(first, /Qwen4-Max/);
+  assert.match(first, /Gemini 4 Neon/);
+  assert.doesNotMatch(first, /Qwen4-Max/);
   assert.doesNotMatch(first, /<rect|fffcf7|filter=/i);
 });

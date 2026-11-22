@@ -96,6 +96,9 @@ const MODEL_SPAN =
 
 const TRAILING_NAME_STOP = new Set(["security", "evaluation", "results", "guide", "track", "features", "update"]);
 
+/** 名字里的这些词表示功能、工具或评测，不是新模型。 */
+const FEATURE_TOKENS = new Set(["security", "review", "code", "evaluation", "benchmark", "test", "tests", "tool", "tools"]);
+
 const GENERIC_CONCEPTS = new Set(
   `code review,software development,coding agent,frontier model,hugging face,open source,open models,machine learning,bedrock agentcore,devin desktop,devin security,devin cli,linked billing,claude platform,knowledge base,knowledge work,agentic software,agentic software development,managed knowledge base,managed knowledge`.split(
     ",",
@@ -113,13 +116,35 @@ function normalizeTitle(value) {
 }
 
 /**
+ * 评测、基准和测试报告不是模型发布。
+ * @param {string} title
+ */
+export function isEvaluationTitle(title) {
+  return /\b(evaluation|evaluations|benchmark|benchmarks)\b|评测|测评/i.test(normalizeTitle(title));
+}
+
+/**
+ * 带版本号的安全功能、评审工具、代码工具算产品。评测标题里抽到的名字也不是模型。
+ * @param {string} name
+ * @param {string} [title]
+ */
+export function releaseKind(name, title = "") {
+  const tokens = String(name || "")
+    .split(/\s+/)
+    .map((token) => token.toLowerCase());
+  if (tokens.some((token) => FEATURE_TOKENS.has(token)) || isEvaluationTitle(title)) return "product";
+  return "model";
+}
+
+/**
  * 只从发布标题里取型号，不从正文里的任意数字生长名字。
+ * 评测标题整条跳过，避免剥掉 Evaluation / Security 后留下残片。
  * @param {string} title
  * @returns {string[]}
  */
 export function modelNamesInTitle(title) {
   const clean = normalizeTitle(title);
-  if (!clean) return [];
+  if (!clean || isEvaluationTitle(clean)) return [];
   const clauses = [];
   const intro = clean.match(/^(?:Introducing:?|Announcing|Welcome)\s+(.+)$/i);
   if (intro) {
@@ -376,15 +401,15 @@ export function readModelReleases(issueDir) {
  * @param {string} issuesRoot
  * @param {string} issue
  */
-export function priorTitles(issuesRoot, issue) {
+export function priorTexts(issuesRoot, issue) {
   if (!issuesRoot || !existsSync(issuesRoot)) return [];
-  const titles = [];
+  const texts = [];
   for (const name of readdirSync(issuesRoot)) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(name) || name >= issue) continue;
     const loaded = readIssueEntries(path.join(issuesRoot, name));
-    for (const entry of loaded.entries) titles.push(entry.title);
+    for (const entry of loaded.entries) texts.push(entry.text || entry.title);
   }
-  return titles;
+  return texts;
 }
 
 /**
@@ -396,7 +421,7 @@ export function buildKeywordDocument(issuesRoot, issue, meta = {}) {
   const issueDir = path.join(issuesRoot, issue);
   const loaded = readIssueEntries(issueDir);
   const releases = readModelReleases(issueDir);
-  const earlier = priorTitles(issuesRoot, issue);
+  const earlier = priorTexts(issuesRoot, issue);
   const gaps = [];
   if (loaded.gap) gaps.push(loaded.gap);
   if (releases.gap) gaps.push(releases.gap);
@@ -423,18 +448,21 @@ export function buildKeywordDocument(issuesRoot, issue, meta = {}) {
     selected.set(key, { word: clean, kind, score: SCORES[kind] });
   };
 
-  for (const model of releases.models) add(model.name, "model");
+  const seenEarlier = (name) => earlier.some((text) => textHasWord(text, name));
+  for (const model of releases.models) {
+    if (seenEarlier(model.name)) continue;
+    add(model.name, "model");
+  }
 
   for (const entry of loaded.entries) {
     for (const name of modelNamesInTitle(entry.title)) {
-      if (earlier.some((title) => textHasWord(title, name))) continue;
-      if (/benchmark|基准/.test(entry.title)) add(name, "product");
-      else add(name, "model");
+      if (seenEarlier(name)) continue;
+      add(name, releaseKind(name, entry.title));
     }
     if (!(ANNOUNCE.test(entry.title) || startsWithModel(entry.title))) continue;
     if (modelNamesInTitle(entry.title).length) continue;
     for (const product of productNamesInTitle(entry.title)) {
-      if (earlier.some((title) => textHasWord(title, product))) continue;
+      if (seenEarlier(product)) continue;
       if ([...selected.values()].some((item) => item.kind === "model" && (textHasWord(product, item.word) || textHasWord(item.word, product)))) continue;
       if (modelNamesInTitle(entry.title).some((name) => textHasWord(product, name) || textHasWord(name, product))) continue;
       add(product, "product");
@@ -448,6 +476,8 @@ export function buildKeywordDocument(issuesRoot, issue, meta = {}) {
       return item.word.split(/\s+/).some((token) => token.length >= 5 && new RegExp(`(?:^|\\s)${token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\s|$)`, "i").test(phrase));
     })) continue;
     if (phrase.length < 2) continue;
+    const carriesOldName = phrase.split(/\s+/).some((token) => /\d/.test(token) && seenEarlier(token));
+    if (carriesOldName) continue;
     add(phrase, "concept");
   }
 

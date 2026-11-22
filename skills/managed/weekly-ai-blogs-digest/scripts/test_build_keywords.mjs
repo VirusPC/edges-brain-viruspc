@@ -3,7 +3,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { buildKeywordDocument, isBlockedProduct, modelNamesInTitle, textHasWord } from "./build_keywords.mjs";
+import {
+  buildKeywordDocument,
+  isBlockedProduct,
+  isEvaluationTitle,
+  modelNamesInTitle,
+  releaseKind,
+  textHasWord,
+} from "./build_keywords.mjs";
 import { keywordWeight } from "./keyword_cloud_style.mjs";
 
 test("a model title keeps the official spans and does not invent the other name", () => {
@@ -60,6 +67,53 @@ test("mentions and sources come from snapshot entries, not from a written digest
   assert.equal(byWord["software factory"].score, 3);
   assert.ok(byWord["software factory"].mentions >= 2);
   assert.equal(textHasWord("Introducing GPT-6.2 Astra and Sol", "GPT-6.2 Sol"), false);
+});
+
+test("a model-releases name already present in an earlier snapshot is not a new word", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "kw-prior-"));
+  writeIssue(root, "2026-11-13", "2026-11-06", "2026-11-12", [
+    item("Qwen4-Max 预览版上线，Qwen Code 1.0 Preview 发布", "2026-11-11", "https://qwen.ai/blog", "qwen"),
+  ]);
+  writeIssue(root, "2026-11-20", "2026-11-13", "2026-11-19", [
+    item("Qwen4-Max 正式上线", "2026-11-16", "https://qwen.ai/blog/max", "qwen", "Qwen4-Max is live."),
+    item("Qwen4-Max lands on one host", "2026-11-17", "https://example.com/a", "qwen"),
+    item("Qwen4-Max lands on another host", "2026-11-18", "https://example.com/b", "qwen"),
+  ]);
+  fs.writeFileSync(
+    path.join(root, "2026-11-20", "model-releases.json"),
+    JSON.stringify({
+      models: [{ name: "Qwen4-Max", release_url: "https://qwen.ai/blog/max" }],
+    }),
+  );
+  const doc = buildKeywordDocument(root, "2026-11-20");
+  assert.equal(doc.words.some((word) => word.word === "Qwen4-Max"), false);
+  assert.equal(doc.words.some((word) => word.word === "Qwen4-Max lands"), false);
+});
+
+test("versioned security, review, and code tools are products, and eval titles yield no model", () => {
+  assert.equal(isEvaluationTitle("GPT-6 Cyber Security Evaluation: CodeRabbit’s Results"), true);
+  assert.deepEqual(modelNamesInTitle("GPT-6 Cyber Security Evaluation: CodeRabbit’s Results"), []);
+  assert.equal(releaseKind("Devin Security 2.0", "Devin Security 2.0: Built for the new threat landscape"), "product");
+  assert.equal(releaseKind("Devin Review 2.0", "Introducing Devin Review 2.0"), "product");
+  assert.equal(releaseKind("Qwen Code 1.0 Preview", "Qwen Code 1.0 Preview 发布"), "product");
+  assert.equal(releaseKind("SWE-2 Flash", "Introducing SWE-2 Flash, our new fast coding model"), "model");
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "kw-kind-"));
+  writeIssue(root, "2026-11-06", "2026-10-30", "2026-11-05", [
+    item("Devin Security 2.0: Built for the new threat landscape", "2026-11-02", "https://devin.ai/security", "devin-blog"),
+    item("Introducing Devin Review 2.0: the best way to review PRs", "2026-11-05", "https://devin.ai/review", "devin-blog"),
+    item("Qwen4-Max 预览版上线，Qwen Code 1.0 Preview 发布", "2026-11-04", "https://qwen.ai/code", "qwen"),
+    item("GPT-6 Cyber Security Evaluation: CodeRabbit’s Results", "2026-11-05", "https://coderabbit.ai/eval", "coderabbit"),
+    item("Introducing SWE-2 Flash, our new fast coding model", "2026-11-04", "https://cognition.ai/swe", "cognition"),
+  ]);
+  const byWord = Object.fromEntries(buildKeywordDocument(root, "2026-11-06").words.map((word) => [word.word, word]));
+  assert.equal(byWord["Devin Security 2.0"].kind, "product");
+  assert.equal(byWord["Devin Security 2.0"].score, 4);
+  assert.equal(byWord["Devin Review 2.0"].kind, "product");
+  assert.equal(byWord["Qwen Code 1.0 Preview"].kind, "product");
+  assert.equal(byWord["GPT-6 Cyber"], undefined);
+  assert.equal(byWord["SWE-2 Flash"].kind, "model");
+  assert.equal(byWord["SWE-2 Flash"].score, 5);
 });
 
 /**
