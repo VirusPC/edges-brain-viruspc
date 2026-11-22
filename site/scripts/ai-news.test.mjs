@@ -79,7 +79,7 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   assert.doesNotMatch(october, /本期于 2026-11 按新版格式补录/);
   for (const [name, headings] of [
     ['2026-10-23-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
-    ['2026-10-30-ai-news.md', ['国内模型厂', '国外模型厂', '国外非模型厂']],
+    ['2026-10-30-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
     ['2026-11-06-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
     ['2026-11-13-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
   ]) {
@@ -87,8 +87,32 @@ test('keyword line and legacy article counts follow the digest shape', () => {
     const found = [...selected.matchAll(/^### (.+)$/gm)].map((match) => match[1]);
     assert.deepEqual(found, headings, name);
   }
+  const restored = [
+    ['2026-10-23-ai-news.md', 'https://claude.com/resources/articles/claude-security-now-scans-continuously-and-tracks-fixes'],
+    ['2026-10-23-ai-news.md', 'https://aws.amazon.com/blogs/machine-learning/discover-tools-at-runtime-with-aws-agent-registry/'],
+    ['2026-10-23-ai-news.md', 'https://blog.qoder.com/qoder-fasttech'],
+    ['2026-10-30-ai-news.md', 'https://tech.meituan.com/2026/10/29/AI-Coding-IN-Distributed-Storage-System.html'],
+    ['2026-10-30-ai-news.md', 'https://antigravity.google/blog/plugin-marketplace-in-antigravity'],
+    ['2026-11-06-ai-news.md', 'https://mp.weixin.qq.com/s?__biz=MzI1MzYzMjE0MQ==&mid=2247523892&idx=1&sn=f210923b89308ffa03e248ab36043d7b'],
+    ['2026-11-06-ai-news.md', 'https://mp.weixin.qq.com/s?__biz=MjM5ODYwMjI2MA==&mid=2649807992&idx=1&sn=821997daaf7926936b0b4f59fd82ceb0'],
+    ['2026-11-06-ai-news.md', 'https://aws.amazon.com/blogs/machine-learning/four-layers-of-context-engineering-for-production-ai-agents-how-deep-insight-applies-them-in-working-code/'],
+    ['2026-11-06-ai-news.md', 'https://ampcode.com/news/gitlab'],
+    ['2026-11-06-ai-news.md', 'https://kiro.dev/blog/spec-it-safe'],
+    ['2026-11-06-ai-news.md', 'https://www.warp.dev/blog/agent-code-review-bottleneck'],
+  ];
+  for (const [name, link] of restored) {
+    assert.match(fs.readFileSync(path.join(aiNewsRoot, name), 'utf8'), new RegExp(link.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  const issue1030 = fs.readFileSync(path.join(aiNewsRoot, '2026-10-30-ai-news.md'), 'utf8');
+  assert.equal(issue1030.includes('managed-deep-agents-browser-use-and-asynchronous-subagents'), false);
+  for (const notesName of ['2026-10-23-ai-news.notes.md', '2026-10-30-ai-news.notes.md', '2026-11-06-ai-news.notes.md']) {
+    assert.match(fs.readFileSync(path.join(aiNewsRoot, notesName), 'utf8'), /缺数据仍未恢复/);
+  }
+  const selectionRules = fs.readFileSync(path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/02-选文.md'), 'utf8');
+  assert.match(selectionRules, /没有篇数、来源组或公司上限/);
   const issue1113 = fs.readFileSync(path.join(aiNewsRoot, '2026-11-13-ai-news.md'), 'utf8');
   const issue1106 = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-news.md'), 'utf8');
+  assert.equal(issue1106.includes('agents-are-going-async'), false);
   for (const link of [
     'https://x.com/DeepSeekHarness/status/2116857257245987236',
     'https://x.com/DeepSeekHarness/status/2117256196227019194',
