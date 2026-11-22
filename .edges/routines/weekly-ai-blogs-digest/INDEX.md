@@ -32,7 +32,17 @@ description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-di
 
 - 交付：回到这条定时任务所在的对话。
 - 结果：周报 PR 写在本仓 `ai-news/`，快照 PR 写在 [VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data) 的 `issues/YYYY-MM-DD/`。两个 PR 都开着，不合并。回复里给出两个链接，以及这份快照缺了什么。
-- 生成来源：动手前把所选 ref 解析成的完整 commit，连同本文件路径 `.edges/routines/weekly-ai-blogs-digest/INDEX.md` 和 skill 路径 `skills/managed/weekly-ai-blogs-digest/SKILL.md`，写入 `summary/index.json` 的来源。数据快照用数据仓里已经存在的那次提交和 `issues/YYYY-MM-DD`，`kind` 为 `tree`。没解析到或没落库的一侧写 `null`。不要把即将提交的周报稿自己的 commit 填进去。格式见 Skill 的总结阶段。
+- 生成来源：动手前仍把所选 ref 解析成 commit，用来读取本入口和 Skill。`summary/index.json` 记 skill 名和 `version`，以及数据仓库已经落库的 commit。数据 commit 没有就写 `null`。不要把周报稿自己的提交填进去。格式见 Skill 的总结阶段。
+
+## 输入
+
+这些是 Skill「输入」一节的具体值。日程不在这里改。
+
+- **数据仓库**。[https://github.com/VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data)。基准 commit 缺省为默认分支最新提交。
+- **生成日**。运行当天的 Asia/Shanghai 日历日。这条任务是周五 09:00。
+- **密钥**。`AA_API_KEY` 和 `OPENROUTER_API_KEY`，只在 box 上。没有设置就按 Skill 跳过并记缺口。细则见下一节。
+- **补录**。默认为空。当次对话点名才有。
+- **上一期**。生成日之前最近的一个 `issues/` 目录。没有就不对照。
 
 ### 密钥
 
@@ -52,7 +62,7 @@ box 把不含密钥的 JSON 写到：
 
 `/cursor/stores/bot/ai-news-data/YYYY-MM-DD/`
 
-日期与周报生成日相同。这只是 box 到云端的交接，不是另一份真源。入库位置仍是数据仓的 `issues/YYYY-MM-DD/`。
+日期与周报生成日相同。这只是 box 到云端的交接，不是另一份真源。入库位置仍是数据仓的 `issues/<生成日>/`。
 
 ## 流程
 

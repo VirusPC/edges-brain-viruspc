@@ -35,9 +35,9 @@ python3.12 -m venv /tmp/weekly-ai-blogs-digest-py312
 ```bash
 PY=/tmp/weekly-ai-blogs-digest-py312/bin/python
 $PY scripts/fetch_feeds.py \
-  --since YYYY-MM-DD --until YYYY-MM-DD \
-  --out /path/to/ai-news-data/issues/YYYY-MM-DD/feeds.json \
-  --index-out /path/to/ai-news-data/issues/YYYY-MM-DD/feeds.index.json
+  --since <生成日的 D-7> --until <生成日的 D-1> \
+  --out issues/<生成日>/feeds.json \
+  --index-out issues/<生成日>/feeds.index.json
 ```
 
 这条命令今天仍写期次根目录。索引是给现行选文用的薄文件，不是 `cleaned/` 的候选清单。
