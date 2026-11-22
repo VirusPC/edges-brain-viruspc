@@ -1,7 +1,7 @@
 {
   "version": 1,
   "checkedAt": "2026-11-01",
-  "policy": "OPML 收录阅读器能导入的 feed。优先站点原生 RSS/Atom（feedOrigin=native）。没有可用原生 feed 时，可以订 Olshansk/rss-feeds 发布在 GitHub raw 上的抓取 RSS（feedOrigin=third-party-scrape-rss，约每小时更新），或 BestBlogs 对上的转换源（RSSHub、XGo.ing、Wechat2RSS），并保留列表页退路。已经有可用原生 feed 的站不要再并一份抓取源（OpenAI News、Google AI Blog 保持原生，不并入 Olshansk 的 openai_main / google_ai）。研究向和红队源（Anthropic research/red、Goodfire、FAR.AI、Eleuther、Transluce、Timaeus 等）不订。每条 source 有 lane：product、tech、mixed 或 special。同一发文方用 publisher 分组，role 为 primary 或 backup。备源是另一条 source，不写进 fallback。",
+  "policy": "OPML 收录阅读器能导入的 feed。优先站点原生 RSS/Atom（feedOrigin=native）。没有可用原生 feed 时，可以订 Olshansk/rss-feeds 发布在 GitHub raw 上的抓取 RSS（feedOrigin=third-party-scrape-rss，约每小时更新），或 BestBlogs 对上的转换源（RSSHub、XGo.ing、Wechat2RSS），并保留列表页退路。已经有可用原生 feed 的站不要再并一份抓取源（OpenAI News、Google AI Blog 保持原生，不并入 Olshansk 的 openai_main / google_ai）。研究向和红队源（Anthropic research/red、Goodfire、FAR.AI、Eleuther、Transluce、Timaeus 等）不订。每条 source 有 lane：product、tech、mixed 或 special。同一发文方用 publisher 分组，role 为 primary 或 backup。备源是另一条 source，不写进 fallback。 主源 feed 仍覆盖请求窗口时，不因官网还有列表就把官网并采。feed 报错、停更，或覆盖不到窗口（truncated）时，才用该条已经写明的备源和 listUrls。列表页没有正文就不要写成全文。",
   "lanes": {
     "product": "发布、功能、定价、面向用户的产品博客和 changelog。",
     "tech": "工程博客、实现、基础设施、深入的 how-to。",
@@ -155,7 +155,7 @@
         "adopted": false,
         "note": "旧博客主源仍是 Olshansk。备源是独立 source meta-ai-rsshub，不把 RSSHub 地址写进这条的 fallback。"
       },
-      "notes": "主源。Olshansk/rss-feeds 的 feed_meta_ai.xml（selenium 抓取，不是官网 RSS）。ai.meta.com/blog 在 2026-07-27 之后停更。2026-11-21 这份 XML 仍返回 200。内容混有 Muse 等产品，以及 SAM / DINO 等视觉帖。Muse 系列改看 meta-ai-research。不订 about.fb.com，也不订已不可用的 research.fb.com。"
+      "notes": "主源。Olshansk/rss-feeds 的 feed_meta_ai.xml（selenium 抓取，不是官网 RSS）。ai.meta.com/blog 在 2026-07-27 之后停更。2026-11-21 这份 XML 仍返回 200。内容混有 Muse 等产品，以及 SAM / DINO 等视觉帖。Muse 系列改看 meta-ai-research。不订 about.fb.com，也不订已不可用的 research.fb.com。 2026-11-22 抓了 https://ai.meta.com/blog/ ，页面里没有 2026-10 或 2026-11，列表退路补不到这三期。"
     },
     {
       "id": "meta-ai-rsshub",
@@ -193,7 +193,7 @@
         "adopted": false,
         "note": "research.meta.ai/blog 没有 RSS。"
       },
-      "notes": "Muse 系列主源。无 RSS，退路是列表页。2026-11-21 列表页 HTTP 200，sitemap https://research.meta.ai/sitemap.xml HTTP 200。sitemap 的 lastmod 与列表日期一致，例如 muse-ember 为 2026-11-09。这个日期只写在 notes 里，脚本不拉 sitemap。不订 research.fb.com。"
+      "notes": "Muse 系列主源。无 RSS，退路是列表页。2026-11-21 列表页 HTTP 200，sitemap https://research.meta.ai/sitemap.xml HTTP 200。sitemap 的 lastmod 与列表日期一致，例如 muse-ember 为 2026-11-09。这个日期只写在 notes 里，脚本不拉 sitemap。不订 research.fb.com。 2026-11-22 列表页仍是 HTTP 200。卡片日期 2026-10-28 的是 supporting-medical-scientific-research，与 sitemap lastmod 一致。没有 RSS 正文，只记标题、链接和卡片日期。"
     },
     {
       "id": "meta-engineering",
@@ -231,7 +231,7 @@
         "adopted": false,
         "note": "不订 trvny feedseek 的 xai.xml。"
       },
-      "notes": "主源。0xSMW/rss-feeds 的 feed_xai_news.xml，2026-11-21 HTTP 200。日期不可靠，且没有 incident-sweep。日期以官网列表或 https://x.ai/sitemap.xml 的 lastmod 为准。sitemap 对简单 HTTP 客户端 403，浏览器可打开。2026-11-21 用浏览器读到：incident-sweep 的 lastmod 是 2026-10-20；grok-bot-1-0 的 lastmod 是 2026-11-11，feed 写成 2026-11-02；grok-bot-accounting 的 lastmod 是 2026-11-16，与 feed 一致。备源是 xai-news-olshansk 和 xai-news-xgo。"
+      "notes": "主源。0xSMW/rss-feeds 的 feed_xai_news.xml，2026-11-21 HTTP 200。日期不可靠，且没有 incident-sweep。日期以官网列表或 https://x.ai/sitemap.xml 的 lastmod 为准。sitemap 对简单 HTTP 客户端 403，浏览器可打开。2026-11-21 用浏览器读到：incident-sweep 的 lastmod 是 2026-10-20；grok-bot-1-0 的 lastmod 是 2026-11-11，feed 写成 2026-11-02；grok-bot-accounting 的 lastmod 是 2026-11-16，与 feed 一致。备源是 xai-news-olshansk 和 xai-news-xgo。 2026-11-22 现场 sitemap 仍是 HTTP 403。Wayback 捕获 20261111062938 的 sitemap 为 200。用这份 lastmod 核对：incident-sweep 2026-10-20，partnernetworkannouncement 2026-10-22，grok-bot-sales 2026-10-27，data-bot 2026-11-02，grok-voice-3 2026-10-14。feed 里把几十条都标成 2026-10-20 的，lastmod 不在窗口就不要收。这个捕获只用来核日期，不是第二条 OPML。"
     },
     {
       "id": "xai-news-olshansk",
@@ -471,7 +471,7 @@
         "adopted": true,
         "note": "与原生 feed 相同。"
       },
-      "notes": "页面 alternate 即这份 feed，但条目只有标题和链接，没有正文，摘要要抓文章页。feed 也不是博客全量：2026-10-23～29 周报里的 litpivot 与 nemotron-transcribe-granary 不在 feed.xml。这一站用列表页对标题，只补 feed 里没有的链接。"
+      "notes": "页面 alternate 即这份 feed，但条目只有标题和链接，没有正文，摘要要抓文章页。feed 也不是博客全量：2026-10-23～29 周报里的 litpivot 与 nemotron-transcribe-granary 不在 feed.xml。这一站用列表页对标题，只补 feed 里没有的链接。 2026-11-22 当天博客列表已经没有 10 月中的 granite-speech-5、kumo-relational。Wayback 上同一列表页 20261022、20261030、20261105 的捕获里有 publishedAt。只补 feed 里没有、且发布日落在窗口内的标题和链接，不打开文章页。"
     },
     {
       "id": "aws-ml",
@@ -483,13 +483,13 @@
       "htmlUrl": "https://aws.amazon.com/blogs/machine-learning/",
       "xmlUrl": "https://aws.amazon.com/blogs/machine-learning/feed/",
       "feedOrigin": "native",
-      "fallback": null,
+      "fallback": "list-page",
       "bestblogs": {
         "matchedXmlUrl": "https://aws.amazon.com/blogs/amazon-ai/feed/",
         "adopted": true,
         "note": "BestBlogs 的 amazon-ai/feed/ 会 302 到这条 machine-learning feed。"
       },
-      "notes": "中文列表与英文博客是同一份 WordPress feed，大约只保留最近 20 篇。脚本若标 truncated，用列表页补窗口里更早的文章。"
+      "notes": "中文列表与英文博客是同一份 WordPress feed，大约只保留最近 20 篇。脚本若标 truncated，用列表页补窗口里更早的文章。 2026-11-22 核对：feed 与 ?paged=2、5、8 是同一份最近约 20 条；当天列表页也只有最近文章，补不回 10 月。历史窗口用同一 listUrls 在生成日附近的 Wayback 捕获，只收卡片上的 datetime 落在窗口内的标题和链接。卡片没有摘要，不把空简介写成全文。"
     },
     {
       "id": "sankalp",
@@ -884,7 +884,7 @@
         "adopted": true,
         "note": "BestBlogs Wechat2RSS，频道名「智谱」。官网研究列表只是退路，不是第二条 source。"
       },
-      "notes": "主源是微信。2026-11-21 HTTP 200，频道名「智谱」，最新一条是 2026-09-18，相对 11-19 已停更。没有官方 RSS。https://z.ai/blog 索引是 404，不作为列表页；单篇文章如 /blog/glm-legal 能打开，但是脚本壳。可用列表是 https://www.zhipuai.cn/zh/research 与 /en/research，2026-11-21 都是 HTTP 200，页面里最新日期约 2026-09-10，没有 11-13～11-19 的条目。主源停更后列表页也补不到本期窗口内的文章。"
+      "notes": "主源是微信。2026-11-21 HTTP 200，频道名「智谱」，最新一条是 2026-09-18，相对 11-19 已停更。没有官方 RSS。https://z.ai/blog 索引是 404，不作为列表页；单篇文章如 /blog/glm-legal 能打开，但是脚本壳。可用列表是 https://www.zhipuai.cn/zh/research 与 /en/research，2026-11-21 都是 HTTP 200，页面里最新日期约 2026-09-10，没有 11-13～11-19 的条目。主源停更后列表页也补不到本期窗口内的文章。 2026-11-22 抓了 https://www.zhipuai.cn/zh/research ，页面里没有 2026-10 或 2026-11 的日期，这三期窗口补不到研究列表条目。"
     },
     {
       "id": "stepfun",

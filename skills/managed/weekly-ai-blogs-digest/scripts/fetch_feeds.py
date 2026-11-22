@@ -6,10 +6,13 @@ holds agent-only notes (lane, fallback policy, BestBlogs match, hosts).
 ``publisher`` plus ``role`` (``primary`` / ``backup``) groups one publisher's
 feeds. A backup is its own source. When the primary errors, is empty, or its
 newest item is older than about a month, backup items are merged; otherwise
-they stay in the health report only. Sources without a usable feed are not in
-the OPML; this script lists them under ``fallbacks`` and does not scrape their
-HTML. A short feed body stays short: this script never opens the article page
-to fill it in.
+they stay in the health report only. A source that already declares
+``fallback: list-page`` is also listed in ``listFallback`` when it has no feed,
+or the feed errors, is empty, has stopped, or does not reach back to the
+window (``truncated``). A healthy feed is not listed there, so a WeChat primary
+that still covers the window is not paired with the official site. This script
+records that reason and does not open list pages or article pages. A short feed
+body stays short.
 
 Install: Python 3.12 venv, then ``pip install -r requirements.txt`` (feedparser).
 The skill section「运行环境」也把榜单依赖装进同一个环境。
@@ -543,6 +546,74 @@ def dedupe_items(items: list[dict]) -> list[dict]:
     return kept
 
 
+def sitemap_lastmods(xml: str) -> dict[str, str]:
+    """Map sitemap <loc> to YYYY-MM-DD. URLs without lastmod are omitted."""
+    rows: dict[str, str] = {}
+    for block in re.findall(r"<url>(.*?)</url>", xml, flags=re.S):
+        loc = re.search(r"<loc>([^<]+)</loc>", block)
+        modified = re.search(r"<lastmod>([^<]+)</lastmod>", block)
+        if loc and modified:
+            rows[loc.group(1).strip()] = modified.group(1).strip()[:10]
+    return rows
+
+
+def parse_aws_blog_cards(html: str) -> list[dict]:
+    """Title, link, and date from an AWS Machine Learning Blog index card. No article page."""
+    rows = []
+    for chunk in re.split(r'<h2 class="lb-bold blog-post-title">', html)[1:]:
+        href = re.search(r'href="([^"]+)"', chunk)
+        name = re.search(r'property="name headline">(.*?)</span>', chunk, flags=re.S)
+        stamp = re.search(r'datetime="([^"]+)"', chunk)
+        if not href or not stamp:
+            continue
+        url = href.group(1)
+        if url.startswith("/"):
+            url = "https://aws.amazon.com" + url
+        title = plain_text(name.group(1) if name else "")
+        rows.append({"title": title, "link": url, "date": stamp.group(1)[:10]})
+    return rows
+
+
+def parse_hf_blog_cards(page: str) -> list[dict]:
+    """Title, link, and published day from the blog index payload. No article page."""
+    rows = []
+    seen: set[str] = set()
+    pattern = re.compile(
+        r"publishedAt&quot;:&quot;(\d{4}-\d{2}-\d{2})T[^&]{0,40}&quot;"
+        r".{0,240}?slug&quot;:&quot;([A-Za-z0-9][A-Za-z0-9-]*)&quot;"
+        r".{0,80}?title&quot;:&quot;([^&]{1,240})&quot;"
+    )
+    for match in pattern.finditer(page):
+        slug = match.group(2)
+        title = html.unescape(match.group(3)).strip()
+        if slug in seen or "upvotes" in title or len(title) > 240:
+            continue
+        seen.add(slug)
+        window = page[match.end() : match.end() + 2500]
+        url_match = re.search(r"url&quot;:&quot;(/blog/[^&]*" + re.escape(slug) + r")&quot;", window)
+        link = "https://huggingface.co" + url_match.group(1) if url_match else f"https://huggingface.co/blog/{slug}"
+        rows.append({"title": title, "link": link, "date": match.group(1)})
+    return rows
+
+
+def list_fallback_reason(report: dict, source: dict, until: str) -> str | None:
+    """When an already declared list page may be used. A healthy feed stays the only source."""
+    if source.get("fallback") != "list-page":
+        return None
+    if not source.get("xmlUrl"):
+        return "no-feed"
+    if report.get("error"):
+        return "error"
+    issues = source_issues(report, until)
+    if "empty" in issues:
+        return "empty"
+    if "stopped" in issues:
+        return "stopped"
+    if report.get("truncated"):
+        return "truncated"
+    return None
+
+
 def source_issues(report: dict, until: str) -> list[str]:
     """报错、0 条、最新条目早于约一个月。快照源只看报错和 0 条。"""
     if report.get("error"):
@@ -638,6 +709,33 @@ def date_conflicts(items: list[dict]) -> list[dict]:
                 }
             )
     return conflicts
+
+
+def list_fallback_rows(reports: list[dict], meta: dict, until: str) -> list[dict]:
+    """Sources whose declared list page is in play. Healthy feeds are absent."""
+    rows = []
+    seen: set[str] = set()
+    by_id = {report["id"]: report for report in reports}
+    for source in meta["sources"]:
+        report = by_id.get(source["id"])
+        if report is None:
+            if source.get("fallback") == "list-page" and not source.get("xmlUrl"):
+                reason = "no-feed"
+            else:
+                continue
+        else:
+            reason = list_fallback_reason(report, source, until)
+        if not reason or source["id"] in seen:
+            continue
+        seen.add(source["id"])
+        rows.append(
+            {
+                "id": source["id"],
+                "reason": reason,
+                "listUrls": source.get("listUrls") or [],
+            }
+        )
+    return rows
 
 
 def fallback_rows(meta: dict) -> list[dict]:
@@ -816,6 +914,7 @@ def build_payload(reports: list[dict], meta: dict, since: str, until: str, elaps
             if row["issues"]
         ],
         "publisherFallback": groups,
+        "listFallback": list_fallback_rows(reports, meta, until),
         "dateConflicts": conflicts,
         "fallbacks": fallback_rows(meta),
         "items": items,
