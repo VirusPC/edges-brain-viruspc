@@ -99,7 +99,15 @@ test('keyword line and legacy article counts follow the digest shape', () => {
     ['2026-11-06-ai-news.md', 'https://ampcode.com/news/gitlab'],
     ['2026-11-06-ai-news.md', 'https://kiro.dev/blog/spec-it-safe'],
     ['2026-11-06-ai-news.md', 'https://www.warp.dev/blog/agent-code-review-bottleneck'],
+    ['2026-10-23-ai-news.md', 'https://aws.amazon.com/blogs/machine-learning/securing-ai-agent-identity-with-x-509-pki-on-aws/'],
+    ['2026-10-23-ai-news.md', 'https://aws.amazon.com/blogs/machine-learning/how-eon-built-multi-cloud-investigation-with-an-mcp-gateway-on-amazon-bedrock-agentcore/'],
+    ['2026-10-30-ai-news.md', 'https://openai.com/index/openai-servicenow-partnership-expansion'],
+    ['2026-11-06-ai-news.md', 'https://devin.ai/blog/hierarchical-budgets'],
   ];
+  assert.equal(fs.readFileSync(path.join(aiNewsRoot, '2026-10-23-ai-news.md'), 'utf8').includes('redesigning-source-control'), false);
+  const octoberNotes = fs.readFileSync(path.join(aiNewsRoot, '2026-10-23-ai-news.notes.md'), 'utf8');
+  assert.match(octoberNotes, /窗外：Scion/);
+  assert.match(octoberNotes, /RSS 日是 2026-10-19，不能覆盖官方日期/);
   for (const [name, link] of restored) {
     assert.match(fs.readFileSync(path.join(aiNewsRoot, name), 'utf8'), new RegExp(link.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
@@ -110,6 +118,8 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   }
   const selectionRules = fs.readFileSync(path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/02-选文.md'), 'utf8');
   assert.match(selectionRules, /没有篇数、来源组或公司上限/);
+  assert.match(selectionRules, /官方页面写了发布日或更新日，并且早于窗口时，以官方日期为准/);
+  assert.match(selectionRules, /短来源可以只写一句话，但这不是窗口例外/);
   const issue1113 = fs.readFileSync(path.join(aiNewsRoot, '2026-11-13-ai-news.md'), 'utf8');
   const issue1106 = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-news.md'), 'utf8');
   assert.equal(issue1106.includes('agents-are-going-async'), false);
