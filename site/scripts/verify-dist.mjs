@@ -366,6 +366,10 @@ assertCategoryPills(newestIssue, [
   ['架构', 'Super-agent 设计探索：迈向更自主的 Agent 系统'],
   ['实践', 'WorkBuddy'],
 ], []);
+assert.doesNotMatch(newestIssue, /\]\(https?:/);
+assert.match(newestIssue, /href="https:\/\/www\.bilibili\.com\/opus\/1265361021143351318"/);
+assert.match(newestIssue, /href="https:\/\/github\.com\/deepseek-ai\/dsh-superagent-prototype"/);
+assert.match(newestIssue, /href="https:\/\/cdn\.deepseek\.com\/harness\/dsh-creator-mode-prompt-collection-en\.html"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2116857257245987236"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2117256196227019194"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2119431663642153128"/);
