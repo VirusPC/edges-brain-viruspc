@@ -8,6 +8,7 @@ import { rehypeSidenotes } from './src/plugins/rehype-sidenotes.mjs';
 import { remarkCategoryPills } from './src/plugins/remark-category-pills.mjs';
 import { remarkCoverageWindow } from './src/plugins/remark-coverage-window.mjs';
 import { remarkLocalAssets } from './src/plugins/remark-local-assets.mjs';
+import { remarkKeywordCloud } from './src/plugins/remark-keyword-cloud.mjs';
 import { remarkModelCharts } from './src/plugins/remark-model-charts.mjs';
 import { remarkModelFacts } from './src/plugins/remark-model-facts.mjs';
 import { remarkSelectedArticles } from './src/plugins/remark-selected-articles.mjs';
@@ -30,7 +31,7 @@ export default defineConfig({
   markdown: {
     gfm: true,
     smartypants: false,
-    remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
+    remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkKeywordCloud, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
     rehypePlugins: [rehypeKeywordCloud, rehypeSidenotes, rehypeModelCharts, rehypeArticleCards, rehypeChapterWip],
   },
 });

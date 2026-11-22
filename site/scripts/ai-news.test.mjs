@@ -58,18 +58,19 @@ test('coverage is the seven days before the publish date', () => {
 test('keyword line and legacy article counts follow the digest shape', () => {
   const latest = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-news.md'), 'utf8');
   assert.equal(isLegacyIssue(latest), false);
-  assert.equal(summaryLine(latest, false), '交付闭环：OpenAI 收购 Pierre，Amp 接入 GitLab');
+  assert.equal(summaryLine(latest, false), '');
   assert.match(latest, /较上周无新榜/);
   assert.match(latest, /llm-arena-top15-2026-10-28-marked\.png/);
   assert.doesNotMatch(latest, /llm-arena-top15-2026-11-06/);
-  assert.match(latest, /keywords-cloud-2026-11-06\.png/);
+  assert.match(latest, /<!-- keywords-cloud/);
+  assert.doesNotMatch(latest, /keywords-cloud-2026-11-06\.png/);
 
   const september = fs.readFileSync(path.join(aiNewsRoot, '2026-09-25-ai-news.md'), 'utf8');
   assert.match(september, /较上周无新榜/);
   assert.match(september, /llm-arena-top15-2026-09-13-marked\.png/);
 
   const previous = fs.readFileSync(path.join(aiNewsRoot, '2026-10-30-ai-news.md'), 'utf8');
-  assert.equal(summaryLine(previous, false), 'Cursor 扩展供应链后门');
+  assert.equal(summaryLine(previous, false), '');
 
   for (const [name, keyword] of Object.entries(backfillKeywords)) {
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
@@ -198,7 +199,8 @@ test('item titles link to the source and quote blocks are gone', () => {
     latest,
     /^#### &lt;交付闭环&gt;&lt;OpenAI&gt;\[OpenAI 收购 Pierre\]\(https:\/\/openai\.com\/index\/openai-to-acquire-pierre\)$/m,
   );
-  assert.match(latest, /"word":"交付闭环","score":5,"mentions":2,"sources":2,"weight":4\.1/);
+  assert.match(latest, /"word": "SWE-2 Flash"[\s\S]*?"weight": 4\.2/);
+  assert.doesNotMatch(latest, /"word": "Codex"|"word": "Claude Code"|"word": "OpenRouter"|"word": "交付闭环"/);
   assert.doesNotMatch(latest, /^#### \[整体排名\]/m);
 });
 
