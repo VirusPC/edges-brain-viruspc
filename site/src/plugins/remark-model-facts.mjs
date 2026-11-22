@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { markdownPath, resolveAiNewsDataRoot } from '../lib/model-charts.mjs';
-import { factsHtmlForHeading, loadModelReleases } from '../lib/model-releases.mjs';
+import { emptyModelFacts, factsHtmlForHeading, loadModelReleases } from '../lib/model-releases.mjs';
 
 /**
  * Insert the generation-day price / speed / effect card under each model
@@ -16,6 +16,7 @@ export function remarkModelFacts(options = {}) {
     const issueDate = /^(\d{4}-\d{2}-\d{2})-ai-news\.md$/i.exec(path.basename(filePath))?.[1];
     if (!issueDate || !tree || !Array.isArray(tree.children)) return;
     const models = loadModelReleases(resolveAiNewsDataRoot(repoRoot), issueDate);
+    if (!Array.isArray(models)) return;
     insertModelFacts(tree, models);
   };
 }
@@ -26,7 +27,7 @@ export function remarkModelFacts(options = {}) {
  */
 export function insertModelFacts(tree, models) {
   const children = tree?.children;
-  if (!Array.isArray(children) || !models?.length) return;
+  if (!Array.isArray(children) || !Array.isArray(models)) return;
   let inSection = false;
   /** @type {{ index: number, html: string }[]} */
   const inserts = [];
@@ -43,7 +44,7 @@ export function insertModelFacts(tree, models) {
       continue;
     }
     if (!inSection || node.depth !== 4) continue;
-    const html = factsHtmlForHeading(text, models);
+    const html = factsHtmlForHeading(text, models) || emptyModelFacts(text);
     if (html) inserts.push({ index: index + 1, html });
   }
   for (const item of inserts.reverse()) {

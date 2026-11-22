@@ -73,10 +73,20 @@ test('keyword line and legacy article counts follow the digest shape', () => {
 
   const october = fs.readFileSync(path.join(aiNewsRoot, '2026-10-23-ai-news.md'), 'utf8');
   assert.equal(summaryLine(october, false), '');
-  assert.match(october, /<!-- keywords-cloud/);
-  assert.match(october, /"theme": true/);
+  assert.equal(isLegacyIssue(october), false);
+  assert.doesNotMatch(october, /<!-- keywords-cloud|Partner Network|## 一、本周关键词/);
   assert.match(october, /解决什么问题/);
   assert.doesNotMatch(october, /本期于 2026-11 按新版格式补录/);
+  for (const [name, headings] of [
+    ['2026-10-23-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
+    ['2026-10-30-ai-news.md', ['国内模型厂', '国外模型厂', '国外非模型厂']],
+    ['2026-11-06-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
+    ['2026-11-13-ai-news.md', ['国外模型厂', '国内非模型厂', '国外非模型厂']],
+  ]) {
+    const selected = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8').split(/^## 四、精选文章$/m)[1].split(/^## /m)[0];
+    const found = [...selected.matchAll(/^### (.+)$/gm)].map((match) => match[1]);
+    assert.deepEqual(found, headings, name);
+  }
 
   for (const [name, keyword] of Object.entries(backfillKeywords)) {
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');

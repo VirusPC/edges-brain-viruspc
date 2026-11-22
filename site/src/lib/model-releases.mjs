@@ -8,14 +8,14 @@ import path from 'node:path';
  * @param {string} issueDate
  */
 export function loadModelReleases(dataRoot, issueDate) {
-  if (!dataRoot || !issueDate) return [];
+  if (!dataRoot || !issueDate) return null;
   const file = path.join(dataRoot, 'issues', issueDate, 'model-releases.json');
-  if (!fs.existsSync(file)) return [];
+  if (!fs.existsSync(file)) return null;
   try {
     const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
     return Array.isArray(payload?.models) ? payload.models : [];
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -28,6 +28,16 @@ export function factsHtmlForHeading(heading, models) {
   const matched = models.filter((model) => tokens(model?.name || '').every((token) => headingTokens.includes(token)));
   if (matched.length === 0) return '';
   return matched.map((model) => renderModelFacts(model)).join('\n');
+}
+
+/**
+ * A model heading whose snapshot has no matching facts. All three rows stay empty.
+ *
+ * @param {string} heading
+ */
+export function emptyModelFacts(heading) {
+  const name = String(heading || '').trim() || '模型';
+  return renderModelFacts({ name });
 }
 
 /**
@@ -53,13 +63,16 @@ export function renderModelFacts(model) {
  */
 function priceRow(model) {
   const price = model?.price;
-  if (!price || (price.input == null && price.output == null && price.cache_read == null)) {
-    return { text: '暂无', source: '暂无' };
+  if (!price) return { text: '暂无', source: '暂无' };
+  if (price.input == null && price.output == null && price.cache_read == null) {
+    const alt = alternatePrice(price);
+    if (!alt) return { text: '暂无', source: '暂无' };
+    return { text: esc(`${alt}${rankSuffix(price, '更便宜')}`), source: priceSource(price) };
   }
   const bits = [
-    `输入 ${money(price.input)}`,
-    `输出 ${money(price.output)}`,
-    `缓存读 ${money(price.cache_read)}`,
+    `输入 ${money(price.input, price)}`,
+    `输出 ${money(price.output, price)}`,
+    `缓存读 ${money(price.cache_read, price)}`,
   ];
   if (Number(price.discount) > 0) bits.push(`含 ${Math.round(Number(price.discount) * 100)}% 折扣`);
   return { text: esc(`${bits.join(' · ')}${rankSuffix(price, '更便宜')}`), source: priceSource(price) };
@@ -134,11 +147,39 @@ function openRouterLabel(provider, median) {
 /**
  * @param {unknown} value
  */
-function money(value) {
+/**
+ * A priced measure that is not a token triple. Only fields the snapshot actually stores.
+ *
+ * @param {any} price
+ */
+function alternatePrice(price) {
+  if (price.video_720p_usd_per_second == null) return '';
+  return `${money(price.video_720p_usd_per_second, price)} / 秒（720p）`;
+}
+
+/**
+ * Missing currency stays `$`, which is how the existing USD rows were stored.
+ * CNY uses the yuan sign. Any other recorded code is written out.
+ *
+ * @param {unknown} value
+ * @param {any} [price]
+ */
+function money(value, price) {
   if (value == null || value === '') return '暂无';
   const n = Number(value);
   if (!Number.isFinite(n)) return '暂无';
-  return `$${formatNumber(n)}`;
+  return `${currencyMark(price)}${formatNumber(n)}`;
+}
+
+/**
+ * @param {any} [price]
+ */
+function currencyMark(price) {
+  const code = String(price?.currency_original || '').trim().toUpperCase();
+  const unit = String(price?.unit || '');
+  if (code === 'CNY' || (!code && /(?:^|[^A-Z])CNY(?:[^A-Z]|$)|人民币/.test(unit))) return '¥';
+  if (code === 'USD' || !code) return '$';
+  return `${code} `;
 }
 
 /**

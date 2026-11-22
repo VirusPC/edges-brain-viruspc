@@ -18,11 +18,15 @@ export function listAiNewsFiles(aiNewsRoot) {
 }
 
 /**
- * New issues have a 「一、本周关键词」 chapter. Older flat digests do not.
+ * Current issues have 「一、本周关键词」, or still use 「二、模型进展」 / 「四、精选文章」 when that chapter is omitted. Older flat digests do not.
  * @param {string} body
  */
 export function isLegacyIssue(body) {
-  return !/^##[ \t]*一、本周关键词[ \t]*$/m.test(body);
+  if (/^##[ \t]*一、本周关键词[ \t]*$/m.test(body)) return false;
+  // A current issue can omit the keyword chapter when the snapshot has no words.
+  if (/^##[ \t]*二、模型进展[ \t]*$/m.test(body)) return false;
+  if (/^##[ \t]*四、精选文章[ \t]*$/m.test(body)) return false;
+  return true;
 }
 
 /**
