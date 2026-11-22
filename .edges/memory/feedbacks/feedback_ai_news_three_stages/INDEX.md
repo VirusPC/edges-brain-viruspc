@@ -1,6 +1,8 @@
 ---
 name: feedback_ai_news_three_stages
-description: 改 AI 资讯周报流程时打开：三阶段产物是 raw、cleaned、summary；具体仓库和路径写在 routine，Skill 只声明输入名。
+description: >-
+  改 AI 资讯周报流程时打开：产物是 raw、cleaned、summary；规则版本是 Skill 的 semver；数据仓库只写 URL，站点不是
+  Skill 输入。
 metadata:
   edges-title: AI 资讯是准备、清洗、总结三阶段
   edges-type: feedback
@@ -8,13 +10,13 @@ metadata:
   edges-agent-client: cursor
   edges-username: Cursor Agent
   edges-email: cursoragent@cursor.com
-  edges-updated-at: '2026-11-22T16:37:28+00:00'
+  edges-updated-at: '2026-11-22T16:47:52+00:00'
 ---
 
-AI 资讯周报只有准备、清洗、总结三个阶段。一期数据是数据仓库本地检出下 `issues/<生成日>/` 的 `raw/`、`cleaned/`、`summary/`。阶段入口是 `references/prepare/prepare.md`、`references/clean/clean.md`、`references/summarize/summarize.md`，只串联子阶段。具体仓库、检出路径、生成日和 commit 由 routine 提供。Skill 只声明输入名、含义和缺省处理。
+AI 资讯周报只有准备、清洗、总结三个阶段。产出到数据仓库的 `issues/<生成日>/summary/` 为止。阶段入口是 `references/prepare/prepare.md`、`references/clean/clean.md`、`references/summarize/summarize.md`。规则版本是 Skill frontmatter 的 semver，加上 skill 名，不记规则仓库或 commit。数据仓库这项输入只有 URL，以及可选的基准 commit（缺省为默认分支最新）。站点渲染不是 Skill 输入。
 
 **Why:**
-2026-11-22 用户确认三阶段，产物目录定为 raw、cleaned、summary。随后要求入口保持简单，每个流程图内部节点各一个英文文件。选文在总结阶段，而且要先读候选正文。关键词等三路展示内容汇合后再提炼。同日又要求 Skill 不写死数据仓库等具体路径，由 routine 给值。
+2026-11-22 用户确认三阶段，产物目录定为 raw、cleaned、summary。随后要求 Skill 不写死具体仓库。同日又改为用 Skill 版本号标识规则，因为别的提交会让 commit 变而 Skill 未变。数据仓库输入收成 URL 和可选基准 commit。站点仓库从输入里删除，因为博客读 summary/ 是站点的事。
 
 **How to apply:**
-改阶段连接时改 SKILL.md。入口只写输入输出、顺序和并行，细则写在同目录的子阶段文件。数据目录写 raw、cleaned、summary，不要写成 usable、page，也不要拿来当处理入口文件名。不要把现行脚本和站点写成已经按这三个目录运行。Skill 正文和命令用输入名，例如数据仓库的本地检出、生成日。VirusPC/ai-news-data 这类具体值写在 `.edges/routines/weekly-ai-blogs-digest/INDEX.md`，不写进 Skill。
+改阶段连接时改 SKILL.md。入口只写输入输出、顺序和并行。数据目录写 raw、cleaned、summary。不要把现行脚本和站点写成已经按这三个目录运行。升版本按 Edges `packages/skills/README.md`：补丁 +0.0.1，行为或契约变 +0.1.0，不兼容 +1.0.0，并写同目录 CHANGELOG。具体数据仓库 URL 写在 `.edges/routines/weekly-ai-blogs-digest/INDEX.md`。

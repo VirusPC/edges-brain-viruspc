@@ -1,27 +1,32 @@
 ---
 name: weekly-ai-blogs-digest
-description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库的本地检出，只在有站点仓库时渲染最终页面。具体仓库和路径由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
+description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
+version: 0.1.0
 ---
 
 # AI 资讯周报
 
-生成日由输入「生成日」给出，记为 D。覆盖窗口是 D-7 到 D-1 的完整 UTC 日（含两端，不含 D）。一期数据放在输入「数据仓库」本地检出的 `issues/<生成日>/`，里面固定三个目录：`raw/`、`cleaned/`、`summary/`。同一期重跑就地更新这三个目录，Git 保留历史，不另建 run 目录。
+生成日由输入「生成日」给出，记为 D。覆盖窗口是 D-7 到 D-1 的完整 UTC 日（含两端，不含 D）。一期数据放在数据仓库的 `issues/<生成日>/`，里面固定三个目录：`raw/`、`cleaned/`、`summary/`。同一期重跑就地更新这三个目录，Git 保留历史，不另建 run 目录。
 
 ## 输入
 
-这里只声明需要哪些输入、各自是什么意思、缺了怎么处理。具体仓库、检出路径、日期和提交由调用方的 routine 入口给出，不写在本文件。当前定时任务的值见 [routine 入口](../../../.edges/routines/weekly-ai-blogs-digest/INDEX.md)。
+这里只声明需要哪些输入、各自是什么意思、缺了怎么处理。具体值由调用方的 routine 入口给出。当前定时任务见 [routine 入口](../../../.edges/routines/weekly-ai-blogs-digest/INDEX.md)。
 
-- **数据仓库**。远端是期次数据的 git 仓库。本地检出是脚本的输出根，一期写在 `<本地检出>/issues/<生成日>/`。没有远端或没有本地检出就停止，不改写到别的目录，也不用临时目录充数。
-- **生成日**。名为 D 的 `YYYY-MM-DD`。覆盖窗口是 D-7 到 D-1 的完整 UTC 日，含两端，不含 D。没有生成日就停止，不用运行时刻的当天代替。
-- **规则仓库**。仓库身份，以及写出这期数据时的 40 位 commit。`stage.json` 记这一对。没有解析到仓库或 commit 就停止，不用别的提交，也不用周报稿自己的提交。
-- **站点仓库**。只在渲染博客时需要。不渲染就不读它。要渲染却没有这个仓库就停止，不猜路径。
-- **密钥**。环境变量名是 `AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`）和 `OPENROUTER_API_KEY`。某个变量没有设置，就跳过依赖它的那份文件，在对应阶段的 `gaps.json` 写明原因。不写空文件，也不把跳过假装成有数据。
-- **补录**。可选。用户点名要补进这一期、但订阅里没有的条目。没有就不写 `raw/articles/backfill.json`。
-- **上一期**。可选。对照用的上一期期次及其文件版本。没有就不对照，不把上一期文件复制进本期。
+- **数据仓库**。仓库 URL。基准 commit 可选，缺省为默认分支最新提交。没有 URL 就停止。脚本在该仓库的工作副本里写 `issues/<生成日>/`。
+- **生成日**。D，`YYYY-MM-DD`。窗口是 D-7 到 D-1 的完整 UTC 日，含两端，不含 D。没有就停止，不用运行当天代替。
+- **密钥**。环境变量名是 `AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`）和 `OPENROUTER_API_KEY`。未设置就跳过对应文件，在 `gaps.json` 写明原因，不写空文件。
+- **补录**。可选。没有就不写 `raw/articles/backfill.json`。
+- **上一期**。可选。没有就不对照，不把上一期文件复制进本期。
 
-这是已确认的目标结构。采集脚本仍把文件写在期次根目录，博客仍读取站点仓库里的 `ai-news/*.md`。下面的目录树和 `schemas/` 是这份结构的契约，分阶段校验按它验收。旧期没有迁进这三个目录，站点也还没有改成只读 `summary/`。
+## 版本
 
-三阶段按顺序做。上一阶段汇合校验通过，才把目录交给下一阶段。阶段内部没有依赖的任务可以并行。上游或规则 commit 变了，只重算引用它的下游，再校验；没有引用关系的分支不动。不另做调度引擎或数据库。
+`version` 写在本文件 frontmatter，格式是 semver。`stage.json` 和 `summary/index.json` 记 skill 名 `weekly-ai-blogs-digest` 和这个版本。不记规则仓库，也不记规则 commit。edges 的 skill 版本约定没有内容哈希，这里也不加。
+
+改了本 skill 的 `SKILL.md`、scripts、references 或对外行为后，按 [Edges skills 目录规范](https://github.com/VirusPC/edges/blob/main/packages/skills/README.md) 升版本：补丁 +0.0.1，行为或契约变 +0.1.0，不兼容 +1.0.0。把同目录 `CHANGELOG.md` 里 `[Unreleased]` 下的条目挪到 `## [x.y.z] - YYYY-MM-DD`。对同一个 commit 打 annotated tag `skill/weekly-ai-blogs-digest@<version>`。没改到本 skill 就不升版本。
+
+这是已确认的目标结构。采集脚本仍把文件写在期次根目录，博客仍编译 `ai-news/*.md`。下面的目录树和 `schemas/` 是这份结构的契约，分阶段校验按它验收。旧期没有迁进这三个目录，站点也还没有改成只读 `summary/`。
+
+三阶段按顺序做。上一阶段汇合校验通过，才把目录交给下一阶段。阶段内部没有依赖的任务可以并行。上游或 Skill 版本变了，只重算引用它的下游，再校验；没有引用关系的分支不动。不另做调度引擎或数据库。
 
 ```mermaid
 flowchart LR
@@ -41,11 +46,11 @@ flowchart LR
 
 稳定内容 ID 跟着内容走：文章用规范化后的链接，项目用仓库地址，模型用官方名。榜单条目用榜单名加模型官方名。不用文件路径，也不用写入顺序。这里不另定哈希算法。
 
-每个阶段目录有 `stage.json` 和 `gaps.json`。`stage.json` 的 name 用目录名 `raw`、`cleaned` 或 `summary`，并记下规则仓库、40 位 commit，以及本阶段入口 `prepare.md`、`clean.md` 或 `summarize.md`。`gaps.json` 记下缺口和原因。来源引用写在各条文件里。空文件不能当成这份数据已经准备好。来源对不上或文件损坏时，记入缺口，不能标成可以正常渲染。
+每个阶段目录有 `stage.json` 和 `gaps.json`。`stage.json` 的 name 用目录名 `raw`、`cleaned` 或 `summary`，并记下 skill 名、`version`，以及本阶段入口 `prepare.md`、`clean.md` 或 `summarize.md`。`gaps.json` 记下缺口和原因。来源引用写在各条文件里。空文件不能当成这份数据已经准备好。来源对不上或文件损坏时，记入缺口，不能标成可以正常渲染。
 
 ## 数据存储
 
-一期数据在数据仓库本地检出的 `issues/<生成日>/`。完整目录如下。没有单独文件名的官方发布原文，抓不到就写进 `raw/gaps.json`。`feeds.index.json` 仍是现行选文用的薄文件，写在期次根目录，不属于这棵树。
+一期数据在数据仓库的 `issues/<生成日>/`。完整目录如下。没有单独文件名的官方发布原文，抓不到就写进 `raw/gaps.json`。`feeds.index.json` 仍是现行选文用的薄文件，写在期次根目录，不属于这棵树。
 
 ```text
 issues/YYYY-MM-DD/

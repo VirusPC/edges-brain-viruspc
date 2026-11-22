@@ -18,8 +18,9 @@ from clean.check.validate import validate as validate_clean  # noqa: E402
 from prepare.check.validate import validate as validate_prepare  # noqa: E402
 from summarize.check.validate import validate as validate_summary  # noqa: E402
 
-COMMIT = "a" * 40
 ISSUE = "2026-11-20"
+SKILL = "weekly-ai-blogs-digest"
+VERSION = "0.1.0"
 ARTICLE = "https://example.com/post"
 REPO = "https://github.com/example/demo"
 MODEL = "Example Model"
@@ -36,7 +37,7 @@ def write_json(path: Path, payload) -> None:
 
 
 def stage(name: str, entry: str) -> dict:
-    return {"name": name, "rules": {"repo": "example/rules", "commit": COMMIT, "path": entry}}
+    return {"name": name, "skill": SKILL, "version": VERSION, "path": entry}
 
 
 def write_issue(root: Path) -> Path:
@@ -149,7 +150,8 @@ def write_issue(root: Path) -> Path:
     write_json(
         summary / "index.json",
         {
-            "rules": {"commit": COMMIT},
+            "skill": SKILL,
+            "version": VERSION,
             "data": {"commit": None},
             "chapters": [
                 {"title": "本周关键词"},
@@ -209,7 +211,7 @@ class ValidateStages(unittest.TestCase):
     def test_schema_rejects_bad_stage_name(self) -> None:
         write_json(
             self.issue / "raw" / "stage.json",
-            {"name": "cleaned", "rules": {"repo": "example/rules", "commit": COMMIT, "path": PREPARE}},
+            {"name": "cleaned", "skill": SKILL, "version": VERSION, "path": PREPARE},
         )
         self.assertTrue(validate_prepare(self.issue))
 

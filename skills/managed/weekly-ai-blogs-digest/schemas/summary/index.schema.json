@@ -2,26 +2,18 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "rules",
+    "skill",
+    "version",
     "data",
     "chapters"
   ],
   "properties": {
-    "rules": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "commit"
-      ],
-      "properties": {
-        "commit": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[0-9a-f]{40}$"
-        }
-      }
+    "skill": {
+      "const": "weekly-ai-blogs-digest"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
     },
     "data": {
       "type": "object",

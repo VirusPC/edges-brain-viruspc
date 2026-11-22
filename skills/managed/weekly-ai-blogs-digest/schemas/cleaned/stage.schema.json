@@ -1,36 +1,26 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "name",
-    "rules"
+    "skill",
+    "version",
+    "path"
   ],
   "properties": {
     "name": {
       "const": "cleaned"
     },
-    "rules": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "repo",
-        "commit",
-        "path"
-      ],
-      "properties": {
-        "repo": {
-          "type": "string",
-          "minLength": 1
-        },
-        "commit": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{40}$"
-        },
-        "path": {
-          "const": "skills/managed/weekly-ai-blogs-digest/references/clean/clean.md"
-        }
-      }
+    "skill": {
+      "const": "weekly-ai-blogs-digest"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "path": {
+      "const": "skills/managed/weekly-ai-blogs-digest/references/clean/clean.md"
     }
-  },
-  "$schema": "https://json-schema.org/draft/2020-12/schema"
+  }
 }
