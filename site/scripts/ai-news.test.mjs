@@ -81,12 +81,36 @@ test('keyword line and legacy article counts follow the digest shape', () => {
     ['2026-10-23-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
     ['2026-10-30-ai-news.md', ['国内模型厂', '国外模型厂', '国外非模型厂']],
     ['2026-11-06-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
-    ['2026-11-13-ai-news.md', ['国外模型厂', '国内非模型厂', '国外非模型厂']],
+    ['2026-11-13-ai-news.md', ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']],
   ]) {
     const selected = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8').split(/^## 四、精选文章$/m)[1].split(/^## /m)[0];
     const found = [...selected.matchAll(/^### (.+)$/gm)].map((match) => match[1]);
     assert.deepEqual(found, headings, name);
   }
+  const issue1113 = fs.readFileSync(path.join(aiNewsRoot, '2026-11-13-ai-news.md'), 'utf8');
+  const issue1106 = fs.readFileSync(path.join(aiNewsRoot, '2026-11-06-ai-news.md'), 'utf8');
+  for (const link of [
+    'https://x.com/DeepSeekHarness/status/2116857257245987236',
+    'https://x.com/DeepSeekHarness/status/2117256196227019194',
+    'https://x.com/DeepSeekHarness/status/2119431663642153128',
+    'https://www.bilibili.com/opus/1265361021143351318',
+    'https://github.com/deepseek-ai/dsh-superagent-prototype',
+  ]) {
+    assert.match(issue1113, new RegExp(link.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.equal(issue1106.includes(link), false, link);
+  }
+  assert.match(issue1113, /补录 11 月 1 日/);
+  assert.match(issue1113, /补录 11 月 2 日/);
+  assert.match(issue1113, /^#### &lt;架构&gt;&lt;DeepSeek&gt;\[Super-agent/m);
+  assert.match(issue1113, /^#### &lt;产品&gt;&lt;DeepSeek&gt;\[Creator Mode/m);
+  assert.match(issue1113, /^#### &lt;产品&gt;&lt;DeepSeek&gt;\[与插件社区一起成长\]/m);
+  const opml = fs.readFileSync(path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml'), 'utf8');
+  const meta = JSON.parse(fs.readFileSync(path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.meta.json'), 'utf8'));
+  const harnessUrl = 'https://raw.githubusercontent.com/VirusPC/ai-x-feeds/main/feeds/DeepSeekHarness.xml';
+  assert.match(opml, new RegExp(harnessUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  const harness = meta.sources.find((source) => source.id === 'deepseek-harness');
+  assert.equal(harness.xmlUrl, harnessUrl);
+  assert.equal(meta.sources.some((source) => String(source.notes || '').includes('现在还没有')), false);
 
   for (const [name, keyword] of Object.entries(backfillKeywords)) {
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');

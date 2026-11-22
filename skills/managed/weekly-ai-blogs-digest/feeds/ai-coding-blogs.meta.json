@@ -341,7 +341,18 @@
         "adopted": true,
         "note": "BestBlogs Wechat2RSS。匹配名 DeepSeek / 深度求索。2026-11-01 用户指定订入。"
       },
-      "notes": "匹配名 DeepSeek / 深度求索。2026-11-01 核对 200，channel 标题是 DeepSeek，约 10 条。没有可抓的公众号列表页，所以不设 list-page 退路。这是唯一的 DeepSeek 品牌源：@deepseek_ai 的 XGo 时间线已去掉。不订 Olshansk（registry 里没有 DeepSeek）。dsh-superagent-prototype 的 commits Atom 已从订阅去掉，提交对周报太吵；releases.atom 当时是空的，也不订。之后留意 Harness 公众号或 @DeepSeekHarness 的稳定 RSS，现在还没有。"
+      "notes": "匹配名 DeepSeek / 深度求索。2026-11-01 核对 200，channel 标题是 DeepSeek，约 10 条。没有可抓的公众号列表页，所以不设 list-page 退路。微信是品牌公告源。@deepseek_ai 的 XGo 时间线已去掉。不订 Olshansk（registry 里没有 DeepSeek）。dsh-superagent-prototype 的 commits Atom 已从订阅去掉，提交对周报太吵；releases.atom 当时是空的，也不订。Harness 账号另有一条源 deepseek-harness。"
+    },
+    {
+      "id": "deepseek-harness",
+      "title": "DeepSeek Harness",
+      "lane": "product",
+      "listUrls": [],
+      "htmlUrl": "https://x.com/DeepSeekHarness",
+      "xmlUrl": "https://raw.githubusercontent.com/VirusPC/ai-x-feeds/main/feeds/DeepSeekHarness.xml",
+      "feedOrigin": "maintained-x-rss",
+      "fallback": null,
+      "notes": "自建源，收 @DeepSeekHarness 的帖子。2026-11-22 核对这份 RSS 含 2026-11-01 Super-agent、2026-11-02 Creator Mode、2026-11-08 插件社区。不是公众号，也不代替 dsh-superagent-prototype 的提交流。"
     },
     {
       "id": "cognition",

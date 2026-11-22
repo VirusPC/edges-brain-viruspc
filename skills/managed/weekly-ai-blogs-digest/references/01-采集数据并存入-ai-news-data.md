@@ -18,6 +18,7 @@
 | `model-releases.json` | 模型发布的价格、速度、智力指数，以及价格排名和速度排名。 |
 | `keywords.json` | 本期词云。词、种类、score、mentions、sources、weight，以及一条 `theme: true`。站点直接读 `words`。 |
 | `manifest.json` | 窗口、各文件来源、条数、字节数。不含密钥。 |
+| `user-backfill.json` | 用户点名补进这一期、但当时快照没有的条目。日期保持原发日。不并进 `feeds.json` 或 `feeds.index.json`，也不改 `keywords.json`。 |
 
 这周全文大约 1.7MB，大头是 Trending README。所以全文只存一份 `feeds.json`，再用小索引和 weekly/all 摘录给撰写步骤，避免每篇文章一个文件，也避免再存一份截断稿。
 
