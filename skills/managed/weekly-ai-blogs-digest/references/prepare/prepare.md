@@ -1,19 +1,10 @@
 # 数据准备
 
-本阶段确定窗口和入口，并行抓取，汇合后写入 `issues/YYYY-MM-DD/raw/`。不选文，不筛选项目，不写摘要，不抽关键词，也不整理数字。
+输入是生成日、订阅真源和用户给出的补录。输出是 `issues/YYYY-MM-DD/raw/`。
 
-窗口是生成日 D 的前 7 个完整 UTC 日到前 1 日，含两端，不含 D。日期写死在抓取命令里。
-
-三路同时开始，互不改写：
-
-- [文章与补录](articles.md)
-- [开源项目](projects.md)
-- [模型与榜单](models.md)
-
-GitHub 项目榜和模型榜分开保存，不能互相代替。
-
-三路都落盘，或在 `raw/gaps.json` 写明拿不到的原因之后，才算本阶段完成。空文件不能充数。`raw/stage.json` 记下本阶段规则 commit，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/prepare/prepare.md`。
-
-同一期再跑准备时，覆盖 `raw/` 里对应文件。Git 保留旧提交。`cleaned/` 和 `summary/` 里引用了这次变化的条目随之失效，按依赖重做；没被引用的分支不动。
-
-现行脚本仍把结果写在期次根目录，例如 `feeds.json`、`github-trending.json`。下面各页里的命令是这些脚本今天的用法。目标路径是 `raw/`，脚本还没有改过去。
+1. [确定窗口与入口](window.md)。
+2. 然后三路并行，互不改写：
+   - [文章与补录](articles.md)
+   - [开源项目](projects.md)
+   - [模型与榜单](models.md)
+3. [汇合校验](check.md)。

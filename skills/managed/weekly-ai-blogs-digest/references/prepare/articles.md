@@ -2,9 +2,8 @@
 
 订阅真源是 [`feeds/ai-coding-blogs.opml`](../../feeds/ai-coding-blogs.opml)，退路和备注在 [`feeds/ai-coding-blogs.meta.json`](../../feeds/ai-coding-blogs.meta.json)。研究向的源不要新加。已经有原生 feed 的站，不再并一份抓同一页的源。
 
-目标文件：
+窗口和订阅入口由 [确定窗口与入口](window.md) 写入 `raw/window.json`。本路的目标文件：
 
-- `raw/window.json`：窗口、订阅入口
 - `raw/articles/feeds.json`：feed 给出的正文，不截断
 - `raw/articles/backfill.json`：仅当用户点名补进这一期、但订阅里没有的条目
 

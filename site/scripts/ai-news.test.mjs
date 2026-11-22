@@ -317,7 +317,7 @@ test('published issues do not introduce the trending top-five sentence', () => {
   for (const rel of [
     'skills/managed/weekly-ai-blogs-digest/references/summarize/projects.md',
     'skills/managed/weekly-ai-blogs-digest/references/summarize/models.md',
-    'skills/managed/weekly-ai-blogs-digest/references/summarize/page.md',
+    'skills/managed/weekly-ai-blogs-digest/references/summarize/check.md',
     'ai-news/README.md',
   ]) {
     const text = fs.readFileSync(path.join(repoRoot, rel), 'utf8');

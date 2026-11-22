@@ -1,15 +1,15 @@
 # 数据总结
 
-只读本期 `cleaned/`。先并行写出三路展示内容，汇合之后才提炼关键词，最后做整页校验，写入 `issues/YYYY-MM-DD/summary/`。汇合和关键词都在这一阶段里面，不是第四阶段。
+输入是本期 `cleaned/`。输出是 `issues/YYYY-MM-DD/summary/`。
 
-三路等层级，互不代替：
+三路等层级、并行，互不代替：
 
 - [精选文章](articles.md)
 - [开源项目](projects.md)
 - [模型经验与榜单](models.md)
 
-每条展示内容在并行阶段就有稳定 ID、标题、摘要或正文、数据与来源。三路收齐以后，才按 [关键词](keywords.md) 从这些展示内容提炼词，并记下到具体 ID 的映射。关键词不能和三路同时做，也不能用全量候选正文提前抽词。
+然后按这个顺序：
 
-整页校验见 [页面](page.md)。三路内容必须还在；关键词不能替换它们。缺了内容 ID 的映射不能用旧稿补上。
-
-`summary/stage.json` 记下规则 commit，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/summarize/summarize.md`。说不清的条目写入 `summary/gaps.json`。
+1. [汇合三路展示内容](merge.md)
+2. [关键词](keywords.md)
+3. [整页校验](check.md)
