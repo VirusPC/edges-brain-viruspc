@@ -14,7 +14,11 @@ export function wordsFromDocument(data) {
   for (const item of list) {
     const word = String(item?.word ?? '').trim();
     if (!word) continue;
-    words.push({ word, weight: keywordWeight({ ...item, word }) });
+    words.push({
+      word,
+      weight: keywordWeight({ ...item, word }),
+      theme: item.theme === true,
+    });
   }
   return words;
 }
@@ -34,8 +38,14 @@ export function wordsFromComment(markdown) {
   }
 }
 
+function hasTheme(words) {
+  return words.some((word) => word.theme);
+}
+
 /**
- * Prefer the snapshot file. The comment is only the copy step 4 wrote from it.
+ * A snapshot that already records theme wins. Until that file is published,
+ * the digest comment is the cleaned copy and must not lose to an older snapshot
+ * that still sizes words by category score.
  * @param {string | null} dataRoot
  * @param {string} issueDate
  * @param {string} markdown
@@ -44,15 +54,19 @@ export function loadKeywordWords(dataRoot, issueDate, markdown) {
   const file = dataRoot && issueDate
     ? path.join(dataRoot, 'issues', issueDate, 'keywords.json')
     : '';
+  let snapshot = [];
   if (file && fs.existsSync(file)) {
     try {
-      const words = wordsFromDocument(JSON.parse(fs.readFileSync(file, 'utf8')));
-      if (words.length) return words;
+      snapshot = wordsFromDocument(JSON.parse(fs.readFileSync(file, 'utf8')));
     } catch {
-      // Fall through to the comment copied from the same snapshot.
+      snapshot = [];
     }
   }
-  return wordsFromComment(markdown);
+  const comment = wordsFromComment(markdown);
+  if (hasTheme(snapshot)) return snapshot;
+  if (hasTheme(comment)) return comment;
+  if (snapshot.length) return snapshot;
+  return comment;
 }
 
 /**

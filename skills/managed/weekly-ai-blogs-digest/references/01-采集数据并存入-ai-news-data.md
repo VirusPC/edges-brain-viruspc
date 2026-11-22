@@ -16,7 +16,7 @@
 | `openrouter-*.json` | 日用量、编程用量、应用用量；coding 应用榜只作旁路。 |
 | `openrouter-official-endpoints.json` | 有智力指数且能对上一个 OpenRouter 模型 id 的官方标准档端点。速度排名用这里的 latency p50。 |
 | `model-releases.json` | 模型发布的价格、速度、智力指数，以及价格排名和速度排名。 |
-| `keywords.json` | 本期词云。词、种类、score、mentions、sources、weight。站点直接读 `words`。 |
+| `keywords.json` | 本期词云。词、种类、score、mentions、sources、weight，以及一条 `theme: true`。站点直接读 `words`。 |
 | `manifest.json` | 窗口、各文件来源、条数、字节数。不含密钥。 |
 
 这周全文大约 1.7MB，大头是 Trending README。所以全文只存一份 `feeds.json`，再用小索引和 weekly/all 摘录给撰写步骤，避免每篇文章一个文件，也避免再存一份截断稿。
@@ -104,7 +104,9 @@ node scripts/build_keywords.mjs \
 - 新产品：同一类标题里、窗口内第一次公开、而且不是阻断名单上的整词。`score` 为 4。`Codex`、`Claude Code`、`OpenRouter` 以及同类旧产品名（Cursor、Devin、Kiro、GitLab、ChatGPT、Claude、Gemini、Amp、Pierre、Kimi、千问、混元、LangSmith、llama.cpp、Grok Bot、DeepSeek、Octop）整词相等才排除。`Devin Bots` 这种新名字可以留。更早快照里已经出现过的名字不收。
 - 概念：至少两条标题里原样出现的说法。用快照里的词，不要把英文译成快照里没有的中文。`score` 为 3。
 
-`mentions` 是窗口内条目数。同一 link 用 `feeds.json` 和 `feeds-full.json` 里更长的 summary。`date` 必须落在 `feeds.json` 的 `window` 里。`linux-do-welfare` 不计数。`sources` 是这些条目链接的 hostname 数，同一主机只算一次。权重用 [榜单与图](04-榜单与图.md) 的公式，写进 `weight`。某条 mentions 为 0 就不收。
+`mentions` 是窗口内条目数。同一 link 用 `feeds.json` 和 `feeds-full.json` 里更长的 summary。`date` 必须落在 `feeds.json` 的 `window` 里。`linux-do-welfare` 不计数。`sources` 是这些条目链接的 hostname 数，同一主机只算一次。热度用 [榜单与图](04-榜单与图.md) 的公式，写进 `weight`。某条 mentions 为 0 就不收。
+
+主题在这一步选定，写在其中一条的 `theme: true`。只在概念里选：`sources` 更高的优先，相同再比 `mentions`。型号和产品即使 `score` 更高也不占这个字段。没有概念就不标主题。清洗可以把已经选中的那条概念写成读者表达，但证据短语必须就是这条概念，不能另造一个语料里没有的话题。渲染不猜主题。
 
 `keywords.json` 的 `words` 是站点要读的数组。每项有 `word`、`kind`（`model`、`product`、`concept`）、`score`、`mentions`、`sources`、`weight`。`gaps` 写这一期缺了什么，例如没有 `model-releases.json`。
 

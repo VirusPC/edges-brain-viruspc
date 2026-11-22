@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import {
+  applyThemeLabel,
   buildKeywordDocument,
   isBlockedProduct,
   isEvaluationTitle,
@@ -65,7 +66,14 @@ test("mentions and sources come from snapshot entries, not from a written digest
   assert.equal(byWord["Gemini 4 Carbon"], undefined);
   assert.equal(byWord["software factory"].kind, "concept");
   assert.equal(byWord["software factory"].score, 3);
+  assert.equal(byWord["software factory"].theme, true);
+  assert.equal(byWord["GPT-6.2 Sol"].theme, undefined);
+  assert.equal(byWord["GPT-6.2 Astra"].theme, undefined);
   assert.ok(byWord["software factory"].mentions >= 2);
+  assert.equal(
+    keywordWeight({ score: 5, mentions: 3, sources: 3 }),
+    keywordWeight({ score: 3, mentions: 3, sources: 3 }),
+  );
   assert.equal(textHasWord("Introducing GPT-6.2 Astra and Sol", "GPT-6.2 Sol"), false);
 });
 
@@ -114,6 +122,50 @@ test("versioned security, review, and code tools are products, and eval titles y
   assert.equal(byWord["GPT-6 Cyber"], undefined);
   assert.equal(byWord["SWE-2 Flash"].kind, "model");
   assert.equal(byWord["SWE-2 Flash"].score, 5);
+  assert.equal(byWord["SWE-2 Flash"].theme, undefined);
+});
+
+test("a new model's category score does not take the theme from a wider concept", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "kw-theme-"));
+  writeIssue(root, "2026-11-13", "2026-11-06", "2026-11-12", [
+    item("Introducing Claude Fable 5.2", "2026-11-09", "https://www.anthropic.com/fable", "anthropic", "Claude Fable 5.2"),
+    item("Claude Fable 5.2 on a second host", "2026-11-10", "https://aws.amazon.com/fable", "aws-ml", "Claude Fable 5.2"),
+    item("Claude Fable 5.2 on a third host", "2026-11-11", "https://devin.ai/fable", "devin-blog", "Claude Fable 5.2"),
+    item("The components of agent memory", "2026-11-06", "https://www.anthropic.com/memory", "anthropic", "Agent Memory"),
+    item("Context Engineering (Agent Memory) for AI Agents", "2026-11-10", "https://www.langchain.com/memory", "langchain", "Agent Memory"),
+    item("Managed Deep Agents v0.10", "2026-11-07", "https://www.langchain.com/deep", "langchain", "Deep Agents"),
+    item("How Stripe Built Kai on Deep Agents", "2026-11-10", "https://www.langchain.com/kai", "langchain", "Deep Agents again"),
+  ]);
+  fs.writeFileSync(
+    path.join(root, "2026-11-13", "model-releases.json"),
+    JSON.stringify({ models: [{ name: "Claude Fable 5.2", release_url: "https://www.anthropic.com/fable" }] }),
+  );
+  const doc = buildKeywordDocument(root, "2026-11-13");
+  const theme = doc.words.filter((word) => word.theme);
+  assert.equal(theme.length, 1);
+  assert.equal(theme[0].kind, "concept");
+  assert.notEqual(theme[0].word, "Claude Fable 5.2");
+  const model = doc.words.find((word) => word.word === "Claude Fable 5.2");
+  assert.equal(model.score, 5);
+  assert.equal(model.theme, undefined);
+  assert.equal(model.weight, keywordWeight({ mentions: model.mentions, sources: model.sources }));
+  assert.throws(
+    () => applyThemeLabel(doc.words, { evidence: "not the theme", word: "别的话题" }),
+    /对不上/,
+  );
+});
+
+test("a theme label replaces only the evidenced concept", () => {
+  const words = [
+    { word: "Gemini 4 Neon", kind: "model", score: 5, mentions: 3, sources: 3, weight: 4.2 },
+    { word: "always-on agents", kind: "concept", score: 3, mentions: 3, sources: 3, weight: 4.2, theme: true },
+  ];
+  applyThemeLabel(words, { evidence: "always-on agents", word: "常驻 Agent" });
+  assert.equal(words.filter((word) => word.theme).length, 1);
+  assert.equal(words.find((word) => word.theme).word, "常驻 Agent");
+  assert.equal(words.find((word) => word.theme).evidence, "always-on agents");
+  assert.equal(words.some((word) => word.word === "always-on agents"), false);
+  assert.equal(words.find((word) => word.word === "Gemini 4 Neon").theme, undefined);
 });
 
 /**

@@ -23,19 +23,43 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * 热度。种类分（新型号 5、新产品 4、概念 3）不进这个数，避免基础分把型号撑成视觉中心。
+ * 已写入的 weight 直接用，那是清洗时算好的热度。
+ */
 export function keywordWeight(item) {
   if (item.weight != null && item.weight !== "") {
     const weight = Number(item.weight);
     if (!Number.isFinite(weight)) throw new Error(`权重不是数字: ${item.word}`);
     return clamp(round1(weight), 1, 5);
   }
-  const score = item.score == null ? 1 : Number(item.score);
   const mentions = item.mentions == null ? 0 : Number(item.mentions);
   const sources = item.sources == null ? 0 : Number(item.sources);
-  if (![score, mentions, sources].every(Number.isFinite)) throw new Error(`分数或计数不是数字: ${item.word}`);
+  if (![mentions, sources].every(Number.isFinite)) throw new Error(`分数或计数不是数字: ${item.word}`);
   const mentionPart = (Math.min(mentions, 4) / 4) * 5;
   const sourcePart = (Math.min(sources, 3) / 3) * 5;
-  return clamp(round1(0.6 * score + 0.25 * mentionPart + 0.15 * sourcePart), 1, 5);
+  return clamp(round1(0.625 * mentionPart + 0.375 * sourcePart), 1, 5);
+}
+
+/** 主题比最热的支撑词大这么多像素，橙色档才是视觉中心。 */
+export const THEME_SIZE_LEAD = 8;
+
+/**
+ * 字号。有 theme 时主题最大；没有 theme 时不另造一个最大词。
+ * @param {{ word: string, weight?: number, theme?: boolean, mentions?: number, sources?: number, score?: number }[]} words
+ */
+export function withVisualSizes(words) {
+  const prepared = words.map((word) => ({
+    ...word,
+    theme: word.theme === true,
+    weight: keywordWeight(word),
+  }));
+  const support = prepared.filter((word) => !word.theme).map((word) => fontSize(word.weight));
+  const maxSupport = support.length ? Math.max(...support) : fontSize(1);
+  return prepared.map((word) => ({
+    ...word,
+    size: word.theme ? maxSupport + THEME_SIZE_LEAD : fontSize(word.weight),
+  }));
 }
 
 export function fontSize(weight) {
@@ -43,30 +67,27 @@ export function fontSize(weight) {
 }
 
 /**
- * 按权重从高到低分四档。最高权重是 top。
- * 其余不同权重按 high、mid、low 尽量均分，多出来的名额给更重的档。
- * 权重相同的词一定同一档。
- * @param {{ word: string, weight: number }[]} words
+ * 橙色 top 只给 theme: true。没有主题字段时不把最热的词升成 top。
+ * 支撑词按热度分 high、mid、low。同一热度同一档。多出来的名额给更热的档。
+ * @param {{ word: string, weight: number, theme?: boolean }[]} words
  */
 export function assignWeightTiers(words) {
-  const unique = [...new Set(words.map((word) => word.weight))].sort((a, b) => b - a);
-  const tierOf = new Map();
-  if (unique.length) tierOf.set(unique[0], "top");
-  const rest = unique.slice(1);
+  const weightTier = new Map();
+  const unique = [...new Set(words.filter((word) => !word.theme).map((word) => word.weight))].sort((a, b) => b - a);
   const bands = ["high", "mid", "low"];
-  const base = Math.floor(rest.length / bands.length);
-  let extra = rest.length % bands.length;
+  const base = Math.floor(unique.length / bands.length);
+  let extra = unique.length % bands.length;
   let cursor = 0;
   for (const band of bands) {
     const count = base + (extra > 0 ? 1 : 0);
     if (extra > 0) extra -= 1;
-    for (let index = 0; index < count; index += 1) {
-      tierOf.set(rest[cursor], band);
+    for (let index = 0; index < count && cursor < unique.length; index += 1) {
+      weightTier.set(unique[cursor], band);
       cursor += 1;
     }
   }
   return words.map((word) => {
-    const tier = tierOf.get(word.weight);
+    const tier = word.theme ? "top" : weightTier.get(word.weight);
     if (!TIER_NAMES.includes(tier)) throw new Error(`没有档位: ${word.word}`);
     return { ...word, tier };
   });
@@ -92,6 +113,7 @@ export function renderCloudSvg(preset, font, placed, width, height, originX, ori
     placed.map((word) => ({
       word: word.text,
       weight: word.datum?.weight ?? word.weight,
+      theme: word.datum?.theme === true || word.theme === true,
     })),
   );
   const tierOf = new Map(tiered.map((word) => [word.word, word.tier]));

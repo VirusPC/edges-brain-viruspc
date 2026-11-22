@@ -4,7 +4,8 @@
  *
  * 输入是 JSON [{word, weight}]，或周报 markdown 里「一、本周关键词」章。
  * 章内若有 <!-- keywords-cloud ... -->，其中的 JSON 数组优先。
- * 已有 weight 就直接用；否则按 score、mentions、sources 计算。
+ * 已有 weight 就直接用；否则按 mentions、sources 算热度。种类分不进字号。
+ * theme: true 的词是清洗时写好的主题，渲染只消费这个字段。
  * sources 在写入 JSON 时按标题链接和短述行内链接的 hostname 计数
  * （scripts/source_hostnames.mjs）。这里不从正文重算，避免链接换位置后把已有 weight 清掉。
  *
@@ -26,10 +27,11 @@ import {
   fontSize,
   keywordWeight,
   renderCloudSvg,
+  withVisualSizes,
 } from "./keyword_cloud_style.mjs";
 
 export { sourceHostnames } from "./source_hostnames.mjs";
-export { assignWeightTiers, fontSize, keywordWeight, renderCloudSvg, CROP_PADDING };
+export { assignWeightTiers, fontSize, keywordWeight, renderCloudSvg, withVisualSizes, CROP_PADDING };
 
 const PALETTES = {
   "ink-sans": {
@@ -158,7 +160,11 @@ function normalizeWord(item) {
   const word = String(item.word ?? item.text ?? "").trim();
   if (!word) fail("有一条关键词是空的");
   try {
-    return { word, weight: keywordWeight({ ...item, word }) };
+    return {
+      word,
+      weight: keywordWeight({ ...item, word }),
+      theme: item.theme === true,
+    };
   } catch (error) {
     fail(error.message);
   }
@@ -233,12 +239,13 @@ function layoutWords(words, font, seed, width, height) {
     .size([width, height])
     .overflow(false)
     .random(mulberry32(seed));
-  const ranked = [...words].sort(
-    (a, b) => fontSize(b.weight) - fontSize(a.weight) || a.word.localeCompare(b.word, "zh"),
+  const sized = withVisualSizes(words);
+  const ranked = [...sized].sort(
+    (a, b) => b.size - a.size || a.word.localeCompare(b.word, "zh"),
   );
   const placed = [];
   for (const word of ranked) {
-    const size = fontSize(word.weight);
+    const size = word.size;
     let sprite;
     try {
       sprite = layout.getSprite(word.word, {
