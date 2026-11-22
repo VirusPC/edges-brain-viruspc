@@ -16,6 +16,7 @@
 | `openrouter-*.json` | 日用量、编程用量、应用用量；coding 应用榜只作旁路。 |
 | `openrouter-official-endpoints.json` | 有智力指数且能对上一个 OpenRouter 模型 id 的官方标准档端点。速度排名用这里的 latency p50。 |
 | `model-releases.json` | 模型发布的价格、速度、智力指数，以及价格排名和速度排名。 |
+| `keywords.json` | 本期词云。词、种类、score、mentions、sources、weight。站点直接读 `words`。 |
 | `manifest.json` | 窗口、各文件来源、条数、字节数。不含密钥。 |
 
 这周全文大约 1.7MB，大头是 Trending README。所以全文只存一份 `feeds.json`，再用小索引和 weekly/all 摘录给撰写步骤，避免每篇文章一个文件，也避免再存一份截断稿。
@@ -83,6 +84,29 @@ $PY scripts/model_release_ranks.py \
 速度排名用官方端点目录的 `latency_s`，和卡片上的秒数同一口径，不用 AA 的 `performance`。更低更好，竞争排名。分母是目录里有 latency p50 的模型。目录 skipped、缺文件，或这条没有 latency，则 `speed.rank` 为 null。
 
 两条排名都写 `rank`、`rank_of`、`rank_metric`、`rank_source`。价格另写 `rank_value`（混合价）和 `rank_variant`（AA 变体名）。不要改已经写好的智力指数名次，也不要改卡片上的价格数字和速度数字。
+
+关键词也在这一步写好。条目先落盘，再从这些条目里选词，不要等周报正文：
+
+```bash
+node scripts/build_keywords.mjs \
+  --issues-root /path/to/ai-news-data/issues \
+  --issue YYYY-MM-DD \
+  --out /path/to/ai-news-data/issues/YYYY-MM-DD/keywords.json \
+  --snapshot-commit <这一期快照的完整 SHA> \
+  --snapshot-ref <分支或 main>
+```
+
+`--issues-root` 下面更早的 `YYYY-MM-DD/` 用来判断一个名字是不是窗口前就公开了。没有更早目录时，`gaps` 里写明，不要假装已经排除过。
+
+选词只认快照里的连续片段，或 `model-releases.json` 的 `models[].name`。不读周报，也不把两件事拼成一个新词。
+
+- 新模型：`model-releases.json` 里的官方名。文件缺失或 `skipped` 时，只从发布标题里抽型号，例如 `Introducing …`、`正式发布`、`开源`、`上线`，或标题就以型号开头。`score` 为 5。`is now available in` 只是旧产品里上架，不抽。
+- 新产品：同一类标题里、窗口内第一次公开、而且不是阻断名单上的整词。`score` 为 4。`Codex`、`Claude Code`、`OpenRouter` 以及同类旧产品名（Cursor、Devin、Kiro、GitLab、ChatGPT、Claude、Gemini、Amp、Pierre、Kimi、千问、混元、LangSmith、llama.cpp、Grok Bot、DeepSeek、Octop）整词相等才排除。`Devin Bots` 这种新名字可以留。
+- 概念：至少两条标题里原样出现的说法。用快照里的词，不要把英文译成快照里没有的中文。`score` 为 3。
+
+`mentions` 是窗口内条目数。同一 link 用 `feeds.json` 和 `feeds-full.json` 里更长的 summary。`date` 必须落在 `feeds.json` 的 `window` 里。`linux-do-welfare` 不计数。`sources` 是这些条目链接的 hostname 数，同一主机只算一次。权重用 [榜单与图](04-榜单与图.md) 的公式，写进 `weight`。某条 mentions 为 0 就不收。
+
+`keywords.json` 的 `words` 是站点要读的数组。每项有 `word`、`kind`（`model`、`product`、`concept`）、`score`、`mentions`、`sources`、`weight`。`gaps` 写这一期缺了什么，例如没有 `model-releases.json`。
 
 相信这份订阅。采集不因为正文偏短去打开文章页。feed 里是简介，快照里就记简介。
 

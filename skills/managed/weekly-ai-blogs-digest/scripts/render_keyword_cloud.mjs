@@ -278,6 +278,36 @@ export function placeKeywords(words, font, seed = 1) {
   return null;
 }
 
+/**
+ * 站点构建用。测量字体是 Noto Sans CJK SC 粗体，中低档只在上色时改字重。
+ * @param {{ word: string, weight: number }[]} words
+ * @param {{ fontFile: string, fontFamily: string, fontWeight: number }} font
+ * @param {number} [seed]
+ */
+export function renderKeywordCloudSvg(words, font, seed = 1) {
+  if (!GlobalFonts.has(font.fontFamily)) {
+    const registered = GlobalFonts.registerFromPath(font.fontFile, font.fontFamily);
+    if (!registered) throw new Error(`无法注册字体: ${font.fontFile}`);
+  }
+  let packed = null;
+  for (const [width, height] of LAYOUT_BOXES) {
+    packed = layoutWords(words, font, seed, width, height);
+    if (packed) break;
+  }
+  if (!packed) throw new Error(`放不下: ${words.map((word) => word.word).join("、")}`);
+  return renderPacked({ tiers: INK_TIERS }, font, packed).svg;
+}
+
+/**
+ * @returns {{ fontFile: string, fontFamily: string, fontWeight: number } | null}
+ */
+export function inkMeasurementFont() {
+  const preset = PALETTES["ink-sans"];
+  const fontFile = preset.fontFiles.find((file) => existsSync(file));
+  if (!fontFile) return null;
+  return { fontFile, fontFamily: preset.fontFamily, fontWeight: preset.fontWeight };
+}
+
 function renderPacked(preset, font, packed) {
   const [min, max] = packed.bounds;
   const width = Math.ceil(max.x - min.x) + CROP_PADDING * 2;

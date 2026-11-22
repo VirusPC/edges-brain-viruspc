@@ -6,8 +6,8 @@
 
 ## 已归档周报
 
-- [2026-11-20 AI 资讯](2026-11-20-ai-news.md) — 覆盖 2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC）。附 Arena 2026-11-18 快照图（红圈 Gemini 4 Neon）。关键词：GPT-6.2 Astra、Gemini 4 Neon、GPT-6.2 Sol、Qwen4-Max、常驻 Agent、Devin Bots。GitHub Trending 用 2026-11-20 15:56（UTC+8）的 weekly / all 前 5。模型进展的榜单按 Artificial Analysis、LLM Arena、OpenRouter 排列，模型条目直接写在这一章，没有「模型发布」标题。
-- [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06～2026-11-12。附 Arena 2026-11-11 快照图，以及 OpenRouter 本周用量、编程用量、应用用量。关键词：Claude Fable 5.2、Gemini 4 Hydrogen、多 Agent 编排、Qwen Code 1.0。GitHub Trending 用 2026-11-12 15:55（UTC+8）的 daily / all 前 5。补录 11 月 1 日 DeepSeek Harness Super-agent 架构文与 11 月 2 日 Creator Mode。
+- [2026-11-20 AI 资讯](2026-11-20-ai-news.md) — 覆盖 2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC）。附 Arena 2026-11-18 快照图（红圈 Gemini 4 Neon）。关键词：Qwen4-Max、Gemini 4 Neon、GPT-6.2 Astra、GPT-6.2 Sol、Devin Bots、always-on agents。GitHub Trending 用 2026-11-20 15:56（UTC+8）的 weekly / all 前 5。模型进展的榜单按 Artificial Analysis、LLM Arena、OpenRouter 排列，模型条目直接写在这一章，没有「模型发布」标题。
+- [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06～2026-11-12。附 Arena 2026-11-11 快照图，以及 OpenRouter 本周用量、编程用量、应用用量。关键词：Claude Fable 5.2、Gemini 4 Hydrogen、Claude Mythos 5.2、Qwen4-Max、Qwen Code 1.0 Preview。GitHub Trending 用 2026-11-12 15:55（UTC+8）的 daily / all 前 5。补录 11 月 1 日 DeepSeek Harness Super-agent 架构文与 11 月 2 日 Creator Mode。
 - [2026-11-06 AI 资讯](2026-11-06-ai-news.md) — 覆盖 2026-10-30～2026-11-05；按新模版重跑。Arena 复用 2026-10-28 的图（较上周无新榜）。
 - [2026-10-30 AI 资讯](2026-10-30-ai-news.md) — 覆盖 2026-10-23～2026-10-29；按新模版重跑，附 Arena 2026-10-28 快照图。
 - [2026-10-23 AI 资讯](2026-10-23-ai-news.md) — 覆盖 2026-10-16～2026-10-22；2026-11 按订阅重跑。关键词：MiniMax M3.1 Flash，DeepSeek V4.1 Flash。附 Arena 2026-10-22 快照图。

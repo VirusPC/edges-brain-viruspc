@@ -6,6 +6,9 @@
     "node": ">=22"
   },
   "scripts": {
+    "predev": "node scripts/ensure-keyword-font.mjs",
+    "prebuild": "node scripts/ensure-keyword-font.mjs",
+    "pretest": "node scripts/ensure-keyword-font.mjs",
     "dev": "node scripts/ensure-ai-news-data.mjs && astro dev",
     "build": "node scripts/ensure-ai-news-data.mjs && astro build && node scripts/verify-dist.mjs",
     "preview": "astro preview --host 127.0.0.1",

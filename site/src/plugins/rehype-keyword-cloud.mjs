@@ -96,12 +96,19 @@ function cloudNode(image, dir) {
  */
 export function cloudHtml(svg, alt) {
   const label = escapeHtml(alt.trim() || '本周关键词');
+  let art = String(svg).replace(/^\uFEFF?<\?xml[^>]*\?>\s*/, '');
+  if (!art.includes('class="keyword-cloud-art"')) {
+    art = art.replace(
+      /<svg\b/,
+      '<svg class="keyword-cloud-art" focusable="false" aria-hidden="true"',
+    );
+  }
   return `<div class="keyword-cloud">
 <svg class="keyword-cloud-outline" aria-hidden="true" focusable="false">
 <rect></rect>
 </svg>
 <div class="keyword-cloud-art-wrap" role="img" aria-label="${label}">
-${svg}
+${art}
 </div>
 </div>`;
 }
