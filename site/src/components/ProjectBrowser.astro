@@ -1,0 +1,271 @@
+---
+import ProjectCrumbs from './ProjectCrumbs.astro';
+import ProjectIcon from './ProjectIcon.astro';
+import { CONTENT_KIND_LABEL } from '../lib/projects.mjs';
+import { formatISODate } from '../lib/select.mjs';
+import { githubBlob, siteUrl } from '../lib/paths';
+
+interface DocRow {
+  id: string;
+  routeId: string;
+  title: string;
+  date?: Date | null;
+  kind: 'md' | 'pdf';
+  contentKind: string;
+  sourcePath: string;
+}
+
+interface PreviewProject {
+  id: string;
+  title: string;
+  meta: string;
+  date?: Date | null;
+}
+
+interface ProjectRow {
+  id: string;
+  title: string;
+  meta: string;
+  date?: Date | null;
+  expandable: boolean;
+  previewProjects: PreviewProject[];
+  previewDocuments: DocRow[];
+  moreProjects: number;
+  moreDocuments: number;
+}
+
+interface Ancestor {
+  id: string;
+  title: string;
+}
+
+interface Model {
+  id: string | null;
+  title: string;
+  intro: string;
+  ancestors: Ancestor[];
+  meta: string;
+  date?: Date | null;
+  children: ProjectRow[];
+  documents: DocRow[];
+}
+
+interface Props {
+  model: Model;
+  showStatement?: boolean;
+}
+
+const { model, showStatement = false } = Astro.props;
+
+function domId(prefix: string, id: string) {
+  return `${prefix}-${encodeURIComponent(id).replaceAll('%', '_')}`;
+}
+
+function iso(date?: Date | null) {
+  return date instanceof Date && !Number.isNaN(date.getTime()) ? formatISODate(date) : '';
+}
+
+function projectHref(id: string) {
+  return siteUrl(`/projects/${id}`);
+}
+
+function docHref(doc: DocRow) {
+  return doc.kind === 'pdf' ? githubBlob(doc.sourcePath) : siteUrl(`/projects/${doc.routeId}`);
+}
+
+function iconName(kind: string): 'note' | 'task' | 'memory' | 'doc' | 'attachment' {
+  if (kind === 'note' || kind === 'task' || kind === 'memory' || kind === 'attachment') return kind;
+  return 'doc';
+}
+
+function kindLabel(kind: string) {
+  return CONTENT_KIND_LABEL[kind as keyof typeof CONTENT_KIND_LABEL] || CONTENT_KIND_LABEL.doc;
+}
+
+const crumbs = model.id
+  ? [
+      { label: 'Projects', href: siteUrl('/projects') },
+      ...model.ancestors.map((item) => ({ label: item.title, href: projectHref(item.id) })),
+      { label: model.title, current: true },
+    ]
+  : [];
+
+const pageDate = iso(model.date);
+---
+
+<section class="project-browser" data-project-browser>
+  {crumbs.length > 0 ? <ProjectCrumbs items={crumbs} /> : null}
+  <div class="project-heading">
+    <h1>{model.title}</h1>
+    {
+      showStatement ? (
+        <button
+          type="button"
+          class="project-statement-toggle"
+          data-project-statement
+          aria-expanded="false"
+          aria-controls="project-statement"
+        >
+          <ProjectIcon name="doc" />
+          <span>项目说明</span>
+        </button>
+      ) : null
+    }
+  </div>
+  {model.intro ? <p class="project-intro">{model.intro}</p> : null}
+  {
+    model.id && (model.meta || pageDate) ? (
+      <p class="project-summary">
+        {model.meta ? <span>{model.meta}</span> : null}
+        {pageDate ? (
+          <time datetime={pageDate} aria-label={`内容日期 ${pageDate}`}>
+            {pageDate}
+          </time>
+        ) : null}
+      </p>
+    ) : null
+  }
+  {
+    showStatement ? (
+      <div id="project-statement" class="project-statement prose" hidden>
+        <slot name="statement" />
+      </div>
+    ) : null
+  }
+  {
+    model.children.length > 0 ? (
+      <ol class="project-rows" id={model.id ? 'project-children' : undefined}>
+        {model.children.map((row) => {
+          const panelId = domId('preview', row.id);
+          const rowDate = iso(row.date);
+          return (
+            <li class="project-row">
+              <div class="project-row-main">
+                {row.expandable ? (
+                  <button
+                    type="button"
+                    class="project-chevron"
+                    data-project-toggle={row.id}
+                    data-project-title={row.title}
+                    aria-expanded="false"
+                    aria-controls={panelId}
+                    aria-label={`展开 ${row.title}`}
+                  >
+                    <ProjectIcon name="chevron" />
+                  </button>
+                ) : null}
+                <a class="project-title" href={projectHref(row.id)}>
+                  <ProjectIcon name="folder" />
+                  <span class="project-title-text">{row.title}</span>
+                  <ProjectIcon name="arrow" />
+                </a>
+                {rowDate ? (
+                  <time class="project-date" datetime={rowDate} aria-label={`内容日期 ${rowDate}`}>
+                    {rowDate}
+                  </time>
+                ) : <span class="project-date" />}
+                {row.meta ? <p class="project-counts">{row.meta}</p> : null}
+              </div>
+              {
+                row.expandable ? (
+                  <div id={panelId} class="project-panel" data-project-panel hidden>
+                    {
+                      row.previewProjects.length === 0 && row.previewDocuments.length === 0 ? (
+                        <p class="project-empty">暂无直属内容</p>
+                      ) : (
+                        <>
+                          {row.previewProjects.length > 0 ? (
+                            <ol class="project-rows">
+                              {row.previewProjects.map((child) => {
+                                const childDate = iso(child.date);
+                                return (
+                                  <li class="project-row is-preview">
+                                    <div class="project-row-main">
+                                      <a class="project-title" href={projectHref(child.id)}>
+                                        <ProjectIcon name="folder" />
+                                        <span class="project-title-text">{child.title}</span>
+                                        <ProjectIcon name="arrow" />
+                                      </a>
+                                      {childDate ? (
+                                        <time class="project-date" datetime={childDate} aria-label={`内容日期 ${childDate}`}>
+                                          {childDate}
+                                        </time>
+                                      ) : <span class="project-date" />}
+                                      {child.meta ? <p class="project-counts">{child.meta}</p> : null}
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ol>
+                          ) : null}
+                          {row.previewDocuments.length > 0 ? (
+                            <ol class="project-docs">
+                              {row.previewDocuments.map((doc) => {
+                                const docDate = iso(doc.date);
+                                return (
+                                  <li class="project-doc">
+                                    {docDate ? (
+                                      <time datetime={docDate} aria-label={`内容日期 ${docDate}`}>
+                                        {docDate}
+                                      </time>
+                                    ) : <span class="project-date" />}
+                                    <a href={docHref(doc)}>
+                                      <ProjectIcon name={iconName(doc.contentKind)} />
+                                      <span class="visually-hidden">{kindLabel(doc.contentKind)}</span>
+                                      <span>{doc.title}</span>
+                                    </a>
+                                  </li>
+                                );
+                              })}
+                            </ol>
+                          ) : null}
+                          {row.moreProjects > 0 ? (
+                            <a class="project-more" href={`${projectHref(row.id)}#project-children`}>查看全部子项目</a>
+                          ) : null}
+                          {row.moreDocuments > 0 ? (
+                            <a class="project-more" href={`${projectHref(row.id)}#project-documents`}>查看全部直属内容</a>
+                          ) : null}
+                        </>
+                      )
+                    }
+                  </div>
+                ) : null
+              }
+            </li>
+          );
+        })}
+      </ol>
+    ) : null
+  }
+  {
+    model.documents.length > 0 ? (
+      <ol class="project-docs" id={model.id ? 'project-documents' : undefined}>
+        {model.documents.map((doc) => {
+          const docDate = iso(doc.date);
+          return (
+            <li class="project-doc">
+              {docDate ? (
+                <time datetime={docDate} aria-label={`内容日期 ${docDate}`}>
+                  {docDate}
+                </time>
+              ) : <span class="project-date" />}
+              <a href={docHref(doc)}>
+                <ProjectIcon name={iconName(doc.contentKind)} />
+                <span class="visually-hidden">{kindLabel(doc.contentKind)}</span>
+                <span>{doc.title}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    ) : null
+  }
+  {
+    model.id && model.children.length === 0 && model.documents.length === 0 ? (
+      <p class="project-empty">暂无直属内容</p>
+    ) : null
+  }
+</section>
+<script>
+  import '../scripts/project-browser.mjs';
+</script>

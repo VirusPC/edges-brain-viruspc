@@ -25,16 +25,9 @@ interface Props {
   items?: Item[];
   groups?: YearGroup[];
   empty?: string;
-  /** Projects page only. Notes and posts leave this off and stay expanded. */
-  collapseGroups?: boolean;
 }
 
-const { title, description, items = [], groups = [], empty = '', collapseGroups = false } = Astro.props;
-
-function articleCount(group: YearGroup) {
-  if (group.months) return group.months.reduce((sum, month) => sum + month.items.length, 0);
-  return group.items?.length ?? 0;
-}
+const { title, description, items = [], groups = [], empty = '' } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -54,26 +47,8 @@ function articleCount(group: YearGroup) {
         );
         return (
           <section class="archive-year">
-            {collapseGroups ? (
-              <details class="project-fold">
-                <summary>
-                  <span class="project-fold-line">
-                    <span class="project-fold-toggle">
-                      <span class="project-fold-open-label">展开</span>
-                      <span class="project-fold-close-label">收起</span>
-                    </span>
-                    <h2>{group.heading}</h2>
-                    <span class="project-fold-count">{articleCount(group)}</span>
-                  </span>
-                </summary>
-                {body}
-              </details>
-            ) : (
-              <>
-                <h2>{group.heading}</h2>
-                {body}
-              </>
-            )}
+            <h2>{group.heading}</h2>
+            {body}
           </section>
         );
       })

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { listAiNewsFiles } from '../src/lib/ai-news.mjs';
 import { giscusReady } from '../src/lib/reader-feedback.mjs';
 import { FIXTURE_ID, listDatedNoteDirs } from '../src/lib/select.mjs';
-import { listProjectDocuments } from '../src/lib/projects.mjs';
+import { buildProjectCatalog, listProjectDocuments } from '../src/lib/projects.mjs';
 
 const siteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = path.resolve(siteRoot, '..');
@@ -125,25 +125,28 @@ const projectDocs = listProjectDocuments(path.join(repoRoot, 'projects'));
 const postsPage = fs.readFileSync(path.join(dist, 'posts/index.html'), 'utf8');
 assert.match(postsPage, /class="post-list"|class="empty"/);
 
+const projectCatalog = buildProjectCatalog(path.join(repoRoot, 'projects'));
+const projectBrowserRels = new Set(projectCatalog.projects.map((project) => `projects/${project.id}/index.html`));
 const projectPage = fs.readFileSync(path.join(dist, 'projects/index.html'), 'utf8');
-assert.match(projectPage, /class="post-list"/);
-assert.match(projectPage, /class="archive-year"/);
-assert.match(projectPage, /<details class="project-fold">/);
-assert.match(projectPage, /class="project-fold-open-label">展开</);
-assert.match(projectPage, /class="project-fold-close-label">收起</);
-assert.doesNotMatch(projectPage, /<details class="project-fold"[^>]*\bopen\b/);
+assert.match(projectPage, /data-project-browser/);
+assert.match(projectPage, /class="project-chevron"/);
+assert.match(projectPage, /aria-expanded="false"/);
+assert.doesNotMatch(projectPage, /<details class="project-fold"/);
+assert.doesNotMatch(projectPage, /data-project-toggle="[^"]*"[^>]*aria-expanded="true"/);
 const projectCss = fs.readFileSync(path.join(siteRoot, 'src/styles/global.css'), 'utf8');
-assert.match(projectCss, /\.project-fold > summary::marker[\s\S]*?color:\s*var\(--summary\)/);
-assert.doesNotMatch(projectCss, /\.project-fold > summary::-webkit-details-marker\s*\{\s*display:\s*none/);
-assert.equal(
-  (projectPage.match(/class="archive-year"/g) || []).length,
-  (projectPage.match(/class="project-fold"/g) || []).length,
-);
-assert.match(projectPage, /prompt-caching/);
-assert.match(projectPage, /github\.com\/VirusPC\/edges-brain-viruspc\/blob\/main\/projects\/memory\//);
+assert.match(projectCss, /\.project-chevron:focus-visible/);
+assert.match(projectCss, /min-height:\s*44px/);
+assert.match(projectCss, /prefers-reduced-motion:\s*reduce/);
+assert.match(projectPage, /class="project-title"/);
+const agentProject = fs.readFileSync(path.join(dist, 'projects/agent-infra/index.html'), 'utf8');
+assert.match(agentProject, /prompt-caching/);
+assert.match(agentProject, /项目说明/);
+assert.match(agentProject, /data-project-browser/);
+const memoryProject = fs.readFileSync(path.join(dist, 'projects/memory/index.html'), 'utf8');
+assert.match(memoryProject, /github\.com\/VirusPC\/edges-brain-viruspc\/blob\/main\/projects\/memory\//);
 assert.doesNotMatch(projectPage, /class="dash"|entry-list|note-kicker/);
-assert.doesNotMatch(notesPage, /project-fold/);
-assert.doesNotMatch(postsPage, /project-fold/);
+assert.doesNotMatch(notesPage, /data-project-browser/);
+assert.doesNotMatch(postsPage, /data-project-browser/);
 
 const grokNote = path.join(dist, 'notes/2026-10-29--open-grokbot-全程坑点/index.html');
 const grokHtml = fs.readFileSync(grokNote, 'utf8');
@@ -166,10 +169,11 @@ const projectDetails = rels.filter(
   (rel) => rel.startsWith('projects/') && rel.endsWith('/index.html') && rel !== 'projects/index.html',
 );
 const markdownDocs = projectDocs.filter((doc) => doc.kind === 'md');
+const hublessProjects = projectCatalog.projects.filter((project) => !project.hub).length;
 assert.equal(
   projectDetails.length,
-  markdownDocs.length,
-  `project pages ${projectDetails.length} != markdown documents ${markdownDocs.length}`,
+  markdownDocs.length + hublessProjects,
+  `project pages ${projectDetails.length} != markdown documents ${markdownDocs.length} plus ${hublessProjects} hubless projects`,
 );
 assert.ok(projectDetails.some((rel) => rel.includes('agent-infra')));
 assert.equal(
@@ -554,6 +558,7 @@ function chapterToc(html) {
 
 const detailPages = rels.filter((rel) => {
   if (!rel.endsWith('/index.html')) return false;
+  if (projectBrowserRels.has(rel)) return false;
   const [section, ...rest] = rel.split('/');
   if (!['posts', 'notes', 'projects', 'ai-news'].includes(section)) return false;
   return rest.join('/') !== 'index.html';
@@ -581,12 +586,17 @@ for (const rel of detailPages) {
   }
 }
 
-const projectToc = chapterToc(
-  fs.readFileSync(path.join(dist, 'projects/2026-11-09--dsh/index.html'), 'utf8'),
-);
-assert.ok(projectToc, 'project detail is missing the chapter toc');
+const dshProject = fs.readFileSync(path.join(dist, 'projects/2026-11-09--dsh/index.html'), 'utf8');
+assert.match(dshProject, /data-project-browser/);
+assert.match(dshProject, /项目说明/);
+assert.equal(chapterToc(dshProject), null, 'project browser is not an article toc');
 for (const heading of ['课程', '笔记', '相关']) {
-  assert.match(projectToc[0], new RegExp(heading));
+  assert.match(dshProject, new RegExp(heading));
+}
+for (const rel of projectBrowserRels) {
+  const html = fs.readFileSync(path.join(dist, rel), 'utf8');
+  assert.equal(chapterToc(html), null, `${rel} project browser has a chapter toc`);
+  assert.doesNotMatch(html, /data-reader-comments/, `${rel} project browser is not an article`);
 }
 
 for (const rel of [

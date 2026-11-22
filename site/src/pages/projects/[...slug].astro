@@ -1,29 +1,81 @@
 ---
 import { render } from 'astro:content';
 import ArticlePage from '../../components/ArticlePage.astro';
-import { getProjects } from '../../lib/entries';
-import { githubBlob } from '../../lib/paths';
+import ProjectBrowser from '../../components/ProjectBrowser.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, type ProjectEntry } from '../../lib/entries';
+import { buildProjectBrowser, projectChain } from '../../lib/project-view.mjs';
+import { buildProjectCatalog, projectsRoot, titleForProject } from '../../lib/projects.mjs';
+import { githubBlob, siteUrl } from '../../lib/paths';
 
 export async function getStaticPaths() {
-  const projects = await getProjects();
-  return projects
-    .filter((project) => project.data.hasPage)
-    .map((project) => ({
-      params: { slug: project.id },
-      props: { project },
+  const docs = await getProjects();
+  const catalog = buildProjectCatalog(projectsRoot());
+  const paths: { params: { slug: string }; props: { project: ProjectEntry | null } }[] = docs
+    .filter((doc) => doc.data.hasPage)
+    .map((doc) => ({
+      params: { slug: doc.id },
+      props: { project: doc },
     }));
+  const seen = new Set(paths.map((item) => item.params.slug));
+  for (const item of catalog.projects) {
+    if (seen.has(item.id)) continue;
+    paths.push({ params: { slug: item.id }, props: { project: null } });
+  }
+  return paths;
+}
+
+interface Props {
+  project: ProjectEntry | null;
 }
 
 const { project } = Astro.props;
-const { Content, headings } = await render(project);
+const slug = Astro.params.slug ?? '';
+const docs = await getProjects();
+const catalog = buildProjectCatalog(projectsRoot());
+const titles = new Map(docs.map((doc) => [doc.id, {
+  title: doc.data.title,
+  description: doc.data.isHub ? doc.data.description ?? '' : '',
+}]));
+const shell = catalog.byId.get(slug);
+const isProject = Boolean(shell) && (!project || project.data.isHub);
+const rendered = project ? await render(project) : null;
+const Content = rendered?.Content;
+const headings = rendered?.headings ?? [];
+const showStatement = Boolean(isProject && project?.data.isHub && project.body?.trim());
+const model = isProject && shell ? buildProjectBrowser(catalog, titles, shell.id) : null;
+const chain = !isProject && project ? projectChain(catalog, titles, project.data.projectId) : [];
+const pageTitle = model?.title || project?.data.title || titleForProject(shell?.name || slug, '', '');
 ---
 
-<ArticlePage
-  title={project.data.title}
-  description={project.data.description}
-  date={project.data.date}
-  source={githubBlob(project.data.sourcePath)}
-  headings={headings}
->
-  <Content />
-</ArticlePage>
+{
+  model ? (
+    <BaseLayout title={pageTitle} description={model.intro || undefined}>
+      <ProjectBrowser model={model} showStatement={showStatement}>
+        {showStatement && Content ? (
+          <div slot="statement">
+            <Content />
+          </div>
+        ) : null}
+      </ProjectBrowser>
+    </BaseLayout>
+  ) : project && Content ? (
+    <ArticlePage
+      title={project.data.title}
+      description={project.data.description}
+      date={project.data.date}
+      source={githubBlob(project.data.sourcePath)}
+      headings={headings}
+      crumbs={[
+        { label: 'Projects', href: siteUrl('/projects') },
+        ...chain.map((item) => ({
+          label: item.title,
+          href: siteUrl(`/projects/${item.id}`),
+        })),
+        { label: project.data.title, current: true },
+      ]}
+    >
+      <Content />
+    </ArticlePage>
+  ) : null
+}

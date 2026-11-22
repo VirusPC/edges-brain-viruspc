@@ -404,82 +404,355 @@ body.is-post.has-toc .sidenote {
   margin-bottom: 0.4rem;
 }
 
-.project-fold {
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.project-browser {
+  min-width: 0;
+}
+
+.project-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin: 0 0 0.65rem;
+}
+
+.project-heading h1 {
+  flex: 1 1 12rem;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.project-intro {
+  margin: 0 0 0.45rem;
+  color: var(--ink-soft);
+  max-width: 42rem;
+}
+
+.project-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin: 0 0 0.9rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.project-statement-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.project-statement-toggle[aria-expanded="true"] {
+  background: var(--panel);
+}
+
+.project-statement {
+  margin: 0 0 1.2rem;
+  padding-top: 0.2rem;
+}
+
+.project-rows,
+.project-docs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.project-row-main {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  grid-template-areas: "chevron title counts date";
+  align-items: center;
+  column-gap: 0.45rem;
+  min-height: 44px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.project-row.is-preview .project-row-main {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "title counts date";
+}
+
+.project-chevron {
+  grid-area: chevron;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.project-chevron .is-chevron {
+  transition: transform 160ms ease;
+}
+
+.project-chevron[aria-expanded="true"] .is-chevron {
+  transform: rotate(90deg);
+}
+
+.project-title {
+  grid-area: title;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.project-title-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.project-title:hover .project-title-text {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.project-date {
+  grid-area: date;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.project-counts {
+  grid-area: counts;
+  margin: 0;
+  max-width: 22rem;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.project-panel {
+  min-width: 0;
+  padding-left: 44px;
+}
+
+.project-doc {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.85rem;
+  min-height: 44px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.project-doc time,
+.project-doc .project-date {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.project-doc a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  min-width: 0;
+  color: inherit;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.project-doc a span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.project-doc a:hover span:last-child {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.project-more,
+.project-empty {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
   margin: 0;
 }
 
-.project-fold > summary {
-  cursor: pointer;
-  color: var(--summary);
-  font-size: 1rem;
-  font-weight: 650;
-  line-height: 1.45;
-  border-bottom: 1px solid var(--rule-strong);
-  padding: 0.35rem 0 0.3rem;
-  margin-bottom: 0.4rem;
+.project-more {
+  color: var(--note);
+  text-underline-offset: 0.18em;
 }
 
-.project-fold > summary::marker,
-.project-fold[open] > summary::marker,
-.project-fold > summary::-webkit-details-marker,
-.project-fold[open] > summary::-webkit-details-marker {
-  color: var(--summary);
+.project-empty {
+  color: var(--ink-soft);
 }
 
-.project-fold > summary:hover,
-.project-fold[open] > summary:hover,
-.project-fold > summary:hover::marker,
-.project-fold[open] > summary:hover::marker,
-.project-fold > summary:hover::-webkit-details-marker,
-.project-fold[open] > summary:hover::-webkit-details-marker {
-  color: var(--summary-hover);
+.project-svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.project-fold > summary:focus-visible {
+.project-chevron:focus-visible,
+.project-title:focus-visible,
+.project-doc a:focus-visible,
+.project-more:focus-visible,
+.project-statement-toggle:focus-visible,
+.project-crumbs a:focus-visible,
+.project-crumbs summary:focus-visible {
   outline: 2px solid var(--note);
   outline-offset: 2px;
 }
 
-.project-fold-line {
+.project-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem 0.45rem;
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  min-width: 0;
+}
+
+.project-crumbs li {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  width: calc(100% - 1.5rem);
-  vertical-align: middle;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.project-fold-toggle {
-  flex: none;
-  font-size: 1rem;
-  font-weight: 650;
-  letter-spacing: 0.04em;
+.project-crumbs li + li::before {
+  content: "/";
+  margin-right: 0.45rem;
+  color: var(--ink-soft);
 }
 
-.project-fold[open] .project-fold-open-label,
-.project-fold:not([open]) .project-fold-close-label {
+.project-crumbs a,
+.project-crumbs span {
+  overflow-wrap: anywhere;
+}
+
+.project-crumbs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--note);
+  text-underline-offset: 0.18em;
+}
+
+.project-crumbs [aria-current="page"] {
+  color: var(--ink);
+}
+
+.project-crumbs-compact {
   display: none;
 }
 
-.project-fold-line > h2 {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 1.4rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--ink);
-  line-height: 1.25;
+.project-crumb-more summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--note);
 }
 
-.project-fold-count {
-  flex: none;
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 400;
-  letter-spacing: 0;
+.project-crumb-more ol {
+  margin: 0;
+  padding-left: 0.2rem;
+}
+
+#project-children,
+#project-documents,
+#project-statement {
+  scroll-margin-top: 1rem;
+}
+
+@media (max-width: 720px) {
+  .project-row-main {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "chevron title date"
+      "chevron counts counts";
+    row-gap: 0;
+  }
+
+  .project-row.is-preview .project-row-main {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title date"
+      "counts counts";
+  }
+
+  .project-title {
+    font-size: 1.4rem;
+  }
+
+  .project-counts {
+    max-width: none;
+    text-align: left;
+    padding-bottom: 0.35rem;
+  }
+
+  .project-panel {
+    padding-left: 0.35rem;
+  }
+
+  .project-crumbs:has(.project-crumbs-compact) .project-crumbs-full {
+    display: none;
+  }
+
+  .project-crumbs-compact {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-chevron .is-chevron {
+    transition: none;
+  }
 }
 
 .list-month > h3 {
@@ -1228,20 +1501,6 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   .prose details.article-more > summary {
     padding: 0.28rem 0;
     line-height: 1.45;
-  }
-
-  .project-fold > summary {
-    font-size: 1.05rem;
-    padding: 0.55rem 0 0.45rem;
-  }
-
-  .project-fold-toggle {
-    font-size: 1.05rem;
-  }
-
-  .project-fold-line {
-    width: calc(100% - 1.7rem);
-    gap: 0.5rem;
   }
 
   .prose .article-card {

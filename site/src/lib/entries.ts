@@ -1,5 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { dateForProjectRow, listProjectFolders, projectsRoot, sortProjects, titleForProject } from './projects.mjs';
+import { buildProjectCatalog, projectStats, projectsRoot, sortProjects, titleForProject } from './projects.mjs';
 
 export type PostEntry = CollectionEntry<'posts'>;
 export type NoteEntry = CollectionEntry<'notes'>;
@@ -32,29 +32,23 @@ export async function getProjects(): Promise<ProjectEntry[]> {
   return getCollection('projects');
 }
 
-/** One homepage row per top-level project folder. Links only when that folder has a hub page. */
+/** One homepage row per top-level project. The date is the newest content date in that subtree. */
 export async function getProjectSummaries(): Promise<
   { title: string; hrefId?: string; date?: Date }[]
 > {
+  const catalog = buildProjectCatalog(projectsRoot());
   const docs = await getProjects();
-  const byProject = new Map<string, ProjectEntry[]>();
+  const titles = new Map<string, string>();
   for (const doc of docs) {
-    const list = byProject.get(doc.data.projectId) ?? [];
-    list.push(doc);
-    byProject.set(doc.data.projectId, list);
+    if (doc.data.isHub) titles.set(doc.data.projectId, doc.data.title);
   }
-  const rows = listProjectFolders(projectsRoot()).map((folder) => {
-    const projectDocs = byProject.get(folder.id) ?? [];
-    const hub = projectDocs.find((doc) => doc.data.isHub && doc.data.hasPage);
-    const date = dateForProjectRow(
-      projectDocs.map((doc) => doc.data.date),
-      folder.date,
-    );
-    return {
-      title: hub?.data.projectTitle ?? titleForProject(folder.id, '', ''),
-      hrefId: hub ? hub.id : undefined,
-      date: date ?? undefined,
-    };
-  });
+  const stats = projectStats(catalog);
+  const rows = catalog.projects
+    .filter((project) => project.parentId == null)
+    .map((project) => ({
+      title: titles.get(project.id) ?? titleForProject(project.name, '', ''),
+      hrefId: project.id,
+      date: stats.get(project.id)?.rowDate ?? undefined,
+    }));
   return sortProjects(rows);
 }
