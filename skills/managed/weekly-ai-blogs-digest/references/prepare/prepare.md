@@ -12,7 +12,7 @@
 
 GitHub 项目榜和模型榜分开保存，不能互相代替。
 
-三路都落盘，或在 `raw/gaps.json` 写明拿不到的原因之后，才算本阶段完成。空文件不能充数。`raw/stage.json` 记下本阶段规则 commit 和本文件路径。
+三路都落盘，或在 `raw/gaps.json` 写明拿不到的原因之后，才算本阶段完成。空文件不能充数。`raw/stage.json` 记下本阶段规则 commit，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/prepare/prepare.md`。
 
 同一期再跑准备时，覆盖 `raw/` 里对应文件。Git 保留旧提交。`cleaned/` 和 `summary/` 里引用了这次变化的条目随之失效，按依赖重做；没被引用的分支不动。
 

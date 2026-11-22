@@ -12,4 +12,4 @@
 
 整页校验见 [页面](page.md)。三路内容必须还在；关键词不能替换它们。缺了内容 ID 的映射不能用旧稿补上。
 
-`summary/stage.json` 记下规则 commit 和本文件路径。说不清的条目写入 `summary/gaps.json`。
+`summary/stage.json` 记下规则 commit，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/summarize/summarize.md`。说不清的条目写入 `summary/gaps.json`。
