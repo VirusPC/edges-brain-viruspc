@@ -9,6 +9,10 @@ description: 当用户想要汇总一段时间内（默认过去一周）AI / AI
 
 生成日为 D。覆盖窗口是 D-7 到 D-1 的完整 UTC 日（含两端，不含 D）。快照目录是 `VirusPC/ai-news-data` 的 `issues/YYYY-MM-DD/`，日期与周报文件名相同。写正文和补已有周报的总结时，只读这份快照，不重新抓 feed。
 
+## 数据流
+
+手动和定时都按同一条依赖。总图、节点的输入输出，以及输入变了以后重算哪些下游，写在 [数据流](references/00-数据流.md)。这里不另画一张图。
+
 ## 步骤
 
 1. [采集数据并存入 ai-news-data](references/01-采集数据并存入-ai-news-data.md)。RSS 全文、索引、GitHub Trending、Artificial Analysis、LLM Arena、OpenRouter、官方端点目录、模型发布 facts（含价格排名和速度排名），以及本期 `keywords.json`，并更新 `manifest.json`。密钥只走环境变量。

@@ -11,4 +11,5 @@
 - [写 skill 和规则只写核心原则，越具体越优先](<feedback_write_core_principles_specific_first/INDEX.md>) — 写 skill、入库规则和说明时打开：只写做什么的核心原则；规则越少越好；越具体的设置越优先。
 - [「重跑」指用现行 skill 从头完整生成](<feedback_rerun_means_full_rerun_with_current_skill/INDEX.md>) — 用户说「重跑」或「每周跑一遍」时打开：用现行 skill 原样从头完整生成；转交云端 Agent 的指令必须忠实于用户原话。
 - [用户已定事项须写成硬性要求，不得改成二选一](<feedback_user_decisions_are_hard_requirements_not_options/INDEX.md>) — 转交云端 Agent 时打开：用户已经定下来的位置、名称、范围或做法必须写成硬性要求，不要改成二选一交给执行方取舍。
+- [AI 资讯的数据流写在 skill，routine 只绑定场景](<feedback_ai_news_dataflow_lives_in_skill/INDEX.md>) — 改 AI 资讯周报的流程或日程时打开：数据依赖和重算只写在 weekly\-ai\-blogs\-digest 的数据流；routine 只绑定何时跑、写到哪、交付和审批。
 <!-- edges-entries-local:end -->

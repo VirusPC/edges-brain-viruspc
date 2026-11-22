@@ -4,7 +4,7 @@ description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-di
 ---
 # 日程
 
-这条 Grok Bot routine 何时跑、密钥留在哪。采集、选文、总结、章节和排版只看 [SKILL.md](../../../skills/managed/weekly-ai-blogs-digest/SKILL.md)，这里不抄那五步。这不是跨厂商共用格式。
+这条 Grok Bot routine 何时跑、密钥留在哪、结果交到哪。做事的步骤、数据依赖和重算只看 [SKILL.md](../../../skills/managed/weekly-ai-blogs-digest/SKILL.md) 及其 [数据流](../../../skills/managed/weekly-ai-blogs-digest/references/00-数据流.md)。这里不另画流程图，也不另写重算表。这不是跨厂商共用格式。
 
 - cron: `0 9 * * 5`
 - timezone: Asia/Shanghai
@@ -28,7 +28,7 @@ description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-di
 
 ## 平台接入
 
-只记 `ai-coding` 这条定时任务怎么跑。窗口、正文和章节以 Skill 为准。
+只记 `ai-coding` 这条定时任务怎么跑。窗口、数据依赖、正文和章节以 Skill 为准。
 
 - 交付：回到这条定时任务所在的对话。
 - 结果：周报 PR 写在本仓 `ai-news/`，快照 PR 写在 [VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data) 的 `issues/YYYY-MM-DD/`。两个 PR 都开着，不合并。回复里给出两个链接，以及这份快照缺了什么。
@@ -54,15 +54,17 @@ box 把不含密钥的 JSON 写到：
 
 日期与周报生成日相同。这只是 box 到云端的交接，不是另一份真源。入库位置仍是数据仓的 `issues/YYYY-MM-DD/`。
 
+## 调用门槛
+
+定时运行使用 Skill 的日常初跑。数据 PR 的分支能读到当期快照，就可以选文和写总结。两个 PR 都开着，不合并。不把合并数据 PR 当作开始撰写的前提。
+
+调用方在当次任务里写明的顺序只对那一次生效。历史补数可以在那次任务里指定先核验数据并入库、再写正文。周五定时没有这句话，仍然是分支可读后撰写。
+
+这条日程交到 PR 为止。站点构建、verify-dist 和 Pages 不在这里。
+
 ## 关键词
 
-关键词和权重是采集快照的一部分，不是写周报时现场选的。文件在数据仓 `issues/YYYY-MM-DD/keywords.json`。第 4 步只读这份文件，把 `words` 抄进周报「一、本周关键词」的注释。这一章只展示词云，不写文字词表，也不预先导出 SVG 或 PNG。站点用同一套 d3-cloud 排版。优先读已经带主题字段的快照；快照还没有主题字段时，用注释里的副本。
-
-产品名和品牌名只收这一期覆盖窗口里新发布、或第一次公开的。窗口之前就有的产品，哪怕这期很多篇都提到，也不写进词云。Codex、Claude Code、OpenRouter 就是这种。
-
-文章里的概念和已有说法可以留，用快照标题或正文里的原词。不要把英文说法译成快照里没有的新词。模型进展里本周第一次公开的模型，用它的官方名，可以留。`model-releases.json` 里的名字也要先对照更早快照，已经出现过的本期不收。评测标题不抽模型名。带 Security、Review、Code 的版本名是功能或工具，不算新模型。不要把两件事拼成一个新词。
-
-`mentions` 和 `sources` 从窗口内的快照条目算，不用周报 `####`。计分和分档看 Skill 的榜单与图。`score` 按种类固定：新模型 5，新产品 4，概念 3。
+关键词是当期快照的一部分，撰写只读。输入、重算和展示见 Skill 的 [数据流](../../../skills/managed/weekly-ai-blogs-digest/references/00-数据流.md)。
 
 ## 订阅源兜底
 

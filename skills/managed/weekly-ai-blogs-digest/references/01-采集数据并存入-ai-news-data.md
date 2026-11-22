@@ -1,6 +1,10 @@
 # 01 采集数据并存入 ai-news-data
 
-这一步只抓取并落盘。不选文，不写周报正文。
+这一步只抓取并落盘。不选文，不写周报正文。依赖和失效后重算见 [数据流](00-数据流.md)。
+
+`feeds.json` 变了，就重抽索引和相关 trending，并重算 `keywords.json`。选文、用到该全文的总结、词云展示、manifest 和最终验收跟着失效。AA、Arena、OpenRouter 的输入没变就不再拉。
+
+`user-backfill.json` 只给选文和总结。不并进 `feeds.json` 或 `feeds.index.json`，也不进入 `keywords.json`。补录不触发关键词重算。
 
 ## 存到哪里
 
@@ -113,4 +117,4 @@ node scripts/build_keywords.mjs \
 
 相信这份订阅。采集不因为正文偏短去打开文章页。feed 里是简介，快照里就记简介。
 
-抓完更新 `manifest.json` 的 `files` 和说明。提交到 ai-news-data 并开 PR，不合并。撰写步骤等这份快照在分支上可读之后再开始。
+抓完更新 `manifest.json` 的 `files` 和说明。提交到 ai-news-data 并开 PR，不合并。撰写等这份快照在分支上可读之后再开始。PR 保持打开，不把合并当作开始撰写的条件。
