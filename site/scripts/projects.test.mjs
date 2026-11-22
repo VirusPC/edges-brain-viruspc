@@ -4,10 +4,13 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import {
+  buildProjectCatalog,
   dateForProjectDocument,
   dateForProjectRow,
+  formatProjectMeta,
   listProjectDocuments,
   listProjectFolders,
+  projectStats,
   routeIdFor,
   sortProjectDocuments,
   sortProjects,
@@ -157,6 +160,174 @@ test('a project row uses the newest nested document, not the folder prefix', () 
   assert.equal(
     dateForProjectDocument('notes/2026-11-18--topic/INDEX.md')?.toISOString().slice(0, 10),
     '2026-11-18',
+  );
+});
+
+test('formatProjectMeta keeps direct and total distinct without a bare number', () => {
+  assert.equal(
+    formatProjectMeta({ childCount: 3, directCount: 3, totalCount: 9 }),
+    '3 子项目 · 直属 3 篇 · 共 9 篇',
+  );
+  assert.equal(
+    formatProjectMeta({ childCount: 1, directCount: 0, totalCount: 3 }),
+    '1 子项目 · 共 3 篇',
+  );
+  assert.equal(formatProjectMeta({ childCount: 0, directCount: 2, totalCount: 2 }), '2 篇');
+  assert.equal(formatProjectMeta({ childCount: 0, directCount: 0, totalCount: 0 }), '暂无直属内容');
+  assert.equal(formatProjectMeta({ childCount: 2, directCount: 1, totalCount: 1 }), '2 子项目 · 直属 1 篇');
+});
+
+function write(file, text) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, text);
+}
+
+test('nested projects follow P/projects/Q registration and keep flat documents', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'nested-projects-'));
+  const parent = path.join(root, 'agent');
+  write(path.join(parent, 'INDEX.md'), `---
+description: 父项目简介。后面还有一句。
+---
+# Agent
+
+父项目正文，必须保留。
+
+普通链接 [不是子项目](projects/orphan/INDEX.md) 不登记。
+
+<!-- edges-entries-local:start -->
+## 本层内容
+
+- [notes](notes/README.md) — 笔记内容叶子的组织清单。
+- [projects](projects/README.md) — 子项目组织清单。
+<!-- edges-entries-local:end -->
+`);
+  write(path.join(parent, 'notes/README.md'), '# Notes\n\n组织清单\n');
+  write(path.join(parent, 'notes/2026-11-19--direct/INDEX.md'), '# 直属笔记\n');
+  write(path.join(parent, 'tasks/README.md'), '# Tasks\n');
+  write(path.join(parent, 'tasks/backlog/2026-11-18--job/INDEX.md'), '# 直属任务\n');
+  write(path.join(parent, 'memory/README.md'), '# Memory\n');
+  write(path.join(parent, 'memory/projects/README.md'), '# 项目记忆类型\n');
+  write(path.join(parent, 'memory/projects/project_demo/INDEX.md'), `---
+metadata:
+  edges-type: project
+---
+# 这不是 Project
+`);
+  write(path.join(parent, 'archive/deep/note.md'), '# 深层文档\n');
+  write(path.join(parent, 'programs/tool/README.md'), '# 工具说明\n');
+  write(path.join(parent, 'paper.pdf'), 'pdf');
+  write(path.join(parent, 'projects/orphan/INDEX.md'), '# 未登记\n');
+  write(path.join(parent, 'projects/orphan/notes/2026-11-01--inside/INDEX.md'), '# 仍属父项目\n');
+  write(path.join(parent, 'projects/README.md'), `<!-- edges-entries-local:start -->
+## 本层内容
+
+- [工具](<tool/INDEX.md>) — 已登记
+<!-- edges-entries-local:end -->
+`);
+  const tool = path.join(parent, 'projects/tool');
+  write(path.join(tool, 'INDEX.md'), '# 工具接入\n\n子项目正文。\n');
+  write(path.join(tool, 'notes/README.md'), '# 子笔记清单\n');
+  write(path.join(tool, 'notes/2026-11-20--mcp/INDEX.md'), '# MCP\n');
+  write(path.join(tool, 'projects/README.md'), `<!-- edges-entries-local:start -->
+## 本层内容
+
+- [协议](proto/INDEX.md)
+<!-- edges-entries-local:end -->
+`);
+  const proto = path.join(tool, 'projects/proto');
+  write(path.join(proto, 'INDEX.md'), '# 协议\n');
+  write(path.join(proto, 'notes/2026-11-17--oauth/INDEX.md'), '# OAuth\n');
+  write(path.join(proto, 'notes/plain/INDEX.md'), '# 无日期\n');
+  fs.utimesSync(path.join(proto, 'notes/2026-11-17--oauth/INDEX.md'), new Date('1999-01-01'), new Date('1999-01-01'));
+
+  const flat = path.join(root, 'flat');
+  write(path.join(flat, 'README.md'), '# 平铺\n\n只有文章。\n');
+  write(path.join(flat, 'notes/2026-11-03--only/INDEX.md'), '# 唯一文章\n');
+  write(path.join(root, 'empty/INDEX.md'), '# 空项目\n');
+
+  const catalog = buildProjectCatalog(root);
+  const ids = catalog.projects.map((project) => project.id).sort();
+  assert.deepEqual(ids, ['agent', 'agent/projects/tool', 'agent/projects/tool/projects/proto', 'empty', 'flat']);
+  const agent = catalog.byId.get('agent');
+  assert.deepEqual(agent.childIds, ['agent/projects/tool']);
+  assert.deepEqual(catalog.byId.get('agent/projects/tool').childIds, ['agent/projects/tool/projects/proto']);
+  assert.equal(catalog.byId.get('flat').childIds.length, 0);
+  assert.equal(catalog.byId.get('empty').hub, 'INDEX.md');
+  assert.equal(catalog.byId.get('flat').hub, 'README.md');
+
+  const routes = new Map(catalog.documents.map((doc) => [doc.routeId, doc]));
+  assert.equal(routes.has('agent/projects/tool'), true);
+  assert.equal(routes.get('agent/projects/tool').isHub, true);
+  assert.equal(routes.get('agent/projects/tool').projectId, 'agent/projects/tool');
+  assert.equal(routes.has('agent/projects/orphan'), true);
+  assert.equal(routes.get('agent/projects/orphan').isHub, false);
+  assert.equal(routes.get('agent/projects/orphan').projectId, 'agent');
+  assert.equal(routes.get('agent/notes/2026-11-19--direct').contentKind, 'note');
+  assert.equal(routes.get('agent/tasks/backlog/2026-11-18--job').contentKind, 'task');
+  assert.equal(routes.get('agent/memory/projects/project_demo').contentKind, 'memory');
+  assert.equal(routes.get('agent/memory/projects/project_demo').projectId, 'agent');
+  assert.equal(routes.get('agent/archive/deep/note').contentKind, 'doc');
+  assert.equal(routes.get('agent/programs/tool').isOrgList, false);
+  assert.equal(routes.get('agent/notes').isOrgList, true);
+  assert.equal(routes.get('agent/tasks').isOrgList, true);
+  assert.equal(routes.get('agent/memory/projects').isOrgList, true);
+  assert.equal(routes.get('agent/projects').isOrgList, true);
+  assert.equal(routes.get('agent/projects/orphan/notes/2026-11-01--inside').projectId, 'agent');
+  assert.equal(routes.get('agent/projects/tool/notes/2026-11-20--mcp').projectId, 'agent/projects/tool');
+  assert.equal(
+    routes.get('agent/projects/tool/projects/proto/notes/2026-11-17--oauth').projectId,
+    'agent/projects/tool/projects/proto',
+  );
+  assert.equal(routes.get('agent/projects/tool/projects/proto/notes/plain').date, null);
+  assert.equal(
+    routes.get('agent/projects/tool/projects/proto/notes/2026-11-17--oauth').date.toISOString().slice(0, 10),
+    '2026-11-17',
+  );
+  assert.equal(routes.get('flat').isHub, true);
+  assert.equal(routes.get('flat/notes/2026-11-03--only').routeId, 'flat/notes/2026-11-03--only');
+
+  const seen = new Set(catalog.documents.map((doc) => doc.collectionId));
+  assert.equal(seen.size, catalog.documents.length);
+
+  const stats = projectStats(catalog);
+  const agentStats = stats.get('agent');
+  assert.equal(agentStats.childCount, 1);
+  const agentDirect = catalog.documents.filter((doc) => doc.projectId === 'agent' && !doc.isHub && !doc.isOrgList && doc.kind === 'md');
+  assert.equal(agentStats.directCount, new Set(agentDirect.map((doc) => doc.routeId)).size);
+  assert.ok(agentStats.directCount >= 5);
+  assert.equal(stats.get('agent/projects/tool').directCount, 1);
+  assert.equal(stats.get('agent/projects/tool/projects/proto').directCount, 2);
+  assert.equal(stats.get('agent/projects/tool').totalCount, 3);
+  assert.equal(agentStats.totalCount, agentStats.directCount + 1 + 2);
+  assert.equal(stats.get('agent/projects/tool').contentDate.toISOString().slice(0, 10), '2026-11-20');
+  assert.equal(stats.get('empty').directCount, 0);
+  assert.equal(stats.get('empty').rowDate, null);
+  assert.equal(stats.get('flat').directCount, 1);
+  assert.equal(formatProjectMeta(stats.get('flat')), '1 篇');
+  assert.equal(formatProjectMeta(stats.get('empty')), '暂无直属内容');
+});
+
+test('a parent hub entry registers a child without a projects README', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'parent-index-project-'));
+  const parent = path.join(root, 'parent');
+  write(path.join(parent, 'INDEX.md'), `# 父
+
+<!-- edges-entries-local:start -->
+## 本层内容
+
+- [子](<projects/child/INDEX.md>)
+<!-- edges-entries-local:end -->
+`);
+  write(path.join(parent, 'projects/child/INDEX.md'), '# 子\n');
+  write(path.join(parent, 'projects/child/notes/2026-11-02--a/INDEX.md'), '# A\n');
+  const catalog = buildProjectCatalog(root);
+  assert.deepEqual(
+    catalog.projects.map((project) => project.id),
+    ['parent', 'parent/projects/child'],
+  );
+  assert.equal(
+    catalog.documents.find((doc) => doc.routeId === 'parent/projects/child/notes/2026-11-02--a').projectId,
+    'parent/projects/child',
   );
 });
 

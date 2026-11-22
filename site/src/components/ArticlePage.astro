@@ -1,5 +1,6 @@
 ---
 import ArticleComments from './ArticleComments.astro';
+import ProjectCrumbs from './ProjectCrumbs.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { formatISODate } from '../lib/select.mjs';
 import '../styles/ai-news-filter.css';
@@ -22,9 +23,10 @@ interface Props {
   rss?: { title: string; href: string };
   /** Chapter list uses h2. AI news also lists h3, such as 国内 and 国际 under 精选文章. */
   tocDepth?: number;
+  crumbs?: { label: string; href?: string; current?: boolean }[];
 }
 
-const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss, tocDepth = 2 } = Astro.props;
+const { title, description, date, source, wide = false, kicker = '', badge = '', headings = [], rss, tocDepth = 2, crumbs = [] } = Astro.props;
 const iso = date ? formatISODate(date) : '';
 const sections: { slug: string; text: string; children: { slug: string; text: string }[] }[] = [];
 for (const heading of headings) {
@@ -38,6 +40,7 @@ for (const heading of headings) {
 ---
 
 <BaseLayout title={title} description={description} wide={wide} withToc rss={rss}>
+  {crumbs.length > 0 ? <ProjectCrumbs items={crumbs} /> : null}
   <article class="post has-toc">
     <nav class="toc" aria-label="章节">
       <ol>

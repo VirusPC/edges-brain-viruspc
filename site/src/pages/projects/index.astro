@@ -1,48 +1,19 @@
 ---
-import ListPage from '../../components/ListPage.astro';
+import ProjectBrowser from '../../components/ProjectBrowser.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects } from '../../lib/entries';
-import { githubBlob, siteUrl } from '../../lib/paths';
-import { dateForProjectRow, listProjectFolders, projectsRoot, sortProjectDocuments, sortProjects, titleForProject } from '../../lib/projects.mjs';
+import { buildProjectBrowser } from '../../lib/project-view.mjs';
+import { buildProjectCatalog, projectsRoot } from '../../lib/projects.mjs';
 
 const docs = await getProjects();
-const byProject = new Map<string, typeof docs>();
-for (const doc of docs) {
-  const list = byProject.get(doc.data.projectId) ?? [];
-  list.push(doc);
-  byProject.set(doc.data.projectId, list);
-}
-
-const folders = listProjectFolders(projectsRoot());
-const groups = sortProjects(
-  folders.map((folder) => {
-    const projectDocs = byProject.get(folder.id) ?? [];
-    return {
-      id: folder.id,
-      title: projectDocs.find((doc) => doc.data.isHub)?.data.projectTitle
-        ?? titleForProject(folder.id, '', ''),
-      date: dateForProjectRow(
-        projectDocs.map((doc) => doc.data.date),
-        folder.date,
-      ),
-    };
-  }),
-).map((section) => ({
-  heading: section.title,
-  items: sortProjectDocuments(
-    (byProject.get(section.id) ?? [])
-      .filter((doc) => !doc.data.isHub)
-      .map((doc) => ({
-        title: doc.data.title,
-        date: doc.data.date ?? null,
-        isHub: doc.data.isHub,
-        href: doc.data.hasPage ? siteUrl(`/projects/${doc.id}`) : githubBlob(doc.data.sourcePath),
-      })),
-  ).map(({ title, date, href }) => ({
-    title,
-    date: date ?? undefined,
-    href,
-  })),
-}));
+const catalog = buildProjectCatalog(projectsRoot());
+const titles = new Map(docs.map((doc) => [doc.id, {
+  title: doc.data.title,
+  description: doc.data.isHub ? doc.data.description ?? '' : '',
+}]));
+const model = buildProjectBrowser(catalog, titles, null);
 ---
 
-<ListPage title="Projects" description="Project workspaces." groups={groups} collapseGroups />
+<BaseLayout title={model.title} description="Project workspaces.">
+  <ProjectBrowser model={model} />
+</BaseLayout>

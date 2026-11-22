@@ -1,0 +1,56 @@
+---
+interface Crumb {
+  label: string;
+  href?: string;
+  current?: boolean;
+}
+
+interface Props {
+  items: Crumb[];
+}
+
+const { items } = Astro.props;
+const middle = items.slice(1, -2);
+const compact = middle.length > 0;
+const parent = items.length >= 2 ? items[items.length - 2] : null;
+const current = items[items.length - 1];
+---
+
+<nav class="project-crumbs" aria-label="项目路径">
+  <ol class="project-crumbs-full">
+    {
+      items.map((item) => (
+        <li>
+          {item.href && !item.current ? <a href={item.href}>{item.label}</a> : <span aria-current={item.current ? 'page' : undefined}>{item.label}</span>}
+        </li>
+      ))
+    }
+  </ol>
+  {
+    compact && parent && current ? (
+      <ol class="project-crumbs-compact">
+        <li>
+          {items[0].href ? <a href={items[0].href}>{items[0].label}</a> : <span>{items[0].label}</span>}
+        </li>
+        <li>
+          <details class="project-crumb-more">
+            <summary>上级路径</summary>
+            <ol>
+              {middle.map((item) => (
+                <li>
+                  {item.href ? <a href={item.href}>{item.label}</a> : <span>{item.label}</span>}
+                </li>
+              ))}
+            </ol>
+          </details>
+        </li>
+        <li>
+          {parent.href && !parent.current ? <a href={parent.href}>{parent.label}</a> : <span>{parent.label}</span>}
+        </li>
+        <li>
+          <span aria-current="page">{current.label}</span>
+        </li>
+      </ol>
+    ) : null
+  }
+</nav>
