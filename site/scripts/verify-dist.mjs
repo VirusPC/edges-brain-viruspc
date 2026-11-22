@@ -316,10 +316,10 @@ assert.doesNotMatch(newestIssue, /覆盖窗口：2026-11-06～2026-11-12（生�
 const newestToc = newestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(newestToc, '2026-11-13 is missing the chapter toc');
 assert.match(newestToc[0], /四、精选文章/);
-for (const heading of ['国外模型厂', '国内非模型厂', '国外非模型厂']) {
+for (const heading of ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
   assert.match(newestToc[0], new RegExp(`>${heading}<`));
 }
-assert.doesNotMatch(newestToc[0], />国内模型厂</);
+assert.ok(newestToc[0].indexOf('>国内模型厂<') < newestToc[0].indexOf('>国外模型厂<'));
 assert.doesNotMatch(newestToc[0], /国内进展|国际进展/);
 assert.match(newestToc[0], /二、模型进展/);
 assert.doesNotMatch(newestToc[0], /模型发布/);
@@ -363,9 +363,19 @@ const releaseAt = modelProgress.search(/<h4\b/);
 const boardAt = modelProgress.indexOf('data-model-board');
 assert.ok(boardAt >= 0 && releaseAt > boardAt, '2026-11-13 model entries follow the rankings');
 assertCategoryPills(newestIssue, [
-  ['架构', '研发 Loop 的上下文优化与多 Agent 协作'],
+  ['架构', 'Super-agent 设计探索：迈向更自主的 Agent 系统'],
   ['实践', 'WorkBuddy'],
 ], []);
+assert.doesNotMatch(newestIssue, /\]\(https?:/);
+assert.match(newestIssue, /href="https:\/\/www\.bilibili\.com\/opus\/1265361021143351318"/);
+assert.match(newestIssue, /href="https:\/\/github\.com\/deepseek-ai\/dsh-superagent-prototype"/);
+assert.match(newestIssue, /href="https:\/\/cdn\.deepseek\.com\/harness\/dsh-creator-mode-prompt-collection-en\.html"/);
+assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2116857257245987236"/);
+assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2117256196227019194"/);
+assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2119431663642153128"/);
+assert.match(newestIssue, /补录 11 月 1 日/);
+assert.match(newestIssue, /补录 11 月 2 日/);
+assert.match(newestIssue, /研究原型/);
 for (const alt of [
   'OpenRouter 本周用量 Top 15，2026-11-13',
   'OpenRouter 编程用量 Top 15，2026-11-13',

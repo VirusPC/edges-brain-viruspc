@@ -7,7 +7,7 @@
 ## 已归档周报
 
 - [2026-11-20 AI 资讯](2026-11-20-ai-news.md) — 覆盖 2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC）。附 Arena 2026-11-18 快照图（红圈 Gemini 4 Neon）。关键词：Gemini 4 Neon、GPT-6.2 Astra、GPT-6.2 Sol、Devin Bots、always-on agents。GitHub Trending 用 2026-11-20 15:56（UTC+8）的 weekly / all 前 5。模型进展的榜单按 Artificial Analysis、LLM Arena、OpenRouter 排列，模型条目直接写在这一章，没有「模型发布」标题。
-- [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06 00:00:00 至 2026-11-12 23:59:59（UTC）。2026-11-22 按现行 skill 从当期快照重写。关键词主题是 Agent Memory。Arena 用 2026-11-11。没有历史端点速度，也没有 Hydrogen 的官方 token 价。GitHub Trending 用归档 weekly / all 前 5，pubDate 是 2026-11-13 09:01 UTC，北京时间 17:01，不是当天 09:00 北京时间。
+- [2026-11-13 AI 资讯](2026-11-13-ai-news.md) — 覆盖 2026-11-06 00:00:00 至 2026-11-12 23:59:59（UTC）。2026-11-22 按现行 skill 从当期快照重写。关键词主题是 Agent Memory。Arena 用 2026-11-11。没有历史端点速度，也没有 Hydrogen 的官方 token 价。GitHub Trending 用归档 weekly / all 前 5，pubDate 是 2026-11-13 09:01 UTC，北京时间 17:01，不是当天 09:00 北京时间。补录 11 月 1 日 DeepSeek Harness Super-agent 架构文与 11 月 2 日 Creator Mode，并保留窗口内 11 月 8 日的插件社区回顾。
 - [2026-11-06 AI 资讯](2026-11-06-ai-news.md) — 覆盖 2026-10-30 00:00:00 至 2026-11-05 23:59:59（UTC）。2026-11-22 按现行 skill 从当期快照重写。关键词主题是 Deep Agents。Arena 沿用 2026-10-28，较上周无新榜。OpenRouter 三张榜用当期 `items` 画出。没有当时的 AA 快照，也没有历史端点速度。Hy4 和 LongCat-2.5 不在 `model-releases.json`，事实卡是暂无。
 - [2026-10-30 AI 资讯](2026-10-30-ai-news.md) — 覆盖 2026-10-23 00:00:00 至 2026-10-29 23:59:59（UTC）。2026-11-22 按现行 skill 从当期快照重写。关键词主题是 software factory。附 Arena 2026-10-28。OpenRouter 三张榜用当期 `items` 画出。没有当时的 AA 快照。
 - [2026-10-23 AI 资讯](2026-10-23-ai-news.md) — 覆盖 2026-10-16 00:00:00 至 2026-10-22 23:59:59（UTC）。2026-11-22 按现行 skill 从当期快照重写。快照没有 `keywords.json`，本周关键词这一章不写。附 Arena 2026-10-22。OpenRouter 三张榜用当期 `items` 画出。没有当时的 AA 快照。
