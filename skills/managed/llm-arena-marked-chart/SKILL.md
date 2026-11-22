@@ -13,7 +13,7 @@ description: 当需要把 LLM Arena（或同类）排行榜画成带红圈/NEW �
 
 ## 输入
 
-1. **Arena JSON**（推荐）：`weekly-ai-blogs-digest` 的 `scripts/fetch_llm_arena.py --out /tmp/llm-arena.json`
+1. **Arena JSON**（推荐）：`weekly-ai-blogs-digest` 的 `scripts/prepare/models/fetch_llm_arena.py --out /tmp/llm-arena.json`
 2. **可选显式 NEW 名单**：`--highlight "Model A" --highlight "Model B"`（或逗号分隔）。一旦提供，不再用票数启发式
 3. **否则自动 NEW**：在 Top-N 内取 **票数最低的 `--new-count` 个**（默认 4）作为代理——适合数据集只有单一 `leaderboard_publish_date` 的情况
 

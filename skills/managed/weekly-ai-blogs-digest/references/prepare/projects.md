@@ -10,4 +10,4 @@
 
 不要再留 daily 源。GitHub 项目榜不是模型榜，不放进 `raw/models/`。
 
-现行抓取仍从 `feeds.json` 抽出 weekly/all，写到期次根目录的 `github-trending.json`。
+从 `raw/articles/feeds.json` 抽出 weekly/all，写入 `raw/projects/github-trending.json`。

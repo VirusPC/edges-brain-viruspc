@@ -10,13 +10,14 @@ import { fileURLToPath } from 'node:url';
  * this repo: the archive is the source of truth and the Artificial Analysis
  * file alone is already over a megabyte per issue.
  *
- * Set AI_NEWS_DATA_ROOT to skip the clone. A missing issue directory is not
- * an error; that chart falls back to its PNG.
+ * Set AI_NEWS_DATA_ROOT to skip the clone. The clone is the default branch.
+ * Charts and keywords are read from each issue's raw/ and summary/.
  */
 
 const siteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cache = path.join(siteRoot, '.cache/ai-news-data');
 const remote = 'https://github.com/VirusPC/ai-news-data.git';
+const dataRef = process.env.AI_NEWS_DATA_REF || 'main';
 
 const configured = process.env.AI_NEWS_DATA_ROOT;
 if (configured && fs.existsSync(path.join(configured, 'issues'))) {
@@ -32,9 +33,6 @@ if (!ok || !fs.existsSync(path.join(cache, 'issues'))) {
   process.exit(1);
 }
 const rev = spawnSync('git', ['-C', cache, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' });
-overlayAdoptedArena(cache);
-overlayModelReleases(cache);
-overlayKeywords(cache);
 await downloadModelCatalog(path.join(siteRoot, '.cache/openrouter-models.json'));
 console.log(`ai-news-data: ${cache} @ ${rev.stdout.trim() || 'unknown'}`);
 
@@ -44,7 +42,7 @@ console.log(`ai-news-data: ${cache} @ ${rev.stdout.trim() || 'unknown'}`);
 function clone(dir) {
   const result = spawnSync(
     'git',
-    ['clone', '--depth', '1', '--branch', 'main', remote, dir],
+    ['clone', '--depth', '1', '--branch', dataRef, remote, dir],
     { stdio: 'inherit', timeout: 120_000 },
   );
   return result.status === 0;
@@ -56,7 +54,7 @@ function clone(dir) {
 function update(dir) {
   const fetched = spawnSync(
     'git',
-    ['-C', dir, 'fetch', '--depth', '1', 'origin', 'main'],
+    ['-C', dir, 'fetch', '--depth', '1', 'origin', dataRef],
     { stdio: 'inherit', timeout: 120_000 },
   );
   if (fetched.status !== 0) return false;
@@ -66,87 +64,6 @@ function update(dir) {
     timeout: 30_000,
   });
   return reset.status === 0;
-}
-
-function overlayAdoptedArena(dir) {
-  const branch = 'cursor/arena-adopted-boards-9b82';
-  const fetched = spawnSync(
-    'git',
-    ['-C', dir, 'fetch', '--depth', '1', 'origin', branch],
-    { stdio: 'inherit', timeout: 120_000 },
-  );
-  if (fetched.status !== 0) {
-    console.warn(`ai-news-data: 没有 ${branch}，发布日对不上的 Arena 会退回 PNG`);
-    return;
-  }
-  const listed = spawnSync('git', ['-C', dir, 'ls-tree', '-r', '--name-only', 'FETCH_HEAD'], {
-    encoding: 'utf8',
-  });
-  if (listed.status !== 0) return;
-  for (const file of listed.stdout.split('\n')) {
-    if (!/^issues\/\d{4}-\d{2}-\d{2}\/llm-arena-\d{4}-\d{2}-\d{2}\.json$/.test(file)) continue;
-    const dest = path.join(dir, file);
-    if (fs.existsSync(dest)) continue;
-    const show = spawnSync('git', ['-C', dir, 'show', `FETCH_HEAD:${file}`]);
-    if (show.status !== 0) continue;
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.writeFileSync(dest, show.stdout);
-    console.log(`ai-news-data overlay ${file}`);
-  }
-}
-
-function overlayKeywords(dir) {
-  const branch = 'cursor/snapshot-keywords-e62b';
-  const fetched = spawnSync(
-    'git',
-    ['-C', dir, 'fetch', '--depth', '1', 'origin', branch],
-    { stdio: 'inherit', timeout: 120_000 },
-  );
-  if (fetched.status !== 0) {
-    console.warn(`ai-news-data: 没有 ${branch}，词云改用周报里的快照副本`);
-    return;
-  }
-  const listed = spawnSync('git', ['-C', dir, 'ls-tree', '-r', '--name-only', 'FETCH_HEAD'], {
-    encoding: 'utf8',
-  });
-  if (listed.status !== 0) return;
-  for (const file of listed.stdout.split('\n')) {
-    if (!/^issues\/\d{4}-\d{2}-\d{2}\/keywords\.json$/.test(file)) continue;
-    const dest = path.join(dir, file);
-    if (fs.existsSync(dest)) continue;
-    const show = spawnSync('git', ['-C', dir, 'show', `FETCH_HEAD:${file}`]);
-    if (show.status !== 0) continue;
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.writeFileSync(dest, show.stdout);
-    console.log(`ai-news-data overlay ${file}`);
-  }
-}
-
-function overlayModelReleases(dir) {
-  const branch = 'cursor/model-release-facts-164f';
-  const fetched = spawnSync(
-    'git',
-    ['-C', dir, 'fetch', '--depth', '1', 'origin', branch],
-    { stdio: 'inherit', timeout: 120_000 },
-  );
-  if (fetched.status !== 0) {
-    console.warn(`ai-news-data: 没有 ${branch}，模型发布信息块会缺席`);
-    return;
-  }
-  const listed = spawnSync('git', ['-C', dir, 'ls-tree', '-r', '--name-only', 'FETCH_HEAD'], {
-    encoding: 'utf8',
-  });
-  if (listed.status !== 0) return;
-  for (const file of listed.stdout.split('\n')) {
-    if (!/^issues\/\d{4}-\d{2}-\d{2}\/model-releases\.json$/.test(file)) continue;
-    const dest = path.join(dir, file);
-    if (fs.existsSync(dest)) continue;
-    const show = spawnSync('git', ['-C', dir, 'show', `FETCH_HEAD:${file}`]);
-    if (show.status !== 0) continue;
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.writeFileSync(dest, show.stdout);
-    console.log(`ai-news-data overlay ${file}`);
-  }
 }
 
 /**

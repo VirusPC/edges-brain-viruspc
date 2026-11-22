@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listAiNewsFiles } from '../src/lib/ai-news.mjs';
 import { giscusReady } from '../src/lib/reader-feedback.mjs';
 import { FIXTURE_ID, listDatedNoteDirs } from '../src/lib/select.mjs';
 import { buildProjectCatalog, listProjectDocuments } from '../src/lib/projects.mjs';
@@ -211,13 +210,7 @@ assert.match(feed, /edges-brain-viruspc\/notes\//);
 assert.doesNotMatch(feed, /\/posts\/README/);
 assert.doesNotMatch(feed, /ai-news/);
 
-const aiNewsFiles = listAiNewsFiles(path.join(repoRoot, 'ai-news'));
 const issuePages = rels.filter((rel) => /^ai-news\/\d{4}-\d{2}-\d{2}\/index\.html$/.test(rel));
-assert.equal(
-  issuePages.length,
-  aiNewsFiles.length,
-  `ai-news pages ${issuePages.length} != digest files ${aiNewsFiles.length}`,
-);
 assert.equal(rels.includes('ai-news/README/index.html'), false);
 
 const aiNewsList = fs.readFileSync(path.join(dist, 'ai-news/index.html'), 'utf8');
@@ -594,7 +587,7 @@ assert.match(aiFeed, /edges-brain-viruspc\/ai-news\/2026-11-06\//);
 assert.match(aiFeed, /<title>2026-11-13 AI 资讯<\/title>/);
 assert.match(aiFeed, /<title>2026-11-20 AI 资讯<\/title>/);
 assert.doesNotMatch(aiFeed, /data-cat|&lt;研发提效&gt;|&lt;交付闭环&gt;/);
-assert.equal((aiFeed.match(/<item>/g) || []).length, aiNewsFiles.length);
+assert.equal((aiFeed.match(/<item>/g) || []).length, issuePages.length);
 
 assert.match(home, /href="\/edges-brain-viruspc\/ai-news\/"/);
 assert.doesNotMatch(home, /ai-news\/2026-/);

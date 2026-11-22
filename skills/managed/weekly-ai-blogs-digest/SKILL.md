@@ -1,7 +1,7 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
-version: 0.1.0
+version: 0.2.0
 ---
 
 # AI 资讯周报
@@ -24,7 +24,7 @@ version: 0.1.0
 
 改了本 skill 的 `SKILL.md`、scripts、references 或对外行为后，按 [Edges skills 目录规范](https://github.com/VirusPC/edges/blob/main/packages/skills/README.md) 升版本：补丁 +0.0.1，行为或契约变 +0.1.0，不兼容 +1.0.0。把同目录 `CHANGELOG.md` 里 `[Unreleased]` 下的条目挪到 `## [x.y.z] - YYYY-MM-DD`。对同一个 commit 打 annotated tag `skill/weekly-ai-blogs-digest@<version>`。没改到本 skill 就不升版本。
 
-这是已确认的目标结构。采集脚本仍把文件写在期次根目录，博客仍编译 `ai-news/*.md`。下面的目录树和 `schemas/` 是这份结构的契约，分阶段校验按它验收。旧期没有迁进这三个目录，站点也还没有改成只读 `summary/`。
+下面的目录树和 `schemas/` 是这份结构的契约。分阶段校验通过，这一期才算写完。
 
 三阶段按顺序做。上一阶段汇合校验通过，才把目录交给下一阶段。阶段内部没有依赖的任务可以并行。上游或 Skill 版本变了，只重算引用它的下游，再校验；没有引用关系的分支不动。不另做调度引擎或数据库。
 
@@ -35,7 +35,6 @@ flowchart LR
   clean --> cleaned["cleaned/"]
   cleaned --> summarize["数据总结"]
   summarize --> summary["summary/"]
-  summary --> blog["博客只渲染"]
 ```
 
 - [数据准备](references/prepare/prepare.md)：窗口、订阅、补录和三路原始抓取，落入 `raw/`。
@@ -50,7 +49,7 @@ flowchart LR
 
 ## 数据存储
 
-一期数据在数据仓库的 `issues/<生成日>/`。完整目录如下。没有单独文件名的官方发布原文，抓不到就写进 `raw/gaps.json`。`feeds.index.json` 仍是现行选文用的薄文件，写在期次根目录，不属于这棵树。
+一期数据在数据仓库的 `issues/<生成日>/`。完整目录如下。没有单独文件名的官方发布原文，抓不到就写进 `raw/gaps.json`。
 
 ```text
 issues/YYYY-MM-DD/
@@ -125,8 +124,6 @@ issues/YYYY-MM-DD/
 | [summarize/keywords.md](references/summarize/keywords.md) | `scripts/summarize/keywords/validate.py` | `schemas/summary/keywords.schema.json` |
 | [summarize/check.md](references/summarize/check.md) | `scripts/summarize/check/validate.py` | `schemas/summary/index.schema.json`、`schemas/summary/stage.schema.json`、`schemas/summary/gaps.schema.json` |
 
-博客只读 `summary/`：按 `summary/index.json` 排版，用其中的榜单数据画图，并使用已经写好的关键词映射。不选文，不写摘要，不推断关键词和条目的关系。按关键词筛选的界面本次不做。
-
 侧重点是 Agent 与产品。研究向、红队、纯学术长文可以不写。融资、IPO、营收、定价套餐和厂商客户案例不收，除非里面有具体技术或产品细节。优惠和白嫖不写。判断依据是内容，不是 URL 路径。不要编造数字、名次或材料里没有的事实。
 
-默认定时交到两个打开的 PR，不自动合并，也不发布。日程、仓库、密钥和交接见 routine 入口。
+默认定时交到一个打开的数据 PR，不自动合并。日程、仓库、密钥和交接见 routine 入口。站点如果要渲染，只读 `summary/`，那不是本 skill 的步骤。

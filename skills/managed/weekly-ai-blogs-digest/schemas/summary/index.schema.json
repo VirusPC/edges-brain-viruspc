@@ -31,6 +31,31 @@
         }
       }
     },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "raw",
+              "card"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
     "chapters": {
       "type": "array",
       "items": {

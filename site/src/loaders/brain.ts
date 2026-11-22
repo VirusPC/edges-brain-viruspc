@@ -22,9 +22,10 @@ import {
   formatCoverage,
   isLegacyIssue,
   issueTitle,
-  listAiNewsFiles,
   summaryLine,
 } from '../lib/ai-news.mjs';
+import { resolveAiNewsDataRoot } from '../lib/model-charts.mjs';
+import { composeIssueMarkdown, listSummaryIssues } from '../lib/summary-issue.mjs';
 import {
   fallbackDocumentName,
   listProjectDocuments,
@@ -355,24 +356,26 @@ export function aiNewsLoader(): Loader {
     name: 'brain-ai-news',
     load: async (context) => {
       const root = repoRootFrom(context.config.root);
-      const aiNewsRoot = path.join(root, 'ai-news');
+      const dataRoot = resolveAiNewsDataRoot(root);
 
       const sync = async () => {
         const entries: Normalized[] = [];
-        for (const file of listAiNewsFiles(aiNewsRoot)) {
-          const abs = path.join(aiNewsRoot, file);
-          const parsed = readMarkdown(abs);
-          const date = noteDateFromName(file);
+        for (const issueDate of listSummaryIssues(dataRoot)) {
+          const issueDir = path.join(dataRoot as string, 'issues', issueDate);
+          const markdown = composeIssueMarkdown(issueDir);
+          if (!markdown) continue;
+          const date = noteDateFromName(issueDate);
           if (!date) continue;
-          const legacy = isLegacyIssue(parsed.content);
+          const legacy = isLegacyIssue(markdown);
           const { start, end } = coverageWindow(date);
-          const summary = summaryLine(parsed.content, legacy);
+          const summary = summaryLine(markdown, legacy);
           const title = issueTitle(date);
           const windowLabel = formatCoverage(start, end);
+          const abs = path.join(root, 'ai-news', `${issueDate}-ai-news.md`);
           entries.push({
-            id: file.replace(/-ai-news\.md$/, ''),
+            id: issueDate,
             abs,
-            sourcePath: `ai-news/${file}`,
+            sourcePath: `ai-news/${issueDate}-ai-news.md`,
             title,
             date: formatISODate(date),
             description: summary ? `${windowLabel} · ${summary}` : windowLabel,
@@ -380,15 +383,15 @@ export function aiNewsLoader(): Loader {
             coverageEnd: formatISODate(end),
             summary,
             legacy,
-            body: stripMatchingFirstHeading(parsed.content, title),
-            raw: parsed.raw,
+            body: stripMatchingFirstHeading(markdown, title),
+            raw: markdown,
           });
         }
         await storeEntries(context, entries);
       };
 
       await sync();
-      bindWatcher(context.watcher, [aiNewsRoot], sync, context.logger, state);
+      bindWatcher(context.watcher, dataRoot ? [path.join(dataRoot, 'issues')] : [], sync, context.logger, state);
     },
   };
 }

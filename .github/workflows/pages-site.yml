@@ -17,6 +17,7 @@ on:
       - notes/**
       - projects/**
       - ai-news/**
+      - skills/managed/weekly-ai-blogs-digest/**
       - teaching/**
       - .github/workflows/pages-site.yml
   pull_request:
@@ -26,6 +27,7 @@ on:
       - notes/**
       - projects/**
       - ai-news/**
+      - skills/managed/weekly-ai-blogs-digest/**
       - teaching/**
       - .github/workflows/pages-site.yml
   workflow_dispatch:
@@ -53,6 +55,9 @@ jobs:
         working-directory: site
         env:
           ASTRO_TELEMETRY_DISABLED: 1
+          # PRs build against the migration branch until it is on main.
+          # Pushes to main always read the default branch.
+          AI_NEWS_DATA_REF: ${{ github.event_name == 'pull_request' && 'cursor/ai-news-three-stage-data-5355' || 'main' }}
         run: npm ci && npm test && npm run build
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'

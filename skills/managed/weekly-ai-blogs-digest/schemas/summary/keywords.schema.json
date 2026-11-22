@@ -24,6 +24,9 @@
             "type": "number",
             "exclusiveMinimum": 0
           },
+          "theme": {
+            "type": "boolean"
+          },
           "targets": {
             "type": "array",
             "minItems": 1,

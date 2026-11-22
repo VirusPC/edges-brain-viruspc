@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { inkMeasurementFont, renderKeywordCloudSvg } from '../../../skills/managed/weekly-ai-blogs-digest/scripts/render_keyword_cloud.mjs';
+import { inkMeasurementFont, renderKeywordCloudSvg } from '../../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/render_keyword_cloud.mjs';
 import { markdownPath, resolveAiNewsDataRoot } from '../lib/model-charts.mjs';
 import { keywordAlt, loadKeywordWords } from '../lib/keyword-snapshot.mjs';
 import { cloudHtml } from './rehype-keyword-cloud.mjs';
@@ -19,7 +19,9 @@ export function remarkKeywordCloud(options = {}) {
     if (!/-ai-news\.md$/i.test(path.basename(filePath || ''))) return;
     const issueDate = /^(\d{4}-\d{2}-\d{2})-ai-news\.md$/i.exec(path.basename(filePath))?.[1];
     if (!issueDate || !Array.isArray(tree?.children)) return;
-    const markdown = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
+    const markdown = typeof file.value === 'string'
+      ? file.value
+      : (fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '');
     const words = loadKeywordWords(resolveAiNewsDataRoot(repoRoot), issueDate, markdown);
     if (!words.length) return;
     const range = keywordRange(tree.children);

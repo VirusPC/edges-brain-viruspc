@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,6 +17,7 @@ const fontCandidates = [
   '/usr/share/fonts/opentype/noto/NotoSansCJKsc-Bold.otf',
   '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc',
   '/usr/share/fonts/truetype/noto/NotoSansCJKsc-Bold.otf',
+  path.join(homedir(), '.local/share/fonts/NotoSansCJKsc-Bold.otf'),
 ];
 
 if (!fontCandidates.some((file) => existsSync(file))) {

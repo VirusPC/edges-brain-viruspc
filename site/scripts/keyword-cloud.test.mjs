@@ -10,7 +10,7 @@ import {
   keywordWeight,
   renderCloudSvg,
   withVisualSizes,
-} from '../../skills/managed/weekly-ai-blogs-digest/scripts/keyword_cloud_style.mjs';
+} from '../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/keyword_cloud_style.mjs';
 import { loadKeywordWords } from '../src/lib/keyword-snapshot.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -147,7 +147,7 @@ test('a keyword cloud image is inlined from the sibling svg', () => {
 test('snapshot words lay out twice the same way when the bold font is installed', async (t) => {
   let cloud;
   try {
-    cloud = await import('../../skills/managed/weekly-ai-blogs-digest/scripts/render_keyword_cloud.mjs');
+    cloud = await import('../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/render_keyword_cloud.mjs');
   } catch {
     cloud = null;
   }
@@ -172,12 +172,12 @@ test('snapshot words lay out twice the same way when the bold font is installed'
   assert.doesNotMatch(first, /<rect|fffcf7|filter=/i);
 });
 
-test('a themed digest comment wins over an older unthemed snapshot', () => {
+test('a themed digest comment is the published word list', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kw-snap-'));
   const issue = '2026-11-20';
-  fs.mkdirSync(path.join(dir, 'issues', issue), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'issues', issue, 'keywords.json'), JSON.stringify({
-    words: [{ word: 'Gemini 4 Neon', weight: 4.7, score: 5, mentions: 3, sources: 3 }],
+  fs.mkdirSync(path.join(dir, 'issues', issue, 'summary'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'issues', issue, 'summary', 'keywords.json'), JSON.stringify({
+    keywords: [{ name: 'Gemini 4 Neon', weight: 4.7, targets: ['https://example.com/a'] }],
   }));
   const markdown = `## 一、本周关键词
 
@@ -190,10 +190,5 @@ test('a themed digest comment wins over an older unthemed snapshot', () => {
   const words = loadKeywordWords(dir, issue, markdown);
   assert.equal(words[0].word, '常驻 Agent');
   assert.equal(words[0].theme, true);
-  fs.writeFileSync(path.join(dir, 'issues', issue, 'keywords.json'), JSON.stringify({
-    words: [{ word: '常驻 Agent', weight: 4.2, theme: true }],
-  }));
-  const published = loadKeywordWords(dir, issue, markdown);
-  assert.equal(published.length, 1);
-  assert.equal(published[0].word, '常驻 Agent');
+  assert.equal(words.length, 2);
 });

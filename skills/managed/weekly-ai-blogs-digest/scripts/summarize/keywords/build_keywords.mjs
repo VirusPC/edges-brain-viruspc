@@ -690,17 +690,28 @@ function parseArgs(argv) {
 }
 
 function main() {
-  const args = parseArgs(process.argv.slice(2));
-  const priorMeta = readdirSync(args.issuesRoot)
-    .filter((name) => /^\d{4}-\d{2}-\d{2}$/.test(name) && name < args.issue)
-    .sort()
-    .map((name) => ({ issue: name }));
-  const document = buildKeywordDocument(args.issuesRoot, args.issue, {
-    snapshot: { commit: args.snapshotCommit, ref: args.snapshotRef },
-    priorMeta,
-  });
-  writeFileSync(args.out, `${JSON.stringify(document, null, 2)}\n`);
-  console.log(`${args.issue}: ${document.words.map((item) => item.word).join("、")}`);
+  const dir = process.argv[process.argv.indexOf('--issue-dir') + 1];
+  if (!dir || dir.startsWith('--')) fail('需要 --issue-dir issues/YYYY-MM-DD');
+  const summary = path.join(dir, 'summary');
+  const cards = [];
+  for (const lane of ['articles', 'projects', 'models']) {
+    const laneDir = path.join(summary, lane);
+    if (!existsSync(laneDir)) continue;
+    for (const name of readdirSync(laneDir)) {
+      if (!name.endsWith('.json') || name === 'index.json') continue;
+      const card = JSON.parse(readFileSync(path.join(laneDir, name), 'utf8'));
+      if (card?.id) cards.push(card);
+    }
+  }
+  const names = [...new Set(cards.map((card) => String(card.title || card.name || card.id)))];
+  const keywords = names.filter(Boolean).map((name) => ({
+    name,
+    weight: keywordWeight({ word: name, weight: 1 }),
+    targets: cards.filter((card) => card.id === name || String(card.text || '').includes(name) || card.title === name).map((card) => card.id),
+  })).filter((item) => item.targets.length);
+  const out = path.join(summary, 'keywords.json');
+  writeFileSync(out, `${JSON.stringify({ keywords }, null, 2)}\n`);
+  console.log(`${keywords.length} keywords -> ${out}`);
 }
 
 const entry = process.argv[1];

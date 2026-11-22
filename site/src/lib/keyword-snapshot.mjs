@@ -1,12 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { keywordWeight } from '../../../skills/managed/weekly-ai-blogs-digest/scripts/keyword_cloud_style.mjs';
+import { keywordWeight } from '../../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/keyword_cloud_style.mjs';
 
 /**
- * Snapshot keywords.json is `{ words: [...] }`. The digest comment is the same
- * array, copied at write time so the page can render before that file is on main.
+ * summary/keywords.json is `{ keywords: [{ name, weight, theme, targets }] }`.
+ * The digest comment is the same words, copied at write time.
  * @param {any} data
  */
+export function wordsFromKeywords(data) {
+  const list = Array.isArray(data?.keywords) ? data.keywords : [];
+  return wordsFromDocument(list.map((item) => ({
+    word: item?.name,
+    weight: item?.weight,
+    theme: item?.theme === true,
+  })));
+}
+
 export function wordsFromDocument(data) {
   const list = Array.isArray(data) ? data : data?.words;
   if (!Array.isArray(list)) return [];
@@ -52,19 +61,19 @@ function hasTheme(words) {
  */
 export function loadKeywordWords(dataRoot, issueDate, markdown) {
   const file = dataRoot && issueDate
-    ? path.join(dataRoot, 'issues', issueDate, 'keywords.json')
+    ? path.join(dataRoot, 'issues', issueDate, 'summary', 'keywords.json')
     : '';
   let snapshot = [];
   if (file && fs.existsSync(file)) {
     try {
-      snapshot = wordsFromDocument(JSON.parse(fs.readFileSync(file, 'utf8')));
+      snapshot = wordsFromKeywords(JSON.parse(fs.readFileSync(file, 'utf8')));
     } catch {
       snapshot = [];
     }
   }
   const comment = wordsFromComment(markdown);
-  if (hasTheme(snapshot)) return snapshot;
   if (hasTheme(comment)) return comment;
+  if (hasTheme(snapshot)) return snapshot;
   if (snapshot.length) return snapshot;
   return comment;
 }

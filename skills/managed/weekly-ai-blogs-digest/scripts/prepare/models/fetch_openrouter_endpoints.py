@@ -33,6 +33,10 @@ from decimal import Decimal
 from pathlib import Path
 
 from fetch_openrouter import failure_message, fetch_json, fetched_at_shanghai, redact
+
+_RANKS = Path(__file__).resolve().parents[2] / "clean" / "models"
+if str(_RANKS) not in sys.path:
+    sys.path.insert(0, str(_RANKS))
 from model_release_ranks import SPEED_METRIC, SPEED_SOURCE, as_decimal, json_number, speed_ranks
 
 ORIGIN = "https://openrouter.ai"
