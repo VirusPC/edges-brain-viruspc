@@ -231,7 +231,7 @@
         "adopted": false,
         "note": "不订 trvny feedseek 的 xai.xml。"
       },
-      "notes": "主源。0xSMW/rss-feeds 的 feed_xai_news.xml，2026-11-21 HTTP 200。日期不可靠，且没有 incident-sweep。日期以官网列表或 https://x.ai/sitemap.xml 的 lastmod 为准。sitemap 对简单 HTTP 客户端 403，浏览器可打开。2026-11-21 用浏览器读到：incident-sweep 的 lastmod 是 2026-10-20；grok-bot-1-0 的 lastmod 是 2026-11-11，feed 写成 2026-11-02；grok-bot-accounting 的 lastmod 是 2026-11-16，与 feed 一致。备源是 xai-news-olshansk 和 xai-news-xgo。 2026-11-22 现场 sitemap 仍是 HTTP 403。Wayback 捕获 20261111062938 的 sitemap 为 200。用这份 lastmod 核对：incident-sweep 2026-10-20，partnernetworkannouncement 2026-10-22，grok-bot-sales 2026-10-27，data-bot 2026-11-02，grok-voice-3 2026-10-14。feed 里把几十条都标成 2026-10-20 的，lastmod 不在窗口就不要收。这个捕获只用来核日期，不是第二条 OPML。"
+      "notes": "主源。0xSMW/rss-feeds 的 feed_xai_news.xml，2026-11-21 HTTP 200。日期不可靠，且没有 incident-sweep。日期以官网列表或 https://x.ai/sitemap.xml 的 lastmod 为准。sitemap 对简单 HTTP 客户端 403，浏览器可打开。2026-11-21 用浏览器读到：incident-sweep 的 lastmod 是 2026-10-20；grok-bot-1-0 的 lastmod 是 2026-11-11，feed 写成 2026-11-02；grok-bot-accounting 的 lastmod 是 2026-11-16，与 feed 一致。备源是 xai-news-olshansk 和 xai-news-xgo。 2026-11-22 现场 sitemap 仍是 HTTP 403。Wayback 捕获 20261111062938 为 200，但 lastmod 不是正文发布日期，不能用来把条目放进周窗口。feed 批量 pubDate 也不可靠。没有文章页上的发布日期，就不算窗口内。这个捕获不是第二条 OPML。"
     },
     {
       "id": "xai-news-olshansk",
