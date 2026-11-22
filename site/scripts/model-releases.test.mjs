@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { factsHtmlForHeading, renderModelFacts } from '../src/lib/model-releases.mjs';
+import { emptyModelFacts, factsHtmlForHeading, renderModelFacts } from '../src/lib/model-releases.mjs';
 import { insertModelFacts } from '../src/plugins/remark-model-facts.mjs';
 
 const astra = {
@@ -157,4 +157,75 @@ test('price and speed ranks use the cheaper and faster wording, and a missing ra
   assert.doesNotMatch(broken, /更便宜第|更快第|第 暂无/);
   assert.match(broken, /输入 \$8 · 输出 \$40 · 缓存读 \$0\.4</);
   assert.match(broken, /首 token 2\.7 秒 · 吞吐 37 token\/s</);
+});
+
+test('CNY prices use the yuan sign and an untagged price stays in dollars', () => {
+  const minimax = renderModelFacts({
+    name: 'MiniMax M3.1 Flash',
+    price: {
+      input: 1,
+      output: 4,
+      cache_read: 0.1,
+      unit: 'CNY per million tokens',
+      currency_original: 'CNY',
+      source: 'release_article',
+    },
+  });
+  assert.match(minimax, /输入 ¥1 · 输出 ¥4 · 缓存读 ¥0\.1/);
+  assert.doesNotMatch(minimax, /\$/);
+  const kimi = renderModelFacts({
+    name: 'Kimi K3.1 Pro',
+    price: {
+      input: 13,
+      output: 68,
+      cache_read: 1.3,
+      unit: 'CNY per million tokens',
+      currency_original: 'CNY',
+      source: 'release_article',
+    },
+  });
+  assert.match(kimi, /输入 ¥13 · 输出 ¥68 · 缓存读 ¥1\.3/);
+  const usd = renderModelFacts({
+    name: 'GPT-6.1 Terra',
+    price: { input: 1, output: 5, cache_read: 0.05, currency_original: 'USD', source: 'release_article' },
+  });
+  assert.match(usd, /输入 \$1 · 输出 \$5 · 缓存读 \$0\.05/);
+  assert.doesNotMatch(usd, /¥/);
+});
+
+test('a video price is shown in its own unit, and a heading without facts gets an empty card', () => {
+  const omni = renderModelFacts({
+    name: 'Gemini Omni 1.2 Flash',
+    price: {
+      input: null,
+      output: null,
+      video_720p_usd_per_second: 0.07,
+      unit: 'USD per second of 720p video',
+      currency_original: 'USD',
+      source: 'release_article',
+    },
+  });
+  assert.match(omni, /\$0\.07 \/ 秒（720p）/);
+  assert.match(omni, /model-facts-src">原文</);
+  assert.doesNotMatch(omni, /输入 \$/);
+  const html = emptyModelFacts('腾讯混元 Hy4');
+  assert.match(html, /腾讯混元 Hy4/);
+  assert.match(html.replace(/\s+/g, ' '), /价格<\/dt><dd>暂无<\/dd><dd class="model-facts-src">暂无/);
+  assert.match(html.replace(/\s+/g, ' '), /速度<\/dt><dd>暂无<\/dd><dd class="model-facts-src">暂无/);
+  assert.match(html.replace(/\s+/g, ' '), /效果<\/dt><dd>暂无<\/dd><dd class="model-facts-src">暂无/);
+  assert.doesNotMatch(html, /\$|¥/);
+  const tree = {
+    type: 'root',
+    children: [
+      { type: 'heading', depth: 2, children: [{ type: 'text', value: '二、模型进展' }] },
+      { type: 'heading', depth: 4, children: [{ type: 'text', value: '腾讯混元 Hy4' }] },
+      { type: 'heading', depth: 2, children: [{ type: 'text', value: '三、项目开源' }] },
+      { type: 'heading', depth: 4, children: [{ type: 'text', value: '腾讯混元 Hy4' }] },
+    ],
+  };
+  insertModelFacts(tree, [{ name: 'SWE-2 Flash', price: { input: 1, currency_original: 'USD' } }]);
+  assert.match(tree.children[2].value, /腾讯混元 Hy4/);
+  assert.match(tree.children[2].value, /暂无/);
+  assert.doesNotMatch(tree.children[2].value, /\$1/);
+  assert.equal(tree.children[4].type, 'heading');
 });
