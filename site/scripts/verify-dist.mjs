@@ -589,7 +589,14 @@ assert.doesNotMatch(toc20[0], />国际</);
 assert.ok(toc20[0].indexOf('四、精选文章') < toc20[0].indexOf('五、精选推文'));
 assert.ok(toc20[0].indexOf('五、精选推文') < toc20[0].indexOf('六、精选播客'));
 assert.doesNotMatch(toc20[0], /建设中/);
-assert.match(issue20, /weekly-ai-blogs-digest@0\.0\.5/);
+const skill20 = JSON.parse(
+  fs.readFileSync(
+    path.join(process.env.AI_NEWS_DATA_ROOT || path.join(siteRoot, '.cache/ai-news-data'), 'issues/2026-11-20/summary/index.json'),
+    'utf8',
+  ),
+).skill || {};
+assert.match(String(skill20.version || ''), /^\d+\.\d+\.\d+$/);
+assert.match(issue20, new RegExp(`weekly-ai-blogs-digest@${String(skill20.version).replaceAll('.', '\\.')}`));
 assert.match(issue20, /href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/blob\/[0-9a-f]{40}\/\.edges\/routines\/weekly-ai-blogs-digest\/INDEX\.md"/);
 assert.doesNotMatch(issue20, /skill 未记录|（当前版本）/);
 assert.doesNotMatch(issue20, /<dt>生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
