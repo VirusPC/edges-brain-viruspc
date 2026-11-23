@@ -13,4 +13,5 @@
 - [用户已定事项须写成硬性要求，不得改成二选一](<feedback_user_decisions_are_hard_requirements_not_options/INDEX.md>) — 转交云端 Agent 时打开：用户已经定下来的位置、名称、范围或做法必须写成硬性要求，不要改成二选一交给执行方取舍。
 - [AI 资讯是准备、清洗、总结三阶段](<feedback_ai_news_three_stages/INDEX.md>) — 改 AI 资讯周报流程时打开：产物是 raw、cleaned、summary；规则版本是 Skill 的 semver；数据仓库只写 URL，站点不是 Skill 输入。
 - [AI 资讯一次迁移同时更新 skill、数仓和站点](<feedback_ai_news_migration_updates_skill_data_and_site/INDEX.md>) — 改 AI 资讯 skill 或迁数据时打开：不留旧格式兼容层，要兼容就改数据；一次迁移同时让 skill、数仓和站点渲染用上最新版。
+- [数据处理流程以 skill 串联步骤并调用脚本](<feedback_data_processing_skill_leads_scripts/INDEX.md>) — 写或改数据处理类流程时打开：skill 串联步骤并调用脚本；根 SKILL.md 只写顺序和子步骤链接；命令、schema 和输入输出写在各子步骤 md。
 <!-- edges-entries-local:end -->
