@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from clean.check.validate import validate as validate_clean  # noqa: E402
-from lib.issue import check_document, check_stage_file, load_gaps  # noqa: E402
+from lib.issue import check_document, check_stage_file, load_gaps, parse_version  # noqa: E402
 from summarize.articles.validate import validate as validate_articles  # noqa: E402
 from summarize.keywords.validate import validate as validate_keywords  # noqa: E402
 from summarize.merge.article_coverage import article_coverage, cleaned_article_count  # noqa: E402
@@ -72,8 +72,14 @@ def _index(
         errors.append("summary/index.json 不能再写 blocks 或顶层 version")
     errors.extend(_no_provenance_comment(issue))
     skill = data.get("skill") if isinstance(data.get("skill"), dict) else {}
-    if skill.get("version") != skill_version():
-        errors.append(f"summary/index.json 的 skill.version 应为 {skill_version()}")
+    recorded = skill.get("version")
+    current = skill_version()
+    got = parse_version(recorded if isinstance(recorded, str) else None)
+    head = parse_version(current)
+    if got is None or head is None:
+        errors.append("summary/index.json 的 skill.version 不是 semver")
+    elif got > head:
+        errors.append(f"summary/index.json 的 skill.version {recorded} 新于当前 skill {current}")
     try:
         got_sources = data.get("sources")
         expect_sources = sources_document(issue)

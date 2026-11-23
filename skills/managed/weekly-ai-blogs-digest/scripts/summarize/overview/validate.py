@@ -13,6 +13,8 @@ from lib.jsonschema import validate as validate_schema  # noqa: E402
 from summarize.merge.write_index import skill_version  # noqa: E402
 
 NO_MODEL = "本周无重要模型发布"
+MAX_CHARS = 280
+SHORT_CHARS = 120
 SKIP_FILES = {"overview.json", "keywords.json", "index.json", "stage.json", "gaps.json"}
 
 
@@ -55,8 +57,10 @@ def validate(issue: Path) -> tuple[list[str], list[str]]:
             errors.append("summary/overview.json 首条 kind 不是 model")
         if index != 1 and kind == "model":
             errors.append("summary/overview.json 首条之外还有 kind=model")
-        if isinstance(theme.get("text"), str) and len(text) > 100:
-            errors.append(f"summary/overview.json 第 {index} 条超过 100 字")
+        if isinstance(theme.get("text"), str) and len(text) > MAX_CHARS:
+            errors.append(f"summary/overview.json 第 {index} 条超过 {MAX_CHARS} 字")
+        if text and text != NO_MODEL and len(text) < SHORT_CHARS:
+            warnings.append(f"警告: summary/overview.json 第 {index} 条少于 {SHORT_CHARS} 字")
         if index == 1 and text == NO_MODEL and model_ids:
             errors.append("summary/overview.json 本期有模型卡片，但首条写成「本周无重要模型发布」")
         if text != NO_MODEL and not refs:
@@ -75,10 +79,44 @@ def validate(issue: Path) -> tuple[list[str], list[str]]:
                     f"警告: summary/overview.json 第 {index} 条的 label「{label}」在正文里出现多次，站点只链第一处"
                 )
     body = "\n".join(texts)
+    errors.extend(_category_coverage(themes, _lane_ids(issue, "articles"), _lane_ids(issue, "projects")))
     for name in _theme_words(issue):
         if name not in body:
             warnings.append(f"警告: 关键词「{name}」的 theme 为 true，总结正文里没有出现")
     return errors, warnings
+
+
+def _category_coverage(themes: list, article_ids: set[str], project_ids: set[str]) -> list[str]:
+    if not article_ids or not project_ids:
+        return []
+    cited: set[str] = set()
+    for theme in themes:
+        if not isinstance(theme, dict):
+            continue
+        for ref in theme.get("refs") or []:
+            if isinstance(ref, dict) and isinstance(ref.get("id"), str):
+                cited.add(ref["id"])
+    errors = []
+    if cited.isdisjoint(project_ids):
+        errors.append("summary/overview.json 有精选项目，但主线没有引用项目")
+    if cited.isdisjoint(article_ids):
+        errors.append("summary/overview.json 有精选文章，但主线没有引用文章")
+    return errors
+
+
+def _lane_ids(issue: Path, lane: str) -> set[str]:
+    found: set[str] = set()
+    directory = issue / "summary" / lane
+    if not directory.is_dir():
+        return found
+    for path in directory.glob("*.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict) and isinstance(data.get("id"), str):
+            found.add(data["id"])
+    return found
 
 
 def _known_ids(issue: Path) -> set[str]:

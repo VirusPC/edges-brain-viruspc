@@ -178,17 +178,17 @@ def write_issue(root: Path) -> Path:
             "themes": [
                 {
                     "kind": "model",
-                    "text": "Example Model 写进这一期。",
+                    "text": "Example Model 写在这一期已经展示的模型卡里。卡片交代了它这周被选进来的原因，读者可以回到那张卡核对原话，而不是只看到一个名字。",
                     "refs": [{"id": MODEL, "label": "Example Model"}],
                 },
                 {
                     "kind": "other",
-                    "text": "一篇说明了产品变化。",
+                    "text": "一篇说明了产品这周的变化。正文写了具体做了什么，也把它和同页其他条目连在一起，读者顺着句子就能回到这篇文章。",
                     "refs": [{"id": ARTICLE, "label": "一篇"}],
                 },
                 {
                     "kind": "other",
-                    "text": "example/demo 进入周榜。",
+                    "text": "example/demo 进入这周的开源项目。卡片写了它为什么被留下，读者可以回到仓库条目看它和文章、模型是不是同一类变化。",
                     "refs": [{"id": REPO, "label": "example/demo"}],
                 },
             ],

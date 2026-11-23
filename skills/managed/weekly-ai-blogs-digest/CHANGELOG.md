@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 第一章在 `summary/index.json` 里改名为「本周概览」。词云仍来自 `keywords.json`，总结来自 `overview.json`。某一期没有 `overview.json` 时，校验不通过，站点构建也失败。
 - 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.8` 先不打，留给维护者。
 
+### Changed
+
+- 用户改了此前 grill 的 100 字上限。主线仍是 3 到 5 条，有材料时尽量写 4 或 5 条；每条不超过 280 字，建议 180 到 280 字。除「本周无重要模型发布」外，少于 120 字只警告。提示词改为用完整、自然的句子说明值得关注的原因或与其他条目的关系，不用「某某发布了，它重要是因为……」这种套话。本期既有精选项目又有精选文章时，两类都不能整类缺席。
+- 文章 feed 不得含 GitHub Trending 这条 raw 规则从 0.0.7 起生效。校验看 `raw/stage.json` 记录的版本，更早的期次不因这条失败。`summary/index.json` 的 skill 版本可以早于当前 skill；新补的 `overview.json` 用它自己的版本校验。版本号仍是 0.0.8。
+
 ## [0.0.7] - 2026-11-23
 
 ### Changed

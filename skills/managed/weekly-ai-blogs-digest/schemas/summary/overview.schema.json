@@ -23,7 +23,7 @@
         "required": ["kind", "text", "refs"],
         "properties": {
           "kind": { "enum": ["model", "other"] },
-          "text": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "text": { "type": "string", "minLength": 1, "maxLength": 280 },
           "refs": {
             "type": "array",
             "items": {

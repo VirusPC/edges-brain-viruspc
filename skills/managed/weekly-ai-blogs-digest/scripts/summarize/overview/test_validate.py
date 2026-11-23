@@ -36,11 +36,20 @@ def theme(kind: str, text: str, refs: list[dict] | None = None) -> dict:
     return {"kind": kind, "text": text, "refs": [] if refs is None else refs}
 
 
+def long_text(label: str) -> str:
+    return (
+        f"{label}写在这一期已经展示的内容里。"
+        "正文交代了它这周具体发生了什么，也写了它和同页其他条目怎么连在一起，而不是只报一个名字。"
+        "读者顺着这句就能回到对应的卡片，核对数字和原话，看它为什么会被留在这页上，而不是被放进缺口。"
+        "这一句只复述已经写进卡片的内容，不另加材料里没有的判断。"
+    )
+
+
 def valid_themes() -> list[dict]:
     return [
-        theme("model", "Example Model 写进这一期。", [{"id": MODEL, "label": "Example Model"}]),
-        theme("other", "一篇说明了产品变化。", [{"id": ARTICLE, "label": "一篇"}]),
-        theme("other", f"{THEME} 是这期的词。", [{"id": ARTICLE, "label": THEME}]),
+        theme("model", long_text("Example Model"), [{"id": MODEL, "label": "Example Model"}]),
+        theme("other", long_text("一篇"), [{"id": ARTICLE, "label": "一篇"}]),
+        theme("other", long_text(THEME), [{"id": ARTICLE, "label": THEME}]),
     ]
 
 
@@ -90,11 +99,45 @@ class OverviewValidate(unittest.TestCase):
         self.assertIn("不是 3 到 5 条", text)
         self.assertIn("skill.version 不等于当前 skill", text)
 
-    def test_over_100_characters(self) -> None:
+    def test_over_280_characters(self) -> None:
         themes = valid_themes()
-        themes[1] = theme("other", "字" * 101, [{"id": ARTICLE, "label": "字"}])
+        themes[1] = theme("other", "字" * 281, [{"id": ARTICLE, "label": "字"}])
         self.save(overview(themes))
-        self.assertTrue(any("超过 100 字" in item for item in self.errors()))
+        self.assertTrue(any("超过 280 字" in item for item in self.errors()))
+
+    def test_short_text_warns_but_the_empty_model_sentence_does_not(self) -> None:
+        themes = valid_themes()
+        themes[1] = theme("other", "一篇太短。", [{"id": ARTICLE, "label": "一篇"}])
+        self.save(overview(themes))
+        _errors, warnings = validate(self.issue)
+        self.assertTrue(any("少于 120 字" in item for item in warnings))
+        self.tmp.cleanup()
+        self.tmp = tempfile.TemporaryDirectory()
+        self.issue = build(Path(self.tmp.name), model=False)
+        themes = [
+            theme("model", NO_MODEL, []),
+            theme("other", long_text("一篇"), [{"id": ARTICLE, "label": "一篇"}]),
+            theme("other", long_text(THEME), [{"id": ARTICLE, "label": THEME}]),
+        ]
+        self.save(overview(themes))
+        _errors, warnings = validate(self.issue)
+        self.assertFalse(any("少于 120 字" in item and "第 1 条" in item for item in warnings))
+
+    def test_projects_and_articles_cannot_both_be_missing_a_category(self) -> None:
+        write_json(
+            self.issue / "summary" / "projects" / "demo.json",
+            {"id": "https://github.com/example/demo"},
+        )
+        self.save(overview(valid_themes()))
+        self.assertTrue(any("没有引用项目" in item for item in self.errors()))
+        themes = valid_themes()
+        themes[1] = theme(
+            "other",
+            long_text("example/demo"),
+            [{"id": "https://github.com/example/demo", "label": "example/demo"}],
+        )
+        self.save(overview(themes))
+        self.assertFalse(any("没有引用" in item for item in self.errors()))
 
     def test_first_must_be_the_only_model(self) -> None:
         themes = valid_themes()
@@ -116,9 +159,9 @@ class OverviewValidate(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.issue = build(Path(self.tmp.name), model=False)
         themes = [
-            theme("model", "这周模型卡片没写，但这条不是那句固定原文。", [{"id": ARTICLE, "label": "这周"}]),
-            theme("other", "一篇说明了产品变化。", [{"id": ARTICLE, "label": "一篇"}]),
-            theme("other", "Example 是这期的词。", [{"id": ARTICLE, "label": "Example"}]),
+            theme("model", long_text("这周"), [{"id": ARTICLE, "label": "这周"}]),
+            theme("other", long_text("一篇"), [{"id": ARTICLE, "label": "一篇"}]),
+            theme("other", long_text("Example"), [{"id": ARTICLE, "label": "Example"}]),
         ]
         self.save(overview(themes))
         text = "\n".join(self.errors())
