@@ -4,4 +4,5 @@
 ## 本层内容
 
 - [notes](<notes/README.md>) — 笔记内容叶子的组织清单。
+- [memory/projects/README.md](<memory/projects/README.md>)
 <!-- edges-entries-local:end -->
