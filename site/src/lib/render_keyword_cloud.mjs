@@ -30,7 +30,7 @@ import {
   withVisualSizes,
 } from "./keyword_cloud_style.mjs";
 
-export { sourceHostnames } from "./source_hostnames.mjs";
+export { sourceHostnames } from "../../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/source_hostnames.mjs";
 export { assignWeightTiers, fontSize, keywordWeight, renderCloudSvg, withVisualSizes, CROP_PADDING };
 
 const PALETTES = {
@@ -94,8 +94,8 @@ const LAYOUT_BOXES = [
 
 function usage() {
   return `用法:
-  node scripts/render_keyword_cloud.mjs --md <周报.md> --out-svg <出.svg> [--out-png <出.png>]
-  node scripts/render_keyword_cloud.mjs --json <词.json> --out-svg <出.svg>
+  node site/src/lib/render_keyword_cloud.mjs --md <周报.md> --out-svg <出.svg> [--out-png <出.png>]
+  node site/src/lib/render_keyword_cloud.mjs --json <词.json> --out-svg <出.svg>
 
 选项:
   --palette ink-sans|serif-earth|wenkai-pine   默认 ink-sans

@@ -1,8 +1,9 @@
 /**
- * 词云的权重、字号、分档和 SVG。
- * 这里不排版、不读字体。排版仍在 render_keyword_cloud.mjs，测量一律用粗体，
+ * 词云的字号、分档和 SVG。
+ * 这里不排版、不读字体。排版在 render_keyword_cloud.mjs，测量一律用粗体，
  * 所以换档的字重不会挪动位置。
  */
+import { keywordWeight } from "../../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/keyword_weight.mjs";
 
 export const CROP_PADDING = 12;
 
@@ -15,31 +16,7 @@ export const INK_TIERS = {
 
 const TIER_NAMES = ["top", "high", "mid", "low"];
 
-function round1(value) {
-  return Math.round(value * 10) / 10;
-}
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-/**
- * 热度。种类分（新型号 5、新产品 4、概念 3）不进这个数，避免基础分把型号撑成视觉中心。
- * 已写入的 weight 直接用，那是清洗时算好的热度。
- */
-export function keywordWeight(item) {
-  if (item.weight != null && item.weight !== "") {
-    const weight = Number(item.weight);
-    if (!Number.isFinite(weight)) throw new Error(`权重不是数字: ${item.word}`);
-    return clamp(round1(weight), 1, 5);
-  }
-  const mentions = item.mentions == null ? 0 : Number(item.mentions);
-  const sources = item.sources == null ? 0 : Number(item.sources);
-  if (![mentions, sources].every(Number.isFinite)) throw new Error(`分数或计数不是数字: ${item.word}`);
-  const mentionPart = (Math.min(mentions, 4) / 4) * 5;
-  const sourcePart = (Math.min(sources, 3) / 3) * 5;
-  return clamp(round1(0.625 * mentionPart + 0.375 * sourcePart), 1, 5);
-}
+export { keywordWeight };
 
 /** 主题比最热的支撑词大这么多像素，橙色档才是视觉中心。 */
 export const THEME_SIZE_LEAD = 8;

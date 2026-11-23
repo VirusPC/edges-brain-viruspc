@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { inkMeasurementFont, renderKeywordCloudSvg } from '../../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/render_keyword_cloud.mjs';
+import { inkMeasurementFont, renderKeywordCloudSvg } from '../lib/render_keyword_cloud.mjs';
 import { markdownPath, resolveAiNewsDataRoot } from '../lib/model-charts.mjs';
 import { keywordAlt, loadKeywordWords } from '../lib/keyword-snapshot.mjs';
 import { cloudHtml } from './rehype-keyword-cloud.mjs';

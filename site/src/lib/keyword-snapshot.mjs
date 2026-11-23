@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { keywordWeight } from '../../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/keyword_cloud_style.mjs';
+import { keywordWeight } from '../../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/keyword_weight.mjs';
 
 /**
  * summary/keywords.json is `{ keywords: [{ name, weight, theme, targets }] }`.

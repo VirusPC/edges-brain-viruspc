@@ -1,7 +1,7 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
-version: 0.2.0
+version: 0.2.1
 ---
 
 # AI 资讯周报
@@ -104,7 +104,7 @@ issues/YYYY-MM-DD/
 
 `{id}.json` 的文件名不是 ID。ID 写在文件里：文章是规范化链接，项目是仓库地址，模型是官方名，榜单条目是榜单名加模型官方名。`index.json` 只列这些 ID。
 
-契约在 `schemas/raw/`、`schemas/cleaned/`、`schemas/summary/`。校验脚本按子阶段放在 `scripts/prepare/`、`scripts/clean/`、`scripts/summarize/`，公共代码在 `scripts/lib/`。已经在用的采集、榜单和关键词脚本仍留在 `scripts/` 根目录，输出路径不变。
+契约在 `schemas/raw/`、`schemas/cleaned/`、`schemas/summary/`。校验脚本按子阶段放在 `scripts/prepare/`、`scripts/clean/`、`scripts/summarize/`，公共代码在 `scripts/lib/`。
 
 | 子阶段 | 校验脚本 | Schema |
 | --- | --- | --- |
