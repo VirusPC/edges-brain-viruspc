@@ -1084,47 +1084,7 @@
         "adopted": false,
         "note": "不是博客，不适用 BestBlogs。"
       },
-      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
-    },
-    {
-      "id": "github-trending-weekly-python",
-      "title": "GitHub Trending（每周 / Python）",
-      "lane": "special",
-      "group": "GitHub Trending",
-      "listUrls": [
-        "https://github.com/trending/python?since=weekly"
-      ],
-      "htmlUrl": "https://github.com/trending/python?since=weekly",
-      "xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml",
-      "feedOrigin": "third-party-scrape-rss",
-      "dateMode": "snapshot",
-      "fallback": null,
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "不是博客，不适用 BestBlogs。"
-      },
-      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
-    },
-    {
-      "id": "github-trending-weekly-typescript",
-      "title": "GitHub Trending（每周 / TypeScript）",
-      "lane": "special",
-      "group": "GitHub Trending",
-      "listUrls": [
-        "https://github.com/trending/typescript?since=weekly"
-      ],
-      "htmlUrl": "https://github.com/trending/typescript?since=weekly",
-      "xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/typescript.xml",
-      "feedOrigin": "third-party-scrape-rss",
-      "dateMode": "snapshot",
-      "fallback": null,
-      "bestblogs": {
-        "matchedXmlUrl": null,
-        "adopted": false,
-        "note": "不是博客，不适用 BestBlogs。"
-      },
-      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+      "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 每周总榜页面生成，不是 GitHub 官方 RSS。只订 weekly/all，不订任何语言榜，也不订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
     }
   ],
   "boards": [

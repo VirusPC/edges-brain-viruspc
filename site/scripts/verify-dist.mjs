@@ -37,6 +37,84 @@ function gitIssueCommit(issueDate) {
   return String(result.stdout || '').trim();
 }
 
+const SOURCE_UNITS = {
+  模型榜单: '源',
+  'GitHub Trending': '榜',
+  博客: '团队',
+  国内互联网: '团队',
+};
+const BOARD_CATEGORY = '模型榜单';
+
+function summarySources(issueDate) {
+  const dataRoot = process.env.AI_NEWS_DATA_ROOT
+    || path.join(siteRoot, '.cache/ai-news-data');
+  const indexPath = path.join(dataRoot, 'issues', issueDate, 'summary', 'index.json');
+  return JSON.parse(fs.readFileSync(indexPath, 'utf8')).sources;
+}
+
+function assertSourcesCard(html, issueDate) {
+  const start = html.indexOf('class="info-card ai-news-sources"');
+  const note = html.indexOf('class="info-card"');
+  const end = html.indexOf('id="一本周关键词"');
+  assert.ok(note >= 0 && start > note && end > start, `${issueDate} source card is not under the top note`);
+  const card = html.slice(start, end);
+  const sources = summarySources(issueDate);
+  assert.match(card, /<span>信息源<\/span>/);
+  assert.match(card, /<path d="M4 11a9 9 0 0 1 9 9"><\/path>/);
+  assert.doesNotMatch(card, /<circle cx="12" cy="12" r="10">/);
+  assert.equal((card.match(/<details class="ai-news-sources-cat"/g) || []).length, 4);
+  assert.doesNotMatch(card, /ai-news-sources-fold|<details[^>]* open/);
+  assert.match(card, /href="https:\/\/github.com\/VirusPC\/edges-brain-viruspc\/blob\/main\/skills\/managed\/weekly-ai-blogs-digest\/feeds\/ai-coding-blogs.opml"/);
+  assert.doesNotMatch(card, /data-cat|ai-news-filter|xmlUrl/);
+  let publisherTotal = 0;
+  let sum = 0;
+  let incomplete = false;
+  const names = new Set();
+  for (const title of Object.keys(SOURCE_UNITS)) {
+    const category = (sources.categories || []).find((item) => item?.title === title);
+    const publishers = (category?.publishers || []).filter((item) => item?.name && item?.url);
+    publisherTotal += publishers.length;
+    const unit = SOURCE_UNITS[title];
+    const board = title === BOARD_CATEGORY;
+    if (board) {
+      assert.match(card, new RegExp(`${title}</span></span><span class="ai-news-sources-cat-meta">${publishers.length} ${unit}</span>`));
+      const boardHtml = card.slice(card.indexOf(title), card.indexOf('GitHub Trending'));
+      assert.doesNotMatch(boardHtml, /未统计|ai-news-sources-count|条/);
+    } else if (typeof category?.count === 'number') {
+      sum += category.count;
+      assert.match(card, new RegExp(`${title}</span></span><span class="ai-news-sources-cat-meta">${publishers.length} ${unit} · <strong>${category.count} 条</strong>`));
+    } else {
+      incomplete = true;
+      assert.match(card, new RegExp(`${title}</span></span><span class="ai-news-sources-cat-meta">${publishers.length} ${unit} · 未统计`));
+    }
+    const quiet = board ? 0 : publishers.filter((item) => item.count === 0).length;
+    if (quiet) assert.match(card, new RegExp(`本期无新增 \\(${quiet}\\)`));
+    for (const publisher of publishers) {
+      names.add(publisher.name);
+      const href = String(publisher.url).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const label = String(publisher.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (!board && typeof publisher.count === 'number') {
+        assert.match(card, new RegExp(`href="${href}"[^>]*>[\\s\\S]*?${label}</span><span class="ai-news-sources-count">${publisher.count}</span>`));
+      } else {
+        assert.match(card, new RegExp(`href="${href}"[^>]*>[\\s\\S]*?${label}</span></a>`));
+      }
+    }
+  }
+  const plus = incomplete ? '\\+' : '';
+  assert.match(card, new RegExp(`4 类 </span>${publisherTotal} 源 · 抓取 <span class="ai-news-sources-tally-sum">${sum}${plus}</span>`));
+  assert.doesNotMatch(card, /筛前/);
+  const css = fs.readFileSync(path.join(siteRoot, 'src/styles/global.css'), 'utf8');
+  assert.match(css, /--info-card-font-size:\s*0\.8em/);
+  assert.match(css, /--info-card-line-height:\s*1\.5/);
+  assert.match(css, /\.info-card\s*\{[^}]*font-size:\s*var\(--info-card-font-size\)/);
+  assert.match(css, /\.info-card\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
+  assert.match(css, /\.ai-news-sources\s*\{[^}]*font-size:\s*var\(--info-card-font-size\)/);
+  assert.match(css, /\.ai-news-sources\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
+  for (const label of ['每周 / TypeScript', '每周 / Python', '每周 / 全部']) {
+    if (!names.has(label)) assert.doesNotMatch(card, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+}
+
 function exists(rel) {
   assert.ok(rels.includes(rel), `missing ${rel}`);
 }
@@ -314,6 +392,7 @@ assertCategoryPills(latestIssue, [
 
 const newestIssue = fs.readFileSync(path.join(dist, 'ai-news/2026-11-13/index.html'), 'utf8');
 assert.match(newestIssue, /<h1>\s*2026-11-13 AI 资讯\s*<\/h1>/);
+assertSourcesCard(newestIssue, '2026-11-13');
 assert.match(newestIssue, /class="info-card"/);
 assert.match(newestIssue, /<mark class="note-card-hl">11-06 08:00 → 11-13 07:59<\/mark>/);
 assert.match(newestIssue, /<dt>生成日<\/dt><dd>2026-11-13<\/dd>/);
@@ -443,22 +522,7 @@ assert.doesNotMatch(issue20, /<p>\s*GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 So
 assert.doesNotMatch(aiNewsList, /GPT-6\.2 Astra、Gemini 4 Neon、GPT-6\.2 Sol、常驻 Agent/);
 assert.match(issue20, /class="post-kicker"[\s\S]*2026-11-20[\s\S]*覆盖 2026-11-13～11-19/);
 assert.match(issue20, /class="info-card"/);
-const sourcesAt20 = issue20.indexOf('class="info-card ai-news-sources"');
-const coverageAt20 = issue20.indexOf('class="info-card"');
-assert.ok(coverageAt20 >= 0 && sourcesAt20 > coverageAt20, '2026-11-20 source card is not under the top note');
-const sourcesCard20 = issue20.slice(sourcesAt20, issue20.indexOf('id="一本周关键词"'));
-assert.match(sourcesCard20, /<span>信息源<\/span>/);
-assert.match(sourcesCard20, /4 类 \d+ 源 · 筛前 \d+ 条/);
-assert.match(sourcesCard20, /模型榜单<\/span><span>\d+ 源 · 筛前 \d+ 条/);
-assert.match(sourcesCard20, /GitHub Trending<\/span>/);
-assert.match(sourcesCard20, /博客<\/span>/);
-assert.match(sourcesCard20, /国内互联网<\/span>/);
-assert.doesNotMatch(sourcesCard20, /筛前 0 条/);
-assert.match(sourcesCard20, /本期无新增 \(\d+\)/);
-assert.match(sourcesCard20, /href="https:\/\/github.com\/VirusPC\/edges-brain-viruspc\/blob\/main\/skills\/managed\/weekly-ai-blogs-digest\/feeds\/ai-coding-blogs.opml"/);
-assert.match(sourcesCard20, /target="_blank" rel="noopener noreferrer"><svg class="info-card-icon"[\s\S]*<span>OPML<\/span>/);
-assert.doesNotMatch(sourcesCard20, /<details class="ai-news-sources-fold" open/);
-assert.doesNotMatch(sourcesCard20, /data-cat|ai-news-filter|xmlUrl/);
+assertSourcesCard(issue20, '2026-11-20');
 assert.match(issue20, /<mark class="note-card-hl">11-13 08:00 → 11-20 07:59<\/mark>/);
 assert.match(issue20, /class="info-card-note">不含生成当天/);
 assert.match(issue20, /class="info-card-label"[\s\S]*发布要点/);
@@ -525,7 +589,14 @@ assert.doesNotMatch(toc20[0], />国际</);
 assert.ok(toc20[0].indexOf('四、精选文章') < toc20[0].indexOf('五、精选推文'));
 assert.ok(toc20[0].indexOf('五、精选推文') < toc20[0].indexOf('六、精选播客'));
 assert.doesNotMatch(toc20[0], /建设中/);
-assert.match(issue20, /weekly-ai-blogs-digest@0\.0\.5/);
+const skill20 = JSON.parse(
+  fs.readFileSync(
+    path.join(process.env.AI_NEWS_DATA_ROOT || path.join(siteRoot, '.cache/ai-news-data'), 'issues/2026-11-20/summary/index.json'),
+    'utf8',
+  ),
+).skill || {};
+assert.match(String(skill20.version || ''), /^\d+\.\d+\.\d+$/);
+assert.match(issue20, new RegExp(`weekly-ai-blogs-digest@${String(skill20.version).replaceAll('.', '\\.')}`));
 assert.match(issue20, /href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/blob\/[0-9a-f]{40}\/\.edges\/routines\/weekly-ai-blogs-digest\/INDEX\.md"/);
 assert.doesNotMatch(issue20, /skill 未记录|（当前版本）/);
 assert.doesNotMatch(issue20, /<dt>生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);

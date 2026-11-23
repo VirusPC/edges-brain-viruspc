@@ -291,13 +291,7 @@ def _github_feed(source_id: str, xml_url: str, opml: dict[str, dict]) -> dict | 
     text = f"{source_id} {xml_url}"
     if "GitHubTrendingRSS" not in text and not source_id.startswith("github-trending"):
         return None
-    period = "weekly" if "weekly" in text else "daily"
-    if "python" in text:
-        page = f"https://github.com/trending/python?since={period}"
-    elif "typescript" in text:
-        page = f"https://github.com/trending/typescript?since={period}"
-    else:
-        page = f"https://github.com/trending?since={period}"
+    page = "https://github.com/trending?since=weekly"
     canonical = page
     for info in opml.values():
         if info["publisher"] == "GitHub" and info["publisher_url"]:

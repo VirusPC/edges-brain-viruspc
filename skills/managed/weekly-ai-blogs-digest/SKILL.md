@@ -1,7 +1,7 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
-version: 0.0.5
+version: 0.0.6
 ---
 
 # AI 资讯周报
@@ -22,7 +22,7 @@ version: 0.0.5
 
 `version` 写在本文件 frontmatter，格式是 semver。`stage.json` 仍记 skill 名和这个版本。`summary/index.json` 的 `skill` 是 `{name, version}`，不再另写顶层 `version`。`routine` 记调用方给出的仓库、commit 和入口路径。edges 的 skill 版本约定没有内容哈希，这里也不加。
 
-改了本 skill 的 `SKILL.md`、scripts、references 或对外行为后，按 [Edges skills 目录规范](https://github.com/VirusPC/edges/blob/main/packages/skills/README.md) 升版本：补丁 +0.0.1，行为或契约变 +0.1.0，不兼容 +1.0.0。把同目录 `CHANGELOG.md` 里 `[Unreleased]` 下的条目挪到 `## [x.y.z] - YYYY-MM-DD`。对同一个 commit 打 annotated tag `skill/weekly-ai-blogs-digest@<version>`。没改到本 skill 就不升版本。
+改了本 skill 的 `SKILL.md`、scripts、references 或对外行为后，只升 patch（+0.0.1）。本技能不升 minor 或 major；即使行为或契约变化，也不按 [Edges skills 目录规范](https://github.com/VirusPC/edges/blob/main/packages/skills/README.md) 去升 0.1.0 或 1.0.0。把同目录 `CHANGELOG.md` 里 `[Unreleased]` 下的条目挪到 `## [x.y.z] - YYYY-MM-DD`。对同一个 commit 打 annotated tag `skill/weekly-ai-blogs-digest@<version>`。没改到本 skill 就不升版本。
 
 下面的目录树和 `schemas/` 是这份结构的契约。分阶段校验通过，这一期才算写完。
 

@@ -75,12 +75,26 @@ export function provenanceForIssue(dataRoot, issueDate) {
 }
 
 const SOURCE_CATEGORIES = ['模型榜单', 'GitHub Trending', '博客', '国内互联网'];
+const SOURCE_UNITS = {
+  模型榜单: '源',
+  'GitHub Trending': '榜',
+  博客: '团队',
+  国内互联网: '团队',
+};
+/** 榜单按来源计，不把 summary 里的行数加进「抓取」。识别用类目 title，不用发布方名字。 */
+const BOARD_CATEGORY = '模型榜单';
 const OPML_HREF = 'https://github.com/VirusPC/edges-brain-viruspc/blob/main/skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml';
+const RSS_ICON = '<svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>';
+const CHEVRON_ICON = '<svg class="ai-news-sources-chev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>';
 const DOWNLOAD_ICON = '<svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>';
 
 /**
- * Collapsed source card. Counts are fetches before selection, not filter totals.
- * A null item count is 未统计. Zero is not shown as an item count.
+ * Source card under the coverage note. Each category folds on its own.
+ * Item totals skip the board category. null is 未统计 on counted categories.
+ * 0 stays a count there and those publishers fold under 本期无新增.
+ * Board publishers are listed without a count.
+ * GitHub boards render only when summary sources already lists them as
+ * publishers. This does not split or invent per-board counts.
  * @param {{ categories?: { title?: string, count?: number | null, publishers?: { name?: string, url?: string, count?: number | null }[] }[] } | null | undefined} sources
  * @returns {string}
  */
@@ -92,46 +106,66 @@ export function sourcesCardHtml(sources) {
     const count = found && (found.count === null || typeof found.count === 'number') ? found.count : null;
     return { title, count, publishers };
   });
+  const sections = categories.map((category) => categorySection(category)).join('');
+  return `<aside class="info-card ai-news-sources" aria-label="本期信息源"><div class="ai-news-sources-head"><div class="ai-news-sources-title"><p class="info-card-label">${RSS_ICON}<span>信息源</span></p>${tallyHtml(categories)}</div><a class="ai-news-sources-opml" href="${OPML_HREF}" target="_blank" rel="noopener noreferrer">${DOWNLOAD_ICON}<span>OPML</span></a></div><div class="ai-news-sources-body">${sections}</div></aside>`;
+}
+
+/**
+ * @param {{ title: string, count: number | null, publishers: { name?: string, url?: string, count?: number | null }[] }[]} categories
+ */
+function countsItems(category) {
+  return category.title !== BOARD_CATEGORY;
+}
+
+function tallyHtml(categories) {
   const sourceTotal = categories.reduce((sum, category) => sum + category.publishers.length, 0);
-  const counted = categories.map((category) => category.count).filter((count) => typeof count === 'number' && count > 0);
-  const tallyItems = counted.length ? `筛前 ${counted.reduce((sum, count) => sum + count, 0)} 条` : '筛前未统计';
-  const rows = categories.map((category) => {
-    const sourcesLabel = `${category.publishers.length} 源`;
-    return `<span class="ai-news-sources-row"><span>${escapeHtml(category.title)}</span><span>${sourcesLabel} · ${itemLabel(category.count)}</span></span>`;
-  }).join('');
-  const details = categories.map((category) => categoryDetail(category)).join('');
-  return `<aside class="info-card ai-news-sources"><div class="ai-news-sources-head"><p class="info-card-label">${INFO_ICON}<span>信息源</span></p><a class="ai-news-sources-opml" href="${OPML_HREF}" target="_blank" rel="noopener noreferrer">${DOWNLOAD_ICON}<span>OPML</span></a></div><details class="ai-news-sources-fold"><summary><span class="ai-news-sources-tally">${categories.length} 类 ${sourceTotal} 源 · ${tallyItems}</span><span class="ai-news-sources-rows">${rows}</span></summary><div class="ai-news-sources-detail">${details}</div></details></aside>`;
+  const counted = categories.filter(countsItems);
+  const numbers = counted.filter((category) => typeof category.count === 'number');
+  let items = '抓取未统计';
+  if (numbers.length) {
+    const sum = numbers.reduce((total, category) => total + category.count, 0);
+    const plus = numbers.length === counted.length ? '' : '+';
+    items = `抓取 <span class="ai-news-sources-tally-sum">${sum}${plus}</span><span class="ai-news-sources-tally-unit"> 条</span>`;
+  }
+  return `<span class="ai-news-sources-tally"><span class="ai-news-sources-tally-kinds">${categories.length} 类 </span>${sourceTotal} 源 · ${items}</span>`;
 }
 
 /**
- * @param {number | null} count
+ * @param {{ title: string, count: number | null, publishers: unknown[] }} category
  */
-function itemLabel(count) {
-  if (typeof count === 'number' && count > 0) return `筛前 ${count} 条`;
-  return '未统计';
+function categoryMeta(category) {
+  const unit = SOURCE_UNITS[category.title] || '源';
+  const label = `${category.publishers.length} ${unit}`;
+  if (!countsItems(category)) return label;
+  if (typeof category.count !== 'number') return `${label} · 未统计`;
+  return `${label} · <strong>${category.count} 条</strong>`;
 }
 
 /**
- * @param {{ title: string, publishers: { name?: string, url?: string, count?: number | null }[] }} category
+ * @param {{ title: string, count: number | null, publishers: { name?: string, url?: string, count?: number | null }[] }} category
  */
-function categoryDetail(category) {
-  const active = category.publishers.filter((item) => item.count !== 0);
-  const quiet = category.publishers.filter((item) => item.count === 0);
-  const names = `<div class="ai-news-sources-names">${active.map(publisherLink).join('')}</div>`;
-  const extra = quiet.length
-    ? `<details class="ai-news-sources-quiet"><summary>本期无新增 (${quiet.length})</summary><div class="ai-news-sources-names">${quiet.map(publisherLink).join('')}</div></details>`
+function categorySection(category) {
+  const listed = countsItems(category)
+    ? category.publishers.filter((item) => item.count !== 0)
+    : category.publishers;
+  const quiet = countsItems(category) ? category.publishers.filter((item) => item.count === 0) : [];
+  const names = listed.length
+    ? `<div class="ai-news-sources-names">${listed.map((item) => publisherLink(item, countsItems(category))).join('')}</div>`
     : '';
-  return `<div class="ai-news-sources-group"><p class="ai-news-sources-cat">${escapeHtml(category.title)}</p>${names}${extra}</div>`;
+  const extra = quiet.length
+    ? `<details class="ai-news-sources-quiet"><summary>${CHEVRON_ICON}<span>本期无新增 (${quiet.length})</span></summary><div class="ai-news-sources-names">${quiet.map((item) => publisherLink(item, true)).join('')}</div></details>`
+    : '';
+  return `<details class="ai-news-sources-cat"><summary><span class="ai-news-sources-cat-name">${CHEVRON_ICON}<span>${escapeHtml(category.title)}</span></span><span class="ai-news-sources-cat-meta">${categoryMeta(category)}</span></summary>${names}${extra}</details>`;
 }
 
 /**
  * @param {{ name?: string, url?: string, count?: number | null }} publisher
  */
-function publisherLink(publisher) {
-  const count = typeof publisher.count === 'number' && publisher.count > 0
+function publisherLink(publisher, showCount) {
+  const count = showCount && typeof publisher.count === 'number'
     ? `<span class="ai-news-sources-count">${publisher.count}</span>`
     : '';
-  return `<span class="ai-news-sources-pub"><a href="${escapeHtml(publisher.url || '')}" target="_blank" rel="noopener noreferrer">${escapeHtml(publisher.name || '')}</a>${count}</span>`;
+  return `<a class="ai-news-sources-pub" href="${escapeHtml(publisher.url || '')}" target="_blank" rel="noopener noreferrer"><span class="ai-news-sources-name">${escapeHtml(publisher.name || '')}</span>${count}</a>`;
 }
 
 function loadIssueIndex(dataRoot, issueDate) {
