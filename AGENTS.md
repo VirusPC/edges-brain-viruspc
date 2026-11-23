@@ -39,7 +39,7 @@ ECS 上 `/teaching/` 由本仓部署，检出是 `/home/cheng-dev/projects/edges
 - [领域任务](<tasks/AGENTS.md>) — 领域任务入口。
 - [笔记规范](<notes/AGENTS.md>) — 笔记规范入口。
 
-- [skills/managed/weekly\-ai\-blogs\-digest/AGENTS.md](<skills/managed/weekly-ai-blogs-digest/AGENTS.md>) — weekly\-ai\-blogs\-digest 的精选规则与跑周报复盘
+- [skills/managed/weekly\-ai\-blogs\-digest/AGENTS.md](<skills/managed/weekly-ai-blogs-digest/AGENTS.md>) — weekly\-ai\-blogs\-digest 的改技能约定、精选规则与跑周报复盘
 - [桌面 Agent 产品评测](<projects/2026-06-21--Agent产品评测/_eval_agent_desktop/AGENTS.md>) — 每个 eval 点单独一个 Markdown 文件。
 - [routines/AGENTS.md](<routines/AGENTS.md>) — 例程子作用域入口。
 - [site/AGENTS.md](<site/AGENTS.md>) — 站点层。改样式、组件、排版和交互时，同时看手机、电脑、浅色和暗色。
