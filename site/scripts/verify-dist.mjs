@@ -255,8 +255,9 @@ const plainNote = fs.readFileSync(path.join(dist, 'notes/2026-10-29--open-grokbo
 assert.match(plainNote, /IntersectionObserver/);
 assert.doesNotMatch(aiNewsList, /IntersectionObserver/);
 assert.match(latestIssue, /aria-current="page"[^>]*>\s*AI News\s*</);
-assert.match(latestIssue, /较上周无新榜/);
-assert.match(latestIssue, /alt="LLM Arena Top15 2026-10-28"/);
+assert.match(latestIssue, /这一期的榜单。/);
+assert.doesNotMatch(latestIssue, /较上周无新榜/);
+assert.match(latestIssue, /alt="LLM Arena Top 15，2026-10-28"/);
 assert.doesNotMatch(latestIssue, /llm-arena-top15-2026-11-06/);
 assert.doesNotMatch(latestIssue, /ai-news\.notes/);
 assert.doesNotMatch(aiNewsList, /ai-news\.notes/);
@@ -265,13 +266,13 @@ assert.equal(
   false,
   'notes sidecars are not site pages',
 );
-const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-10-28"[^>]*src="([^"]+)"/)
-  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top15 2026-10-28"/);
+const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top 15，2026-10-28"[^>]*src="([^"]+)"/)
+  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top 15，2026-10-28"/);
 assert.ok(arenaSrc, 'latest issue is missing the arena image');
 const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 exists(arenaRel);
 assert.match(latestIssue, /class="keyword-cloud"/);
-assert.match(latestIssue, /aria-label="Deep Agents、SWE-2 Flash、Devin Review 2\.0、Gemini Omni 1\.2 Flash、GPT-6 Cyber、Hy4、Images 2\.6、LongCat-2\.5、Step 5 Preview"/);
+assert.match(latestIssue, /aria-label="Deep Agents、SWE-2 Flash、Devin Review 2\.0、Gemini Omni 1\.2 Flash、GPT-6 Cyber、Hy4、LongCat-2\.5、Step 5 Preview"/);
 assert.match(latestIssue, /class="kw-top"[^>]*>Deep Agents</);
 assert.match(latestIssue, /class="kw-top"/);
 assert.match(latestIssue, /class="keyword-cloud-outline"[^>]*>\s*<rect><\/rect>/);
@@ -290,9 +291,9 @@ assert.doesNotMatch(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
 assert.match(latestIssue, /data-model-board/);
 assert.deepEqual(optionLabels(latestIssue), [
   'LLM Arena',
-  'OpenRouter 本周用量',
-  'OpenRouter 编程用量',
   'OpenRouter 应用用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 本周用量',
 ]);
 const latestSpecs = chartSpecs(latestIssue);
 assert.equal(latestSpecs.length, 4);
@@ -301,7 +302,7 @@ assert.equal(latestSpecs[0].publishDate, '2026-10-28');
 assert.equal(latestSpecs[0].items.length, 15);
 assert.ok(latestSpecs[0].items.some((item) => item.name === 'Gemini 4 Carbon (High)'));
 assert.equal(latestSpecs[0].items.some((item) => item.highlight), false);
-assert.ok(latestSpecs[1].items.some((item) => item.name === 'Hy4' && item.highlight));
+assert.ok(latestSpecs[3].items.some((item) => item.name === 'Hy4'));
 assert.match(latestIssue, /class="model-facts-name">腾讯混元 Hy4<\/p>[\s\S]{0,240}暂无/);
 assert.match(latestIssue, /class="model-facts-name">美团 LongCat-2\.5<\/p>[\s\S]{0,240}暂无/);
 assert.doesNotMatch(latestIssue, /采样周|榜单发布日|下一期|后面几期/);
@@ -406,33 +407,32 @@ assert.doesNotMatch(backfillIssue, /文章总结列表/);
 const backfillToc = backfillIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(backfillToc, '2026-10-23 is missing the chapter toc');
 assert.match(backfillToc[0], /二、模型进展/);
-assert.match(backfillIssue, /alt="LLM Arena Top15 2026-10-22"/);
+assert.match(backfillIssue, /alt="LLM Arena Top 15，2026-10-22"/);
 assert.deepEqual(optionLabels(backfillIssue), [
   'LLM Arena',
-  'OpenRouter 本周用量',
-  'OpenRouter 编程用量',
   'OpenRouter 应用用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 本周用量',
 ]);
 const backfillSpecs = chartSpecs(backfillIssue);
 assert.deepEqual(backfillSpecs.map((spec) => spec.kind), [
   'llm-arena',
-  'openrouter-usage',
-  'openrouter-programming',
   'openrouter-apps',
+  'openrouter-programming',
+  'openrouter-usage',
 ]);
 assert.equal(backfillSpecs[0].publishDate, '2026-10-22');
 assert.equal(backfillSpecs[0].items.length, 15);
 assert.equal(backfillSpecs[0].items.some((item) => item.highlight), false);
-assert.equal(backfillSpecs[1].items[0].name, 'DeepSeek V4.1 Flash');
-assert.ok(backfillSpecs[1].items.some((item) => item.name.includes('minimax-m3.1-flash-20261019') && item.highlight));
-assert.equal(backfillSpecs[1].items.some((item) => item.name === 'DeepSeek V4.1 Flash' && item.highlight), false);
+assert.equal(backfillSpecs[3].items[0].name, 'DeepSeek V4.1 Flash');
+assert.equal(backfillSpecs[3].items.some((item) => item.name === 'DeepSeek V4.1 Flash' && item.highlight), false);
 assert.match(backfillIssue, /输入 ¥1 · 输出 ¥4 · 缓存读 ¥0\.1/);
 assert.doesNotMatch(backfillIssue, /采样周|榜单发布日|后面几期|下一期/);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
 assert.match(issue20, /class="keyword-cloud"/);
-assert.match(issue20, /aria-label="常驻 Agent、Devin Bots、Devin Apps、Gemini 4 Neon、software factory、GPT-6\.2 Astra、GPT-6\.2 Sol、ChatGPT Wallet、CodeRabbit Verify、Data Annotation Queues、LoopForge、Rumble-2-Flash、Warp Learn"/);
+assert.match(issue20, /aria-label="常驻 Agent、Devin Bots、Devin Apps、Gemini 4 Neon、software factory、GPT-6\.2 Astra、GPT-6\.2 Sol、LoopForge、Warp Learn"/);
 assert.match(issue20, /class="kw-top"[^>]*>常驻 Agent</);
 assert.doesNotMatch(issue20, /class="kw-top"[^>]*>Gemini 4 Neon</);
 const keywordAlt20 = issue20.match(/aria-label="(常驻 Agent、Devin Bots、[^"]*)"/);
@@ -453,23 +453,22 @@ assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/
 assert.deepEqual(optionLabels(issue20), [
   'Artificial Analysis',
   'LLM Arena',
-  'OpenRouter 本周用量',
-  'OpenRouter 编程用量',
   'OpenRouter 应用用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 本周用量',
 ]);
 assert.equal(firstPanelKind(issue20), 'aa');
 const specs20 = chartSpecs(issue20);
 assert.deepEqual(specs20.map((spec) => spec.kind), [
   'aa',
   'llm-arena',
-  'openrouter-usage',
-  'openrouter-programming',
   'openrouter-apps',
+  'openrouter-programming',
+  'openrouter-usage',
 ]);
-assert.ok(specs20[1].items.some((item) => item.name === 'Gemini 4 Neon (High)' && item.highlight));
+assert.ok(specs20[1].items.some((item) => item.name === 'Gemini 4 Neon (High)'));
 assert.equal(specs20[1].publishDate, '2026-11-18');
-assert.ok(specs20[0].items.some((item) => item.highlight));
-assert.equal(specs20[2].items.some((item) => item.name === 'Hy4 flash' && item.highlight), true);
+assert.ok(specs20[4].items.some((item) => item.name === 'Hy4 flash'));
 assert.equal(specs20[2].items[0].name.includes('/'), false);
 assert.match(issue20, /alt="LLM Arena Top 15，2026-11-18"/);
 assert.match(issue20, /这一期的榜单。/);

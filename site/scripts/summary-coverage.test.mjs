@@ -55,8 +55,8 @@ test('an issue without body slices is composed from chapters and card text', () 
   assert.match(markdown, /## 一、本周关键词\n\n## 二、模型进展\n\n### Artificial Analysis\n\n!\[Artificial Analysis Intelligence Index Top 15，2026-11-13\]\(aa-intelligence-top15-2026-11-13-marked\.png\)/);
   assert.match(markdown, /这张榜最前面是新模型。/);
   assert.match(markdown, /红圈：Example。/);
-  assert.match(markdown, /## 三、精选文章\n\n<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。[\s\S]*### 国外模型厂\n\n#### \[一篇\]\(https:\/\/example.com\/post\)/);
-  assert.match(markdown, /## 四、精选推文\n/);
+  assert.match(markdown, /## 四、精选文章\n\n<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。[\s\S]*### 国外模型厂\n\n#### \[一篇\]\(https:\/\/example.com\/post\)/);
+  assert.match(markdown, /## 五、精选推文\n/);
   assert.match(markdown, /<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。/);
 });
 

@@ -64,7 +64,14 @@ export function composeIssueMarkdown(issueDir) {
   return withArticlesCoverage(markdown, index.articles_coverage);
 }
 
-const CHAPTER_NUMBERS = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+const CHAPTER_NUMBERS = {
+  本周关键词: '一',
+  模型进展: '二',
+  项目开源: '三',
+  精选文章: '四',
+  精选推文: '五',
+  精选播客: '六',
+};
 
 const BOARD_CHARTS = {
   'Artificial Analysis': {
@@ -105,9 +112,8 @@ function composeFromChapters(issueDir, index) {
   const parts = [];
   const window = windowLine(index, issueDate);
   if (window) parts.push(window);
-  for (let indexNumber = 0; indexNumber < index.chapters.length; indexNumber += 1) {
-    const chapter = index.chapters[indexNumber];
-    const number = CHAPTER_NUMBERS[indexNumber];
+  for (const chapter of index.chapters) {
+    const number = CHAPTER_NUMBERS[chapter?.title];
     if (!number || !chapter?.title) return null;
     parts.push(`## ${number}、${chapter.title}\n\n`);
     if (chapter.title === '模型进展') {
