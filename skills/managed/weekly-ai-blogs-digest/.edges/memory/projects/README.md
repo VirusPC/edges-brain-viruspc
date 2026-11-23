@@ -10,4 +10,5 @@
 
 - [每次修改本 skill 要考虑的点](<project_when_changing_this_skill/INDEX.md>) — 修改 weekly\-ai\-blogs\-digest 的流程、契约、数据或站点时打开：以技能为主体、不做兼容层、契约先行、找出并重算下游、用新的智能体重跑、订阅以 OPML 为准、站点联动、严格按顺序、一路做到上线。
 - [本周概览已定，等另外两件事做完再实现](<project_weekly_overview_wait_for_two_tracks/INDEX.md>) — 本周概览的架构已写入 CONTEXT.md 和 docs/adr；实现须等编排重构和 GitHub Trending 每周总榜改动完成。不要现在动手，也不要把三件事混进同一个变更。
+- [本技能只升 patch 版本](<project_version_patch_only/INDEX.md>) — 改本技能版本号时打开：永远只升 patch（\+0.0.1），不得升高 minor 或 major；即使行为或契约变化，也不按通用约定去升 0.1.0 或 1.0.0。
 <!-- edges-entries-local:end -->
