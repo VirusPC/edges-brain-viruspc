@@ -63,22 +63,101 @@ export function remarkCoverageWindow(options = {}) {
     const base = path.basename(file?.path || file?.history?.at(-1) || '');
     if (base && !/-ai-news\.md$/i.test(base)) return;
     const issueDate = /^(\d{4}-\d{2}-\d{2})-ai-news\.md$/i.exec(base)?.[1];
-    const provenance = issueDate ? provenanceForIssue(resolveAiNewsDataRoot(repoRoot), issueDate) : null;
-    shiftCoverageWindows(tree, provenance);
+    const loaded = issueDate ? loadIssueIndex(resolveAiNewsDataRoot(repoRoot), issueDate) : null;
+    shiftCoverageWindows(tree, loaded?.provenance || null);
+    const sourcesHtml = sourcesCardHtml(loaded?.sources);
+    if (sourcesHtml) insertSourcesCard(tree, sourcesHtml);
   };
 }
 
 export function provenanceForIssue(dataRoot, issueDate) {
+  return loadIssueIndex(dataRoot, issueDate)?.provenance || null;
+}
+
+const SOURCE_CATEGORIES = ['模型榜单', 'GitHub Trending', '博客', '国内互联网'];
+const OPML_HREF = 'https://github.com/VirusPC/edges-brain-viruspc/blob/main/skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml';
+const DOWNLOAD_ICON = '<svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>';
+
+/**
+ * Collapsed source card. Counts are fetches before selection, not filter totals.
+ * A null item count is 未统计. Zero is not shown as an item count.
+ * @param {{ categories?: { title?: string, count?: number | null, publishers?: { name?: string, url?: string, count?: number | null }[] }[] } | null | undefined} sources
+ * @returns {string}
+ */
+export function sourcesCardHtml(sources) {
+  if (!sources || !Array.isArray(sources.categories)) return '';
+  const categories = SOURCE_CATEGORIES.map((title) => {
+    const found = sources.categories.find((item) => item?.title === title);
+    const publishers = Array.isArray(found?.publishers) ? found.publishers.filter((item) => item?.name && item?.url) : [];
+    const count = found && (found.count === null || typeof found.count === 'number') ? found.count : null;
+    return { title, count, publishers };
+  });
+  const sourceTotal = categories.reduce((sum, category) => sum + category.publishers.length, 0);
+  const counted = categories.map((category) => category.count).filter((count) => typeof count === 'number' && count > 0);
+  const tallyItems = counted.length ? `筛前 ${counted.reduce((sum, count) => sum + count, 0)} 条` : '筛前未统计';
+  const rows = categories.map((category) => {
+    const sourcesLabel = `${category.publishers.length} 源`;
+    return `<span class="ai-news-sources-row"><span>${escapeHtml(category.title)}</span><span>${sourcesLabel} · ${itemLabel(category.count)}</span></span>`;
+  }).join('');
+  const details = categories.map((category) => categoryDetail(category)).join('');
+  return `<aside class="info-card ai-news-sources"><div class="ai-news-sources-head"><p class="info-card-label">${INFO_ICON}<span>信息源</span></p><a class="ai-news-sources-opml" href="${OPML_HREF}" target="_blank" rel="noopener noreferrer">${DOWNLOAD_ICON}<span>OPML</span></a></div><details class="ai-news-sources-fold"><summary><span class="ai-news-sources-tally">${categories.length} 类 ${sourceTotal} 源 · ${tallyItems}</span><span class="ai-news-sources-rows">${rows}</span></summary><div class="ai-news-sources-detail">${details}</div></details></aside>`;
+}
+
+/**
+ * @param {number | null} count
+ */
+function itemLabel(count) {
+  if (typeof count === 'number' && count > 0) return `筛前 ${count} 条`;
+  return '未统计';
+}
+
+/**
+ * @param {{ title: string, publishers: { name?: string, url?: string, count?: number | null }[] }} category
+ */
+function categoryDetail(category) {
+  const active = category.publishers.filter((item) => item.count !== 0);
+  const quiet = category.publishers.filter((item) => item.count === 0);
+  const names = `<div class="ai-news-sources-names">${active.map(publisherLink).join('')}</div>`;
+  const extra = quiet.length
+    ? `<details class="ai-news-sources-quiet"><summary>本期无新增 (${quiet.length})</summary><div class="ai-news-sources-names">${quiet.map(publisherLink).join('')}</div></details>`
+    : '';
+  return `<div class="ai-news-sources-group"><p class="ai-news-sources-cat">${escapeHtml(category.title)}</p>${names}${extra}</div>`;
+}
+
+/**
+ * @param {{ name?: string, url?: string, count?: number | null }} publisher
+ */
+function publisherLink(publisher) {
+  const count = typeof publisher.count === 'number' && publisher.count > 0
+    ? `<span class="ai-news-sources-count">${publisher.count}</span>`
+    : '';
+  return `<span class="ai-news-sources-pub"><a href="${escapeHtml(publisher.url || '')}" target="_blank" rel="noopener noreferrer">${escapeHtml(publisher.name || '')}</a>${count}</span>`;
+}
+
+function loadIssueIndex(dataRoot, issueDate) {
   if (!dataRoot || !issueDate) return null;
   const indexPath = path.join(dataRoot, 'issues', issueDate, 'summary', 'index.json');
   if (!fs.existsSync(indexPath)) return null;
   const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
   const commit = gitIssueCommit(dataRoot, issueDate);
   return {
-    skill: normalizeSkill(index.skill),
-    routine: normalizeRoutine(index.routine),
-    data: commit ? { repo: 'VirusPC/ai-news-data', commit, path: `issues/${issueDate}` } : null,
+    sources: index.sources,
+    provenance: {
+      skill: normalizeSkill(index.skill),
+      routine: normalizeRoutine(index.routine),
+      data: commit ? { repo: 'VirusPC/ai-news-data', commit, path: `issues/${issueDate}` } : null,
+    },
   };
+}
+
+function insertSourcesCard(tree, html) {
+  const children = tree?.children;
+  if (!Array.isArray(children)) return;
+  const index = children.findIndex((node) => node?.type === 'html'
+    && String(node.value).includes('class="info-card"')
+    && !String(node.value).includes('ai-news-coverage'));
+  if (index === -1) return;
+  children.splice(index + 1, 0, { type: 'html', value: html });
 }
 
 function gitIssueCommit(dataRoot, issueDate) {
