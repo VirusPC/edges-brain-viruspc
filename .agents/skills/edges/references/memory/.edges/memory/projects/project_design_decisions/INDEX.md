@@ -6,7 +6,7 @@ metadata:
   edges-type: project
   edges-username: viruspc
   edges-email: cheng.peng.helloworld@gmail.com
-  edges-updated-at: "2026-09-06T14:08:14+08:00"
+  edges-updated-at: "2026-11-14T21:23:00+08:00"
 ---
 
 # project-memory 设计决策记录
@@ -1094,6 +1094,24 @@ scripts/lib/               → blocks / templates / paths / provenance
 **区块外正文不是第四类记忆。** reshape 收紧为标题、身份、指向真理源的指针；长规范进 important 或 README。本仓根 `AGENTS.md` 按这个收过，隐私表搬进 README。
 
 **JSON 去掉 `autoAction`。** 只给 agent 看，与 init 1.3.0 同发。
+
+## 2026-11-14：Git 根新建入口的隔离硬约束以模板为唯一事实源
+
+**背景**：升级与多机清理时发现，很多本机工作区没有先建独立 worktree 和分支，直接在当前 checkout 上改 tracked 内容。技能安装、生成索引等操作也常被当成「没改仓库」而跳过核验。用户要求把强化后的隔离规则写进官方 `edges init` 的 Git 根 `AGENTS.md` 模板。事故经过与个人仓硬约束在个人脑 `VirusPC/edges-brain-viruspc#493`，这里不复述那篇笔记。
+
+**决策**：
+
+1. 规则正文只写在 `references/templates/AGENTS.tmpl.md`，用 `<!-- git-root-constraint -->` 标记，写出文件时去掉标记。`edges init` 只在新建 Git 根 `AGENTS.md`（含已链接 worktree 的根）时写入这一条。嵌套目录、非 git 目录不写。已有 `AGENTS.md` 一律不回填，即便硬约束区块缺失；缺失时补上的种子仍只有原来那两句通用种子。
+2. skill 正文（`SKILL.md`、`memory-init.md`、`LAYOUT.md` 等）不复述规则正文或触发条件。最多留一句指针：「Git 根新建入口的硬约束以 `AGENTS.tmpl.md` 为准。」
+3. 通用模板不写入「本仓内容变更走 PR」。
+4. 不把这条决策写进 `project_agents_three_blocks`。原因记在本节。
+
+**理由**：
+
+1. 这是整仓级规则，只应出现在 Git 根系统入口，不应每层重复。已有仓库的手写硬约束不能被 init 改写。曾经做过「区块仍是出厂默认才追加」，用户认为过于复杂，选择更简单的「只在新建时写」。
+2. 模板是唯一事实源。skill 里再写一遍会分叉、过时。这与本文「论证不进 PROTOCOL/LAYOUT」的约定一致：那里最多留指针，不承载论证。
+3. 对每个 init 目标都写「本仓内容变更走 PR」，范围过宽。
+4. `project_agents_three_blocks` 管入口形状（三类区块、两句通用种子）。这条是 init 何时把模板里的额外一行写进新建的 Git 根入口，归设计决策，不塞进那条形状记忆。
 
 ## 待议
 

@@ -1,214 +1,125 @@
 ---
 name: edges-onboarding
-description: 帮用户第一次接入 Edges 时使用：安装 edges CLI（npm 包 @viruspc/edges）、初始化目录、跑一次验证、学会常用命令、排查安装与鉴权报错。用户说「帮我接入 edges」「安装 edges」「edges 怎么用」「edges 报错了」「给我的仓库配一套 edges」时触发。已经装好、只是要写笔记请改用 edges；整理对话改用 edges-conversation-to-notes；项目记忆的检索与沉淀改用 edges-memory-ask / edges-memory-remember，初始化系统入口改用 edges。本 skill 只做入口与引导，具体操作一律交给 edges CLI 执行。
-version: 0.4.0
+description: 帮用户给已有项目添加 edges harness 目录，创建独立 edges harness 仓库，或把已有个人大脑接入当前 Agent 客户端（接入已有大脑）。负责收齐必要信息、安装 CLI、初始化和验证；独立仓库默认包含 GitHub 建仓及首次推送。
+version: 0.7.3
 ---
 
-# edges onboarding
-
-本 skill 是入口，[`edges` CLI](../../cli/README.md) 是执行层。这里只说明按什么顺序调用哪些命令、看到什么算成功、失败了怎么办。不要用手写文件或自造脚本替代 CLI。完整参数以各层 `edges <命令> --help` 为准。没在下面出现的命令和旗标，不要猜。
-
-所有命令的约定（来自 CLI 实现）：
-
-- stdout 只有 JSON（`tasks runs` 等少数只读命令默认是表格），诊断写 stderr。只解析 stdout。
-- 退出码：`0` 成功；`1` 运行错误；`2` 用法或校验错误（`errorCode: "VALIDATION_ERROR"`）；`4` 鉴权错误（`errorCode` 以 `AUTH_` 开头）。`edges init` / `edges skills init` 的安装步骤失败时，退出码沿用安装器自己的退出码，`errorCode` 为 `SKILLS_INSTALL_FAILED`。
-- 失败信封：`{"status":"failed","errorCode":"…","reason":"…"}`。先读 `reason` 再决定下一步。
+# Edges 接入
 
 ## 何时用
 
-- 用户第一次在一台机器或一个仓库上使用 Edges。
-- 用户问「edges 怎么装 / 怎么用 / 有哪些命令」。
-- `edges` 命令报错，用户需要排查。
-- 不用于：写一条笔记（`edges`）、整理对话（`edges-conversation-to-notes`）、检索或沉淀项目记忆（`edges-memory-ask` / `edges-memory-remember`）、初始化系统入口（`edges`）。装好之后按那些 skill 走。
+根据用户想做的事对照下表。多个场景可以使用同一条流程。
 
-## 硬规则
+| 用户场景 | 使用流程 |
+| --- | --- |
+| 给正在开发的项目保存约定、经验和维护任务，方便 Agent 接续工作 | 已有项目添加 edges harness 目录 |
+| 给某个目录，例如为 monorepo 中的某个子包单独积累上下文 | 已有项目添加 edges harness 目录 |
+| 创建个人大脑，长期保存笔记、知识与个人项目，记录 idea 和个人待办并追踪后续进展 | 创建独立 edges harness 仓库 |
+| 我已经有个人大脑，想在新的 Agent 客户端或客户端工作区里继续使用 | 接入已有大脑 |
+| 把个人常用方法与 skills 放在一个仓库，供多个项目挂载复用 | 创建独立 edges harness 仓库 |
+| 建立团队共享的规范与经验库，供各项目使用 | 创建独立 edges harness 仓库 |
 
-1. **不经手凭证。** 不要让用户把 token、API key、密码、cookie、私钥贴进对话；用户主动贴了，提醒他作废这份凭证并重新生成，不要复述、不要写进任何文件。你自己也不要读取或打印凭证文件（如 `~/.config/edges/artifacts.env`）的内容。
-2. **需要凭证的步骤让用户在自己的终端完成。** GitHub 身份用 `gh auth login`，不要让用户贴 PAT。
-3. **凭证不进仓库、不进公开笔记。** 不要把凭证写进 `.env`、`AGENTS.md`、`notes/`、任务、记忆或 commit；MCP 客户端配置里的 token 只放在用户本机配置里。Edges 公开仓库的规则：写入即公开发表，见仓库 README「隐私与脱敏」。
-4. **不改别人的内容，不越权写 git。** 本 skill 只做本地初始化与验证：不 commit、不 push、不开 PR，除非用户明确要求。`edges notes create`、`edges tasks create` 本身也只写本地文件。
-5. **只用真实存在的命令。** 不要编造 `edges login`、`edges auth`、`edges whoami`、`edges doctor` 这类当前不存在的命令；没有的能力如实告诉用户「尚未实现」。
+仅安装 CLI 或排查接入问题时，处理对应步骤即可。
 
-## 前置检查
+## 开始前提问
 
-逐项检查，任何一项不满足都先停下来告诉用户，不要继续安装。
+先看上下文；场景或流程已明确就沿用，不要再问。
+
+**第一步：问场景（含流程兜底）。** 缺了则问一轮，选项按下列顺序给出——前六项是场景，后两项是流程兜底；不要把这两条流程当成开场的唯一菜单。
+
+1. 给正在开发的项目保存约定、经验和维护任务，方便 Agent 接续工作（已有项目添加 edges harness 目录）
+2. 给某个目录，例如为 monorepo 中的某个子包单独积累上下文（已有项目添加 edges harness 目录）
+3. 创建个人大脑，长期保存笔记、知识与个人项目，记录 idea 和个人待办并追踪后续进展（创建独立 edges harness 仓库）
+4. 我已经有个人大脑，想在新的 Agent 客户端或客户端工作区里继续使用（接入已有大脑）
+5. 把个人常用方法与 skills 放在一个仓库，供多个项目挂载复用（创建独立 edges harness 仓库）
+6. 建立团队共享的规范与经验库，供各项目使用（创建独立 edges harness 仓库）
+7. 已有项目添加 edges harness 目录
+8. 创建独立 edges harness 仓库
+
+选前六项时走括号里的流程；选后两项时直接走对应流程。
+
+**第二步：补参数。** 场景或流程确定后，能从上下文和环境推断的当作默认，只把缺失项集中问一轮。Agent 宿主从当前环境识别。
+
+| 流程 | 需要确定 |
+| --- | --- |
+| 已有项目添加 edges harness 目录 | 目标目录 |
+| 创建独立 edges harness 仓库 | 用途与内容边界、本地路径、GitHub owner/name，以及明确选择 private 或 public |
+| 接入已有大脑 | 大脑所在路径或远端仓库地址（多份 clone 时列候选）；当前客户端若环境识别不出再问 |
+
+private 仅向获授权的使用方开放，public 的内容公开可读。用户同时要求挂载时，一并确定使用方项目目录。
+
+创建独立仓库默认包含本地建仓、GitHub 建仓、首次提交和推送。用户明确要求仅本地时，跳过 GitHub 信息收集与远程步骤。已获得这些信息和授权后连续完成，出现已有内容或配置冲突时再询问。
+
+## 接入流程
+
+选定流程后执行对应分支，先检查环境与操作边界：
+
+- 先用 `edges --version`、`edges --help` 核对已有 CLI；检查 `node -v`（≥22.20.0）、`npm -v`、`git --version`。缺失或版本不符时先处理，不盲目重装。
+- 安装前确认能访问当前 npm registry；超时先核对网络、代理与 `npm config get registry`，不擅自修改全局 npm 配置。仅在尚未安装 CLI 时执行下面的安装命令。
+- 保留已有文件、说明与约束；Edges 的结构与索引交给 CLI，不手写替代。出现已有内容或配置冲突时先核对确认，不覆盖、不清理现场；提交和推送须在用户授权范围内。
+- 不索取、读取或复述 token、密码、私钥等凭证，也不写进文件、日志或提交；需要凭证时由用户自行授权。
 
 ```bash
-node -v
-npm -v
-git --version
-```
-
-预期与处理：
-
-| 检查 | 要求 | 不满足时 |
-| --- | --- | --- |
-| `node -v` | `v22.20.0` 或更高（包的 `engines.node` 是 `>=22.20.0`，依赖 `skills@1.7.2` 同样要求） | 让用户用自己习惯的版本管理器（nvm、fnm、Volta、官方安装包）升级。低版本可能装得上，但不受支持，`edges init` 装 skill 那一步可能失败。 |
-| `npm -v` | 有输出即可（随 Node 自带） | 重新安装 Node。 |
-| `git --version` | 有输出即可 | CLI 用 Git 根判断作用域，`compose add/update` 也会调用 git。没有 git 时先装 git。 |
-| 网络 | 能访问 npm registry | `npm install` 超时或 `ETIMEDOUT` 时，检查代理或 registry 设置（`npm config get registry`）。不要替用户改全局 npm 配置，先问。 |
-
-## 安装
-
-```bash
-npm install -g @viruspc/edges
+npm install -g @viruspc/edges@latest
 edges --version
-edges --help
 ```
 
-预期：
+### 已有项目添加 edges harness 目录
 
-- `npm install` 末尾出现 `added N packages`。
-- `edges --version` 打印一个版本号（写作本 skill 时 npm 上是 `0.3.0`）。
-- `edges --help` 打印 `Usage: edges [options] [command]`，命令列表里有 `init`、`notes`、`projects`、`tasks`、`memory`、`skills`、`artifacts`、`schema`、`forest`、`compose`。
+1. 读取目标目录的 README.md 与 AGENTS.md，保留已有说明和约束。
+2. 在目标目录运行初始化，生成 .edges/ 材料目录与 AGENTS.md 入口。
 
-失败时：
+   ```bash
+   edges --scope <目标目录> init -- -y
+   ```
 
-- `EACCES` / permission denied：全局目录没有写权限。建议用户改用 Node 版本管理器装的 Node，或者让用户自己决定是否设置 npm prefix。**不要建议 `sudo npm install -g`**，除非用户坚持。
-- `edges: command not found`：npm 全局 bin 目录不在 PATH 里。让用户执行 `npm prefix -g`，把输出目录下的 `bin` 加进 PATH 后重开终端。
-- 想临时用、不全局安装：`npx -y @viruspc/edges@<版本> --help`（每次都会下载，日常不推荐）。
+3. 让当前 Agent 加载目标 AGENTS.md，检查材料入口与 skills 可发现。提交和推送按用户要求执行。
 
-只有用户要参与 Edges 本身的开发时，才走源码方式（需要 pnpm）：
+### 创建独立 edges harness 仓库
 
-```bash
-git clone --recurse-submodules https://github.com/VirusPC/edges.git && cd edges
-pnpm install && pnpm setup && pnpm skills:link
-pnpm build && pnpm test
-```
+1. 在选定位置创建目录并用 Git 建仓。已有目录先核对用途与状态。
+2. 运行初始化。
 
-## 初始化一个目录
+   ```bash
+   edges --scope <仓库目录> --super init -- -y
+   ```
 
-Edges 把任意目录当成一个「作用域」。先选定作用域，再初始化。作用域解析顺序：`--scope` → 环境变量 `EDGES_SCOPE` → `EDGES_REPO` → 当前目录所属的 `AGENTS.md` 作用域或 Git 根。建议总是显式传 `--scope`。
+3. 补充 README.md 的用途说明。`init --super` 已在 AGENTS.md 硬约束写入独立仓提示；这里再记内容归属与隐私边界，不要删掉或再写一遍那句。检查当前 Agent 能加载入口并发现根目录材料与 skills。
+4. 用已连接的 GitHub 工具或已鉴权的 gh 创建仓库；gh 未鉴权时，让用户在自己的终端执行 `gh auth login` 并完成授权，不索取 PAT。按明确选择设置 private/public。检查待提交文件，首次提交并推送，读回远程可见性和提交 SHA。返回仓库地址、本地路径和分支。仅本地接入在本地验证完成后交付。
+5. **默认继续接入当前客户端**（缺参数再补问）。用户可选稍后再接。识别宿主后打开 [references/client-access/](references/client-access/README.md) 对应分组指南，再按 [contract.md](references/client-access/contract.md) 核验。步骤细节见下一节「接入已有大脑」的第 2–4 步。
+6. **旁路（可选）**：仅当用户要求把大脑挂进某个代码项目时，在使用方项目执行 Compose，再检查条目已检出、入口可读。Compose 不是把大脑接到客户端工作区的主路径。
 
-**先确认目标目录是用户想要的。** 然后：
+   ```bash
+   edges --scope <使用方项目> compose add \
+     --name <名称> --remote <仓库Git地址> \
+     --description "存什么，以及何时往这里写"
+   edges --scope <使用方项目> compose list
+   ```
 
-```bash
-cd <用户的仓库>
-edges --scope . init -- -g -y
-```
+GitHub 同名仓库或已有 origin 先核对，遇到冲突保留现场并报告。中途失败时说明已完成的步骤，重试复用已有结果。
 
-- 无参 `init` 默认写入：`AGENTS.md`、memory 类型 `feedback` / `project` / `reference`、skills 类型索引（managed、referenced），并把包内 Edges skills 装给本机 agent；还有 notes、projects 的组织列表。任务看板**不在**默认集里，需要时另跑 `edges --scope . tasks init`。
-- `--` 后面的旗标原样交给 `skills@1.7.2` 安装器：`-g` 装到用户目录，`-y` 跳过确认。没有 TTY、又没探测到 agent 时，不带 `-y` 会退出 1。
-- 只给某一个 agent 装：`edges --scope . init -- -y --agent claude-code`（不加 `-g` 时写当前项目的 `.claude/skills`）。
-- 只想建目录结构、不装 skill：`edges --scope . init notes tasks`（列出要的模块，可选 `memory`、`skills`、`tasks`、`notes`、`projects`、`routines`）。
-- 为已有主题 Project 采用材料模块时用 `edges --scope . --project <Project相对路径> init notes tasks`。模块直接放在 P 下并登记到 `P/INDEX.md`；不会为 P 创建独立 AGENTS 或 `.edges`。Project 必须已存在，不把 P 当作新 scope，也不为完成一次存储擅自初始化。init 不读取 `--super`。
+### 接入已有大脑
 
-预期 stdout（示例，字段以实际为准）：
+把已有个人大脑接入当前 Agent 客户端。不新建仓库、不在 GitHub 建仓，也不套用「已有项目添加 edges harness 目录」。
 
-```json
-{"status":"success","targetDir":"/path/to/repo","agentsAction":"created","modules":["notes","tasks"],"created":[".edges/tasks/README.md",".edges/notes/README.md"],"command":"init"}
-```
+1. **定位大脑**：先问大脑在哪（本机目录或远端仓库地址；需要时再 clone）。若环境里有多份 clone，列出候选让用户选；只有存在真实使用记录时才把某份标为「最近使用」并优先，不猜。
+2. **识别客户端**：从当前会话与环境识别宿主；识别不出且影响分组时再问。不要让用户先选 personal / work / coding / chat 菜单。按 [client-access/README.md](references/client-access/README.md) 打开对应分组指南。
+3. **按指南接入**：有客户端工作区概念的客户端，把客户端工作区根设为大脑仓库根；Grok Bot 没有绑定工作区的概念，从所有 Bot 共用的共享长期记忆检索大脑仓库身份与路径，先读该路径的 `AGENTS.md`。指南在 `references/client-access/`（personal、work-space、coding、chat）。
+4. **核验**：按 [contract.md](references/client-access/contract.md) 的七层可观察证据逐层确认。第 7 层 Git 同步必验；任一层失败记入报告，不阻塞其他层。未实测处保持「未实测 / 待试」，不得写成已支持。
+5. **可选：接入 Langfuse 观测**：需要记录和评估 Agent 使用大脑的过程，可以继续接入 Langfuse，按对应可观测性 Skill 操作（[edges-langfuse-agent-tracing](../edges-langfuse-agent-tracing/SKILL.md)）。此步可选，不属于接入必验项。
 
-重复执行是安全的：已有文件出现在 `preserved` 里，不会被覆盖。
+### 遇到问题
 
-失败时：
+先读 stdout 的 `errorCode`、`reason` 与 stderr 的诊断；分享输出前移除凭证及 URL 中的密钥。失败后核对已完成的步骤，修复原因再重试，不把部分成功当成全未执行。
 
-- `errorCode: "SKILLS_INSTALL_FAILED"`：目录结构可能已经写好（看 `created`），是装 skill 那一步失败。看 stderr 里安装器的原始输出；常见原因是 Node 版本过低、没有 TTY 又没带 `-y`、网络不通。修好后重跑同一条命令。
-- 安装器 stderr 列出「被忽略的 token」：这次解析出的模块里没有 skills，`--` 后面的旗标没有用上。去掉模块参数或加上 `skills`。
+| 现象 | 处理 |
+| --- | --- |
+| `edges: command not found` | 核对是否安装；已装时用 `npm prefix -g` 定位全局目录，检查对应可执行文件目录是否在 PATH（类 Unix 通常为该目录下的 `bin`），重开终端再验证。不因 PATH 问题反复安装。 |
+| 找不到所属 scope / Git 仓库 | 核对目标路径，显式传 `--scope <目标目录>`；不要为消除报错在错误目录初始化。 |
+| `SKILLS_INSTALL_FAILED` | 结构可能已写入，先看返回的 `created` 和安装器 stderr；检查 Node 版本、网络与非交互参数 `-y`，修好后重跑原命令，不删除已有材料。 |
+| 已装 skill 但 Agent 找不到 | 核对目标 scope、宿主及安装目录；需要时运行 `edges --scope <目标目录> skills init -- -y --agent <宿主标识>`（有效标识查帮助）。默认装当前项目，只有明确要用户级安装时才加 `-g`；重新加载宿主后验证。 |
+| busy / 写锁冲突 | 等同一 worktree 的其他写命令结束再重试，不手动删除正在使用的 `.edges-write.lock/`；无法判断锁状态时保留现场并报告。 |
+| 答不出大脑 AGENTS.md 里的约定 | 客户端工作区可能不是大脑根，或（Grok Bot）共享记忆里的路径未检索到或已失效；按该客户端分组指南与 contract 第 2 层排查。 |
+| 技能列表里没有 edges | 技能未装到当前客户端可发现的位置；两边皆可（仓库或用户级），不设权威。 |
 
-## 登录鉴权
-
-**现状（截至 CLI 0.2.1）：没有 `login` 命令。** 本地的 notes / projects / tasks / memory / skills / schema / forest 命令只读写本机文件，**不需要鉴权**。
-
-目前真正涉及凭证的只有这几处，都让用户自己在终端里完成。AI 不经手 token，不读取、不复述凭证文件：
-
-| 场景 | 现有机制 | AI 该怎么做 |
-| --- | --- | --- |
-| 发布预览页（`edges artifacts create/publish/delete`） | 共享 token，变量 `EDGES_ARTIFACTS_TOKEN`、`EDGES_ARTIFACTS_BASE_URL`；默认存在 `~/.config/edges/artifacts.env`（权限 0600，可用 `EDGES_ARTIFACTS_CONFIG` 改路径）。用 `edges artifacts init` 写入。 | 告诉用户在他自己的终端运行 `edges artifacts init --base-url <预览服务地址>`（会新生成 token 并打印在 stderr）或加 `--token <服务端 token>` 复用服务端 token。**不要由你来运行带 `--token` 的命令，也不要读取或复述输出里的 token。** 完成后你只需确认 stdout 里 `"tokenCreated"` 和 `"configPath"`。 |
-| new-note MCP 的 HTTP 模式 | 静态 Bearer token，变量 `EDGES_AUTH_TOKEN`；不设置就不鉴权 | 让用户自己在 MCP 服务端环境和客户端配置里设置，不要经手。 |
-| `compose add/update`、git 推送 | 走用户本机已有的 git 凭证 | 推荐用户执行 `gh auth login` 在浏览器里授权；不要让用户贴 PAT。 |
-
-## 验证
-
-在一个**临时 Git 目录**里跑一遍，确认 CLI 能写能读，不污染用户的真实仓库：
-
-```bash
-mkdir -p /tmp/edges-check && cd /tmp/edges-check && git init -q
-edges --scope . init notes tasks
-edges --scope . notes create --title "edges 接入验证" --body "安装后第一条笔记。"
-edges --scope . notes list
-edges --scope . tasks create --title "试一下任务"
-edges --scope . tasks list
-edges --scope . memory doctor
-```
-
-预期：
-
-- 每条命令退出码 0，stdout 是 `"status":"success"` 的 JSON（`memory doctor` 输出 `"ok": true`）。
-- `notes create` 返回 `"path":".edges/notes/<今天日期>--edges-接入验证/INDEX.md"`；读取时使用返回的路径。统一材料定位之前的 0.4.1 返回 `notes/...`，核对已安装版本，不把旧版落点差异误报为安装失败。
-- `tasks create` 返回的 `path` 在 `.edges/tasks/backlog/` 下，`tasks list` 能列出它。
-
-验证通过后告诉用户可以删掉 `/tmp/edges-check`（由用户决定，不要擅自删除用户目录）。任何一步失败，按下面「常见错误排查」处理。
-
-## 常用操作
-
-以下命令都只改本地文件，不 commit、不 push。`<目录>` 换成作用域路径。目录材料默认放在 `<目录>/.edges/`；选定已有 Project 时用根级 `--project <相对路径>`，相对 `<目录>/.edges/projects`，子项目示例为 `P/projects/Q`，材料直接归入 P 的对应模块。创建、检索和后续读写使用同一选择，以命令返回的 path 为准。
-
-对 Notes、Projects、Tasks、Memory、Skills、Routines，`--super` 换成 scope 的运行时内容入口，挂载直属材料并递归登记组成；写入 `<目录>/<module>/`。选定 Project 后其入口与材料根优先。`--all` 仅在读取时补充所选物理范围内的独立真实系统，不是开启 Project 递归，也不为每个系统自动加 Super。不要把扩大后的查询范围带到写命令。init 的 Project 行为见上节；Artifacts 继续处理显式上传文件，不采用材料分组。
-
-```bash
-# 笔记
-edges --scope <目录> notes create --title "标题" --body "正文 Markdown"
-edges --scope <目录> notes list
-edges --scope <目录> notes get .edges/notes/<日期>--<slug>/INDEX.md
-edges --scope <目录> notes update .edges/notes/<日期>--<slug>/INDEX.md --body "新正文"
-edges --scope <目录> notes delete .edges/notes/<日期>--<slug>/INDEX.md
-
-# 项目
-edges --scope <目录> projects create --title "Demo" --body "这个项目是什么。"
-edges --scope <目录> projects list --filter title=Demo
-# Project参数取上一步返回目录相对<scope>/.edges/projects的路径
-edges --scope <目录> --project <Project相对路径> notes create --title "项目笔记" --body "正文"
-edges --scope <目录> --project <Project相对路径> notes list
-edges --scope <目录> --project <Project相对路径> projects create --title "子主题" --body "子主题的范围。"
-
-# 任务（取消用 status cancelled，没有删除任务的用法）
-edges --scope <目录> tasks init
-edges --scope <目录> tasks create --title "修复构建"
-edges --scope <目录> tasks list --status todo --priority high --sort priority
-edges --scope <目录> tasks update <stem或路径> --priority high
-edges --scope <目录> tasks status <stem或路径> done
-edges --scope <目录> projects list
-
-# 项目记忆
-edges --scope <目录> memory init --memory-types project feedback
-edges --scope <目录> memory remember --type project --slug <slug> --description "一句话" --content-file /tmp/x.md
-edges --scope <目录> memory doctor          # 只诊断
-edges --scope <目录> memory doctor --apply  # 修复，会改文件，先告知用户
-
-# 技能
-edges --scope <目录> skills list
-edges --scope <目录> skills get <name或路径>
-
-# 系统总览与数据合同
-edges --scope <目录> forest list
-edges schema list
-
-# 组合多个 harness 仓库（add/update 会调用 git submodule）
-edges --scope <目录> compose list
-edges --scope <目录> compose update
-```
-
-细节交给对应 skill：写笔记、初始化和组合仓库走 `edges`，整板任务归类走 `edges-tasks-classify`，整理对话 `edges-conversation-to-notes`，记忆检索与沉淀 `edges-memory-ask` / `edges-memory-remember`。
-
-没有 shell 的宿主（只能调 MCP）：用 `packages/mcp-servers/new-note` 暴露的 `new_note` 工具，必填 `title`、`body`，可选 `project`、`super`；它在服务端确定的 scope 内调用同一个 `edges notes create`，Project 优先于 super。工具不能指定 scope，不能将 P 路径当作 scope。当前 MCP 只覆盖新建笔记；旧版工具若未提供选择参数，报告版本能力限制，不静默写到默认位置。
-
-## 常见错误排查
-
-| 现象 | 原因 | 处理 |
-| --- | --- | --- |
-| `edges: command not found` | 没装，或 npm 全局 bin 不在 PATH | 回到「安装」；`npm prefix -g` 找到目录后把 `bin` 加进 PATH。 |
-| `"reason":"missing command. Use edges --help."`，退出码 2 | 只敲了 `edges` | 必须带子命令；没有默认写笔记的行为。 |
-| `"reason":"unknown option '--xxx'"`，退出码 2 | 旗标不存在（例如老版本的 `--content`、`--mode`、`--index-group`） | 跑 `edges <命令> --help` 看当前旗标，不要猜。 |
-| `edges note` / `edges skill` / `edges ingest` 报错 | 已改名，无别名 | 用 `edges notes`、`edges skills`。 |
-| `"reason":"No owning scope or Git repository found. Pass --scope <directory> or set EDGES_SCOPE."` | 当前目录既不在 Git 仓库里，也没有所属 `AGENTS.md` | 加 `--scope <目录>`，或在目标目录 `git init` / `edges --scope . init`。 |
-| `"errorCode":"AUTH_MISSING"`，退出码 4，提示 `run edges artifacts init` | artifacts 没配 token | 让用户自己在终端跑 `edges artifacts init …`（见「登录鉴权」），不要经手 token。 |
-| `AUTH_INVALID_TOKEN`，退出码 4 | 本机 token 与预览服务端不一致 | 让用户自己拿服务端 token 执行 `edges artifacts init --token <…> --force`。 |
-| `artifacts config already has a token … (pass --force to overwrite)` | 已初始化过 | 确认用户确实要覆盖后，由用户自己加 `--force` 重跑。 |
-| `SKILLS_INSTALL_FAILED` | `skills@1.7.2` 安装步骤失败 | 看 stderr 原始输出；查 Node 版本、`-y`、网络。退出码就是安装器的退出码，不要用「是不是 2」判断是不是校验错误。 |
-| 写命令报 busy / 锁冲突 | 同一 worktree 里另一个 edges 写命令正在运行（锁目录 `.edges-write.lock/`） | 等它结束再重试；不要手动删除正在使用的锁。 |
-| `--all is only supported by read commands.` | 在写命令上用了 `--all` | `--all` 只配 `list` 这类只读命令。 |
-| `schema` 命令说缺少构建产物 | 源码方式没 build | `pnpm --filter @viruspc/edges build`，或改用 npm 安装的版本。 |
-| 装了 skill 但 agent 找不到 | 装到了别的 agent 目录，或改了 skill 没重装 | 重跑 `edges --scope <目录> skills init -- -g -y`（或 `--agent <名字>`）。不要用不带版本号的 `npx skills`。 |
-
-仍无法解决：把命令、stdout JSON、stderr（**先删掉任何 token 或 URL 里的密钥**）、`edges --version`、`node -v` 交给用户，建议到 https://github.com/VirusPC/edges/issues 反馈。
+命令参数以 `--help` 为准，详细用法见 [CLI 文档](../../cli/README.md)，挂载规则见 [Compose 说明](../edges/references/compose.md)。

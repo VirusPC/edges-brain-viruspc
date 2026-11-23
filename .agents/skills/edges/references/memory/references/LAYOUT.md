@@ -6,7 +6,7 @@
 
 `AGENTS.md` 是人和 Agent 的入口。本层硬约束直接写在所属层的硬约束区块，已有规则不覆盖；本层系统维护信息和下层系统维护信息只放链接与描述。区块外手写内容、其他工具区块和业务模块入口保持原文。
 
-通用推荐模块为 `memory`、`skills`、`tasks`；推荐不代表自动创建。无参 `edges init` 创建 `AGENTS.md`、feedback / project / reference、skills 的 managed / referenced，以及 notes / projects 的 `.edges` 组织清单，并安装包内 skill；不创建 user、tasks。`edges memory init` 只初始化用户选择的 memory 类型，未选择时不写盘，也不创建其他模块的材料。`edges skills init` 初始化 skill 类型，并安装包内 skill。`edges tasks init` 只创建任务看板；tasks 首次写入仍会在看板缺失时补上同一份文件。未采用的模块和类型不创建空目录。模块之间不互相创建材料。
+通用推荐模块为 `memory`、`skills`、`tasks`；推荐不代表自动创建。无参 `edges init` 创建 `AGENTS.md`、feedback / project / reference、skills 的 managed / referenced，以及 tasks / notes / projects 的 `.edges` 组织清单，并安装包内 skill；不创建 user、routines。`edges memory init` 只初始化用户选择的 memory 类型，未选择时不写盘，也不创建其他模块的材料。`edges skills init` 初始化 skill 类型，并安装包内 skill。`edges tasks init` 只创建任务看板；tasks 首次写入仍会在看板缺失时补上同一份文件。未采用的模块和类型不创建空目录。模块之间不互相创建材料。
 
 ```text
 <scope>/
@@ -29,9 +29,9 @@ CLI 目标选择依次为显式 `--scope`、`EDGES_SCOPE` / `EDGES_REPO`、cwd �
 
 ## 主题 Project 选择
 
-根参数 `--project P` 与 `--scope S` 同级；P 是相对 `S/.edges/projects` 的真实 Project 路径，嵌套形式如 `P/projects/Q`。省略时材料位于 `S/.edges`；选择后直接使用 `P/memory/<plural>/README.md`、`P/skills/<type>/README.md`，复用同一套类型发现、权限与索引维护。Project 的 `INDEX.md` 登记这些类型入口，不创建 `P/AGENTS.md`、`P/.edges` 或 `P/.agents`。
+根参数 `--project P` 与 `--scope S` 同级；P 是相对当前材料面 projects 目录的真实 Project 路径，嵌套形式如 `P/projects/Q`。默认相对 `S/.edges/projects`；`--super` 时相对 `S/projects`。省略时材料位于 `S/.edges`；选择后直接使用 `P/memory/<plural>/README.md`、`P/skills/<type>/README.md`，复用同一套类型发现、权限与索引维护。Project 的 `INDEX.md` 登记这些类型入口，不创建 `P/AGENTS.md`、`P/.edges` 或 `P/.agents`。
 
-初始化、remember、add-type、get、list、delete、doctor、backup、restore 使用同一选择。原 scope 仍须满足记忆写入的初始化条件；Project 自己必须已经采用目标类型，未采用时拒绝 remember。各 Project 的同名类型彼此独立。`--super` 不改写已选择的 Project；与 `--target-dir` / `--repo-dir` 的冲突由 CLI 拒绝。Doctor 选择 Project 时只诊断与修复该 Project 已采用的类型，不改兄弟或根层。
+初始化、remember、add-type、get、list、delete、doctor、backup、restore 使用同一选择。原 scope 仍须满足记忆写入的初始化条件；Project 自己必须已经采用目标类型，未采用时拒绝 remember。各 Project 的同名类型彼此独立。`--super` 只决定去哪棵 projects 树找 P，不改写已选中 P 的材料根；与 `--target-dir` / `--repo-dir` 的冲突由 CLI 拒绝。Doctor 选择 Project 时只诊断与修复该 Project 已采用的类型，不改兄弟或根层。
 
 `referenced` 的索引可以位于 Project，来源仍是原 scope 的 `.agents/skills`，不改变安装关系。私有类型按实际 Project 路径生成 Git ignore 规则；备份归档保留通用的 `.edges/memory/users/` 成员格式，恢复到当前选择的 users 目录。
 
@@ -50,19 +50,19 @@ edges --scope S --project P/projects/Q skills init -- -y
 - `--super` 以运行时 `SuperAgentsNode` 挂载 scope 直属配置材料，再沿登记递归展开，不自动进入材料自身的 harness。已选 Project 时保持 Project 入口。
 - `--all` 额外发现所选物理目录下的独立真实系统；与 `--super` 组合时包含当前 scope 的 Super 内容树，不给每个发现的系统再加 Super。Project 的发现范围留在该 Project 内。
 
-这些查询选项不赋予写权限。`memory remember`、`add-type`、`get`、`delete`、`doctor`、`backup`、`restore` 按 `--scope` 与可选 `--project` 定位，当前这些 memory 命令不以 `--super` 切换写入或单条定位路径，也不以 `--all` 批量操作。类型采用、去重与私有规则始终按选定材料根检查。
+这些查询选项不赋予写权限。`memory remember`、`add-type`、`get`、`delete`、`doctor`、`backup`、`restore` 按 `--scope` 与可选 `--project` 定位。这些命令跟随 `--super`：未选 Project 时写入 `<scope>/memory` 或 `<scope>/skills`，不带 `--super` 时仍在 `.edges` 下。也不以 `--all` 批量操作。选了 Project 时，P 按材料面解析，写入落在 P 的类型目录。类型采用、去重与私有规则始终按选定材料根检查。
 
 ## 选择式初始化
 
 ```bash
-edges --scope S init -- -g -y
+edges --scope S init -- -y
 edges --scope S memory init --root-dir R \
   --memory-types project feedback reference user
-edges --scope S skills init --skill-types managed referenced -- -g -y
+edges --scope S skills init --skill-types managed referenced -- -y
 edges --scope S tasks init
 ```
 
-`edges init` 不读 `--super`，材料在 `<scope>/.edges`，指定 `--project` 时写到所选 Project 的直属模块。无参时创建本层系统入口、三个公开 memory 类型（feedback、project、reference）、skills 的 managed / referenced、notes / projects harness 组织清单，并安装包内 skill。`edges memory init` 省略类型时：新层返回 `selectionRequired: true`、`recommendations`（模块与类型），不修改任何文件；已有层只刷新已经采用的 memory 类型。`edges skills init` 省略类型时：尚未采用则采用 managed 与 referenced，已经采用则只刷新那些 skill 类型；两种情况都安装包内 skill。显式列表只追加采用，不删旧类型。memory init 不创建 notes / projects 桩。自定义类型不会被推荐清单重置。类型元数据与实际入口是注册事实源，无 JSON/YAML 注册表。`--memory-types` 需要 memory 模块，`--skill-types` 需要 skills 模块。祖先上的类型行只由该模块自己的 init 刷新，而且只刷新根上已经存在的该模块类型。
+不带 `--super` 时 `edges init` 把材料写在 `<scope>/.edges`。`edges init --super` 写到 `<scope>/<module>/`，并在硬约束追加一次独立仓提示。指定 `--project` 时写到所选 Project 的直属模块。无参时创建本层系统入口、三个公开 memory 类型（feedback、project、reference）、skills 的 managed / referenced、notes / projects harness 组织清单，并安装包内 skill。`edges memory init` 省略类型时：新层返回 `selectionRequired: true`、`recommendations`（模块与类型），不修改任何文件；已有层只刷新已经采用的 memory 类型。`edges skills init` 省略类型时：尚未采用则采用 managed 与 referenced，已经采用则只刷新那些 skill 类型；两种情况都安装包内 skill。显式列表只追加采用，不删旧类型。memory init 不创建 notes / projects 桩。自定义类型不会被推荐清单重置。类型元数据与实际入口是注册事实源，无 JSON/YAML 注册表。`--memory-types` 需要 memory 模块，`--skill-types` 需要 skills 模块。祖先上的类型行只由该模块自己的 init 刷新，而且只刷新根上已经存在的该模块类型。
 
 | type | 模块与入口（相对作用域） | 正文与权限 |
 | --- | --- | --- |
@@ -106,7 +106,7 @@ edges --scope S memory add-type \
 
 普通条目为 YAML frontmatter + Markdown，前缀仍是类型原值，slug 为 snake_case。Skill 格式 slug 为 kebab-case（1–64 字符），name 为目录名。详细字段见 [`frontmatter-fields.md`](frontmatter-fields.md)：顶层遵循 Agent Skills 闭集，实现字段放 `metadata.edges-*`；读取既有顶层字段不等于支持旧目录布局，常规 doctor 不重写文件头。
 
-模板在 `templates/`：层入口 `AGENTS.tmpl.md`；官方类型 `USER/FEEDBACK/PROJECT/REFERENCE/MANAGED/REFERENCED.tmpl.md`；自定义类型 `TYPE.tmpl.md`；普通正文 `index.tmpl.md`、Skill 正文 `SKILL.tmpl.md`；列表行 `entry_line.tmpl.md`。类型模板正文写 `edges-entries-*` 与「本层内容 / 下层内容」，CLI 写到 README 时保持原文。不要把类型条目再抄进同目录 `AGENTS.md`。模板官方全集用于推荐与选中类型渲染，不自动采用全部类型。CLI 构建时携带这些模板；运行已构建的 CLI 不依赖另一个已安装 Skill 的源码目录。
+模板在 `templates/`：层入口 `AGENTS.tmpl.md`；官方类型 `USER/FEEDBACK/PROJECT/REFERENCE/MANAGED/REFERENCED.tmpl.md`；自定义类型 `TYPE.tmpl.md`；普通正文 `index.tmpl.md`、Skill 正文 `SKILL.tmpl.md`；列表行 `entry_line.tmpl.md`。类型模板正文写 `edges-entries-*` 与「本层内容 / 下层内容」，CLI 写到 README 时保持原文。不要把类型条目再抄进同目录 `AGENTS.md`。模板官方全集用于推荐与选中类型渲染，不自动采用全部类型。CLI 构建时携带这些模板；运行已构建的 CLI 不依赖另一个已安装 Skill 的源码目录。Git 根新建入口的硬约束以 `AGENTS.tmpl.md` 为准。
 
 ## 执行入口
 

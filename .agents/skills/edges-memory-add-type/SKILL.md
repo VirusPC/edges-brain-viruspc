@@ -1,12 +1,12 @@
 ---
 name: edges-memory-add-type
 description: 在所选作用域或主题 Project 按 LAYOUT 登记一个自定义 Memory Type。仅当用户明确要求新增 type 时使用。官方类型按选择采用；不要把示例 type 写进 init 模板。
-version: 0.2.0
+version: 0.2.2
 ---
 
 # Project Memory Add Type
 
-在已经有有效系统入口的 scope 内登记自定义 Memory Type。类型 README 记录身份与权限，材料清单登记发现入口，不另写 JSON/YAML 注册表。选择主题 Project 时保持原 scope，使用根参数 `--project <相对 scope/.edges/projects 的路径>`，类型直接写在 Project 的 memory / skills 下，登记到 Project INDEX；同名类型只在所选材料根内检查唯一性，不另建 AGENTS 或 .edges。PROTOCOL 不枚举类型，具体布局以 LAYOUT 为准。
+在已经有有效系统入口的 scope 内登记自定义 Memory Type。类型 README 记录身份与权限，材料清单登记发现入口，不另写 JSON/YAML 注册表。选择主题 Project 时保持原 scope，使用根参数 `--project <相对当前材料面 projects 目录的路径>`（默认 `scope/.edges/projects`，`--super` 时 `scope/projects`），类型直接写在 Project 的 memory / skills 下，登记到 Project INDEX；同名类型只在所选材料根内检查唯一性，不另建 AGENTS 或 .edges。PROTOCOL 不枚举类型，具体布局以 LAYOUT 为准。
 
 执行前确认 `edges memory add-type --help` 可用。类型布局见 [`LAYOUT.md`](../edges/references/memory/references/LAYOUT.md)，执行能力由 Edges CLI 提供。
 
@@ -36,7 +36,7 @@ version: 0.2.0
      [--gitignore] [--index-only] [--skills-format]
    ```
 
-   属于主题时，在 `memory` 前加 `--project <P/projects/Q>`；不要把 Project 路径填进 `--target-dir`。`--super` / `--all` 不改变登记目标。
+   属于主题时，在 `memory` 前加 `--project <P/projects/Q>`；不要把 Project 路径填进 `--target-dir`。Project 在 scope 直属 `projects/` 时同时加 `--super`。未选 Project 时，`--super` 把类型登记到 `<scope>/memory`。`--all` 不用于写入。
 
 5. 按返回 JSON 汇报 `type` / `index` / `contentDir` / `action`，路径相对原 scope。若用户同时要求保存内容，用相同 scope / Project 调用 `$edges-memory-remember`；不要为了冒烟往真实记忆里写测试条目。
 

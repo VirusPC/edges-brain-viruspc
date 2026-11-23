@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-09
+
+### Changed
+
+- **Project 路径跟随材料面。** `--project` 默认相对 `S/.edges/projects`；`--super` 时相对 `S/projects`。
+
 ## [0.2.0] - 2026-11-02
 
 ### Changed

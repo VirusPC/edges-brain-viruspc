@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-09
+
+### Changed
+
+- **remember 跟随 `--super`。** 未选 Project 时写到 `S/memory`，不再留在 `.edges/memory`。
+
+## [0.2.1] - 2026-11-09
+
+### Changed
+
+- **Project 路径跟随材料面。** `--project` 默认相对 `S/.edges/projects`；`--super` 时相对 `S/projects`。未选 Project 时，remember 仍不因 `--super` 改到 scope 直属 memory。
+
 ## [0.2.0] - 2026-11-02
 
 ### Changed
