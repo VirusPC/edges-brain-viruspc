@@ -1,8 +1,8 @@
 ---
 name: project_weekly_overview_wait_for_two_tracks
 description: >-
-  本周概览的架构已写入 CONTEXT.md 和 docs/adr；实现须等编排重构和 GitHub Trending
-  每周总榜改动完成。不要现在动手，也不要把三件事混进同一个变更。
+  本周概览已在 0.0.8 落地为独立的 summary/overview.json。架构仍以 CONTEXT.md 与
+  docs/adr 为准；不要把它和编排重构或 GitHub Trending 改动混进同一个变更。
 metadata:
   edges-title: 本周概览已定，等另外两件事做完再实现
   edges-type: project
@@ -13,7 +13,7 @@ metadata:
   edges-updated-at: '2026-11-23T16:24:25+08:00'
 ---
 
-本周概览的已定架构写在本技能的 CONTEXT.md 和 docs/adr 里。动手实现之前，先等 skill 编排重构和「GitHub Trending 只采用每周总榜」做完。不要现在开实现分支，也不要把这三件事混进同一个变更。
+本周概览的已定架构写在本技能的 CONTEXT.md 和 docs/adr 里。编排重构和「GitHub Trending 只采用每周总榜」已经完成，概览已在技能 0.0.8 落地：`summary/overview.json` 是总结阶段的独立产物，站点第一章先词云后总结。
 
 **Why:**
 
@@ -21,4 +21,4 @@ metadata:
 
 **How to apply:**
 
-修改本技能前先读 docs/adr（0001 产物与接入、0002 章序与锚点、0003 每周总榜）和 CONTEXT.md。实现本周概览时按 ADR 执行，不要把编排重构或 Trending 改动放进同一个变更。那两件事完成之前不要开始本周概览的代码。
+修改本技能前先读 docs/adr（0001 产物与接入、0002 章序与锚点、0003 每周总榜）和 CONTEXT.md。概览已经按这两份 ADR 实现。以后改它仍按 ADR 执行，不要把编排重构或 Trending 改动放进同一个变更。
