@@ -101,13 +101,10 @@ def parse_row_date(value: object) -> date | None:
 
 
 def resolve_window(since: str | None, until: str | None) -> tuple[date, date]:
-    if (since is None) != (until is None):
-        raise ValueError("须同时提供 --since 和 --until")
-    if since is None:
-        until_day = datetime.now(timezone.utc).date() - timedelta(days=1)
-        return until_day - timedelta(days=6), until_day
+    if not since or not until:
+        raise ValueError("缺少 --since 或 --until。没有生成日就停止，不用运行当天补窗口。")
     start = parse_iso_date(since)
-    end = parse_iso_date(until or "")
+    end = parse_iso_date(until)
     if start > end:
         raise ValueError("--since 不能晚于 --until")
     return start, end

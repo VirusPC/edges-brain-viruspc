@@ -41,4 +41,11 @@ $PY scripts/prepare/models/fetch_openrouter_endpoints.py \
   --out issues/<生成日>/raw/models/openrouter-official-endpoints.json
 ```
 
-这些命令在数据仓库的工作副本里执行，文件落在 `issues/<生成日>/raw/models/`。AA 全量不按文章窗口过滤。Arena 和 OpenRouter 用量使用上面的窗口。
+这些命令在数据仓库的工作副本里执行，文件落在 `issues/<生成日>/raw/models/`。
+
+窗口只来自 `raw/window.json`，不由脚本用运行当天或昨天补上：
+
+- `fetch_openrouter.py` 必须同时有 `--since` 和 `--until`。缺任何一个就退出，不访问网络。编程用量周仍用 UTC 今天判断这一周是否已经过完，这不代替覆盖窗口。
+- `fetch_llm_arena.py` 必须有 `--until`（生成日的 D-1）。缺了就退出，读 `full` parquet 里不晚于这一天的最近一份，不读 `latest`。
+- `fetch_artificial_analysis.py` 不按文章窗口过滤，全量快照里的 `fetched_at` 只是抓取时刻。
+- `fetch_openrouter_endpoints.py` 不接收窗口，等 AA 这份文件有了结果再拉。
