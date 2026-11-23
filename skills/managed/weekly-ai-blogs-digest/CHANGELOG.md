@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `summary/index.json` 增加 `articles_coverage`。`raw` 是本期原文篇数，`cleaned` 是清洗后篇数。汇合时用 `scripts/summarize/merge/article_coverage.py` 从本期 `raw/` 和 `cleaned/` 统计，口径见 `references/summarize/merge.md`。这不是精选入选数。
+- `summary/index.json` 增加 `articles_coverage`。`raw` 是本期原文篇数，`selected` 是精选篇数，等于 summary 文章数。汇合时用 `scripts/summarize/merge/article_coverage.py` 统计，口径见 `references/summarize/merge.md`。整页校验要求 `selected` 等于 summary 文章数，并且原文不少于清洗后的 id 数。
 - 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.4` 先不打，留给维护者。
 
 ## [0.0.3] - 2026-11-23

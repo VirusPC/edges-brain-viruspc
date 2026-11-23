@@ -66,6 +66,14 @@ export function remarkCoverageWindow() {
 /**
  * @param {{ windowLabel: string, zone: string, generated: string, excludeDay: boolean }} fields
  */
+/**
+ * The selected-articles count uses the same 备注 card as the coverage window.
+ * @param {string} sentence
+ */
+export function selectedArticlesRemarkHtml(sentence) {
+  return `<aside class="info-card ai-news-coverage"><p class="info-card-label">${INFO_ICON}<span>备注</span></p><p>${escapeHtml(sentence)}</p></aside>`;
+}
+
 function remarkCard(fields, provenance) {
   const rows = [row('覆盖窗口', fields.windowLabel, true)];
   if (fields.zone) rows.push(row('时区', fields.zone, false));

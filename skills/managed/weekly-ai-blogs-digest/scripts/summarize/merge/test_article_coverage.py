@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from prepare.articles.fetch_feeds import normalize_link  # noqa: E402
-from summarize.merge.article_coverage import article_coverage  # noqa: E402
+from summarize.merge.article_coverage import article_coverage, cleaned_article_count  # noqa: E402
 
 
 def write_json(path: Path, payload) -> None:
@@ -55,9 +55,18 @@ class ArticleCoverage(unittest.TestCase):
                 issue / "cleaned" / "articles" / "index.json",
                 {"ids": ["https://example.com/a", "https://example.com/b", "https://example.com/c"]},
             )
-            self.assertEqual(article_coverage(issue), {"raw": 3, "cleaned": 3})
+            write_json(
+                issue / "summary" / "articles" / "a.json",
+                {"id": "https://example.com/a"},
+            )
+            write_json(
+                issue / "summary" / "articles" / "c.json",
+                {"id": "https://example.com/c"},
+            )
+            self.assertEqual(article_coverage(issue), {"raw": 3, "selected": 2})
+            self.assertEqual(cleaned_article_count(issue), 3)
 
-    def test_missing_backfill_does_not_add_and_cleaned_counts_ids(self) -> None:
+    def test_missing_backfill_does_not_add_and_selected_counts_summary_articles(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             issue = Path(tmp)
             write_json(
@@ -68,7 +77,9 @@ class ArticleCoverage(unittest.TestCase):
                 issue / "cleaned" / "articles" / "index.json",
                 {"ids": ["https://example.com/a", "https://example.com/extra"]},
             )
-            self.assertEqual(article_coverage(issue), {"raw": 1, "cleaned": 2})
+            write_json(issue / "summary" / "articles" / "a.json", {"id": "https://example.com/a"})
+            self.assertEqual(article_coverage(issue), {"raw": 1, "selected": 1})
+            self.assertEqual(cleaned_article_count(issue), 2)
 
 
 if __name__ == "__main__":

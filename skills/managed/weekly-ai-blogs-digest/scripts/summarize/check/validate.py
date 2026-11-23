@@ -12,7 +12,7 @@ from clean.check.validate import validate as validate_clean  # noqa: E402
 from lib.issue import check_document, check_stage_file, load_gaps  # noqa: E402
 from summarize.articles.validate import validate as validate_articles  # noqa: E402
 from summarize.keywords.validate import validate as validate_keywords  # noqa: E402
-from summarize.merge.article_coverage import article_coverage  # noqa: E402
+from summarize.merge.article_coverage import article_coverage, cleaned_article_count  # noqa: E402
 from summarize.merge.validate import validate as validate_merge  # noqa: E402
 from summarize.models.validate import validate as validate_models  # noqa: E402
 from summarize.projects.validate import validate as validate_projects  # noqa: E402
@@ -62,14 +62,22 @@ def _index(
     errors, data = check_document(path, "summary/index.json", "schemas/summary/index.schema.json")
     if errors or not isinstance(data, dict):
         return errors
-    expected = article_coverage(issue)
+    coverage = article_coverage(issue)
     got = data.get("articles_coverage")
-    if got != expected:
+    if got != coverage:
         errors.append(
             "summary/index.json 的 articles_coverage 应为 "
-            f"原文 {expected['raw']} 篇、清洗后 {expected['cleaned']} 篇"
-            "（feeds 按规范化 URL 去重，再加不在 feeds 里的补录；cleaned 是 id 数，不是精选入选数）"
+            f"原文 {coverage['raw']} 篇、精选 {coverage['selected']} 篇"
+            "（原文是 feeds 按规范化 URL 去重，再加不在 feeds 里的补录；精选是 summary 文章数）"
         )
+    if coverage["selected"] != len(articles):
+        errors.append(
+            "articles_coverage.selected 应等于 summary 文章数 "
+            f"{len(articles)}，实际是 {coverage['selected']}"
+        )
+    cleaned = cleaned_article_count(issue)
+    if coverage["raw"] < cleaned:
+        errors.append(f"原文 {coverage['raw']} 篇少于清洗后 {cleaned} 篇")
     chapters = data.get("chapters") or []
     titles = [chapter.get("title") for chapter in chapters]
     expected = list(CHAPTERS)

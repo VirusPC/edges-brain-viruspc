@@ -37,14 +37,14 @@
       "additionalProperties": false,
       "required": [
         "raw",
-        "cleaned"
+        "selected"
       ],
       "properties": {
         "raw": {
           "type": "integer",
           "minimum": 0
         },
-        "cleaned": {
+        "selected": {
           "type": "integer",
           "minimum": 0
         }

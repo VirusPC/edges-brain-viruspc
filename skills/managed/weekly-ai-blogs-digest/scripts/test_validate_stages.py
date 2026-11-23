@@ -153,7 +153,7 @@ def write_issue(root: Path) -> Path:
             "skill": SKILL,
             "version": VERSION,
             "data": {"commit": None},
-            "articles_coverage": {"raw": 1, "cleaned": 1},
+            "articles_coverage": {"raw": 1, "selected": 1},
             "chapters": [
                 {"title": "本周关键词"},
                 {"title": "模型进展", "boards": [BOARD], "cards": [MODEL]},
@@ -236,10 +236,26 @@ class ValidateStages(unittest.TestCase):
     def test_articles_coverage_must_match_feeds_and_cleaned_ids(self) -> None:
         index_path = self.issue / "summary" / "index.json"
         index = json.loads(index_path.read_text(encoding="utf-8"))
-        index["articles_coverage"] = {"raw": 9, "cleaned": 1}
+        index["articles_coverage"] = {"raw": 1, "selected": 0}
         write_json(index_path, index)
         errors = validate_summary(self.issue)
-        self.assertTrue(any("articles_coverage" in item and "原文 1 篇" in item for item in errors))
+        self.assertTrue(any("articles_coverage" in item and "精选 1 篇" in item for item in errors))
+
+    def test_raw_must_not_be_below_cleaned(self) -> None:
+        extra = "https://example.com/extra"
+        write_json(
+            self.issue / "cleaned" / "articles" / "extra.json",
+            {
+                "id": extra,
+                "title": "多出来的",
+                "date": "2026-11-18",
+                "source": "raw/articles/feeds.json",
+                "text": "没有对应原文。",
+            },
+        )
+        write_json(self.issue / "cleaned" / "articles" / "index.json", {"ids": [ARTICLE, extra]})
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("少于清洗后 2 篇" in item for item in errors))
 
     def test_keyword_target_must_exist(self) -> None:
         write_json(

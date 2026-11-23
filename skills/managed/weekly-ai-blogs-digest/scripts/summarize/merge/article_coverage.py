@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""统计本期原文篇数和清洗后篇数，写入 summary/index.json 的 articles_coverage。
+"""统计本期原文篇数和精选篇数，写入 summary/index.json 的 articles_coverage。
 
-这不是精选入选数。口径见 references/summarize/merge.md。
+口径见 references/summarize/merge.md。清洗后篇数不写入这个字段，只用来核对原文不少于清洗后。
 """
 
 from __future__ import annotations
@@ -16,12 +16,17 @@ from prepare.articles.fetch_feeds import normalize_link  # noqa: E402
 
 
 def article_coverage(issue: Path) -> dict[str, int]:
-    """raw 是 feeds 去重后再加 feeds 里没有的补录；cleaned 是清洗后的 id 数。"""
+    """raw 是 feeds 去重后再加 feeds 里没有的补录；selected 是 summary 文章数。"""
     issue = Path(issue)
     seen: set[str] = set()
     raw = _count_new_links(issue / "raw" / "articles" / "feeds.json", seen)
     raw += _count_new_links(issue / "raw" / "articles" / "backfill.json", seen)
-    return {"raw": raw, "cleaned": _cleaned_count(issue / "cleaned" / "articles" / "index.json")}
+    return {"raw": raw, "selected": _selected_count(issue)}
+
+
+def cleaned_article_count(issue: Path) -> int:
+    """cleaned/articles/index.json 的 id 数。不写入 articles_coverage。"""
+    return _cleaned_count(Path(issue) / "cleaned" / "articles" / "index.json")
 
 
 def _count_new_links(path: Path, seen: set[str]) -> int:
@@ -43,6 +48,23 @@ def _items(path: Path) -> list:
     if isinstance(data, dict) and isinstance(data.get("items"), list):
         return [item for item in data["items"] if isinstance(item, dict)]
     return []
+
+
+def _selected_count(issue: Path) -> int:
+    directory = issue / "summary" / "articles"
+    if not directory.is_dir():
+        return 0
+    seen: set[str] = set()
+    for path in sorted(directory.glob("*.json")):
+        if path.name == "index.json":
+            continue
+        data = _read(path)
+        if not isinstance(data, dict):
+            continue
+        item_id = data.get("id")
+        if isinstance(item_id, str) and item_id and item_id not in seen:
+            seen.add(item_id)
+    return len(seen)
 
 
 def _cleaned_count(path: Path) -> int:

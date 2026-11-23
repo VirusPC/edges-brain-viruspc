@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { selectedArticlesRemarkHtml } from '../plugins/remark-coverage-window.mjs';
 
 /**
  * Issues whose summary/index.json is present. The site renders only these.
@@ -19,15 +20,15 @@ export function listSummaryIssues(dataRoot) {
 /**
  * One sentence for the selected-articles note. Missing or unusable numbers
  * produce no sentence, so the page does not invent a count.
- * @param {{ raw?: unknown, cleaned?: unknown } | null | undefined} coverage
+ * @param {{ raw?: unknown, selected?: unknown } | null | undefined} coverage
  * @returns {string}
  */
 export function articlesCoverageNote(coverage) {
   const raw = coverage?.raw;
-  const cleaned = coverage?.cleaned;
-  if (!Number.isInteger(raw) || !Number.isInteger(cleaned)) return '';
-  if (raw < 0 || cleaned < 0) return '';
-  return `原文 ${raw} 篇，清洗后 ${cleaned} 篇。`;
+  const selected = coverage?.selected;
+  if (!Number.isInteger(raw) || !Number.isInteger(selected)) return '';
+  if (raw < 0 || selected < 0) return '';
+  return `原文 ${raw} 篇，精选 ${selected} 篇。`;
 }
 
 const SELECTED_CHAPTER = /^(##[ \t]*[〇一二三四五六七八九十]+、精选文章[ \t]*)(?:\n+|$)/m;
@@ -36,16 +37,15 @@ const SELECTED_CHAPTER = /^(##[ \t]*[〇一二三四五六七八九十]+、精�
  * Put the coverage sentence after the selected-articles heading.
  * The note is not part of a card, and a period without the field is unchanged.
  * @param {string} markdown
- * @param {{ raw?: unknown, cleaned?: unknown } | null | undefined} coverage
+ * @param {{ raw?: unknown, selected?: unknown } | null | undefined} coverage
  */
 export function withArticlesCoverage(markdown, coverage) {
   const sentence = articlesCoverageNote(coverage);
-  if (!sentence || typeof markdown !== 'string' || markdown.includes('class="ai-news-coverage"')) {
+  if (!sentence || typeof markdown !== 'string' || markdown.includes('ai-news-coverage')) {
     return markdown;
   }
   if (!SELECTED_CHAPTER.test(markdown)) return markdown;
-  const html = `<p class="ai-news-coverage">${sentence}</p>`;
-  return markdown.replace(SELECTED_CHAPTER, `$1\n\n${html}\n\n`);
+  return markdown.replace(SELECTED_CHAPTER, `$1\n\n${selectedArticlesRemarkHtml(sentence)}\n\n`);
 }
 
 /**
