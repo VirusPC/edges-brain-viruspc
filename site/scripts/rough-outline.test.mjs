@@ -16,6 +16,7 @@ test('plan A uses one seeded stroke and no fill', () => {
   assert.equal(ROUGH_OUTLINE.preserveVertices, true);
   assert.deepEqual(ROUGH_SEEDS, {
     note: 11,
+    sources: 17,
     board: 23,
     facts: 37,
     release: 41,
@@ -23,6 +24,7 @@ test('plan A uses one seeded stroke and no fill', () => {
     cloud: 2,
   });
   assert.equal(seedForCard('info-card', '备注'), 11);
+  assert.equal(seedForCard('info-card ai-news-sources', '信息源'), 17);
   assert.equal(seedForCard('model-board', ''), 23);
   assert.equal(seedForCard('model-facts', ''), 37);
   assert.equal(seedForCard('info-card', '发布要点'), 41);
