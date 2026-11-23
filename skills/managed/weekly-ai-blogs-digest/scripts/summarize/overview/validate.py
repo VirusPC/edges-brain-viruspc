@@ -79,11 +79,39 @@ def validate(issue: Path) -> tuple[list[str], list[str]]:
                     f"警告: summary/overview.json 第 {index} 条的 label「{label}」在正文里出现多次，站点只链第一处"
                 )
     body = "\n".join(texts)
-    errors.extend(_category_coverage(themes, _lane_ids(issue, "articles"), _lane_ids(issue, "projects")))
+    article_ids = _lane_ids(issue, "articles")
+    errors.extend(_category_coverage(themes, article_ids, _lane_ids(issue, "projects")))
+    errors.extend(_article_cluster(themes, article_ids))
     for name in _theme_words(issue):
         if name not in body:
             warnings.append(f"警告: 关键词「{name}」的 theme 为 true，总结正文里没有出现")
     return errors, warnings
+
+
+def _cited_ids(theme: dict) -> list[str]:
+    found: list[str] = []
+    for ref in theme.get("refs") or []:
+        if isinstance(ref, dict) and isinstance(ref.get("id"), str):
+            found.append(ref["id"])
+    return found
+
+
+def _article_cluster(themes: list, article_ids: set[str]) -> list[str]:
+    errors: list[str] = []
+    if themes and isinstance(themes[0], dict):
+        if any(ref_id in article_ids for ref_id in _cited_ids(themes[0])):
+            errors.append("summary/overview.json 首条引用了文章")
+    if len(article_ids) < 3:
+        return errors
+    best = 0
+    for theme in themes:
+        if not isinstance(theme, dict) or theme.get("kind") != "other":
+            continue
+        count = len({ref_id for ref_id in _cited_ids(theme) if ref_id in article_ids})
+        best = max(best, count)
+    if best < 3:
+        errors.append("summary/overview.json 有至少 3 篇精选文章，但没有一条 other 主线引用不少于 3 篇文章")
+    return errors
 
 
 def _category_coverage(themes: list, article_ids: set[str], project_ids: set[str]) -> list[str]:

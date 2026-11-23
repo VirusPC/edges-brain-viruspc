@@ -158,8 +158,16 @@ class OverviewValidate(unittest.TestCase):
         self.tmp.cleanup()
         self.tmp = tempfile.TemporaryDirectory()
         self.issue = build(Path(self.tmp.name), model=False)
+        write_json(
+            self.issue / "summary" / "projects" / "demo.json",
+            {"id": "https://github.com/example/demo"},
+        )
         themes = [
-            theme("model", long_text("这周"), [{"id": ARTICLE, "label": "这周"}]),
+            theme(
+                "model",
+                long_text("example/demo"),
+                [{"id": "https://github.com/example/demo", "label": "example/demo"}],
+            ),
             theme("other", long_text("一篇"), [{"id": ARTICLE, "label": "一篇"}]),
             theme("other", long_text("Example"), [{"id": ARTICLE, "label": "Example"}]),
         ]
@@ -182,6 +190,41 @@ class OverviewValidate(unittest.TestCase):
         self.assertIn("refs 为空", text)
         self.assertIn("不在本期 summary 里", text)
         self.assertIn("在正文里找不到", text)
+
+    def test_three_articles_need_one_other_theme_and_the_first_theme_stays_a_model(self) -> None:
+        write_json(
+            self.issue / "summary" / "articles" / "second.json",
+            {"id": "https://example.com/second", "title": "第二篇", "sentence": "二。"},
+        )
+        write_json(
+            self.issue / "summary" / "articles" / "third.json",
+            {"id": "https://example.com/third", "title": "第三篇", "sentence": "三。"},
+        )
+        themes = valid_themes()
+        self.save(overview(themes))
+        self.assertTrue(any("不少于 3 篇" in item for item in self.errors()))
+        themes[0] = theme(
+            "model",
+            long_text("一篇"),
+            [{"id": ARTICLE, "label": "一篇"}],
+        )
+        clustered = long_text("一篇") + "第二篇和第三篇也写在这一条里。"
+        themes[1] = theme(
+            "other",
+            clustered,
+            [
+                {"id": ARTICLE, "label": "一篇"},
+                {"id": "https://example.com/second", "label": "第二篇"},
+                {"id": "https://example.com/third", "label": "第三篇"},
+            ],
+        )
+        self.save(overview(themes))
+        text = "\n".join(self.errors())
+        self.assertIn("首条引用了文章", text)
+        self.assertNotIn("不少于 3 篇", text)
+        themes[0] = theme("model", long_text("Example Model"), [{"id": MODEL, "label": "Example Model"}])
+        self.save(overview(themes))
+        self.assertEqual(self.errors(), [])
 
     def test_repeated_label_and_missing_theme_are_warnings(self) -> None:
         self.tmp.cleanup()
