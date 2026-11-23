@@ -17,6 +17,7 @@ sys.path.insert(0, str(SCRIPTS))
 from clean.check.validate import validate as validate_clean  # noqa: E402
 from prepare.check.validate import validate as validate_prepare  # noqa: E402
 from summarize.check.validate import validate as validate_summary  # noqa: E402
+from summarize.merge.sources import sources_document  # noqa: E402
 
 ISSUE = "2026-11-20"
 SKILL = "weekly-ai-blogs-digest"
@@ -183,30 +184,7 @@ def write_issue(root: Path) -> Path:
             "data": {"commit": None},
             "articles_coverage": {"raw": 2, "selected": 1},
             "window": {"issue": ISSUE, "since": "2026-11-13", "until": "2026-11-19"},
-            "sources": {
-                "categories": [
-                    {"title": "模型榜单", "count": 0, "publishers": []},
-                    {
-                        "title": "GitHub Trending",
-                        "count": 1,
-                        "publishers": [
-                            {
-                                "name": "GitHub",
-                                "url": "https://github.com/trending?since=weekly",
-                                "count": 1,
-                            }
-                        ],
-                    },
-                    {
-                        "title": "博客",
-                        "count": 1,
-                        "publishers": [
-                            {"name": "OpenAI", "url": "https://openai.com/news/", "count": 1}
-                        ],
-                    },
-                    {"title": "国内互联网", "count": 0, "publishers": []},
-                ]
-            },
+            "sources": sources_document(issue),
             "chapters": [
                 {"title": "本周关键词"},
                 {"title": "模型进展", "boards": [BOARD], "cards": [MODEL]},

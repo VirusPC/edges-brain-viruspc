@@ -42,17 +42,28 @@ def load_catalog() -> tuple[dict[str, dict], dict[str, str], list[dict], dict[st
 
 
 def sources_document(issue: Path) -> dict:
-    """四类固定顺序。count 是该类 raw 条目数，发布方只留有条目的。"""
+    """四类固定顺序。已订阅的发布方即使本周 0 条也列出。模型榜单没有条数时用 null。"""
     opml, by_id, boards, meta_by_id = load_catalog()
     grouped, errors = _grouped_links(Path(issue), opml, by_id, meta_by_id)
     if errors:
         raise ValueError("\n".join(errors))
-    categories = []
+    subscribed = _subscribed_publishers(opml)
+    categories = [_model_category(Path(issue), boards)]
     for title in CATEGORIES:
+        if title == "模型榜单":
+            continue
         publishers = []
-        for name in sorted(grouped[title], key=lambda item: (-len(grouped[title][item]["links"]), item)):
+        seen: set[str] = set()
+        for row in subscribed[title]:
+            bucket = grouped[title].get(row["name"])
+            count = _bucket_count(bucket)
+            publishers.append({"name": row["name"], "url": row["url"], "count": count})
+            seen.add(row["name"])
+        for name in sorted(grouped[title]):
+            if name in seen:
+                continue
             bucket = grouped[title][name]
-            count = len(bucket["links"]) + bucket["rows"]
+            count = _bucket_count(bucket)
             if count <= 0:
                 continue
             publishers.append({"name": name, "url": bucket["url"], "count": count})
@@ -61,8 +72,49 @@ def sources_document(issue: Path) -> dict:
             "count": sum(item["count"] for item in publishers),
             "publishers": publishers,
         })
-    _add_boards(Path(issue), boards, categories)
     return {"categories": categories}
+
+
+def _bucket_count(bucket: dict | None) -> int:
+    if not bucket:
+        return 0
+    return len(bucket["links"]) + bucket["rows"]
+
+
+def _subscribed_publishers(opml: dict[str, dict]) -> dict[str, list[dict]]:
+    """按 OPML 出现顺序。同一发布方的备源并进主源网址。"""
+    found: dict[str, dict[str, dict]] = {title: {} for title in CATEGORIES}
+    for info in opml.values():
+        category = info["category"]
+        if category not in found or not info["publisher"]:
+            continue
+        current = found[category].get(info["publisher"])
+        url = _summary_url(info)
+        if current is None:
+            found[category][info["publisher"]] = {"name": info["publisher"], "url": url, "backup": info["backup"]}
+        elif current["backup"] and not info["backup"]:
+            current["url"] = url
+            current["backup"] = False
+    return {
+        title: [{"name": row["name"], "url": row["url"]} for row in rows.values()]
+        for title, rows in found.items()
+    }
+
+
+def _model_category(issue: Path, boards: list[dict]) -> dict:
+    publishers = []
+    counted: list[int] = []
+    for board in boards:
+        count = _board_item_count(issue, board)
+        number = count if count > 0 else None
+        publishers.append({"name": board["publisher"], "url": board["url"], "count": number})
+        if number is not None:
+            counted.append(number)
+    return {
+        "title": "模型榜单",
+        "count": sum(counted) if counted else None,
+        "publishers": publishers,
+    }
 
 
 def stamp_map(issue: Path) -> tuple[dict[str, dict], list[str]]:
@@ -151,25 +203,6 @@ def _grouped_links(issue: Path, opml: dict[str, dict], by_id: dict[str, str], me
     return grouped, errors
 
 
-def _add_boards(issue: Path, boards: list[dict], categories: list[dict]) -> None:
-    model = next(item for item in categories if item["title"] == "模型榜单")
-    by_name = {item["name"]: item for item in model["publishers"]}
-    for board in boards:
-        count = _board_item_count(issue, board)
-        if count <= 0:
-            continue
-        row = by_name.get(board["publisher"])
-        if row is None:
-            row = {"name": board["publisher"], "url": board["url"], "count": 0}
-            model["publishers"].append(row)
-            by_name[row["name"]] = row
-        elif row["url"] != board["url"]:
-            raise ValueError(f"{board['publisher']} 的榜单网址和订阅网址不一致")
-        row["count"] += count
-    model["publishers"].sort(key=lambda item: (-item["count"], item["name"]))
-    model["count"] = sum(item["count"] for item in model["publishers"])
-
-
 def _board_item_count(issue: Path, board: dict) -> int:
     raw = issue / "raw" / "models"
     total = 0
@@ -184,6 +217,8 @@ def _board_item_count(issue: Path, board: dict) -> int:
             if not isinstance(data, dict) or data.get("skipped") is True or data.get("ok") is False:
                 continue
             items = data.get("items")
+            if not isinstance(items, list):
+                items = data.get("data") if isinstance(data.get("data"), list) else None
             if isinstance(items, list):
                 total += len(items)
     return total

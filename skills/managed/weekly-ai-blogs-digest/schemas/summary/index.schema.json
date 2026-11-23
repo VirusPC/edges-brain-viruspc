@@ -82,30 +82,97 @@
           "type": "array",
           "minItems": 4,
           "maxItems": 4,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["title", "count", "publishers"],
-            "properties": {
-              "title": {
-                "enum": ["模型榜单", "GitHub Trending", "博客", "国内互联网"]
-              },
-              "count": {"type": "integer", "minimum": 0},
-              "publishers": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["name", "url", "count"],
-                  "properties": {
-                    "name": {"type": "string", "minLength": 1},
-                    "url": {"type": "string", "pattern": "^https?://[^\\s]+$"},
-                    "count": {"type": "integer", "minimum": 1}
+          "prefixItems": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["title", "count", "publishers"],
+              "properties": {
+                "title": {"const": "模型榜单"},
+                "count": {"type": ["integer", "null"], "minimum": 0},
+                "publishers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "url", "count"],
+                    "properties": {
+                      "name": {"type": "string", "minLength": 1},
+                      "url": {"type": "string", "pattern": "^https?://[^\\s]+$"},
+                      "count": {"type": ["integer", "null"], "minimum": 0}
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["title", "count", "publishers"],
+              "properties": {
+                "title": {"const": "GitHub Trending"},
+                "count": {"type": "integer", "minimum": 0},
+                "publishers": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "url", "count"],
+                    "properties": {
+                      "name": {"type": "string", "minLength": 1},
+                      "url": {"type": "string", "pattern": "^https?://[^\\s]+$"},
+                      "count": {"type": "integer", "minimum": 0}
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["title", "count", "publishers"],
+              "properties": {
+                "title": {"const": "博客"},
+                "count": {"type": "integer", "minimum": 0},
+                "publishers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "url", "count"],
+                    "properties": {
+                      "name": {"type": "string", "minLength": 1},
+                      "url": {"type": "string", "pattern": "^https?://[^\\s]+$"},
+                      "count": {"type": "integer", "minimum": 0}
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["title", "count", "publishers"],
+              "properties": {
+                "title": {"const": "国内互联网"},
+                "count": {"type": "integer", "minimum": 0},
+                "publishers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "url", "count"],
+                    "properties": {
+                      "name": {"type": "string", "minLength": 1},
+                      "url": {"type": "string", "pattern": "^https?://[^\\s]+$"},
+                      "count": {"type": "integer", "minimum": 0}
+                    }
                   }
                 }
               }
             }
-          }
+          ]
         }
       }
     },

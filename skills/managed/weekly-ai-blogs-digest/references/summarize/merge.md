@@ -24,4 +24,6 @@ python3 scripts/summarize/merge/write_index.py issues/<生成日> \
   --routine-path .edges/routines/weekly-ai-blogs-digest/INDEX.md
 ```
 
-`sources.categories` 固定四类，顺序是模型榜单、GitHub Trending、博客、国内互联网。每类有 `count`，以及 `publishers`：`{name, url, count}`。`name` 是 OPML 的 `publisher`（团队名），备源并进这个名字，不写 feed 标题。`url` 是读者打开的网站：feed 用 `publisherUrl`，没有就用主源的 `htmlUrl`，不用 `xmlUrl`。GitHub Trending 每一份列表的 `htmlUrl` 仍是该列表页面，汇总后的发布方网址用每周总榜。模型榜单的网址在 meta `boards`。条数来自 raw：订阅和补录按规范化链接去重，榜单按 raw 文件里的 `items` 计数。补录算进它的发布方，不单列一类。
+`sources.categories` 固定四类，顺序是模型榜单、GitHub Trending、博客、国内互联网。每类有 `count`，以及 `publishers`：`{name, url, count}`。`name` 是 OPML 的 `publisher`（团队名，如字节跳动、大淘宝），备源并进这个名字，不写 feed 标题，也不写 RSS 地址。`url` 是读者打开的网站：feed 用 `publisherUrl`，没有就用主源的 `htmlUrl`。GitHub Trending 每一份列表的 `htmlUrl` 仍是该列表页面，汇总后的发布方网址用每周总榜。模型榜单的网址在 meta `boards`。
+
+已订阅的发布方全部列出，本周没有条目时 `count` 是 0。模型榜单没有可数的条目时，发布方的 `count` 和这一类的 `count` 写 `null`，不写 0。条数来自 raw：订阅和补录按规范化链接去重；榜单有 `items` 或 `data` 数组时用它的长度。补录算进它的发布方，不单列一类。`sources` 里不放 OPML 地址。以后页面上的下载按钮只链到脑仓这份文件：`https://github.com/VirusPC/edges-brain-viruspc/blob/main/skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml`。站点怎么展示 `sources` 还没定，先不渲染。

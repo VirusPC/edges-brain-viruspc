@@ -51,7 +51,7 @@
     <outline text="国内互联网" title="国内互联网">
       <outline text="字节跳动技术团队" title="字节跳动技术团队" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml" category="国内互联网" publisher="字节跳动" htmlUrl="https://www.bytedance.com/" />
       <outline text="百度Geek说" title="百度Geek说" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml" category="国内互联网" publisher="百度" htmlUrl="https://cloud.baidu.com/" />
-      <outline text="大淘宝技术" title="大淘宝技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml" category="国内互联网" publisher="淘宝" htmlUrl="https://developer.alibaba.com/" />
+      <outline text="大淘宝技术" title="大淘宝技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml" category="国内互联网" publisher="大淘宝" htmlUrl="https://developer.alibaba.com/" />
       <outline text="快手技术" title="快手技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml" category="国内互联网" publisher="快手" htmlUrl="https://developer.kuaishou.com/" />
       <outline text="支付宝体验科技" title="支付宝体验科技" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml" category="国内互联网" publisher="支付宝" htmlUrl="https://open.alipay.com/" />
       <outline text="美团技术团队" title="美团技术团队" type="rss" xmlUrl="https://tech.meituan.com/feed/" htmlUrl="https://tech.meituan.com/" category="国内互联网" publisher="美团" />
