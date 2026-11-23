@@ -20,7 +20,7 @@ from summarize.check.validate import validate as validate_summary  # noqa: E402
 
 ISSUE = "2026-11-20"
 SKILL = "weekly-ai-blogs-digest"
-VERSION = "0.1.0"
+VERSION = "0.0.1"
 ARTICLE = "https://example.com/post"
 REPO = "https://github.com/example/demo"
 MODEL = "Example Model"
