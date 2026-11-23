@@ -9,6 +9,8 @@ import {
   companiesForSource,
   companiesPresent,
   sourceGroup,
+  countLabel,
+  featuredCounts,
   filterChips,
   isFilterStuck,
   itemMatches,
@@ -285,7 +287,23 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(source, /addLabel\(companyRow,\s*'来源公司'\)/);
   assert.match(source, /baseFrequency: '0\.02'/);
   assert.match(source, /scale: '3\.5'/);
-  assert.match(source, /fillChip\(button, name\)/);
+  assert.match(source, /countLabel\('全部', counts\.total\)/);
+  assert.match(source, /countLabel\(name, counts\.cats\[name\] \|\| 0\)/);
+  assert.match(source, /countLabel\(group\.name, counts\.srcs\[group\.name\] \|\| 0\)/);
+  assert.match(source, /countLabel\(name, counts\.companies\[name\] \|\| 0\)/);
+  assert.match(source, /labelHeading\(group\.heading, group\.items\.length\)/);
+  assert.match(source, /querySelector\(':scope > \.ai-news-coverage'\)/);
+  assert.doesNotMatch(css, /\.ai-news-coverage\s*\{/);
+  assert.match(css, /\.ai-news-filter button\s*\{[^}]*font-variant-numeric:\s*tabular-nums/);
+  const global = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
+  assert.match(global, /\.info-card\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(global, /\.info-card\s*\{[^}]*color:\s*var\(--panel-ink\)/);
+  assert.match(global, /:root\[data-theme="dark"\] \.info-card-label\s*\{[^}]*color:\s*#e09a62/);
+  assert.match(global, /:root:not\(\[data-theme="light"\]\) \.info-card-label\s*\{[^}]*color:\s*#e09a62/);
+  assert.match(global, /@media \(max-width:\s*560px\)[\s\S]*\.info-card\s*\{[^}]*padding:\s*0\.6rem 0\.7rem 0\.65rem/);
+  const noteCard = fs.readFileSync(new URL('../src/styles/note-card.css', import.meta.url), 'utf8');
+  assert.match(noteCard, /:root\[data-theme="dark"\] \.info-card/);
+  assert.match(noteCard, /:root:not\(\[data-theme="light"\]\) \.info-card/);
   assert.match(source, /preserveAspectRatio: 'none'/);
   assert.match(css, /\.prose h4 \.ai-news-tag,\s*\n\.prose h4 \.ai-news-src\s*\{[^}]*background:\s*var\(--wood-chip\)/);
   assert.match(css, /\.prose h4 \.ai-news-tag\[aria-pressed='true'\],\s*\n\.prose h4 \.ai-news-src\[aria-pressed='true'\]\s*\{[^}]*box-shadow:\s*inset 0 0 0 2\.5px var\(--wood-on-line\)/);
@@ -294,6 +312,28 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(source, /querySelectorAll\('\.ai-news-src'\)/);
   assert.match(source, /querySelectorAll\('\.ai-news-tag'\)/);
   assert.match(source, /addEventListener\?\.\('popstate'/);
+});
+
+test('labels show how many selected articles sit under each chip, including zero', () => {
+  const items = [
+    { cat: '产品', src: '国内模型厂', tags: ['DeepSeek', 'DeepSeek'] },
+    { cat: '开源', src: '国内非模型厂', tags: ['阿里', '腾讯'] },
+    { cat: '产品', src: '国外模型厂', tags: ['Anthropic'] },
+  ];
+  const counts = featuredCounts(items);
+  assert.equal(counts.total, 3);
+  assert.equal(counts.cats['产品'], 2);
+  assert.equal(counts.cats['模型'], 0);
+  assert.equal(counts.cats['架构'], 0);
+  assert.equal(counts.srcs['国内模型厂'], 1);
+  assert.equal(counts.srcs['国外模型厂'], 1);
+  assert.equal(counts.srcs['国外非模型厂'], 0);
+  assert.equal(counts.companies.DeepSeek, 1);
+  assert.equal(counts.companies['阿里'], 1);
+  assert.equal(counts.companies['腾讯'], 1);
+  assert.equal(countLabel('全部', counts.total), '全部 (3)');
+  assert.equal(countLabel('模型', counts.cats['模型']), '模型 (0)');
+  assert.equal(countLabel('国内模型厂', 12), '国内模型厂 (12)');
 });
 
 test('a category and a company both have to match, and an empty section hides', () => {

@@ -174,6 +174,30 @@ export function itemMatches(item, filter) {
   return true;
 }
 
+/** Visible chip text. The number is how many selected articles carry that label. */
+export function countLabel(name, count) {
+  return `${name} (${count})`;
+}
+
+/** Static counts for an unfiltered selected-articles chapter. */
+export function featuredCounts(items) {
+  const list = items || [];
+  const cats = Object.fromEntries(PRIMARY_CATEGORIES.map((name) => [name, 0]));
+  const srcs = Object.fromEntries(SOURCE_GROUPS.map((group) => [group.name, 0]));
+  const companies = {};
+  for (const item of list) {
+    if (Object.hasOwn(cats, item?.cat)) cats[item.cat] += 1;
+    if (Object.hasOwn(srcs, item?.src)) srcs[item.src] += 1;
+    const seen = new Set();
+    for (const tag of item?.tags || []) {
+      if (!tag || seen.has(tag)) continue;
+      seen.add(tag);
+      companies[tag] = (companies[tag] || 0) + 1;
+    }
+  }
+  return { total: list.length, cats, srcs, companies };
+}
+
 export function sectionPlan(sections, filter) {
   const active = Boolean(filter?.cat || filter?.src || filter?.tag);
   const planned = sections.map((section) => {
@@ -216,7 +240,11 @@ export function collectChapter(root) {
   let group = null;
   let item = null;
   while (cursor && cursor.tagName !== 'H2') {
-    if (cursor.classList.contains('ai-news-filter') || cursor.classList.contains('ai-news-filter-status')) {
+    if (
+      cursor.classList.contains('ai-news-filter')
+      || cursor.classList.contains('ai-news-filter-status')
+      || cursor.classList.contains('ai-news-coverage')
+    ) {
       cursor = cursor.nextElementSibling;
       continue;
     }
@@ -366,6 +394,11 @@ function fillChip(button, text) {
   button.append(face);
 }
 
+function labelHeading(heading, count) {
+  const base = textOf(heading).replace(/ \(\d+\)$/, '');
+  heading.textContent = countLabel(base, count);
+}
+
 /** Wood plaque filters. Edge jitter is #wood-rough; grain is #wood-grain. */
 function ensureWoodFilters(doc, bar) {
   if (doc.getElementById('wood-rough')) return;
@@ -460,6 +493,9 @@ export function mountCategoryFilter(doc) {
   if (present.length === 0) return;
   root.dataset.filterReady = '1';
   paintTags(chapter.groups);
+  const items = chapter.groups.flatMap((group) => group.items);
+  const counts = featuredCounts(items);
+  for (const group of chapter.groups) labelHeading(group.heading, group.items.length);
 
   const bar = doc.createElement('div');
   bar.className = 'ai-news-filter';
@@ -480,7 +516,7 @@ export function mountCategoryFilter(doc) {
     all.className = 'ai-news-filter-all';
     all.dataset.filter = 'all';
     all.dataset.row = rowName;
-    fillChip(all, '全部');
+    fillChip(all, countLabel('全部', counts.total));
     row.append(all);
   };
 
@@ -496,7 +532,7 @@ export function mountCategoryFilter(doc) {
     button.className = 'ai-news-filter-cat';
     button.dataset.filter = 'cat';
     button.dataset.cat = name;
-    fillChip(button, name);
+    fillChip(button, countLabel(name, counts.cats[name] || 0));
     row.append(button);
   }
   bar.append(row);
@@ -516,7 +552,7 @@ export function mountCategoryFilter(doc) {
       button.className = 'ai-news-filter-src';
       button.dataset.filter = 'src';
       button.dataset.src = group.name;
-      fillChip(button, group.name);
+      fillChip(button, countLabel(group.name, counts.srcs[group.name] || 0));
       sourceRow.append(button);
     }
     appendSeam(doc, bar);
@@ -534,7 +570,7 @@ export function mountCategoryFilter(doc) {
       button.className = 'ai-news-filter-co';
       button.dataset.filter = 'tag';
       button.dataset.tag = name;
-      fillChip(button, name);
+      fillChip(button, countLabel(name, counts.companies[name] || 0));
       companyRow.append(button);
     }
     appendSeam(doc, bar);
@@ -550,6 +586,8 @@ export function mountCategoryFilter(doc) {
 
   const wrapper = encloseChapter(chapter.heading);
   wrapper.prepend(bar);
+  const note = wrapper.querySelector(':scope > .ai-news-coverage');
+  if (note) wrapper.insertBefore(note, bar);
 
   let filter = parseFilter(doc.defaultView?.location?.search || '');
   if (doc.defaultView?.location && !filterQueryMatches(doc.defaultView.location.search || '', filter)) {

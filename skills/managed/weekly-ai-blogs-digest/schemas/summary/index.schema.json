@@ -5,6 +5,7 @@
     "skill",
     "version",
     "data",
+    "articles_coverage",
     "chapters"
   ],
   "properties": {
@@ -28,6 +29,24 @@
             "null"
           ],
           "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "articles_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw",
+        "selected"
+      ],
+      "properties": {
+        "raw": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selected": {
+          "type": "integer",
+          "minimum": 0
         }
       }
     },
