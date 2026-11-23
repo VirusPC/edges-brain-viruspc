@@ -63,9 +63,21 @@ def validate(instance: Any, schema: dict, path: str = "$") -> list[str]:
             fail(f"至多 {schema['maxItems']} 项")
         if schema.get("uniqueItems") and len(instance) != len(_freeze(instance)):
             fail("有重复项")
+        prefix = schema.get("prefixItems")
+        if isinstance(prefix, list):
+            if len(instance) < len(prefix):
+                fail(f"至少要有 {len(prefix)} 项按位校验")
+            for index, item_schema in enumerate(prefix):
+                if index >= len(instance):
+                    break
+                if isinstance(item_schema, dict):
+                    errors.extend(validate(instance[index], item_schema, f"{path}[{index}]"))
+            if "items" not in schema and len(instance) > len(prefix):
+                fail(f"至多 {len(prefix)} 项")
         item_schema = schema.get("items")
         if isinstance(item_schema, dict):
-            for index, value in enumerate(instance):
+            start = len(prefix) if isinstance(prefix, list) else 0
+            for index, value in enumerate(instance[start:], start=start):
                 errors.extend(validate(value, item_schema, f"{path}[{index}]"))
 
     return errors

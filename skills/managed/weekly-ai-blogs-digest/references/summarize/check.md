@@ -19,6 +19,6 @@ python3 scripts/summarize/check/validate.py issues/<生成日>
 5. 精选推文。建设中，没有条目，也不为此改 OPML。
 6. 精选播客。同样建设中。窗口里确有相关播客时，只在已有卡片或关键词里点名，不写入这一章。
 
-`summary/index.json` 记下 skill 名和 `version`，以及本期数据已经落库的 commit。数据 commit 没有就写 `null`。不填数据仓库以外的提交。同一份 index 还要有 `articles_coverage`。`raw` 和 `selected` 必须等于 [汇合](merge.md) 里那个统计命令的结果。`selected` 还要等于 summary 文章数。`raw` 不能小于 `cleaned/articles/index.json` 的 id 数，清洗后不能比原文多。对不上就不能通过。`summary/stage.json` 的 name 是 `summary`，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/summarize/summarize.md`。缺口和过程说明留在 `summary/gaps.json`，不写进读者能看见的榜单说明。
+`summary/index.json` 的 `skill` 是 `{name, version}`，`version` 必须等于本 skill frontmatter。`routine` 是调用方给出的仓库、commit 和入口路径。不再写顶层 `version`，也不写 `blocks`。summary 里不能留 `<!-- provenance`。同一份 index 还要有 `articles_coverage` 和 `sources`。`articles_coverage` 的 `raw` 和 `selected` 必须等于 [汇合](merge.md) 里那个统计命令的结果。`selected` 还要等于 summary 文章数。`raw` 不能小于 `cleaned/articles/index.json` 的 id 数，清洗后不能比原文多。`sources` 必须等于汇合脚本按 raw 和 OPML 算出的四类发布方。cleaned 条目上的 `publisher`、`category`、`url` 也必须和这次汇总一致。对不上就不能通过。`summary/stage.json` 的 name 是 `summary`，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/summarize/summarize.md`。缺口和过程说明留在 `summary/gaps.json`，不写进读者能看见的榜单说明。
 
 默认定时只开一个数据 PR，不自动合并。站点渲染不是这一步。

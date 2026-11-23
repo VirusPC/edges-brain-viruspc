@@ -49,9 +49,7 @@ export function withArticlesCoverage(markdown, coverage) {
 }
 
 /**
- * Rebuild the issue markdown from summary/index.json blocks and card text.
- * The slices were copied from the published issue, so a faithful conversion
- * round-trips the same text the current pages render.
+ * Rebuild the issue markdown from summary chapters, the coverage window, and card text.
  * @param {string} issueDir
  * @returns {string | null}
  */
@@ -59,35 +57,160 @@ export function composeIssueMarkdown(issueDir) {
   const indexPath = path.join(issueDir, 'summary', 'index.json');
   if (!fs.existsSync(indexPath)) return null;
   const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
-  if (!Array.isArray(index.blocks)) return null;
-  let out = '';
-  for (const block of index.blocks) {
-    if (block?.kind === 'raw') {
-      out += String(block.text ?? '');
+  const markdown = composeFromChapters(issueDir, index);
+  if (markdown == null) return null;
+  return withArticlesCoverage(markdown, index.articles_coverage);
+}
+
+const CHAPTER_NUMBERS = {
+  本周关键词: '一',
+  模型进展: '二',
+  项目开源: '三',
+  精选文章: '四',
+  精选推文: '五',
+  精选播客: '六',
+};
+
+const BOARD_CHARTS = {
+  'Artificial Analysis': {
+    heading: 'Artificial Analysis',
+    file: 'aa-intelligence-top15',
+    alt: 'Artificial Analysis Intelligence Index Top 15',
+  },
+  'LLM Arena': {
+    heading: 'LLM Arena',
+    file: 'llm-arena-top15',
+    alt: 'LLM Arena Top 15',
+  },
+  'OpenRouter 本周用量': {
+    heading: 'OpenRouter',
+    file: 'openrouter-usage-top15',
+    alt: 'OpenRouter 本周用量 Top 15',
+  },
+  'OpenRouter 编程用量': {
+    heading: 'OpenRouter',
+    file: 'openrouter-programming-top15',
+    alt: 'OpenRouter 编程用量 Top 15',
+  },
+  'OpenRouter 应用用量': {
+    heading: 'OpenRouter',
+    file: 'openrouter-apps-top15',
+    alt: 'OpenRouter 应用用量 Top 15',
+  },
+};
+
+/**
+ * @param {string} issueDir
+ * @param {any} index
+ */
+function composeFromChapters(issueDir, index) {
+  if (!Array.isArray(index?.chapters)) return null;
+  const cards = loadSummaryCards(issueDir);
+  const issueDate = path.basename(issueDir);
+  const parts = [];
+  const window = windowLine(index, issueDate);
+  if (window) parts.push(window);
+  for (const chapter of index.chapters) {
+    const number = CHAPTER_NUMBERS[chapter?.title];
+    if (!number || !chapter?.title) return null;
+    parts.push(`## ${number}、${chapter.title}\n\n`);
+    if (chapter.title === '模型进展') {
+      const boards = chapterBoards(issueDate, chapter, cards);
+      if (boards == null) return null;
+      parts.push(boards);
+    }
+    if (chapter.title === '精选文章') {
+      for (const group of chapter.groups || []) {
+        if (!group?.title) continue;
+        parts.push(`### ${group.title}\n\n`);
+        if (!pushCards(parts, cards, group.cards)) return null;
+      }
       continue;
     }
-    if (block?.kind !== 'card' || !block.id) return null;
-    const card = findCard(issueDir, block.id);
-    if (!card) return null;
-    out += String(card.text ?? '');
+    if (!pushCards(parts, cards, chapter.cards)) return null;
   }
-  return withArticlesCoverage(out, index.articles_coverage);
+  return parts.join('');
+}
+
+/**
+ * @param {string[]} parts
+ * @param {Map<string, any>} cards
+ * @param {string[] | undefined} ids
+ */
+function pushCards(parts, cards, ids) {
+  for (const id of ids || []) {
+    const card = cards.get(id);
+    if (!card || typeof card.text !== 'string') return false;
+    parts.push(`${card.text.trimEnd()}\n\n`);
+  }
+  return true;
+}
+
+/**
+ * @param {string} issueDate
+ * @param {any} chapter
+ * @param {Map<string, any>} cards
+ */
+function chapterBoards(issueDate, chapter, cards) {
+  const parts = [];
+  let openrouter = false;
+  for (const id of chapter.boards || []) {
+    const board = cards.get(id);
+    const spec = BOARD_CHARTS[id];
+    if (!board || !spec) return null;
+    if (spec.heading === 'OpenRouter') {
+      if (!openrouter) {
+        parts.push('### OpenRouter\n\n');
+        openrouter = true;
+      }
+    } else {
+      parts.push(`### ${spec.heading}\n\n`);
+      openrouter = false;
+    }
+    const day = spec.heading === 'LLM Arena' && board.arena_publish_date
+      ? board.arena_publish_date
+      : issueDate;
+    parts.push(`![${spec.alt}，${day}](${spec.file}-${day}-marked.png)\n\n`);
+    if (board.caption) parts.push(`${board.caption.trim()}\n\n`);
+    const meta = [];
+    if (board.arena_publish_date) meta.push(`榜单发布日 ${board.arena_publish_date}`);
+    if (Array.isArray(board.highlights) && board.highlights.length) {
+      meta.push(`红圈：${board.highlights.join('、')}。`);
+    }
+    if (meta.length) parts.push(`<!-- chart-meta\n${meta.join('\n')}\n-->\n\n`);
+  }
+  return parts.join('');
+}
+
+/**
+ * @param {any} index
+ * @param {string} issueDate
+ */
+function windowLine(index, issueDate) {
+  const window = index?.window;
+  if (!window?.since || !window?.until) return '';
+  const day = window.issue || issueDate;
+  return `覆盖窗口：${window.since} 00:00:00 至 ${window.until} 23:59:59（UTC；生成日 ${day}，不含当天）。\n\n`;
 }
 
 /**
  * @param {string} issueDir
- * @param {string} id
  */
-function findCard(issueDir, id) {
-  const summary = path.join(issueDir, 'summary');
-  for (const lane of ['articles', 'projects', 'models']) {
-    const dir = path.join(summary, lane);
-    if (!fs.existsSync(dir)) continue;
+function loadSummaryCards(issueDir) {
+  const map = new Map();
+  const walk = (dir) => {
+    if (!fs.existsSync(dir)) return;
     for (const name of fs.readdirSync(dir)) {
+      const full = path.join(dir, name);
+      if (fs.statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
       if (!name.endsWith('.json') || name === 'index.json') continue;
-      const card = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
-      if (card?.id === id) return card;
+      const card = JSON.parse(fs.readFileSync(full, 'utf8'));
+      if (card?.id) map.set(card.id, card);
     }
-  }
-  return null;
+  };
+  walk(path.join(issueDir, 'summary'));
+  return map;
 }

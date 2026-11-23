@@ -10,6 +10,7 @@ import {
   isEvaluationTitle,
   modelNamesInTitle,
   releaseKind,
+  summaryKeywords,
   textHasWord,
 } from "./build_keywords.mjs";
 import { keywordWeight } from "./keyword_weight.mjs";
@@ -153,6 +154,31 @@ test("a new model's category score does not take the theme from a wider concept"
     () => applyThemeLabel(doc.words, { evidence: "not the theme", word: "别的话题" }),
     /对不上/,
   );
+});
+
+test("summary keywords keep model names and do not emit the whole title", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "kw-summary-"));
+  const issue = "2026-11-13";
+  const summary = path.join(root, issue, "summary");
+  fs.mkdirSync(path.join(summary, "articles"), { recursive: true });
+  fs.mkdirSync(path.join(summary, "models"), { recursive: true });
+  fs.writeFileSync(
+    path.join(summary, "articles", "post.json"),
+    JSON.stringify({
+      id: "https://example.com/post",
+      title: "Introducing Claude Fable 5.2 and a very long product announcement title",
+      link: "https://example.com/post",
+      sentence: "Claude Fable 5.2 is the release.",
+      text: "Claude Fable 5.2",
+    }),
+  );
+  fs.writeFileSync(
+    path.join(summary, "models", "fable.json"),
+    JSON.stringify({ id: "Claude Fable 5.2", text: "Claude Fable 5.2" }),
+  );
+  const names = summaryKeywords(root, issue).keywords.map((item) => item.name);
+  assert.ok(names.includes("Claude Fable 5.2"));
+  assert.equal(names.some((name) => name.includes("very long")), false);
 });
 
 test("a theme label replaces only the evidenced concept", () => {

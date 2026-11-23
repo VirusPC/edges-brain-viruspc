@@ -296,12 +296,15 @@ export function renderKeywordCloudSvg(words, font, seed = 1) {
     const registered = GlobalFonts.registerFromPath(font.fontFile, font.fontFamily);
     if (!registered) throw new Error(`无法注册字体: ${font.fontFile}`);
   }
+  const ranked = [...withVisualSizes(words)].sort(
+    (a, b) => b.size - a.size || a.word.localeCompare(b.word, "zh"),
+  );
   let packed = null;
   for (const [width, height] of LAYOUT_BOXES) {
-    packed = layoutWords(words, font, seed, width, height);
+    packed = layoutWords(ranked, font, seed, width, height);
     if (packed) break;
   }
-  if (!packed) throw new Error(`放不下: ${words.map((word) => word.word).join("、")}`);
+  if (!packed) throw new Error(`放不下: ${ranked[0]?.word || ""}`);
   return renderPacked({ tiers: INK_TIERS }, font, packed).svg;
 }
 

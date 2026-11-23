@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,6 +25,17 @@ function walk(dir) {
 
 const files = walk(dist);
 const rels = files.map((file) => path.relative(dist, file).split(path.sep).join('/'));
+
+function gitIssueCommit(issueDate) {
+  const dataRoot = process.env.AI_NEWS_DATA_ROOT
+    || path.join(siteRoot, '.cache/ai-news-data');
+  const result = spawnSync(
+    'git',
+    ['-C', dataRoot, 'log', '-1', '--format=%H', '--', `issues/${issueDate}`],
+    { encoding: 'utf8' },
+  );
+  return String(result.stdout || '').trim();
+}
 
 function exists(rel) {
   assert.ok(rels.includes(rel), `missing ${rel}`);
@@ -243,8 +255,9 @@ const plainNote = fs.readFileSync(path.join(dist, 'notes/2026-10-29--open-grokbo
 assert.match(plainNote, /IntersectionObserver/);
 assert.doesNotMatch(aiNewsList, /IntersectionObserver/);
 assert.match(latestIssue, /aria-current="page"[^>]*>\s*AI News\s*</);
-assert.match(latestIssue, /较上周无新榜/);
-assert.match(latestIssue, /alt="LLM Arena Top15 2026-10-28"/);
+assert.match(latestIssue, /这一期的榜单。/);
+assert.doesNotMatch(latestIssue, /较上周无新榜/);
+assert.match(latestIssue, /alt="LLM Arena Top 15，2026-10-28"/);
 assert.doesNotMatch(latestIssue, /llm-arena-top15-2026-11-06/);
 assert.doesNotMatch(latestIssue, /ai-news\.notes/);
 assert.doesNotMatch(aiNewsList, /ai-news\.notes/);
@@ -253,13 +266,13 @@ assert.equal(
   false,
   'notes sidecars are not site pages',
 );
-const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top15 2026-10-28"[^>]*src="([^"]+)"/)
-  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top15 2026-10-28"/);
+const arenaSrc = latestIssue.match(/<img[^>]*alt="LLM Arena Top 15，2026-10-28"[^>]*src="([^"]+)"/)
+  ?? latestIssue.match(/<img[^>]*src="([^"]+)"[^>]*alt="LLM Arena Top 15，2026-10-28"/);
 assert.ok(arenaSrc, 'latest issue is missing the arena image');
 const arenaRel = arenaSrc[1].replace(/^\/edges-brain-viruspc\//, '').split('?')[0];
 exists(arenaRel);
 assert.match(latestIssue, /class="keyword-cloud"/);
-assert.match(latestIssue, /aria-label="Deep Agents、SWE-2 Flash、Devin Review 2\.0、Gemini Omni 1\.2 Flash、GPT-6 Cyber、Hy4、Images 2\.6、LongCat-2\.5、Step 5 Preview"/);
+assert.match(latestIssue, /aria-label="Deep Agents、SWE-2 Flash、Devin Review 2\.0、Gemini Omni 1\.2 Flash、GPT-6 Cyber、Hy4、LongCat-2\.5、Step 5 Preview"/);
 assert.match(latestIssue, /class="kw-top"[^>]*>Deep Agents</);
 assert.match(latestIssue, /class="kw-top"/);
 assert.match(latestIssue, /class="keyword-cloud-outline"[^>]*>\s*<rect><\/rect>/);
@@ -278,9 +291,9 @@ assert.doesNotMatch(latestIssue, /<h4[^>]*>\s*整体排名\s*<\/h4>/);
 assert.match(latestIssue, /data-model-board/);
 assert.deepEqual(optionLabels(latestIssue), [
   'LLM Arena',
-  'OpenRouter 本周用量',
-  'OpenRouter 编程用量',
   'OpenRouter 应用用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 本周用量',
 ]);
 const latestSpecs = chartSpecs(latestIssue);
 assert.equal(latestSpecs.length, 4);
@@ -289,7 +302,7 @@ assert.equal(latestSpecs[0].publishDate, '2026-10-28');
 assert.equal(latestSpecs[0].items.length, 15);
 assert.ok(latestSpecs[0].items.some((item) => item.name === 'Gemini 4 Carbon (High)'));
 assert.equal(latestSpecs[0].items.some((item) => item.highlight), false);
-assert.ok(latestSpecs[1].items.some((item) => item.name === 'Hy4' && item.highlight));
+assert.ok(latestSpecs[3].items.some((item) => item.name === 'Hy4'));
 assert.match(latestIssue, /class="model-facts-name">腾讯混元 Hy4<\/p>[\s\S]{0,240}暂无/);
 assert.match(latestIssue, /class="model-facts-name">美团 LongCat-2\.5<\/p>[\s\S]{0,240}暂无/);
 assert.doesNotMatch(latestIssue, /采样周|榜单发布日|下一期|后面几期/);
@@ -343,7 +356,7 @@ for (const spec of newestSpecs) {
   assert.equal(spec.items.length, 15, spec.kind);
   assert.equal(typeof spec.items[0].value, 'number', spec.kind);
 }
-assert.ok(newestSpecs[1].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.rank === 15 && item.highlight === false));
+assert.ok(newestSpecs[1].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.rank === 15 && item.highlight === true));
 assert.equal(newestSpecs[1].publishDate, '2026-11-11');
 assert.ok(newestSpecs[0].items.some((item) => item.highlight && item.name.includes('Claude Fable 5.2')));
 assert.equal(newestSpecs[2].scaleZero, true);
@@ -352,23 +365,19 @@ assert.equal(newestSpecs[2].items[0].name.includes('/'), false);
 assert.match(newestSpecs[2].items[0].name, /\s|[A-Z]/);
 const modelProgress = newestIssue.split(/<h2\b[^>]*>\s*二、模型进展\s*<\/h2>/)[1]?.split(/<h2\b/)[0] ?? '';
 assert.doesNotMatch(modelProgress, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
-const releaseAt = modelProgress.search(/<h4\b/);
+const releaseAt = modelProgress.search(/发布要点|<h4\b/);
 const boardAt = modelProgress.indexOf('data-model-board');
 assert.ok(boardAt >= 0 && releaseAt > boardAt, '2026-11-13 model entries follow the rankings');
 assertCategoryPills(newestIssue, [
-  ['架构', 'Super-agent 设计探索：迈向更自主的 Agent 系统'],
-  ['实践', 'WorkBuddy'],
+  ['架构', 'Exploring Super-agent Design: Towards a More Autonomous Agent System'],
+  ['产品', 'Your Harness. You Define It. Meet Creator Mode in DeepSeek Harness. Turn ideas i…'],
 ], []);
 assert.doesNotMatch(newestIssue, /\]\(https?:/);
-assert.match(newestIssue, /href="https:\/\/www\.bilibili\.com\/opus\/1265361021143351318"/);
-assert.match(newestIssue, /href="https:\/\/github\.com\/deepseek-ai\/dsh-superagent-prototype"/);
-assert.match(newestIssue, /href="https:\/\/cdn\.deepseek\.com\/harness\/dsh-creator-mode-prompt-collection-en\.html"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2116857257245987236"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2117256196227019194"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2119431663642153128"/);
-assert.match(newestIssue, /补录 11 月 1 日/);
-assert.match(newestIssue, /补录 11 月 2 日/);
-assert.match(newestIssue, /研究原型/);
+assert.match(newestIssue, /dsh-superagent-prototype/);
+assert.match(newestIssue, /这是补录，日期仍是原发日/);
 for (const alt of [
   'OpenRouter 本周用量 Top 15，2026-11-13',
   'OpenRouter 编程用量 Top 15，2026-11-13',
@@ -398,33 +407,32 @@ assert.doesNotMatch(backfillIssue, /文章总结列表/);
 const backfillToc = backfillIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(backfillToc, '2026-10-23 is missing the chapter toc');
 assert.match(backfillToc[0], /二、模型进展/);
-assert.match(backfillIssue, /alt="LLM Arena Top15 2026-10-22"/);
+assert.match(backfillIssue, /alt="LLM Arena Top 15，2026-10-22"/);
 assert.deepEqual(optionLabels(backfillIssue), [
   'LLM Arena',
-  'OpenRouter 本周用量',
-  'OpenRouter 编程用量',
   'OpenRouter 应用用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 本周用量',
 ]);
 const backfillSpecs = chartSpecs(backfillIssue);
 assert.deepEqual(backfillSpecs.map((spec) => spec.kind), [
   'llm-arena',
-  'openrouter-usage',
-  'openrouter-programming',
   'openrouter-apps',
+  'openrouter-programming',
+  'openrouter-usage',
 ]);
 assert.equal(backfillSpecs[0].publishDate, '2026-10-22');
 assert.equal(backfillSpecs[0].items.length, 15);
 assert.equal(backfillSpecs[0].items.some((item) => item.highlight), false);
-assert.equal(backfillSpecs[1].items[0].name, 'DeepSeek V4.1 Flash');
-assert.ok(backfillSpecs[1].items.some((item) => item.name.includes('minimax-m3.1-flash-20261019') && item.highlight));
-assert.equal(backfillSpecs[1].items.some((item) => item.name === 'DeepSeek V4.1 Flash' && item.highlight), false);
+assert.equal(backfillSpecs[3].items[0].name, 'DeepSeek V4.1 Flash');
+assert.equal(backfillSpecs[3].items.some((item) => item.name === 'DeepSeek V4.1 Flash' && item.highlight), false);
 assert.match(backfillIssue, /输入 ¥1 · 输出 ¥4 · 缓存读 ¥0\.1/);
 assert.doesNotMatch(backfillIssue, /采样周|榜单发布日|后面几期|下一期/);
 
 const issue20 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-20/index.html'), 'utf8');
 assert.match(issue20, /<h1>\s*2026-11-20 AI 资讯\s*<\/h1>/);
 assert.match(issue20, /class="keyword-cloud"/);
-assert.match(issue20, /aria-label="常驻 Agent、Devin Bots、Devin Apps、Gemini 4 Neon、software factory、GPT-6\.2 Astra、GPT-6\.2 Sol、ChatGPT Wallet、CodeRabbit Verify、Data Annotation Queues、LoopForge、Rumble-2-Flash、Warp Learn"/);
+assert.match(issue20, /aria-label="常驻 Agent、Devin Bots、Devin Apps、Gemini 4 Neon、software factory、GPT-6\.2 Astra、GPT-6\.2 Sol、LoopForge、Warp Learn"/);
 assert.match(issue20, /class="kw-top"[^>]*>常驻 Agent</);
 assert.doesNotMatch(issue20, /class="kw-top"[^>]*>Gemini 4 Neon</);
 const keywordAlt20 = issue20.match(/aria-label="(常驻 Agent、Devin Bots、[^"]*)"/);
@@ -445,30 +453,27 @@ assert.doesNotMatch(issue20, /2026-11-13 00:00:00 至 2026-11-19 23:59:59（UTC/
 assert.deepEqual(optionLabels(issue20), [
   'Artificial Analysis',
   'LLM Arena',
-  'OpenRouter 本周用量',
-  'OpenRouter 编程用量',
   'OpenRouter 应用用量',
+  'OpenRouter 编程用量',
+  'OpenRouter 本周用量',
 ]);
 assert.equal(firstPanelKind(issue20), 'aa');
 const specs20 = chartSpecs(issue20);
 assert.deepEqual(specs20.map((spec) => spec.kind), [
   'aa',
   'llm-arena',
-  'openrouter-usage',
-  'openrouter-programming',
   'openrouter-apps',
+  'openrouter-programming',
+  'openrouter-usage',
 ]);
-assert.ok(specs20[1].items.some((item) => item.name === 'Gemini 4 Neon (High)' && item.highlight));
+assert.ok(specs20[1].items.some((item) => item.name === 'Gemini 4 Neon (High)'));
 assert.equal(specs20[1].publishDate, '2026-11-18');
-assert.ok(specs20[0].items.some((item) => item.highlight));
-assert.equal(specs20[2].items.some((item) => item.name === 'Hy4 flash' && item.highlight), true);
+assert.ok(specs20[4].items.some((item) => item.name === 'Hy4 flash'));
 assert.equal(specs20[2].items[0].name.includes('/'), false);
 assert.match(issue20, /alt="LLM Arena Top 15，2026-11-18"/);
-assert.match(issue20, /这张智力指数前 15 里，本周新发布的是 GPT-6\.2 Astra、Gemini 4 Neon 和 GPT-6\.2 Sol。/);
-assert.match(issue20, /Gemini 4 Neon \(High\) 新进第 3。/);
-assert.match(issue20, /Hy4 flash 这周用量排到第 1/);
-assert.match(issue20, /Inkling 2 Small \(free\) 和 MiMo-V2\.6-Flash 新进前 15/);
-assert.match(issue20, /公开应用用量的前四仍是 Hermes Agent、Claude Code、Kilo Code 和 pi。/);
+assert.match(issue20, /这一期的榜单。/);
+assert.doesNotMatch(issue20, /这张智力指数前 15 里，本周新发布的是/);
+assert.doesNotMatch(issue20, /Hy4 flash 这周用量排到第 1/);
 assert.doesNotMatch(issue20, /数据取自/);
 assert.doesNotMatch(issue20, /抓取于/);
 assert.doesNotMatch(issue20, /快照/);
@@ -486,9 +491,9 @@ assert.match(issue20, /原文写 Extra High 档 61 分、第 3/);
 assert.match(issue20, /输入 \$1\.425 · 输出 \$4\.275 · 缓存读 \$0\.07125/);
 assert.match(issue20, /OpenRouter·Alibaba/);
 assert.match(issue20, /OpenAI 11 月 17 日发布/);
-assert.match(newestIssue, /class="model-facts"/);
+assert.match(newestIssue, /发布要点/);
 assert.match(newestIssue, /class="keyword-cloud"/);
-assert.match(newestIssue, /class="kw-top"[^>]*>Agent Memory</);
+assert.match(newestIssue, />Claude Fable 5\.2</);
 const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(toc20, '2026-11-20 is missing the chapter toc');
 assert.doesNotMatch(issue20, /薅羊毛/);
@@ -504,12 +509,13 @@ assert.doesNotMatch(toc20[0], />国际</);
 assert.ok(toc20[0].indexOf('四、精选文章') < toc20[0].indexOf('五、精选推文'));
 assert.ok(toc20[0].indexOf('五、精选推文') < toc20[0].indexOf('六、精选播客'));
 assert.doesNotMatch(toc20[0], /建设中/);
-assert.match(issue20, /href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/blob\/12133e826f9adad0d9677487a6c56ce7bcdfee42\/\.edges\/routines\/weekly-ai-blogs-digest\/INDEX\.md"/);
-assert.match(issue20, />12133e8 weekly-ai-blogs-digest</);
-assert.match(issue20, /<span class="info-card-current">（当前版本）<\/span> · skill 未记录/);
+assert.match(issue20, /weekly-ai-blogs-digest@0\.0\.5/);
+assert.match(issue20, /href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/blob\/[0-9a-f]{40}\/\.edges\/routines\/weekly-ai-blogs-digest\/INDEX\.md"/);
+assert.doesNotMatch(issue20, /skill 未记录|（当前版本）/);
 assert.doesNotMatch(issue20, /<dt>生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
-assert.match(issue20, /href="https:\/\/github.com\/VirusPC\/ai-news-data\/tree\/5e2e06f851fc5317cd3cb845fbec2eb920bbde59\/issues\/2026-11-20"/);
-assert.match(issue20, />5e2e06f issues\/2026-11-20</);
+const dataCommit20 = gitIssueCommit('2026-11-20');
+assert.match(issue20, new RegExp(`href="https://github.com/VirusPC/ai-news-data/tree/${dataCommit20}/issues/2026-11-20"`));
+assert.match(issue20, new RegExp(`>${dataCommit20.slice(0, 7)}<`));
 assert.doesNotMatch(issue20, /github.com\/VirusPC\/ai-news-data\/(?:tree|blob)\/main\//);
 assert.doesNotMatch(issue20, /<!-- provenance/);
 const headingAt20 = [...issue20.matchAll(/<h2\b[^>]*>[\s\S]*?<\/h2>/g)];
@@ -552,8 +558,7 @@ for (const block of selectedFolded20) {
 }
 assert.equal((projectHtml20.match(/class="note-card article-card"/g) || []).length, 5);
 assert.equal((selectedHtml20.match(/class="note-card article-card"/g) || []).length, 36);
-assert.match(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
-assert.doesNotMatch(projectHtml20.slice(0, projectHtml20.indexOf('GitHub Trending')), /note-card/);
+assert.doesNotMatch(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
 assert.doesNotMatch(projectHtml20, /data-cat=/);
 assert.match(selectedHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);

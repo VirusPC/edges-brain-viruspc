@@ -41,91 +41,32 @@ test('other sentences stay out of the card', () => {
   assert.equal(coverageCardHtml('覆盖窗口：还没写完'), null);
 });
 
-test('a current routine link is labeled as current and does not claim the skill was recorded', () => {
-  const commit = '12133e826f9adad0d9677487a6c56ce7bcdfee42';
+test('skill version and routine commit are linked, and a short data SHA is not', () => {
+  const commit = '0123456789abcdef0123456789abcdef01234567';
+  const dataCommit = '5e2e06f851fc5317cd3cb845fbec2eb920bbde59';
   const html = coverageCardHtml(source, {
-    rules: null,
-    routineCurrent: {
+    skill: { name: 'weekly-ai-blogs-digest', version: '0.0.5' },
+    routine: {
       repo: 'VirusPC/edges-brain-viruspc',
       commit,
       path: '.edges/routines/weekly-ai-blogs-digest/INDEX.md',
-      name: 'weekly-ai-blogs-digest',
     },
-    data: {
-      repo: 'VirusPC/ai-news-data',
-      commit: '5e2e06f851fc5317cd3cb845fbec2eb920bbde59',
-      path: 'issues/2026-11-20',
-      kind: 'tree',
-    },
+    data: { repo: 'VirusPC/ai-news-data', commit: dataCommit, path: 'issues/2026-11-20' },
   });
-  assert.match(html, /<dt>生成规则<\/dt><dd class="info-card-wrap">/);
+  assert.match(html, /tree\/skill\/weekly-ai-blogs-digest@0\.0\.5/);
+  assert.match(html, />weekly-ai-blogs-digest@0\.0\.5</);
   assert.match(html, new RegExp(`blob/${commit}/\\.edges/routines/weekly-ai-blogs-digest/INDEX\\.md`));
-  assert.match(html, />12133e8 weekly-ai-blogs-digest</);
-  assert.match(html, /<span class="info-card-current">（当前版本）<\/span> · skill 未记录/);
-  assert.doesNotMatch(html, /<dt>生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
-  assert.doesNotMatch(html, /\/blob\/main\/|\/tree\/main\//);
+  assert.match(html, />0123456</);
+  assert.match(html, new RegExp(`tree/${dataCommit}/issues/2026-11-20`));
+  assert.match(html, />5e2e06f</);
+  assert.doesNotMatch(html, /skill 未记录|当前版本|\/tree\/main\/|\/blob\/main\//);
 });
 
-test('a recorded execution commit stays unlabeled as current', () => {
-  const commit = '0123456789abcdef0123456789abcdef01234567';
+test('a missing skill or a short SHA stays unrecorded', () => {
   const html = coverageCardHtml(source, {
-    rules: {
-      repo: 'VirusPC/edges-brain-viruspc',
-      commit,
-      routine: '.edges/routines/weekly-ai-blogs-digest/INDEX.md',
-      skill: 'skills/managed/weekly-ai-blogs-digest/SKILL.md',
-    },
-    routineCurrent: {
-      repo: 'VirusPC/edges-brain-viruspc',
-      commit: '12133e826f9adad0d9677487a6c56ce7bcdfee42',
-      path: '.edges/routines/weekly-ai-blogs-digest/INDEX.md',
-      name: 'weekly-ai-blogs-digest',
-    },
-    data: null,
-  });
-  assert.match(html, new RegExp(`blob/${commit}/\\.edges/routines/weekly-ai-blogs-digest/INDEX\\.md`));
-  assert.doesNotMatch(html, /当前版本|12133e8|skill 未记录/);
-});
-
-test('a recorded data snapshot is linked by full SHA, and a missing rules commit stays unrecorded', () => {
-  const html = coverageCardHtml(source, {
-    rules: null,
-    data: {
-      repo: 'VirusPC/ai-news-data',
-      commit: '5e2e06f851fc5317cd3cb845fbec2eb920bbde59',
-      path: 'issues/2026-11-20',
-      kind: 'tree',
-    },
-  });
-  assert.match(html, /<dt>生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
-  assert.match(html, /href="https:\/\/github.com\/VirusPC\/ai-news-data\/tree\/5e2e06f851fc5317cd3cb845fbec2eb920bbde59\/issues\/2026-11-20"/);
-  assert.match(html, />5e2e06f issues\/2026-11-20</);
-  assert.doesNotMatch(html, /\/tree\/main\/|\/blob\/main\/|href="[^"]*HEAD/);
-});
-
-test('rules links use the resolved commit for the routine file and the skill file', () => {
-  const commit = '0123456789abcdef0123456789abcdef01234567';
-  const html = coverageCardHtml(source, {
-    rules: {
-      repo: 'VirusPC/edges-brain-viruspc',
-      commit,
-      routine: '.edges/routines/weekly-ai-blogs-digest/INDEX.md',
-      skill: 'skills/managed/weekly-ai-blogs-digest/SKILL.md',
-    },
-    data: null,
-  });
-  assert.match(html, new RegExp(`blob/${commit}/\\.edges/routines/weekly-ai-blogs-digest/INDEX\\.md`));
-  assert.match(html, new RegExp(`blob/${commit}/skills/managed/weekly-ai-blogs-digest/SKILL\\.md`));
-  assert.match(html, />0123456 \.edges\/routines\/weekly-ai-blogs-digest\/INDEX.md</);
-  assert.match(html, />0123456 skills\/managed\/weekly-ai-blogs-digest\/SKILL.md</);
-  assert.match(html, /<dt>数据版本<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
-  assert.doesNotMatch(html, /\/tree\/main\/|\/blob\/main\//);
-});
-
-test('main, a short SHA, and a missing comment do not become links', () => {
-  const html = coverageCardHtml(source, {
-    rules: { repo: 'VirusPC/edges-brain-viruspc', commit: 'main', routine: '.edges/routines/weekly-ai-blogs-digest/INDEX.md', skill: 'skills/managed/weekly-ai-blogs-digest/SKILL.md' },
-    data: { repo: 'VirusPC/ai-news-data', commit: '5e2e06f', path: 'issues/2026-11-20', kind: 'tree' },
+    skill: null,
+    routine: { repo: 'VirusPC/edges-brain-viruspc', commit: 'main', path: '.edges/routines/weekly-ai-blogs-digest/INDEX.md' },
+    data: { repo: 'VirusPC/ai-news-data', commit: '5e2e06f', path: 'issues/2026-11-20' },
   });
   assert.match(html, /生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
   assert.match(html, /数据版本<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
@@ -133,20 +74,19 @@ test('main, a short SHA, and a missing comment do not become links', () => {
   assert.doesNotMatch(coverageCardHtml(older), /生成规则|数据版本|未记录/);
 });
 
-test('the provenance comment is consumed by the first remark card', () => {
+test('a provenance comment is not a source for the card', () => {
   const tree = {
     type: 'root',
     children: [
       { type: 'paragraph', children: [{ type: 'text', value: source }] },
-      { type: 'html', value: '<!-- provenance\n{"rules":null,"data":{"repo":"VirusPC/ai-news-data","commit":"5e2e06f851fc5317cd3cb845fbec2eb920bbde59","path":"issues/2026-11-20","kind":"tree"}}\n-->' },
+      { type: 'html', value: '<!-- provenance {"rules":null} -->' },
       { type: 'paragraph', children: [{ type: 'text', value: older }] },
     ],
   };
-  shiftCoverageWindows(tree);
-  assert.equal(tree.children.length, 2);
-  assert.match(tree.children[0].value, /5e2e06f851fc5317cd3cb845fbec2eb920bbde59/);
-  assert.match(tree.children[0].value, /未记录/);
-  assert.doesNotMatch(tree.children[1].value, /生成规则|5e2e06f/);
+  shiftCoverageWindows(tree, null);
+  assert.equal(tree.children.length, 3);
+  assert.doesNotMatch(tree.children[0].value, /生成规则/);
+  assert.match(tree.children[1].value, /provenance/);
 });
 
 test('provenance rows can wrap inside the remark card', () => {

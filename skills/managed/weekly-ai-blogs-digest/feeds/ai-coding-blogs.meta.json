@@ -923,7 +923,7 @@
       "id": "bytedance-tech",
       "title": "字节跳动技术团队",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -939,7 +939,7 @@
       "id": "baidu-geek",
       "title": "百度Geek说",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -955,7 +955,7 @@
       "id": "taobao-tech",
       "title": "大淘宝技术",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -971,7 +971,7 @@
       "id": "kuaishou-tech",
       "title": "快手技术",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -987,7 +987,7 @@
       "id": "alipay-ux",
       "title": "支付宝体验科技",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -1003,7 +1003,7 @@
       "id": "meituan-tech",
       "title": "美团技术团队",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [
         "https://tech.meituan.com/"
       ],
@@ -1022,7 +1022,7 @@
       "id": "qwen-ai-platform",
       "title": "千问 AI 平台",
       "lane": "mixed",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -1038,7 +1038,7 @@
       "id": "tencent-engineering",
       "title": "腾讯技术工程",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -1054,7 +1054,7 @@
       "id": "alibaba-tech",
       "title": "阿里技术",
       "lane": "tech",
-      "group": "国内技术团队",
+      "group": "国内互联网",
       "listUrls": [],
       "xmlUrl": "https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml",
       "feedOrigin": "bestblogs-wechat2rss",
@@ -1125,6 +1125,33 @@
         "note": "不是博客，不适用 BestBlogs。"
       },
       "notes": "mshibanami/GitHubTrendingRSS 抓 GitHub Trending 一周榜页面生成，不是 GitHub 官方 RSS。2026-11-20 起订 weekly，不再订 daily。条目没有 pubDate，脚本用 channel 的 pubDate 并整份保留（dateMode=snapshot）。不用 isboyjc（约 2026-08 起 pubDate 停更）。"
+    }
+  ],
+  "boards": [
+    {
+      "id": "artificial-analysis",
+      "publisher": "Artificial Analysis",
+      "category": "模型榜单",
+      "url": "https://artificialanalysis.ai/leaderboards/models",
+      "files": ["aa-language-models.json"]
+    },
+    {
+      "id": "llm-arena",
+      "publisher": "LLM Arena",
+      "category": "模型榜单",
+      "url": "https://arena.ai/",
+      "files": ["llm-arena-*.json"]
+    },
+    {
+      "id": "openrouter",
+      "publisher": "OpenRouter",
+      "category": "模型榜单",
+      "url": "https://openrouter.ai/rankings",
+      "files": [
+        "openrouter-rankings-daily.json",
+        "openrouter-rankings-programming.json",
+        "openrouter-app-rankings.json"
+      ]
     }
   ]
 }

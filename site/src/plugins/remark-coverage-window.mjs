@@ -1,4 +1,7 @@
+import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { resolveAiNewsDataRoot } from '../lib/model-charts.mjs';
 
 const UTC_WINDOW = /^覆盖窗口：(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) 至 (\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})（UTC；生成日 (\d{4}-\d{2}-\d{2})，不含当天）。$/;
 const DAY_WINDOW = /^覆盖窗口：(\d{4}-\d{2}-\d{2})～(\d{4}-\d{2}-\d{2})（生成日 (\d{4}-\d{2}-\d{2})）。$/;
@@ -40,8 +43,7 @@ export function coverageCardHtml(text, provenance = null) {
 /**
  * @param {any} tree
  */
-export function shiftCoverageWindows(tree) {
-  const provenance = takeProvenance(tree);
+export function shiftCoverageWindows(tree, provenance = null) {
   const children = tree?.children;
   if (!Array.isArray(children)) return;
   let attached = false;
@@ -55,12 +57,38 @@ export function shiftCoverageWindows(tree) {
   }
 }
 
-export function remarkCoverageWindow() {
+export function remarkCoverageWindow(options = {}) {
+  const repoRoot = options.repoRoot ? path.resolve(options.repoRoot) : process.cwd();
   return (tree, file) => {
     const base = path.basename(file?.path || file?.history?.at(-1) || '');
     if (base && !/-ai-news\.md$/i.test(base)) return;
-    shiftCoverageWindows(tree);
+    const issueDate = /^(\d{4}-\d{2}-\d{2})-ai-news\.md$/i.exec(base)?.[1];
+    const provenance = issueDate ? provenanceForIssue(resolveAiNewsDataRoot(repoRoot), issueDate) : null;
+    shiftCoverageWindows(tree, provenance);
   };
+}
+
+export function provenanceForIssue(dataRoot, issueDate) {
+  if (!dataRoot || !issueDate) return null;
+  const indexPath = path.join(dataRoot, 'issues', issueDate, 'summary', 'index.json');
+  if (!fs.existsSync(indexPath)) return null;
+  const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+  const commit = gitIssueCommit(dataRoot, issueDate);
+  return {
+    skill: normalizeSkill(index.skill),
+    routine: normalizeRoutine(index.routine),
+    data: commit ? { repo: 'VirusPC/ai-news-data', commit, path: `issues/${issueDate}` } : null,
+  };
+}
+
+function gitIssueCommit(dataRoot, issueDate) {
+  const result = spawnSync(
+    'git',
+    ['-C', dataRoot, 'log', '-1', '--format=%H', '--', `issues/${issueDate}`],
+    { encoding: 'utf8' },
+  );
+  const commit = String(result.stdout || '').trim().toLowerCase();
+  return COMMIT_SHA.test(commit) ? commit : '';
 }
 
 /**
@@ -79,10 +107,7 @@ function remarkCard(fields, provenance) {
   if (fields.zone) rows.push(row('时区', fields.zone, false));
   rows.push(row('生成日', fields.generated, false));
   if (provenance) {
-    rows.push(rowHtml('生成规则', rulesHtml(
-      normalizeRules(provenance.rules),
-      normalizeRoutineCurrent(provenance.routineCurrent),
-    )));
+    rows.push(rowHtml('生成规则', rulesHtml(normalizeSkill(provenance.skill), normalizeRoutine(provenance.routine))));
     rows.push(rowHtml('数据版本', dataHtml(normalizeData(provenance.data))));
   }
   const note = fields.excludeDay ? '<p class="info-card-note">不含生成当天</p>' : '';
@@ -103,59 +128,25 @@ function rowHtml(label, html) {
   return `<div><dt>${escapeHtml(label)}</dt><dd class="info-card-wrap">${html}</dd></div>`;
 }
 
-const PROVENANCE_COMMENT = /<!--\s*provenance\s*([\s\S]*?)-->/;
 const COMMIT_SHA = /^[0-9a-f]{40}$/;
 const GITHUB_REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/;
 
-/**
- * Read one provenance comment and drop it from the tree.
- * A missing comment stays null, so older issues keep the card they already have.
- * @param {any} tree
- */
-function takeProvenance(tree) {
-  const children = tree?.children;
-  if (!Array.isArray(children)) return null;
-  for (let index = 0; index < children.length; index += 1) {
-    const node = children[index];
-    if (node?.type !== 'html') continue;
-    const match = PROVENANCE_COMMENT.exec(String(node.value || ''));
-    if (!match) continue;
-    const rest = String(node.value).replace(match[0], '').trim();
-    if (rest) node.value = rest;
-    else children.splice(index, 1);
-    let parsed;
-    try {
-      parsed = JSON.parse(match[1]);
-    } catch (error) {
-      throw new Error(`provenance comment is not JSON: ${error.message}`);
-    }
-    return {
-      rules: normalizeRules(parsed?.rules),
-      routineCurrent: normalizeRoutineCurrent(parsed?.routineCurrent),
-      data: normalizeData(parsed?.data),
-    };
-  }
-  return null;
-}
-
-function normalizeRules(rules) {
-  if (!rules || typeof rules !== 'object') return null;
-  const repo = String(rules.repo || '');
-  const commit = String(rules.commit || '').toLowerCase();
-  const routine = cleanPath(rules.routine);
-  const skill = cleanPath(rules.skill);
-  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || (!routine && !skill)) return null;
-  return { repo, commit, routine, skill };
+function normalizeSkill(skill) {
+  if (!skill || typeof skill !== 'object') return null;
+  const name = String(skill.name || '').trim();
+  const version = String(skill.version || '').trim();
+  if (!/^[A-Za-z0-9_.-]+$/.test(name) || !SEMVER.test(version)) return null;
+  return { name, version };
 }
 
 function normalizeData(data) {
   if (!data || typeof data !== 'object') return null;
   const repo = String(data.repo || '');
   const commit = String(data.commit || '').toLowerCase();
-  const path = cleanPath(data.path);
-  const kind = data.kind === 'blob' ? 'blob' : 'tree';
-  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || !path) return null;
-  return { repo, commit, path, kind };
+  const dataPath = cleanPath(data.path);
+  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || !dataPath) return null;
+  return { repo, commit, path: dataPath };
 }
 
 function cleanPath(value) {
@@ -164,36 +155,36 @@ function cleanPath(value) {
   return path;
 }
 
-function normalizeRoutineCurrent(value) {
+function normalizeRoutine(value) {
   if (!value || typeof value !== 'object') return null;
   const repo = String(value.repo || '');
   const commit = String(value.commit || '').toLowerCase();
-  const path = cleanPath(value.path);
-  const name = String(value.name || '').trim();
-  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || !path || !/^[A-Za-z0-9_.-]+$/.test(name)) return null;
-  return { repo, commit, path, name };
+  const routinePath = cleanPath(value.path);
+  if (!GITHUB_REPO.test(repo) || !COMMIT_SHA.test(commit) || !routinePath) return null;
+  return { repo, commit, path: routinePath };
 }
 
-function rulesHtml(rules, routineCurrent) {
-  if (rules) {
-    const links = [];
-    if (rules.routine) links.push(sourceLink(rules, rules.routine, 'blob'));
-    if (rules.skill) links.push(sourceLink(rules, rules.skill, 'blob'));
-    if (links.length) return links.join(' ');
+function rulesHtml(skill, routine) {
+  const links = [];
+  if (skill) {
+    const repo = routine?.repo || 'VirusPC/edges-brain-viruspc';
+    const href = `https://github.com/${repo}/tree/skill/${skill.name}@${skill.version}`;
+    links.push(`<a href="${escapeHtml(href)}">${escapeHtml(`${skill.name}@${skill.version}`)}</a>`);
   }
-  if (!routineCurrent) return '未记录';
-  const text = `${routineCurrent.commit.slice(0, 7)} ${routineCurrent.name}`;
-  return `${sourceLink(routineCurrent, routineCurrent.path, 'blob', text)}<span class="info-card-current">（当前版本）</span> · skill 未记录`;
+  if (routine) {
+    links.push(sourceLink(routine, routine.path, 'blob', routine.commit.slice(0, 7)));
+  }
+  return links.length ? links.join(' · ') : '未记录';
 }
 
 function dataHtml(data) {
   if (!data) return '未记录';
-  return sourceLink(data, data.path, data.kind);
+  return sourceLink(data, data.path, 'tree', data.commit.slice(0, 7));
 }
 
-function sourceLink(source, path, kind, text) {
-  const href = `https://github.com/${source.repo}/${kind}/${source.commit}/${path.split('/').map(encodeURIComponent).join('/')}`;
-  const label = text || `${source.commit.slice(0, 7)} ${path}`;
+function sourceLink(source, filePath, kind, text) {
+  const href = `https://github.com/${source.repo}/${kind}/${source.commit}/${filePath.split('/').map(encodeURIComponent).join('/')}`;
+  const label = text || `${source.commit.slice(0, 7)} ${filePath}`;
   return `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
 }
 
