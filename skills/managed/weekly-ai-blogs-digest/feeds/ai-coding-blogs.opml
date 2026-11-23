@@ -61,8 +61,6 @@
     </outline>
     <outline text="GitHub Trending" title="GitHub Trending">
       <outline text="GitHub Trending（每周 / 全部）" title="GitHub Trending（每周 / 全部）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/all.xml" htmlUrl="https://github.com/trending?since=weekly" category="GitHub Trending" publisher="GitHub" publisherUrl="https://github.com/trending?since=weekly" />
-      <outline text="GitHub Trending（每周 / Python）" title="GitHub Trending（每周 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml" htmlUrl="https://github.com/trending/python?since=weekly" category="GitHub Trending" publisher="GitHub" publisherUrl="https://github.com/trending?since=weekly" />
-      <outline text="GitHub Trending（每周 / TypeScript）" title="GitHub Trending（每周 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=weekly" category="GitHub Trending" publisher="GitHub" publisherUrl="https://github.com/trending?since=weekly" />
     </outline>
   </body>
 </opml>

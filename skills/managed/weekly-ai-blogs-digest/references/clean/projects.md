@@ -7,6 +7,6 @@
 - `cleaned/projects/index.json`
 - `cleaned/projects/{id}.json`
 
-对不上的字段写入 `cleaned/gaps.json`，不把猜测写成事实。Python、TypeScript 周榜若只出现在文章抓取结果里，不在这里改写成 all 榜的名次。名次仍以 XML 原始顺序为准。
+对不上的字段写入 `cleaned/gaps.json`，不把猜测写成事实。只采用每周总榜的名次，仍以 XML 原始顺序为准。不要把语言榜或 daily 榜的条目写进清洗结果。
 
 这一步不决定本期页面展示哪几个仓库。

@@ -42,9 +42,13 @@ from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit
 import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OPML = ROOT / "feeds" / "ai-coding-blogs.opml"
 DEFAULT_META = ROOT / "feeds" / "ai-coding-blogs.meta.json"
+
+WEEKLY_ALL_TRENDING_ID = "github-trending-weekly-all"
+WEEKLY_ALL_TRENDING_XML = "https://mshibanami.github.io/GitHubTrendingRSS/weekly/all.xml"
+
 
 USER_AGENT = "edges-weekly-ai-blogs-digest/1.0 (+https://github.com/VirusPC/edges-brain-viruspc)"
 THIN_CHARS = 280  # 只标记 feed 正文偏短，不触发文章页补抓
@@ -295,8 +299,17 @@ def check_pair(feeds: list[dict], meta: dict) -> list[str]:
         if url not in meta_set:
             errors.append(f"OPML feed 没有 meta 条目: {url}")
     for url in sorted(set(opml_urls) | set(meta_urls)):
-        if "GitHubTrendingRSS" in url and "/daily/" in url:
-            errors.append(f"GitHub Trending 仍在订 daily: {url}")
+        if "GitHubTrendingRSS" not in url:
+            continue
+        if url != WEEKLY_ALL_TRENDING_XML:
+            errors.append(f"GitHub Trending 只订每周总榜，发现: {url}")
+    trending_ids = [
+        str(source.get("id") or "")
+        for source in meta.get("sources") or []
+        if str(source.get("id") or "").startswith("github-trending-")
+    ]
+    if trending_ids != [WEEKLY_ALL_TRENDING_ID]:
+        errors.append(f"GitHub Trending 订阅 id 只能是 {WEEKLY_ALL_TRENDING_ID}，现在是 {trending_ids}")
     return errors
 
 
@@ -972,9 +985,7 @@ def self_test() -> int:
             print(f"- {err}", file=sys.stderr)
         return 1
     expected_trending = {
-        "github-trending-weekly-all": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/all.xml",
-        "github-trending-weekly-python": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml",
-        "github-trending-weekly-typescript": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/typescript.xml",
+        WEEKLY_ALL_TRENDING_ID: WEEKLY_ALL_TRENDING_XML,
     }
     got_trending = {
         source["id"]: source.get("xmlUrl")
@@ -998,6 +1009,21 @@ def self_test() -> int:
     assert by_id["meta-engineering"]["xmlUrl"] == "https://engineering.fb.com/feed/"
     urls = " ".join(source.get("xmlUrl") or "" for source in meta["sources"])
     assert "rsshub.app" not in urls
+    extra = {
+        "xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml",
+        "id": "github-trending-weekly-python",
+        "lane": "special",
+    }
+    rejected = check_pair(
+        [{"xmlUrl": extra["xmlUrl"]}],
+        {"sources": [{"id": WEEKLY_ALL_TRENDING_ID, "xmlUrl": WEEKLY_ALL_TRENDING_XML, "lane": "special"}, extra]},
+    )
+    assert any("只订每周总榜" in err for err in rejected), rejected
+    daily = check_pair(
+        [{"xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml"}],
+        {"sources": [{"id": "github-trending-daily-all", "xmlUrl": "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml", "lane": "special"}]},
+    )
+    assert any("只订每周总榜" in err or "订阅 id 只能是" in err for err in daily), daily
     assert "about.fb.com" not in urls
     assert "research.fb.com" not in urls
     assert "feedseek" not in urls
