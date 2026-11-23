@@ -1,11 +1,6 @@
----
-name: edges-conversation-to-notes
-description: >-
-  将原始对话整理为可独立阅读的中文笔记（记录 + 复盘）：背景/主题/过程/结果/所学/行动指南/补充说明。
-  主题=一段主题+难点列表；凡写做什么须带可选项与不做原因；取舍在过程保留并在所学与行动指南补充。
-  行动指南分主题层与细节若则。结果有未闭环项时逐点问清再交 edges-conversation-to-tasks；必须保留原始材料引用。用户说整理/总结对话时使用；入库所选 scope 或 Project 的 Notes。
-version: 0.2.0
----
+# conversation
+
+本文件是 `edges-create-notes` 的对话场景。落盘、frontmatter 与不编造见 [SKILL.md](../SKILL.md)。
 
 将原始对话整理为结构清晰的中文笔记（**同时包含记录与复盘总结**）。
 
@@ -13,7 +8,7 @@ version: 0.2.0
 - `--title`、正文 `#`、frontmatter `title` 只写主题简述。
 - 范例一级标题写 `# 主题简述`。
 
-术语与已定决策见同目录 [CONTEXT.md](./CONTEXT.md) 与 [docs/adr/](./docs/adr/)。
+术语与已定决策见 [CONTEXT.md](../CONTEXT.md) 与 [docs/adr/](../docs/adr/)。
 
 ## When to Use
 
@@ -55,14 +50,14 @@ version: 0.2.0
 13. 不在本 skill 里「升为 Edge」。
 14. 输出必须为中文。
 15. **入库**（正文写作与审阅完成后）：
-    - 有 shell 时交给 `edges --scope <目录> notes create --title "主题简述" --body "<审阅后的 Markdown>"`；归入已有 Project 则加根参数 `--project <相对路径>`，相对 `<scope>/.edges/projects`，嵌套用 `P/projects/Q`。需要 scope 直属 Notes 且未选 Project 时才用 `--super`。不把 P 改成 scope，不代为初始化。子命令是 `notes create`。完整 Markdown 放进 `--body`。这次调用只在本地写下叶子，不 commit、不 push、不开 PR。不要自己 `git commit`，也不要传已删除的 `--content`、`--content-file`、`--markdown`、`--import-entry`、`--co-author`、`--mode`、`--dry-run`、`--format`、`--resources`、`--index-group`。
-    - 无 shell 时按 `$edges` 的 [Notes reference](../edges/references/notes.md) 调用 `new_note`，传相同正文和可选 `project` / `super`；scope 由服务端确定。工具版本缺少所需选择参数时说明限制，不静默改归属。创建后保留返回 path，后续查读与更新沿用原 scope 和 Project 选择。
+    - 有 shell 时交给 `edges --scope <目录> notes create --title "主题简述" --body "<审阅后的 Markdown>"`；归入已有 Project 则加根参数 `--project <相对路径>`，默认相对 `<scope>/.edges/projects`，`--super` 时相对 `<scope>/projects`，嵌套用 `P/projects/Q`。需要 scope 直属 Notes 且未选 Project 时才用 `--super`。不把 P 改成 scope，不代为初始化。子命令是 `notes create`。完整 Markdown 放进 `--body`。这次调用只在本地写下叶子，不 commit、不 push、不开 PR。不要自己 `git commit`，也不要传已删除的 `--content`、`--content-file`、`--markdown`、`--import-entry`、`--co-author`、`--mode`、`--dry-run`、`--format`、`--resources`、`--index-group`。
+    - 无 shell 时按 `$edges` 的 [Notes reference](../../edges/references/notes.md) 调用 `new_note`，传相同正文和可选 `project` / `super`；scope 由服务端确定。工具版本缺少所需选择参数时说明限制，不静默改归属。创建后保留返回 path，后续查读与更新沿用原 scope 和 Project 选择。
     - `notes create` 不复制旁路目录。图片等资源不要指望随笔记一起导入；正文里需要的材料写进 `--body`。不批量转换旧笔记。
     - 仓：普通内容写进用户自己的笔记仓（`--scope` 指向的目录）；主题归属再用 Project 选择。私密内容写入用户指定的私密仓：调用时把 `--scope` 指向私密仓的目录，`notes create` 不会自动换仓。CLI 源码在本仓 `packages/cli/`。
     - 大范围代码改动仍走 Cursor cloud agent
     - 公开库先脱敏（无 Tailscale `100.x`、凭证、授权链接等）
     - 若随后把遗留项开成看板任务，看板文件进受保护的 `main` 必须开 PR，不要直推。笔记创建本身不提交 Git。
-16. **遗留项 → 任务**：若「结果」中仍有未闭环事项，整理入库后不要默默结束。默认按优先级一次挑 1～2 条，向用户逐点问清（至少能写清背景与目标），再调用 `edges-conversation-to-tasks` 成文开卡，同时传递已选 scope、Project 与笔记 path，除非任务内容另有归属；问完落库后再问下一批，避免一次烤光。用户明确说「先不转任务」则可跳过。
+16. **遗留项 → 任务**：若「结果」中仍有未闭环事项，整理入库后不要默默结束。默认按优先级一次挑 1～2 条，向用户逐点问清（至少能写清背景与目标），再调用 `edges-create-tasks` 成文开卡，同时传递已选 scope、Project 与笔记 path，除非任务内容另有归属；问完落库后再问下一批，避免一次烤光。用户明确说「先不转任务」则可跳过。
 17. 旧笔记不强制回写。
 18. 落盘前可对照 edges 项目记忆（如 `project_conversation_notes_plain_rich_human_review`）；冲突以本 skill + CONTEXT/ADR 为准。
 
@@ -131,7 +126,7 @@ version: 0.2.0
 - 不得用「收成/压缩」把过程里的取舍删掉；所学与行动指南只做取舍补充。
 - 写做什么时默认带相关可选项与不做原因；无比较空间时可省略或写「当时未比较其它方案」，不硬编。
 - 主题须有一段话；难点列表按实填写。
-- 结果有未闭环项时，默认逐点问清后交 `edges-conversation-to-tasks`（一次 1～2 条）；用户说先不转任务可跳过。
+- 结果有未闭环项时，默认逐点问清后交 `edges-create-tasks`（一次 1～2 条）；用户说先不转任务可跳过。
 - **必须保留原始材料引用**（补充说明或背景末）：会话/PR/路径/相关 note 等可追溯指针；脱敏后仍要能找回。
 - 忌「记完结构」交差；人看不懂就加长改写后再入库。
 

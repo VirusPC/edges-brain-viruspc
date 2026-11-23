@@ -1,4 +1,4 @@
-# CONTEXT — edges-conversation-to-notes
+# CONTEXT — edges-create-notes
 
 ## Glossary
 
@@ -19,10 +19,10 @@
 - **总览笔记**：同日或多主题的一篇主线笔记，链到各主题 note；补充说明可引用其它 note。
 - **原始材料引用**：笔记必须留下可追溯出处（会话/助手、PR/commit、本地路径、相关 note 等）；整理不等于丢原料指针。
 - **路径名 / 显示标题**：所选材料根下的路径用 `notes/YYYY-MM-DD--主题简述/INDEX.md`；默认材料根为 scope/.edges，Project 为 P，未选 Project 的 super 为 scope。`--title`、`#`、frontmatter `title` 只写主题简述。
-- **遗留项转任务**：笔记「结果」里尚未闭环的事项；整理后默认逐点问清（背景/目标），再交 `edges-conversation-to-tasks` 开卡，一次 1～2 条。
+- **遗留项转任务**：笔记「结果」里尚未闭环的事项；整理后默认逐点问清（背景/目标），再交 `edges-create-tasks` 开卡，一次 1～2 条。
 
 ## Related
 
 - 正文章节顺序：`背景 → 主题 → 过程 → 结果 → 所学 → 行动指南 → 补充说明`。
 - 路径名与显示标题的分界见 [ADR 0011](./docs/adr/0011-path-date-display-title-plain.md)。
-- 与 `edges-conversation-to-tasks` **1.2.0** 同序对应：笔记主题行动指南（背景 → 核心问题 → 核心解决方案 → 验收标准）对应任务正文（背景 → 目标 → 动作 → 完成标准）。
+- 与 `edges-create-tasks` **1.2.0** 同序对应：笔记主题行动指南（背景 → 核心问题 → 核心解决方案 → 验收标准）对应任务正文（背景 → 目标 → 动作 → 完成标准）。

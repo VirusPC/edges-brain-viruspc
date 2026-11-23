@@ -6,7 +6,7 @@
 
 底层是 git submodule：被组合的仓库默认装在当前仓库里的 `.edges/compose/<name>`。区块里的链接相对于 `.edges/compose/`，缺省是 `<name>/README.md`。换一台机器 clone 主仓库后跑一次 `edges compose update` 就能用。
 
-需要按主题归属时，add、list、update 都带根参数 `--project <相对路径>`；路径相对 `<scope>/.edges/projects`，例如 `P/projects/Q`。选定 P 后索引是 `P/compose/README.md`，默认检出位置是 `P/compose/<name>`，登记回 `P/INDEX.md`；scope 与所属 Git 仓库保持不变。下面未带 Project 的示例使用默认 scope 材料位置。Compose 不把 `--super` 或 `--all` 当作登记表选择或递归更新开关。
+需要按主题归属时，add、list、update 都带根参数 `--project <相对路径>`。默认相对 `<scope>/.edges/projects`，`--super` 时相对 `<scope>/projects`，例如 `P/projects/Q`。选定 P 后索引是 `P/compose/README.md`，默认检出位置是 `P/compose/<name>`，登记回 `P/INDEX.md`；scope 与所属 Git 仓库保持不变。下面未带 Project 的示例使用默认 scope 材料位置。未选 Project 时，`--super` 把登记表放到 `<scope>/compose/README.md`，省略路径的检出目录是 `<scope>/<name>`。不带 `--super` 时仍是 `<scope>/.edges/compose/`。`--all` 不是登记或递归更新开关。
 
 日常三个命令，名字跟 git submodule 对应。`compose doctor` 不是日常命令，只把还写在 `AGENTS.md` 上的旧区块迁过来（默认预览，`--apply` 才写）。
 

@@ -1,7 +1,7 @@
 ---
 name: edges-memory-remember
 description: 把可复用结论写入所选作用域或主题 Project 的已采用记忆类型并刷新索引。用户要求记住时必须用；被纠正、用户给出可用想法/约定/约束、或任务产出已验证、以后还用得上的结论时也要主动用。
-version: 0.2.0
+version: 0.2.2
 ---
 
 # Project Memory Remember
@@ -25,7 +25,7 @@ version: 0.2.0
 
 ## 怎么写
 
-先按结论适用范围选择 scope，再按主题归属选择可选 Project。CLI 使用 `edges --scope <S> --project <P/projects/Q> memory remember ...`，Project 路径相对 `S/.edges/projects`；省略 Project 时写 `S/.edges`，指定后写 `P/memory` 或 `P/skills`。先在选定材料根内去重并确认类型已采用，同名类型不从根层、父 Project 或兄弟 Project 借用。Project 不需要自己的 AGENTS 或 .edges，但原 scope 仍须是有效系统入口。`--super` 不改变本命令的写入位置；`--all` 只用于读取，写入时会被拒绝。
+先按结论适用范围选择 scope，再按主题归属选择可选 Project。CLI 使用 `edges --scope <S> --project <P/projects/Q> memory remember ...`。Project 路径默认相对 `S/.edges/projects`，`--super` 时相对 `S/projects`；省略 Project 时写 `S/.edges`，指定后写 `P/memory` 或 `P/skills`。先在选定材料根内去重并确认类型已采用，同名类型不从根层、父 Project 或兄弟 Project 借用。Project 不需要自己的 AGENTS 或 .edges，但原 scope 仍须是有效系统入口。未选 Project 时，`--super` 把 remember 写到 `S/memory`；不带 `--super` 仍写 `S/.edges/memory`。`--all` 只用于读取，写入时会被拒绝。
 
 1. 沿所选材料清单或 Project INDEX 找已采用类型，按入口说明与权限挑可写的 `type`，不要把官方类型当成闭集；类型名、模块和权限以实际类型入口为准。再定一个 `slug`（小写 snake_case，**不带类型前缀**，CLI 自动加；Skill 格式用 kebab-case）。`referenced` 只索引、不能 remember。`type` 决定检索入口——分错类型会让相关的人找不到这条。
 2. 去重：先看该类型的记忆入口，已有同主题条目就复用它的 `slug` 走更新，不要另起一条近义的。入口通常已经在上下文里；不在就 `rg` 一下。

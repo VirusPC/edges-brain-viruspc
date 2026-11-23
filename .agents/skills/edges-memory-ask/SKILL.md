@@ -1,7 +1,7 @@
 ---
 name: edges-memory-ask
 description: 用户提问或动手改代码前，按工作范围和主题 Project 检索已登记的项目记忆。不必等用户说搜索；本轮查过不重复。
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Project Memory Ask
@@ -24,7 +24,7 @@ version: 0.2.0
 
 - 用户提问或动手改代码前就查，不用等他说「搜索」。本轮已经查过、或者他只是让你按指定文案改字，跳过。
 - **先定这次的工作范围**：用户点名的路径、当前在改的文件、上一轮动过的目录都算；只给了模块名或功能名就先定位到目录。然后取这几个目录各自那条祖先链上的记忆层，取并集——需要的多半已经在上下文里。不要从记忆根开始逐层猜，也不要打开工作范围外的兄弟层。范围实在定不出来，就只用记忆根那层。
-- 用户指定主题 Project 时，保留原 scope 和祖先硬约束，从该 Project `INDEX.md` 的组成链接选择 Memory 类型；没有 Project AGENTS 不代表没有主题记忆。CLI 使用 `edges --scope <S> --project <P/projects/Q> memory list`，Project 路径相对 `S/.edges/projects`，不要把 Project 目录当新 scope。各 Project 的同名类型和 slug 独立，引用时保留返回路径。
+- 用户指定主题 Project 时，保留原 scope 和祖先硬约束，从该 Project `INDEX.md` 的组成链接选择 Memory 类型；没有 Project AGENTS 不代表没有主题记忆。CLI 使用 `edges --scope <S> --project <P/projects/Q> memory list`。Project 路径默认相对 `S/.edges/projects`，`--super` 时相对 `S/projects`，不要把 Project 目录当新 scope。各 Project 的同名类型和 slug 独立，引用时保留返回路径。
 - 需要 CLI 辅助发现时，`memory list` 列普通记忆，`skills list` 列技能；正文仍按索引说明选择打开。`--super` 换成 scope 直属材料的虚拟入口，`--all` 增加所选目录下的独立真实系统，Project 组成递归本身不需要 `--all`。完整组合和边界见 [查询入口与发现范围](../edges/references/memory/references/LAYOUT.md#查询入口与发现范围)，不要无条件扩大搜索。
 - 先读索引，再按说明挑要打开的正文，不要因为索引小就把它列的条目文件全拉进来。
 - 关键词自己从问题里提炼，不要照抄原句；复合问题拆开分别查。也可以对 `AGENTS.md` 链到的那个记忆目录直接跑 `rg -n -i <关键词>`。
