@@ -95,7 +95,8 @@ function assertSourcesCard(html, issueDate) {
     }
   }
   const plus = incomplete ? '\\+' : '';
-  assert.match(card, new RegExp(`4 类 </span>${publisherTotal} 源 · 筛前 <span class="ai-news-sources-tally-sum">${sum}${plus}</span>`));
+  assert.match(card, new RegExp(`4 类 </span>${publisherTotal} 源 · 抓取 <span class="ai-news-sources-tally-sum">${sum}${plus}</span>`));
+  assert.doesNotMatch(card, /筛前/);
   for (const label of ['每周 / TypeScript', '每周 / Python', '每周 / 全部']) {
     if (!names.has(label)) assert.doesNotMatch(card, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }

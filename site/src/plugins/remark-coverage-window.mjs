@@ -113,11 +113,11 @@ export function sourcesCardHtml(sources) {
 function tallyHtml(categories) {
   const sourceTotal = categories.reduce((sum, category) => sum + category.publishers.length, 0);
   const numbers = categories.filter((category) => typeof category.count === 'number');
-  let items = '筛前未统计';
+  let items = '抓取未统计';
   if (numbers.length) {
     const sum = numbers.reduce((total, category) => total + category.count, 0);
     const plus = numbers.length === categories.length ? '' : '+';
-    items = `筛前 <span class="ai-news-sources-tally-sum">${sum}${plus}</span><span class="ai-news-sources-tally-unit"> 条</span>`;
+    items = `抓取 <span class="ai-news-sources-tally-sum">${sum}${plus}</span><span class="ai-news-sources-tally-unit"> 条</span>`;
   }
   return `<span class="ai-news-sources-tally"><span class="ai-news-sources-tally-kinds">${categories.length} 类 </span>${sourceTotal} 源 · ${items}</span>`;
 }

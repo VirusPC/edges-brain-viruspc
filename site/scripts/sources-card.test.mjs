@@ -45,7 +45,8 @@ test('each category folds on its own and zero publishers stay folded', () => {
   assert.match(html, /<path d="M4 11a9 9 0 0 1 9 9"><\/path>/);
   assert.match(html, /<path d="m9 18 6-6-6-6"><\/path>/);
   assert.doesNotMatch(html, /<circle cx="12" cy="12" r="10">/);
-  assert.match(html, /<span class="ai-news-sources-tally-kinds">4 类 <\/span>6 源 · 筛前 <span class="ai-news-sources-tally-sum">5\+<\/span><span class="ai-news-sources-tally-unit"> 条<\/span>/);
+  assert.match(html, /<span class="ai-news-sources-tally-kinds">4 类 <\/span>6 源 · 抓取 <span class="ai-news-sources-tally-sum">5\+<\/span><span class="ai-news-sources-tally-unit"> 条<\/span>/);
+  assert.doesNotMatch(html, /筛前/);
   assert.equal((html.match(/<details class="ai-news-sources-cat"/g) || []).length, 4);
   assert.doesNotMatch(html, /ai-news-sources-fold|<details[^>]* open/);
   const titles = [...html.matchAll(/ai-news-sources-cat-name">[\s\S]*?<span>([^<]+)/g)].map((match) => match[1]);
