@@ -15,9 +15,10 @@ export const ROUGH_OUTLINE = {
   preserveVertices: true,
 };
 
-/** Keyword clouds keep the previous filter seed. The sample assigned the other five. */
+/** Keyword clouds keep the previous filter seed. Each other card has its own prime. */
 export const ROUGH_SEEDS = {
   note: 11,
+  sources: 17,
   board: 23,
   facts: 37,
   release: 41,
@@ -99,6 +100,7 @@ export function seedForCard(className, label = '') {
   if (names.has('model-board')) return ROUGH_SEEDS.board;
   if (names.has('model-facts')) return ROUGH_SEEDS.facts;
   if (names.has('info-card')) {
+    if (names.has('ai-news-sources')) return ROUGH_SEEDS.sources;
     return String(label).includes('发布要点') ? ROUGH_SEEDS.release : ROUGH_SEEDS.note;
   }
   if (names.has('article-card') || names.has('note-card')) return ROUGH_SEEDS.article;
