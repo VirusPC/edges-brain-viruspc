@@ -7,14 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.1] - 2026-11-23
+## [0.0.3] - 2026-11-23
 
 ### Changed
 
 - **去掉遗留。** 删掉一次性迁移脚本和词云渲染脚本。关键词阶段只产出 `summary/keywords.json`。references 里不再写站点渲染或 markdown 正文步骤。
-- 版本号仍按 Edges skill 约定。合进 main 之后，在那个 commit 上打 annotated tag `skill/weekly-ai-blogs-digest@0.2.1`。
+- 这三个版本之前发布过为 0.1.0 / 0.2.0 / 0.2.1，现在按用户要求重排为 0.0.x。
+- 版本号仍按 Edges skill 约定。合进 main 之后，在那个 commit 上打 annotated tag `skill/weekly-ai-blogs-digest@0.0.3`。
 
-## [0.2.0] - 2026-11-22
+## [0.0.2] - 2026-11-22
 
 ### Changed
 
@@ -22,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **脚本按阶段目录写数据树。** 采集、榜单、关键词脚本移到 `scripts/<阶段>/<子阶段>/`，输出进 `raw/`、`cleaned/`、`summary/`。
 - **关键词**只从 `summary/` 三路卡片生成 `summary/keywords.json`。
 
-## [0.1.0] - 2026-11-22
+## [0.0.1] - 2026-11-22
 
 ### Added
 
