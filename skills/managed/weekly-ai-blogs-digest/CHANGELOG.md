@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-23
+
+### Changed
+
+- GitHub Trending 只订每周总榜（`github-trending-weekly-all`），从 OPML、元数据和抓取校验里去掉 Python、TypeScript 等语言榜，也不再订 daily。信息源汇总只保留这一份总榜，发布方网址是 `https://github.com/trending?since=weekly`。
+- 准备阶段校验拒绝语言榜或 daily 榜出现在订阅、`feeds.json` 或 `github-trending.json` 里。合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.1.0` 先不打，留给维护者。
+- `fetch_feeds.py` 的默认 OPML / meta 路径改到技能根目录，`--check` 和 `--self-test` 不再误读 `scripts/prepare/feeds/`。
+
 ## [0.0.5] - 2026-11-23
 
 ### Changed

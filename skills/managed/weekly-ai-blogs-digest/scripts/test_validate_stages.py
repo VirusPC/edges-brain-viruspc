@@ -175,7 +175,7 @@ def write_issue(root: Path) -> Path:
     write_json(
         summary / "index.json",
         {
-            "skill": {"name": SKILL, "version": "0.0.5"},
+            "skill": {"name": SKILL, "version": "0.1.0"},
             "routine": {
                 "repo": "VirusPC/edges-brain-viruspc",
                 "commit": "a" * 40,
