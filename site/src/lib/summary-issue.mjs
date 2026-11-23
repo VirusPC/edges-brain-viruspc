@@ -59,32 +59,9 @@ export function composeIssueMarkdown(issueDir) {
   const indexPath = path.join(issueDir, 'summary', 'index.json');
   if (!fs.existsSync(indexPath)) return null;
   const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
-  const markdown = Array.isArray(index.blocks)
-    ? composeFromBlocks(issueDir, index.blocks)
-    : composeFromChapters(issueDir, index);
+  const markdown = composeFromChapters(issueDir, index);
   if (markdown == null) return null;
   return withArticlesCoverage(markdown, index.articles_coverage);
-}
-
-/**
- * Older issues keep the copied body slices. A rerun that only writes
- * chapters and card files is composed from those.
- * @param {string} issueDir
- * @param {any[]} blocks
- */
-function composeFromBlocks(issueDir, blocks) {
-  let out = '';
-  for (const block of blocks) {
-    if (block?.kind === 'raw') {
-      out += String(block.text ?? '');
-      continue;
-    }
-    if (block?.kind !== 'card' || !block.id) return null;
-    const card = findCard(issueDir, block.id);
-    if (!card) return null;
-    out += String(card.text ?? '');
-  }
-  return out;
 }
 
 const CHAPTER_NUMBERS = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
@@ -126,7 +103,7 @@ function composeFromChapters(issueDir, index) {
   const cards = loadSummaryCards(issueDir);
   const issueDate = path.basename(issueDir);
   const parts = [];
-  const window = windowLine(issueDir, issueDate);
+  const window = windowLine(index, issueDate);
   if (window) parts.push(window);
   for (let indexNumber = 0; indexNumber < index.chapters.length; indexNumber += 1) {
     const chapter = index.chapters[indexNumber];
@@ -202,13 +179,11 @@ function chapterBoards(issueDate, chapter, cards) {
 }
 
 /**
- * @param {string} issueDir
+ * @param {any} index
  * @param {string} issueDate
  */
-function windowLine(issueDir, issueDate) {
-  const windowPath = path.join(issueDir, 'raw', 'window.json');
-  if (!fs.existsSync(windowPath)) return '';
-  const window = JSON.parse(fs.readFileSync(windowPath, 'utf8'));
+function windowLine(index, issueDate) {
+  const window = index?.window;
   if (!window?.since || !window?.until) return '';
   const day = window.issue || issueDate;
   return `覆盖窗口：${window.since} 00:00:00 至 ${window.until} 23:59:59（UTC；生成日 ${day}，不含当天）。\n\n`;
@@ -234,22 +209,4 @@ function loadSummaryCards(issueDir) {
   };
   walk(path.join(issueDir, 'summary'));
   return map;
-}
-
-/**
- * @param {string} issueDir
- * @param {string} id
- */
-function findCard(issueDir, id) {
-  const summary = path.join(issueDir, 'summary');
-  for (const lane of ['articles', 'projects', 'models']) {
-    const dir = path.join(summary, lane);
-    if (!fs.existsSync(dir)) continue;
-    for (const name of fs.readdirSync(dir)) {
-      if (!name.endsWith('.json') || name === 'index.json') continue;
-      const card = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
-      if (card?.id === id) return card;
-    }
-  }
-  return null;
 }

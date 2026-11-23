@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,6 +25,17 @@ function walk(dir) {
 
 const files = walk(dist);
 const rels = files.map((file) => path.relative(dist, file).split(path.sep).join('/'));
+
+function gitIssueCommit(issueDate) {
+  const dataRoot = process.env.AI_NEWS_DATA_ROOT
+    || path.join(siteRoot, '.cache/ai-news-data');
+  const result = spawnSync(
+    'git',
+    ['-C', dataRoot, 'log', '-1', '--format=%H', '--', `issues/${issueDate}`],
+    { encoding: 'utf8' },
+  );
+  return String(result.stdout || '').trim();
+}
 
 function exists(rel) {
   assert.ok(rels.includes(rel), `missing ${rel}`);
@@ -460,11 +472,9 @@ assert.ok(specs20[0].items.some((item) => item.highlight));
 assert.equal(specs20[2].items.some((item) => item.name === 'Hy4 flash' && item.highlight), true);
 assert.equal(specs20[2].items[0].name.includes('/'), false);
 assert.match(issue20, /alt="LLM Arena Top 15，2026-11-18"/);
-assert.match(issue20, /这张智力指数前 15 里，本周新发布的是 GPT-6\.2 Astra、Gemini 4 Neon 和 GPT-6\.2 Sol。/);
-assert.match(issue20, /Gemini 4 Neon \(High\) 新进第 3。/);
-assert.match(issue20, /Hy4 flash 这周用量排到第 1/);
-assert.match(issue20, /Inkling 2 Small \(free\) 和 MiMo-V2\.6-Flash 新进前 15/);
-assert.match(issue20, /公开应用用量的前四仍是 Hermes Agent、Claude Code、Kilo Code 和 pi。/);
+assert.match(issue20, /这一期的榜单。/);
+assert.doesNotMatch(issue20, /这张智力指数前 15 里，本周新发布的是/);
+assert.doesNotMatch(issue20, /Hy4 flash 这周用量排到第 1/);
 assert.doesNotMatch(issue20, /数据取自/);
 assert.doesNotMatch(issue20, /抓取于/);
 assert.doesNotMatch(issue20, /快照/);
@@ -500,12 +510,13 @@ assert.doesNotMatch(toc20[0], />国际</);
 assert.ok(toc20[0].indexOf('四、精选文章') < toc20[0].indexOf('五、精选推文'));
 assert.ok(toc20[0].indexOf('五、精选推文') < toc20[0].indexOf('六、精选播客'));
 assert.doesNotMatch(toc20[0], /建设中/);
-assert.match(issue20, /href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/blob\/12133e826f9adad0d9677487a6c56ce7bcdfee42\/\.edges\/routines\/weekly-ai-blogs-digest\/INDEX\.md"/);
-assert.match(issue20, />12133e8 weekly-ai-blogs-digest</);
-assert.match(issue20, /<span class="info-card-current">（当前版本）<\/span> · skill 未记录/);
+assert.match(issue20, /weekly-ai-blogs-digest@0\.0\.5/);
+assert.match(issue20, /href="https:\/\/github\.com\/VirusPC\/edges-brain-viruspc\/blob\/[0-9a-f]{40}\/\.edges\/routines\/weekly-ai-blogs-digest\/INDEX\.md"/);
+assert.doesNotMatch(issue20, /skill 未记录|（当前版本）/);
 assert.doesNotMatch(issue20, /<dt>生成规则<\/dt><dd class="info-card-wrap">未记录<\/dd>/);
-assert.match(issue20, /href="https:\/\/github.com\/VirusPC\/ai-news-data\/tree\/5e2e06f851fc5317cd3cb845fbec2eb920bbde59\/issues\/2026-11-20"/);
-assert.match(issue20, />5e2e06f issues\/2026-11-20</);
+const dataCommit20 = gitIssueCommit('2026-11-20');
+assert.match(issue20, new RegExp(`href="https://github.com/VirusPC/ai-news-data/tree/${dataCommit20}/issues/2026-11-20"`));
+assert.match(issue20, new RegExp(`>${dataCommit20.slice(0, 7)}<`));
 assert.doesNotMatch(issue20, /github.com\/VirusPC\/ai-news-data\/(?:tree|blob)\/main\//);
 assert.doesNotMatch(issue20, /<!-- provenance/);
 const headingAt20 = [...issue20.matchAll(/<h2\b[^>]*>[\s\S]*?<\/h2>/g)];
@@ -548,8 +559,7 @@ for (const block of selectedFolded20) {
 }
 assert.equal((projectHtml20.match(/class="note-card article-card"/g) || []).length, 5);
 assert.equal((selectedHtml20.match(/class="note-card article-card"/g) || []).length, 36);
-assert.match(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
-assert.doesNotMatch(projectHtml20.slice(0, projectHtml20.indexOf('GitHub Trending')), /note-card/);
+assert.doesNotMatch(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
 assert.doesNotMatch(projectHtml20, /data-cat=/);
 assert.match(selectedHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);

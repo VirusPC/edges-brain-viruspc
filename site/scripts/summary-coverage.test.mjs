@@ -42,6 +42,7 @@ test('an issue without body slices is composed from chapters and card text', () 
   }));
   fs.writeFileSync(path.join(root, 'summary', 'index.json'), JSON.stringify({
     articles_coverage: { raw: 2, selected: 1 },
+    window: { issue: '2026-11-13', since: '2026-11-06', until: '2026-11-12' },
     chapters: [
       { title: '本周关键词' },
       { title: '模型进展', boards: ['Artificial Analysis'], cards: [] },

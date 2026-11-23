@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -13,7 +14,9 @@ from lib.issue import check_document, check_stage_file, load_gaps  # noqa: E402
 from summarize.articles.validate import validate as validate_articles  # noqa: E402
 from summarize.keywords.validate import validate as validate_keywords  # noqa: E402
 from summarize.merge.article_coverage import article_coverage, cleaned_article_count  # noqa: E402
+from summarize.merge.sources import CATEGORIES, sources_document, stamp_map  # noqa: E402
 from summarize.merge.validate import validate as validate_merge  # noqa: E402
+from summarize.merge.write_index import skill_version  # noqa: E402
 from summarize.models.validate import validate as validate_models  # noqa: E402
 from summarize.projects.validate import validate as validate_projects  # noqa: E402
 
@@ -62,6 +65,31 @@ def _index(
     errors, data = check_document(path, "summary/index.json", "schemas/summary/index.schema.json")
     if errors or not isinstance(data, dict):
         return errors
+    if "blocks" in data or "version" in data:
+        errors.append("summary/index.json 不能再写 blocks 或顶层 version")
+    errors.extend(_no_provenance_comment(issue))
+    skill = data.get("skill") if isinstance(data.get("skill"), dict) else {}
+    if skill.get("version") != skill_version():
+        errors.append(f"summary/index.json 的 skill.version 应为 {skill_version()}")
+    try:
+        got_sources = data.get("sources")
+        expect_sources = sources_document(issue)
+        if got_sources != expect_sources:
+            errors.append("summary/index.json 的 sources 和 raw + OPML 汇总不一致")
+    except ValueError as exc:
+        errors.append(str(exc))
+    mapping, stamp_errors = stamp_map(issue)
+    errors.extend(stamp_errors)
+    errors.extend(_stamps_match(issue, mapping))
+    window = data.get("window") if isinstance(data.get("window"), dict) else {}
+    raw_window = _read_window(issue)
+    if raw_window and (
+        window.get("since") != raw_window.get("since") or window.get("until") != raw_window.get("until")
+    ):
+        errors.append("summary/index.json 的 window 和 raw/window.json 不一致")
+    titles = [item.get("title") for item in (data.get("sources") or {}).get("categories") or []]
+    if titles != CATEGORIES:
+        errors.append("sources 的分类顺序应为模型榜单、GitHub Trending、博客、国内互联网")
     coverage = article_coverage(issue)
     got = data.get("articles_coverage")
     if got != coverage:
@@ -122,6 +150,43 @@ def _index(
         if by[title].get("cards") or by[title].get("groups") or by[title].get("boards"):
             errors.append(f"{title} 建设中，不能有条目")
     return errors
+
+
+def _no_provenance_comment(issue: Path) -> list[str]:
+    errors = []
+    summary = issue / "summary"
+    if not summary.is_dir():
+        return errors
+    for path in summary.rglob("*.json"):
+        text = path.read_text(encoding="utf-8")
+        if "<!-- provenance" in text:
+            errors.append(f"{path.relative_to(issue)} 还留着 provenance 注释")
+    return errors
+
+
+def _stamps_match(issue: Path, mapping: dict) -> list[str]:
+    errors = []
+    for rel, info in mapping.items():
+        path = issue / rel
+        if not path.is_file():
+            errors.append(f"{rel} 缺失")
+            continue
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for key in ("publisher", "category", "url"):
+            if data.get(key) != info[key]:
+                errors.append(f"{rel} 的 {key} 应为 {info[key]}")
+    return errors
+
+
+def _read_window(issue: Path) -> dict:
+    path = issue / "raw" / "window.json"
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def main(argv: list[str]) -> int:

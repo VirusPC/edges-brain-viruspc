@@ -14,3 +14,14 @@ python3 scripts/summarize/merge/article_coverage.py issues/<生成日>
 - `selected`：`summary/articles/` 里的文章数，一篇一个 id。这就是页面上精选文章的总篇数。
 
 规范化 URL 与准备阶段的 `normalize_link` 相同。`cleaned/articles/index.json` 的 id 数不写入这个字段。原文不能少于清洗后。
+
+同时写入 `sources` 和 cleaned 条目上的发布方。不改 raw，也不改卡片正文：
+
+```bash
+python3 scripts/summarize/merge/write_index.py issues/<生成日> \
+  --routine-repo <owner/name> \
+  --routine-commit <40位sha> \
+  --routine-path .edges/routines/weekly-ai-blogs-digest/INDEX.md
+```
+
+`sources.categories` 固定四类，顺序是模型榜单、GitHub Trending、博客、国内互联网。每类有 `count`，以及 `publishers`：`{name, url, count}`。`name` 是 OPML 的 `publisher`（团队名），备源并进这个名字，不写 feed 标题。`url` 是读者打开的网站：feed 用 `publisherUrl`，没有就用主源的 `htmlUrl`，不用 `xmlUrl`。GitHub Trending 每一份列表的 `htmlUrl` 仍是该列表页面，汇总后的发布方网址用每周总榜。模型榜单的网址在 meta `boards`。条数来自 raw：订阅和补录按规范化链接去重，榜单按 raw 文件里的 `items` 计数。补录算进它的发布方，不单列一类。

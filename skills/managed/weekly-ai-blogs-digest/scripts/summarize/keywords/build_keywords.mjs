@@ -689,29 +689,144 @@ function parseArgs(argv) {
   return out;
 }
 
-function main() {
-  const dir = process.argv[process.argv.indexOf('--issue-dir') + 1];
-  if (!dir || dir.startsWith('--')) fail('需要 --issue-dir issues/YYYY-MM-DD');
-  const summary = path.join(dir, 'summary');
-  const cards = [];
-  for (const lane of ['articles', 'projects', 'models']) {
+/**
+ * 从 summary 卡片提炼词，不把整条标题当成一个词。
+ * @param {string} issuesRoot
+ * @param {string} issue
+ */
+export function summaryKeywords(issuesRoot, issue) {
+  const issueDir = path.join(issuesRoot, issue);
+  const loaded = readSummaryCorpus(issueDir);
+  const earlier = [];
+  if (existsSync(issuesRoot)) {
+    for (const name of readdirSync(issuesRoot)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(name) || name >= issue) continue;
+      earlier.push(...readSummaryCorpus(path.join(issuesRoot, name)).entries.map((entry) => entry.text));
+    }
+  }
+  const selected = new Map();
+  const rank = { model: 3, product: 2, concept: 1 };
+  const add = (word, kind) => {
+    const clean = String(word || "").replace(/\s+/g, " ").trim();
+    if (!clean || isBlockedProduct(clean)) return;
+    const key = clean.toLowerCase();
+    const prev = selected.get(key);
+    if (prev && rank[prev.kind] >= rank[kind]) return;
+    selected.set(key, { word: clean, kind });
+  };
+  const seenEarlier = (name) => earlier.some((text) => textHasWord(text, name));
+  for (const model of loaded.models) {
+    if (!seenEarlier(model)) add(model, "model");
+  }
+  for (const entry of loaded.entries) {
+    for (const name of modelNamesInTitle(entry.title)) {
+      if (!seenEarlier(name)) add(name, releaseKind(name, entry.title));
+    }
+    if (!(ANNOUNCE.test(entry.title) || startsWithModel(entry.title))) continue;
+    if (modelNamesInTitle(entry.title).length) continue;
+    for (const product of productNamesInTitle(entry.title)) {
+      if (seenEarlier(product) || isBlockedProduct(product)) continue;
+      add(product, "product");
+    }
+  }
+  for (const phrase of conceptPhrases(loaded.entries)) {
+    if (phrase.length < 2 || seenEarlier(phrase)) continue;
+    add(phrase, "concept");
+  }
+  const words = [...selected.values()].flatMap((item) => {
+    const targets = [];
+    const hosts = new Set();
+    for (const entry of loaded.mentions) {
+      if (entry.id === item.word || textHasWord(entry.text, item.word)) {
+        if (!targets.includes(entry.id)) targets.push(entry.id);
+        const host = hostnameOf(entry.link);
+        if (host) hosts.add(host);
+      }
+    }
+    if (!targets.length) return [];
+    const scored = {
+      word: item.word,
+      kind: item.kind,
+      mentions: targets.length,
+      sources: hosts.size || 1,
+    };
+    return [{
+      name: item.word,
+      weight: keywordWeight(scored),
+      targets,
+      kind: item.kind,
+      theme: false,
+    }];
+  });
+  const concepts = words.filter((item) => item.kind === "concept");
+  concepts.sort((a, b) => b.targets.length - a.targets.length || a.name.localeCompare(b.name, "zh"));
+  if (concepts[0]) concepts[0].theme = true;
+  words.sort((a, b) => Number(b.theme) - Number(a.theme) || b.weight - a.weight || a.name.localeCompare(b.name, "zh"));
+  const models = words.filter((item) => item.kind === "model");
+  const theme = words.filter((item) => item.theme);
+  const rest = words.filter((item) => item.kind !== "model" && !item.theme);
+  const kept = [...theme, ...models, ...rest.slice(0, Math.max(0, 16 - models.length - theme.length))];
+  kept.sort((a, b) => Number(b.theme) - Number(a.theme) || b.weight - a.weight || a.name.localeCompare(b.name, "zh"));
+  return {
+    keywords: kept.map((item) => {
+      const word = { name: item.name, weight: item.weight, targets: item.targets };
+      if (item.theme) word.theme = true;
+      return word;
+    }),
+  };
+}
+
+function readSummaryCorpus(issueDir) {
+  const entries = [];
+  const mentions = [];
+  const models = [];
+  const summary = path.join(issueDir, "summary");
+  const pushMention = (id, text, link) => {
+    if (!id) return;
+    mentions.push({ id: String(id), text: String(text || ""), link: String(link || "") });
+  };
+  for (const lane of ["articles", "projects", "models"]) {
     const laneDir = path.join(summary, lane);
     if (!existsSync(laneDir)) continue;
     for (const name of readdirSync(laneDir)) {
-      if (!name.endsWith('.json') || name === 'index.json') continue;
-      const card = JSON.parse(readFileSync(path.join(laneDir, name), 'utf8'));
-      if (card?.id) cards.push(card);
+      const full = path.join(laneDir, name);
+      if (!name.endsWith(".json") || name === "index.json") {
+        if (name === "boards") {
+          for (const boardName of readdirSync(full)) {
+            if (!boardName.endsWith(".json")) continue;
+            const board = JSON.parse(readFileSync(path.join(full, boardName), "utf8"));
+            for (const item of board.items || []) {
+              pushMention(item.id, item.name, "");
+            }
+          }
+        }
+        continue;
+      }
+      const card = JSON.parse(readFileSync(full, "utf8"));
+      if (!card?.id) continue;
+      const title = String(card.title || card.name || card.id);
+      const text = [title, card.sentence, card.purpose, card.change, stripTags(card.text)].filter(Boolean).join("\n");
+      const link = String(card.link || (String(card.id).startsWith("http") ? card.id : ""));
+      if (lane === "models") models.push(String(card.id));
+      entries.push({ title, text, link });
+      pushMention(card.id, text, link);
     }
   }
-  const names = [...new Set(cards.map((card) => String(card.title || card.name || card.id)))];
-  const keywords = names.filter(Boolean).map((name) => ({
-    name,
-    weight: keywordWeight({ word: name, weight: 1 }),
-    targets: cards.filter((card) => card.id === name || String(card.text || '').includes(name) || card.title === name).map((card) => card.id),
-  })).filter((item) => item.targets.length);
-  const out = path.join(summary, 'keywords.json');
-  writeFileSync(out, `${JSON.stringify({ keywords }, null, 2)}\n`);
-  console.log(`${keywords.length} keywords -> ${out}`);
+  return { entries, mentions, models };
+}
+
+function stripTags(value) {
+  return String(value || "").replace(/<[^>]+>/g, " ");
+}
+
+function main() {
+  const dir = process.argv[process.argv.indexOf("--issue-dir") + 1];
+  if (!dir || dir.startsWith("--")) fail("需要 --issue-dir issues/YYYY-MM-DD");
+  const issue = path.basename(dir);
+  const doc = summaryKeywords(path.dirname(dir), issue);
+  const out = path.join(dir, "summary", "keywords.json");
+  writeFileSync(out, `${JSON.stringify(doc, null, 2)}\n`);
+  console.log(`${doc.keywords.length} keywords -> ${out}`);
 }
 
 const entry = process.argv[1];

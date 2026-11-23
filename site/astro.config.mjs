@@ -31,7 +31,7 @@ export default defineConfig({
   markdown: {
     gfm: true,
     smartypants: false,
-    remarkPlugins: [remarkCoverageWindow, remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkKeywordCloud, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
+    remarkPlugins: [[remarkCoverageWindow, { repoRoot }], remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkKeywordCloud, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
     rehypePlugins: [rehypeKeywordCloud, rehypeSidenotes, rehypeModelCharts, rehypeArticleCards, rehypeChapterWip],
   },
 });

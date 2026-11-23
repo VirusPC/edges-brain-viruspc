@@ -32,7 +32,7 @@ description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-di
 
 - 交付：回到这条定时任务所在的对话。
 - 结果：一个打开的数据 PR，写在 [VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data) 的 `issues/<生成日>/`。不合并。回复里给出链接，以及这份快照缺了什么。Skill 不写站点，也不开周报 markdown PR。
-- 生成来源：动手前仍把所选 ref 解析成 commit，用来读取本入口和 Skill。`summary/index.json` 记 skill 名和 `version`，以及数据仓库已经落库的 commit。数据 commit 没有就写 `null`。不要把周报稿自己的提交填进去。格式见 Skill 的总结阶段。
+- 生成来源：动手前仍把所选 ref 解析成 commit，用来读取本入口和 Skill。`summary/index.json` 的 `skill` 记 skill 名和版本，`routine` 记本入口的仓库、这次解析出的 commit 和路径 `.edges/routines/weekly-ai-blogs-digest/INDEX.md`。`data.commit` 是数据仓库已经落库的 commit，没有就写 `null`。不要把周报稿自己的提交填进去。格式见 Skill 的总结阶段。
 
 ## 输入
 

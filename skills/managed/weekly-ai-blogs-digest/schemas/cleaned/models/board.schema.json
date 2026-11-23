@@ -4,6 +4,9 @@
   "required": [
     "id",
     "source",
+    "publisher",
+    "category",
+    "url",
     "items"
   ],
   "properties": {
@@ -14,6 +17,17 @@
     "source": {
       "type": "string",
       "minLength": 1
+    },
+    "publisher": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "enum": ["模型榜单", "GitHub Trending", "博客", "国内互联网"]
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://[^\\s]+$"
     },
     "publish_date": {
       "type": [

@@ -51,7 +51,12 @@ def write_issue(root: Path) -> Path:
     )
     write_json(
         raw / "articles" / "feeds.json",
-        {"items": [{"title": "一篇", "link": ARTICLE, "date": "2026-11-18"}]},
+        {
+            "items": [
+                {"title": "一篇", "link": ARTICLE, "date": "2026-11-18", "source": "openai-news"},
+                {"title": "仓库", "link": REPO, "date": "2026-11-18", "source": "github-trending-weekly-all"},
+            ]
+        },
     )
     write_json(raw / "projects" / "github-trending.json", {"items": [{"link": REPO}]})
     write_json(raw / "projects" / "releases.json", {"items": []})
@@ -76,24 +81,43 @@ def write_issue(root: Path) -> Path:
             "title": "一篇",
             "date": "2026-11-18",
             "source": "raw/articles/feeds.json",
+            "publisher": "OpenAI",
+            "category": "博客",
+            "url": "https://openai.com/news/",
             "text": "订阅里的正文。",
         },
     )
     write_json(cleaned / "projects" / "index.json", {"ids": [REPO]})
     write_json(
         cleaned / "projects" / "demo.json",
-        {"id": REPO, "source": "raw/projects/github-trending.json"},
+        {
+            "id": REPO,
+            "source": "raw/projects/github-trending.json",
+            "publisher": "GitHub",
+            "category": "GitHub Trending",
+            "url": "https://github.com/trending?since=weekly",
+        },
     )
     write_json(cleaned / "models" / "index.json", {"ids": [MODEL]})
     write_json(
         cleaned / "models" / "example-model.json",
-        {"id": MODEL, "name": MODEL, "source": "raw/models/aa-language-models.json"},
+        {
+            "id": MODEL,
+            "name": MODEL,
+            "source": "raw/models/aa-language-models.json",
+            "publisher": "Artificial Analysis",
+            "category": "模型榜单",
+            "url": "https://artificialanalysis.ai/leaderboards/models",
+        },
     )
     write_json(
         cleaned / "models" / "boards" / "aa.json",
         {
             "id": BOARD,
             "source": "raw/models/aa-language-models.json",
+            "publisher": "Artificial Analysis",
+            "category": "模型榜单",
+            "url": "https://artificialanalysis.ai/leaderboards/models",
             "items": [{"name": MODEL, "value": 61}],
         },
     )
@@ -150,10 +174,39 @@ def write_issue(root: Path) -> Path:
     write_json(
         summary / "index.json",
         {
-            "skill": SKILL,
-            "version": VERSION,
+            "skill": {"name": SKILL, "version": "0.0.5"},
+            "routine": {
+                "repo": "VirusPC/edges-brain-viruspc",
+                "commit": "a" * 40,
+                "path": ".edges/routines/weekly-ai-blogs-digest/INDEX.md",
+            },
             "data": {"commit": None},
-            "articles_coverage": {"raw": 1, "selected": 1},
+            "articles_coverage": {"raw": 2, "selected": 1},
+            "window": {"issue": ISSUE, "since": "2026-11-13", "until": "2026-11-19"},
+            "sources": {
+                "categories": [
+                    {"title": "模型榜单", "count": 0, "publishers": []},
+                    {
+                        "title": "GitHub Trending",
+                        "count": 1,
+                        "publishers": [
+                            {
+                                "name": "GitHub",
+                                "url": "https://github.com/trending?since=weekly",
+                                "count": 1,
+                            }
+                        ],
+                    },
+                    {
+                        "title": "博客",
+                        "count": 1,
+                        "publishers": [
+                            {"name": "OpenAI", "url": "https://openai.com/news/", "count": 1}
+                        ],
+                    },
+                    {"title": "国内互联网", "count": 0, "publishers": []},
+                ]
+            },
             "chapters": [
                 {"title": "本周关键词"},
                 {"title": "模型进展", "boards": [BOARD], "cards": [MODEL]},
@@ -242,20 +295,24 @@ class ValidateStages(unittest.TestCase):
         self.assertTrue(any("articles_coverage" in item and "精选 1 篇" in item for item in errors))
 
     def test_raw_must_not_be_below_cleaned(self) -> None:
-        extra = "https://example.com/extra"
-        write_json(
-            self.issue / "cleaned" / "articles" / "extra.json",
-            {
-                "id": extra,
-                "title": "多出来的",
-                "date": "2026-11-18",
-                "source": "raw/articles/feeds.json",
-                "text": "没有对应原文。",
-            },
-        )
-        write_json(self.issue / "cleaned" / "articles" / "index.json", {"ids": [ARTICLE, extra]})
+        extras = ["https://example.com/extra", "https://example.com/extra-2"]
+        for extra in extras:
+            write_json(
+                self.issue / "cleaned" / "articles" / f"{extra.rsplit('/', 1)[-1]}.json",
+                {
+                    "id": extra,
+                    "title": "多出来的",
+                    "date": "2026-11-18",
+                    "source": "raw/articles/feeds.json",
+                    "publisher": "OpenAI",
+                    "category": "博客",
+                    "url": "https://openai.com/news/",
+                    "text": "没有对应原文。",
+                },
+            )
+        write_json(self.issue / "cleaned" / "articles" / "index.json", {"ids": [ARTICLE, *extras]})
         errors = validate_summary(self.issue)
-        self.assertTrue(any("少于清洗后 2 篇" in item for item in errors))
+        self.assertTrue(any("少于清洗后 3 篇" in item for item in errors), errors)
 
     def test_keyword_target_must_exist(self) -> None:
         write_json(

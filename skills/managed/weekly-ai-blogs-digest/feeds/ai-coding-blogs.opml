@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <opml version="2.0">
   <head>
     <title>AI Coding Blogs</title>
@@ -6,63 +6,63 @@
     <docs>http://opml.org/spec2.opml</docs>
   </head>
   <body>
-    <outline text="AI Coding Blogs" title="AI Coding Blogs">
-      <outline text="Claude Articles" title="Claude Articles" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_claude.xml" htmlUrl="https://claude.com/resources/articles"/>
-      <outline text="Anthropic News" title="Anthropic News" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml" htmlUrl="https://www.anthropic.com/news"/>
-      <outline text="Anthropic Engineering" title="Anthropic Engineering" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml" htmlUrl="https://www.anthropic.com/engineering"/>
-      <outline text="Claude Code Changelog" title="Claude Code Changelog" type="rss" xmlUrl="https://code.claude.com/docs/en/changelog/rss.xml" htmlUrl="https://code.claude.com/docs/en/changelog"/>
-      <outline text="OpenAI News" title="OpenAI News" type="rss" xmlUrl="https://openai.com/news/rss.xml" htmlUrl="https://openai.com/news/"/>
-      <outline text="Google AI Blog" title="Google AI Blog" type="rss" xmlUrl="https://blog.google/innovation-and-ai/technology/ai/rss/" htmlUrl="https://blog.google/innovation-and-ai/technology/ai/"/>
-      <outline text="Meta AI Blog" title="Meta AI Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml" htmlUrl="https://ai.meta.com/blog/"/>
-      <outline text="Meta AI Blog（RSSHub 备源）" title="Meta AI Blog（RSSHub 备源）" type="rss" xmlUrl="https://rsshub.bestblogs.dev/meta/ai/blog" htmlUrl="https://ai.meta.com/blog/"/>
-      <outline text="Engineering at Meta" title="Engineering at Meta" type="rss" xmlUrl="https://engineering.fb.com/feed/" htmlUrl="https://engineering.fb.com/"/>
-      <outline text="xAI News" title="xAI News" type="rss" xmlUrl="https://raw.githubusercontent.com/0xSMW/rss-feeds/main/feeds/feed_xai_news.xml" htmlUrl="https://x.ai/news"/>
-      <outline text="xAI News（Olshansk 备源）" title="xAI News（Olshansk 备源）" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml" htmlUrl="https://x.ai/news"/>
-      <outline text="xAI News（XGo @xai 备源）" title="xAI News（XGo @xai 备源）" type="rss" xmlUrl="https://api.xgo.ing/rss/user/3953aa71e87a422eb9d7bf6ff1c7c43e" htmlUrl="https://x.ai/news"/>
-      <outline text="ManusAI" title="ManusAI" type="rss" xmlUrl="https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab" htmlUrl="https://manus.im/blog"/>
-      <outline text="Cursor Blog" title="Cursor Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml" htmlUrl="https://cursor.com/blog"/>
-      <outline text="Devin Blog" title="Devin Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml" htmlUrl="https://devin.ai/blog"/>
-      <outline text="DeepSeek 深度求索" title="DeepSeek 深度求索" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml"/>
-      <outline text="DeepSeek Harness" title="DeepSeek Harness" type="rss" xmlUrl="https://raw.githubusercontent.com/VirusPC/ai-x-feeds/main/feeds/DeepSeekHarness.xml" htmlUrl="https://x.com/DeepSeekHarness"/>
-      <outline text="Cognition" title="Cognition" type="rss" xmlUrl="https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7" htmlUrl="https://cognition.com/blog"/>
-      <outline text="LangChain Blog" title="LangChain Blog" type="rss" xmlUrl="https://www.langchain.com/blog/rss.xml" htmlUrl="https://www.langchain.com/blog"/>
-      <outline text="Qwen" title="Qwen" type="rss" xmlUrl="https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d" htmlUrl="https://qwen.ai/research"/>
-      <outline text="Hugging Face Blog" title="Hugging Face Blog" type="rss" xmlUrl="https://huggingface.co/blog/feed.xml" htmlUrl="https://huggingface.co/blog"/>
-      <outline text="AWS Machine Learning Blog" title="AWS Machine Learning Blog" type="rss" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/" htmlUrl="https://aws.amazon.com/blogs/machine-learning/"/>
-      <outline text="sankalp's blog" title="sankalp's blog" type="rss" xmlUrl="https://sankalp.bearblog.dev/feed/" htmlUrl="https://sankalp.bearblog.dev/"/>
-      <outline text="Amp News" title="Amp News" type="rss" xmlUrl="https://ampcode.com/news.rss" htmlUrl="https://ampcode.com/chronicle"/>
-      <outline text="Lovable Blog" title="Lovable Blog" type="rss" xmlUrl="https://lovable.dev/blog/rss.xml" htmlUrl="https://lovable.dev/blog"/>
-      <outline text="Kiro Blog" title="Kiro Blog" type="rss" xmlUrl="https://kiro.dev/blog/feed.rss" htmlUrl="https://kiro.dev/blog/"/>
-      <outline text="philschmid.de" title="philschmid.de" type="rss" xmlUrl="https://www.philschmid.de/rss" htmlUrl="https://www.philschmid.de/"/>
-      <outline text="goose Blog" title="goose Blog" type="rss" xmlUrl="https://goose-docs.ai/blog/rss.xml" htmlUrl="https://goose-docs.ai/blog/"/>
-      <outline text="Zed Blog" title="Zed Blog" type="rss" xmlUrl="https://zed.dev/blog.rss" htmlUrl="https://zed.dev/blog"/>
-      <outline text="CodeRabbit Blog" title="CodeRabbit Blog" type="rss" xmlUrl="https://www.coderabbit.ai/feed" htmlUrl="https://www.coderabbit.ai/blog"/>
-      <outline text="Warp Blog" title="Warp Blog" type="rss" xmlUrl="https://www.warp.dev/blog/feed.xml" htmlUrl="https://www.warp.dev/blog"/>
-      <outline text="月之暗面 Kimi" title="月之暗面 Kimi" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml" htmlUrl="https://www.kimi.com/blog/"/>
-      <outline text="GLM" title="GLM" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/433d2134dca54d80804daf32e8be546155be3300.xml" htmlUrl="https://www.zhipuai.cn/zh/research"/>
-      <outline text="StepFun" title="StepFun" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/3e2714d06aa36142e8ed6b3f4e5cf9090a069dd2.xml" htmlUrl="https://www.stepfun.com/news"/>
-      <outline text="Massively Parallel Procrastination" title="Massively Parallel Procrastination" type="rss" xmlUrl="https://blog.fsck.com/feed/rss.xml" htmlUrl="https://blog.fsck.com/"/>
-      <outline text="宝玉的分享" title="宝玉的分享" type="rss" xmlUrl="https://baoyu.io/feed.xml" htmlUrl="https://baoyu.io/"/>
-      <outline text="Google Antigravity Blog" title="Google Antigravity Blog" type="rss" xmlUrl="https://antigravity.google/blog/rss.xml" htmlUrl="https://antigravity.google/blog"/>
-      <outline text="Jason Liu" title="Jason Liu" type="rss" xmlUrl="https://jxnl.co/feed_rss_created.xml" htmlUrl="https://jxnl.co/writing/"/>
-      <outline text="Armin Ronacher's Thoughts and Writings" title="Armin Ronacher's Thoughts and Writings" type="rss" xmlUrl="https://lucumr.pocoo.org/feed.atom" htmlUrl="https://lucumr.pocoo.org/"/>
-      <outline text="MiniMax 稀宇科技" title="MiniMax 稀宇科技" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml" htmlUrl="https://www.minimax.io/blog"/>
+    <outline text="博客" title="博客">
+      <outline text="Claude Articles" title="Claude Articles" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_claude.xml" htmlUrl="https://claude.com/resources/articles" category="博客" publisher="Anthropic" publisherUrl="https://www.anthropic.com/news" />
+      <outline text="Anthropic News" title="Anthropic News" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_news.xml" htmlUrl="https://www.anthropic.com/news" category="博客" publisher="Anthropic" publisherUrl="https://www.anthropic.com/news" />
+      <outline text="Anthropic Engineering" title="Anthropic Engineering" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_anthropic_engineering.xml" htmlUrl="https://www.anthropic.com/engineering" category="博客" publisher="Anthropic" publisherUrl="https://www.anthropic.com/news" />
+      <outline text="Claude Code Changelog" title="Claude Code Changelog" type="rss" xmlUrl="https://code.claude.com/docs/en/changelog/rss.xml" htmlUrl="https://code.claude.com/docs/en/changelog" category="博客" publisher="Anthropic" publisherUrl="https://www.anthropic.com/news" />
+      <outline text="OpenAI News" title="OpenAI News" type="rss" xmlUrl="https://openai.com/news/rss.xml" htmlUrl="https://openai.com/news/" category="博客" publisher="OpenAI" />
+      <outline text="Google AI Blog" title="Google AI Blog" type="rss" xmlUrl="https://blog.google/innovation-and-ai/technology/ai/rss/" htmlUrl="https://blog.google/innovation-and-ai/technology/ai/" category="博客" publisher="Google" publisherUrl="https://blog.google/innovation-and-ai/technology/ai/" />
+      <outline text="Meta AI Blog" title="Meta AI Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_meta_ai.xml" htmlUrl="https://ai.meta.com/blog/" category="博客" publisher="Meta" publisherUrl="https://ai.meta.com/blog/" />
+      <outline text="Meta AI Blog（RSSHub 备源）" title="Meta AI Blog（RSSHub 备源）" type="rss" xmlUrl="https://rsshub.bestblogs.dev/meta/ai/blog" htmlUrl="https://ai.meta.com/blog/" category="博客" publisher="Meta" publisherUrl="https://ai.meta.com/blog/" role="backup" />
+      <outline text="Engineering at Meta" title="Engineering at Meta" type="rss" xmlUrl="https://engineering.fb.com/feed/" htmlUrl="https://engineering.fb.com/" category="博客" publisher="Meta" publisherUrl="https://ai.meta.com/blog/" />
+      <outline text="xAI News" title="xAI News" type="rss" xmlUrl="https://raw.githubusercontent.com/0xSMW/rss-feeds/main/feeds/feed_xai_news.xml" htmlUrl="https://x.ai/news" category="博客" publisher="xAI" publisherUrl="https://x.ai/news" />
+      <outline text="xAI News（Olshansk 备源）" title="xAI News（Olshansk 备源）" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_xainews.xml" htmlUrl="https://x.ai/news" category="博客" publisher="xAI" publisherUrl="https://x.ai/news" role="backup" />
+      <outline text="xAI News（XGo @xai 备源）" title="xAI News（XGo @xai 备源）" type="rss" xmlUrl="https://api.xgo.ing/rss/user/3953aa71e87a422eb9d7bf6ff1c7c43e" htmlUrl="https://x.ai/news" category="博客" publisher="xAI" publisherUrl="https://x.ai/news" role="backup" />
+      <outline text="ManusAI" title="ManusAI" type="rss" xmlUrl="https://api.xgo.ing/rss/user/320181c4651a41a08015946b55f704ab" htmlUrl="https://manus.im/blog" category="博客" publisher="Manus" />
+      <outline text="Cursor Blog" title="Cursor Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_cursor.xml" htmlUrl="https://cursor.com/blog" category="博客" publisher="Cursor" />
+      <outline text="Devin Blog" title="Devin Blog" type="rss" xmlUrl="https://raw.githubusercontent.com/Olshansk/rss-feeds/main/feeds/feed_windsurf_blog.xml" htmlUrl="https://devin.ai/blog" category="博客" publisher="Cognition" publisherUrl="https://cognition.com/blog" />
+      <outline text="DeepSeek 深度求索" title="DeepSeek 深度求索" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1709da4f538d4ce4fb6d7a8ba1a5a1c297919601.xml" category="博客" publisher="DeepSeek" htmlUrl="https://www.deepseek.com/" publisherUrl="https://www.deepseek.com/" />
+      <outline text="DeepSeek Harness" title="DeepSeek Harness" type="rss" xmlUrl="https://raw.githubusercontent.com/VirusPC/ai-x-feeds/main/feeds/DeepSeekHarness.xml" htmlUrl="https://x.com/DeepSeekHarness" category="博客" publisher="DeepSeek" publisherUrl="https://www.deepseek.com/" />
+      <outline text="Cognition" title="Cognition" type="rss" xmlUrl="https://api.xgo.ing/rss/user/4cc14cbd15c74e189d537c415369e1a7" htmlUrl="https://cognition.com/blog" category="博客" publisher="Cognition" publisherUrl="https://cognition.com/blog" />
+      <outline text="LangChain Blog" title="LangChain Blog" type="rss" xmlUrl="https://www.langchain.com/blog/rss.xml" htmlUrl="https://www.langchain.com/blog" category="博客" publisher="LangChain" />
+      <outline text="Qwen" title="Qwen" type="rss" xmlUrl="https://api.xgo.ing/rss/user/80032d016d654eb4afe741ff34b7643d" htmlUrl="https://qwen.ai/research" category="博客" publisher="千问" publisherUrl="https://qwen.ai/" />
+      <outline text="Hugging Face Blog" title="Hugging Face Blog" type="rss" xmlUrl="https://huggingface.co/blog/feed.xml" htmlUrl="https://huggingface.co/blog" category="博客" publisher="Hugging Face" />
+      <outline text="AWS Machine Learning Blog" title="AWS Machine Learning Blog" type="rss" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/" htmlUrl="https://aws.amazon.com/blogs/machine-learning/" category="博客" publisher="AWS" />
+      <outline text="sankalp's blog" title="sankalp's blog" type="rss" xmlUrl="https://sankalp.bearblog.dev/feed/" htmlUrl="https://sankalp.bearblog.dev/" category="博客" publisher="sankalp" />
+      <outline text="Amp News" title="Amp News" type="rss" xmlUrl="https://ampcode.com/news.rss" htmlUrl="https://ampcode.com/chronicle" category="博客" publisher="Amp" />
+      <outline text="Lovable Blog" title="Lovable Blog" type="rss" xmlUrl="https://lovable.dev/blog/rss.xml" htmlUrl="https://lovable.dev/blog" category="博客" publisher="Lovable" />
+      <outline text="Kiro Blog" title="Kiro Blog" type="rss" xmlUrl="https://kiro.dev/blog/feed.rss" htmlUrl="https://kiro.dev/blog/" category="博客" publisher="Kiro" />
+      <outline text="philschmid.de" title="philschmid.de" type="rss" xmlUrl="https://www.philschmid.de/rss" htmlUrl="https://www.philschmid.de/" category="博客" publisher="philschmid" />
+      <outline text="goose Blog" title="goose Blog" type="rss" xmlUrl="https://goose-docs.ai/blog/rss.xml" htmlUrl="https://goose-docs.ai/blog/" category="博客" publisher="goose" />
+      <outline text="Zed Blog" title="Zed Blog" type="rss" xmlUrl="https://zed.dev/blog.rss" htmlUrl="https://zed.dev/blog" category="博客" publisher="Zed" />
+      <outline text="CodeRabbit Blog" title="CodeRabbit Blog" type="rss" xmlUrl="https://www.coderabbit.ai/feed" htmlUrl="https://www.coderabbit.ai/blog" category="博客" publisher="CodeRabbit" />
+      <outline text="Warp Blog" title="Warp Blog" type="rss" xmlUrl="https://www.warp.dev/blog/feed.xml" htmlUrl="https://www.warp.dev/blog" category="博客" publisher="Warp" />
+      <outline text="月之暗面 Kimi" title="月之暗面 Kimi" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c5c43d4bc17bae656763859ed0903bb6314ec6fe.xml" htmlUrl="https://www.kimi.com/blog/" category="博客" publisher="月之暗面" />
+      <outline text="GLM" title="GLM" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/433d2134dca54d80804daf32e8be546155be3300.xml" htmlUrl="https://www.zhipuai.cn/zh/research" category="博客" publisher="智谱" />
+      <outline text="StepFun" title="StepFun" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/3e2714d06aa36142e8ed6b3f4e5cf9090a069dd2.xml" htmlUrl="https://www.stepfun.com/news" category="博客" publisher="StepFun" />
+      <outline text="Massively Parallel Procrastination" title="Massively Parallel Procrastination" type="rss" xmlUrl="https://blog.fsck.com/feed/rss.xml" htmlUrl="https://blog.fsck.com/" category="博客" publisher="Massively Parallel Procrastination" />
+      <outline text="宝玉的分享" title="宝玉的分享" type="rss" xmlUrl="https://baoyu.io/feed.xml" htmlUrl="https://baoyu.io/" category="博客" publisher="宝玉" />
+      <outline text="Google Antigravity Blog" title="Google Antigravity Blog" type="rss" xmlUrl="https://antigravity.google/blog/rss.xml" htmlUrl="https://antigravity.google/blog" category="博客" publisher="Google" publisherUrl="https://blog.google/innovation-and-ai/technology/ai/" />
+      <outline text="Jason Liu" title="Jason Liu" type="rss" xmlUrl="https://jxnl.co/feed_rss_created.xml" htmlUrl="https://jxnl.co/writing/" category="博客" publisher="Jason Liu" />
+      <outline text="Armin Ronacher's Thoughts and Writings" title="Armin Ronacher's Thoughts and Writings" type="rss" xmlUrl="https://lucumr.pocoo.org/feed.atom" htmlUrl="https://lucumr.pocoo.org/" category="博客" publisher="Armin Ronacher" />
+      <outline text="MiniMax 稀宇科技" title="MiniMax 稀宇科技" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/00306b171f754d463b28cf83f3ba086ad009b430.xml" htmlUrl="https://www.minimax.io/blog" category="博客" publisher="MiniMax" />
     </outline>
-    <outline text="国内技术团队" title="国内技术团队">
-      <outline text="字节跳动技术团队" title="字节跳动技术团队" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml"/>
-      <outline text="百度Geek说" title="百度Geek说" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml"/>
-      <outline text="大淘宝技术" title="大淘宝技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml"/>
-      <outline text="快手技术" title="快手技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml"/>
-      <outline text="支付宝体验科技" title="支付宝体验科技" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml"/>
-      <outline text="美团技术团队" title="美团技术团队" type="rss" xmlUrl="https://tech.meituan.com/feed/" htmlUrl="https://tech.meituan.com/"/>
-      <outline text="千问 AI 平台" title="千问 AI 平台" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml"/>
-      <outline text="腾讯技术工程" title="腾讯技术工程" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml"/>
-      <outline text="阿里技术" title="阿里技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml"/>
+    <outline text="国内互联网" title="国内互联网">
+      <outline text="字节跳动技术团队" title="字节跳动技术团队" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/d3a9e4d6f125cc98d1691dbc30cd97fec7ae2d03.xml" category="国内互联网" publisher="字节跳动" htmlUrl="https://www.bytedance.com/" />
+      <outline text="百度Geek说" title="百度Geek说" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6cc437d76f9dc4f7c35011c72e471e33e7bdd384.xml" category="国内互联网" publisher="百度" htmlUrl="https://cloud.baidu.com/" />
+      <outline text="大淘宝技术" title="大淘宝技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/26fef2307bebc8673703f7e726982d8f56c9a219.xml" category="国内互联网" publisher="淘宝" htmlUrl="https://developer.alibaba.com/" />
+      <outline text="快手技术" title="快手技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/c4cc10d2e32a5fa12927581ae581a336f399fe75.xml" category="国内互联网" publisher="快手" htmlUrl="https://developer.kuaishou.com/" />
+      <outline text="支付宝体验科技" title="支付宝体验科技" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/666d6e30c773dd35ecc593866bab680db95b27f2.xml" category="国内互联网" publisher="支付宝" htmlUrl="https://open.alipay.com/" />
+      <outline text="美团技术团队" title="美团技术团队" type="rss" xmlUrl="https://tech.meituan.com/feed/" htmlUrl="https://tech.meituan.com/" category="国内互联网" publisher="美团" />
+      <outline text="千问 AI 平台" title="千问 AI 平台" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/4ebee6222ae08705b8aabc9116f0defbcb6b17c6.xml" category="国内互联网" publisher="千问" htmlUrl="https://qwen.ai/" publisherUrl="https://qwen.ai/" />
+      <outline text="腾讯技术工程" title="腾讯技术工程" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/1e0ac39f8952b2e7f0807313cf2633d25078a171.xml" category="国内互联网" publisher="腾讯" htmlUrl="https://cloud.tencent.com/developer" />
+      <outline text="阿里技术" title="阿里技术" type="rss" xmlUrl="https://wechat2rss.bestblogs.dev/feed/6535a444e9651fecae3383363be7589acdebe2b6.xml" category="国内互联网" publisher="阿里" htmlUrl="https://developer.aliyun.com/" />
     </outline>
     <outline text="GitHub Trending" title="GitHub Trending">
-      <outline text="GitHub Trending（每周 / 全部）" title="GitHub Trending（每周 / 全部）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/all.xml" htmlUrl="https://github.com/trending?since=weekly"/>
-      <outline text="GitHub Trending（每周 / Python）" title="GitHub Trending（每周 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml" htmlUrl="https://github.com/trending/python?since=weekly"/>
-      <outline text="GitHub Trending（每周 / TypeScript）" title="GitHub Trending（每周 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=weekly"/>
+      <outline text="GitHub Trending（每周 / 全部）" title="GitHub Trending（每周 / 全部）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/all.xml" htmlUrl="https://github.com/trending?since=weekly" category="GitHub Trending" publisher="GitHub" publisherUrl="https://github.com/trending?since=weekly" />
+      <outline text="GitHub Trending（每周 / Python）" title="GitHub Trending（每周 / Python）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/python.xml" htmlUrl="https://github.com/trending/python?since=weekly" category="GitHub Trending" publisher="GitHub" publisherUrl="https://github.com/trending?since=weekly" />
+      <outline text="GitHub Trending（每周 / TypeScript）" title="GitHub Trending（每周 / TypeScript）" type="rss" xmlUrl="https://mshibanami.github.io/GitHubTrendingRSS/weekly/typescript.xml" htmlUrl="https://github.com/trending/typescript?since=weekly" category="GitHub Trending" publisher="GitHub" publisherUrl="https://github.com/trending?since=weekly" />
     </outline>
   </body>
 </opml>
