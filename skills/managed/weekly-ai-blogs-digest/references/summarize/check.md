@@ -1,18 +1,18 @@
 # 整页校验
 
-清洗校验通过，三路卡片和关键词映射都写完之后，跑整页校验。通过才算 `summary/` 写完：
+清洗校验通过，三路卡片、关键词映射和本周总结都写完之后，跑整页校验。通过才算 `summary/` 写完：
 
 ```bash
 python3 scripts/summarize/check/validate.py issues/<生成日>
 ```
 
-在本 skill 目录执行。清洗校验没通过时，这条命令直接失败。脚本按 [数据存储](../../SKILL.md#数据存储) 和 `schemas/summary/` 检查 `summary/index.json`、条目来源是否回指 `cleaned/`，以及关键词映射里的 ID 是否都存在。
+在本 skill 目录执行。清洗校验没通过时，这条命令直接失败。脚本按 [数据存储](../../SKILL.md#数据存储) 和 `schemas/summary/` 检查 `summary/index.json`、条目来源是否回指 `cleaned/`、关键词映射里的 ID，以及 `summary/overview.json`。
 
-三路卡片和关键词映射都在之后，写 `summary/index.json`。它只排章节和 ID，不另写一套摘要。三路内容必须还在，关键词不能替换它们。缺了内容 ID 的映射不能用旧稿补上。
+三路卡片、关键词和本周总结都在之后，写 `summary/index.json`。它只排章节和 ID，不另写一套摘要。三路内容必须还在，关键词和本周总结不能替换它们。缺了内容 ID 的映射不能用旧稿补上。`overview.json` 不能用缺口代替。
 
 章节顺序：
 
-1. 本周关键词，引用 `summary/keywords.json`。没有词就整章标缺口，不在这里重算。
+1. 本周概览。词云引用 `summary/keywords.json`，总结引用 `summary/overview.json`。没有词就在 `gaps.json` 标明 `keywords.json`，这一章仍保留，不在这里重算词。没有 `overview.json` 不能通过。
 2. 模型进展：先 `summary/models/boards/`，再模型卡片 ID。
 3. 项目开源：项目卡片 ID。标题下面不要写概括前五名字的介绍句。
 4. 精选文章：按国内模型厂、国外模型厂、国内非模型厂、国外非模型厂分组。空组不写。组内公司顺序用 `site/src/lib/ai-news-category-filter.mjs`。

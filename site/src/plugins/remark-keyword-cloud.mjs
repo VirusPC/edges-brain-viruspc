@@ -6,7 +6,8 @@ import { keywordAlt, loadKeywordWords } from '../lib/keyword-snapshot.mjs';
 import { cloudHtml } from './rehype-keyword-cloud.mjs';
 
 /**
- * Draw 「一、本周关键词」 from the snapshot's keywords.json.
+ * Draw the word cloud under 「一、本周概览」 from the snapshot's keywords.json.
+ * The overview list that follows the heading stays in place.
  * The digest comment is the fallback copy. No SVG or PNG is required.
  * Light and dark stay in CSS; the SVG itself is transparent.
  *
@@ -40,10 +41,12 @@ function keywordRange(children) {
   let start = -1;
   for (let index = 0; index < children.length; index += 1) {
     const node = children[index];
+    if (start !== -1 && node?.type === 'html' && String(node.value || '').includes('weekly-overview')) {
+      return { start, end: index };
+    }
     if (node?.type !== 'heading' || node.depth !== 2) continue;
-    const text = plainText(node);
     if (start === -1) {
-      if (text === '一、本周关键词') start = index;
+      if (plainText(node) === '一、本周概览') start = index;
       continue;
     }
     return { start, end: index };

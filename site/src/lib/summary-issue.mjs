@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { entryAnchor } from './entry-anchor.mjs';
+import { overviewListHtml } from './overview.mjs';
 import { selectedArticlesRemarkHtml } from '../plugins/remark-coverage-window.mjs';
 
 /**
@@ -56,6 +58,10 @@ export function withArticlesCoverage(markdown, coverage) {
 export function composeIssueMarkdown(issueDir) {
   const indexPath = path.join(issueDir, 'summary', 'index.json');
   if (!fs.existsSync(indexPath)) return null;
+  const overviewPath = path.join(issueDir, 'summary', 'overview.json');
+  if (!fs.existsSync(overviewPath)) {
+    throw new Error(`缺少 summary/overview.json，站点不能构建 ${path.basename(issueDir)}`);
+  }
   const index = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
   const markdown = composeFromChapters(issueDir, index);
   if (markdown == null) return null;
@@ -63,7 +69,7 @@ export function composeIssueMarkdown(issueDir) {
 }
 
 const CHAPTER_NUMBERS = {
-  本周关键词: '一',
+  本周概览: '一',
   模型进展: '二',
   项目开源: '三',
   精选文章: '四',
@@ -114,6 +120,7 @@ function composeFromChapters(issueDir, index) {
     const number = CHAPTER_NUMBERS[chapter?.title];
     if (!number || !chapter?.title) return null;
     parts.push(`## ${number}、${chapter.title}\n\n`);
+    if (chapter.title === '本周概览') parts.push(readOverview(issueDir));
     if (chapter.title === '模型进展') {
       const boards = chapterBoards(issueDate, chapter, cards);
       if (boards == null) return null;
@@ -141,7 +148,7 @@ function pushCards(parts, cards, ids) {
   for (const id of ids || []) {
     const card = cards.get(id);
     if (!card || typeof card.text !== 'string') return false;
-    parts.push(`${card.text.trimEnd()}\n\n`);
+    parts.push(`<!--entry-anchor:${entryAnchor(id)}-->\n\n${card.text.trimEnd()}\n\n`);
   }
   return true;
 }
@@ -196,6 +203,20 @@ function windowLine(index, issueDate) {
 /**
  * @param {string} issueDir
  */
+function readOverview(issueDir) {
+  const file = path.join(issueDir, 'summary', 'overview.json');
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    throw new Error(`summary/overview.json 无法解析：${path.basename(issueDir)}`);
+  }
+  if (!Array.isArray(data?.themes) || data.themes.length < 3) {
+    throw new Error(`summary/overview.json 没有本周总结：${path.basename(issueDir)}`);
+  }
+  return overviewListHtml(data);
+}
+
 function loadSummaryCards(issueDir) {
   const map = new Map();
   const walk = (dir) => {

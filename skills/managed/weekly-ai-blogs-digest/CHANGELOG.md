@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-11-23
+
+### Added
+
+- 总结阶段在关键词之后新增 `summary/overview.json`。Agent 按 `references/summarize/overview.md` 的提示词写 3 到 5 条主线，脚本只校验。正文 `text` 与引用 `refs`（`{id, label}`）分开存。
+- 第一章在 `summary/index.json` 里改名为「本周概览」。词云仍来自 `keywords.json`，总结来自 `overview.json`。某一期没有 `overview.json` 时，校验不通过，站点构建也失败。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.8` 先不打，留给维护者。
+
 ## [0.0.7] - 2026-11-23
 
 ### Changed

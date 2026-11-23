@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { entryAnchor } from '../src/lib/entry-anchor.mjs';
 import { articlesCoverageNote, composeIssueMarkdown, withArticlesCoverage } from '../src/lib/summary-issue.mjs';
 
 const chapter = '## 三、项目开源\n\n一段。\n\n## 四、精选文章\n\n### 国内模型厂\n\n#### 一篇\n';
@@ -40,11 +41,19 @@ test('an issue without body slices is composed from chapters and card text', () 
     highlights: ['Example'],
     arena_publish_date: null,
   }));
+  fs.writeFileSync(path.join(root, 'summary', 'overview.json'), JSON.stringify({
+    skill: { name: 'weekly-ai-blogs-digest', version: '0.0.8' },
+    themes: [
+      { kind: 'model', text: 'Example 写进这一期。', refs: [{ id: 'Example', label: 'Example' }] },
+      { kind: 'other', text: '一篇说明了变化。', refs: [{ id: article, label: '一篇' }] },
+      { kind: 'other', text: '另一条主线也在。', refs: [{ id: article, label: '另一条' }] },
+    ],
+  }));
   fs.writeFileSync(path.join(root, 'summary', 'index.json'), JSON.stringify({
     articles_coverage: { raw: 2, selected: 1 },
     window: { issue: '2026-11-13', since: '2026-11-06', until: '2026-11-12' },
     chapters: [
-      { title: '本周关键词' },
+      { title: '本周概览' },
       { title: '模型进展', boards: ['Artificial Analysis'], cards: [] },
       { title: '精选文章', groups: [{ title: '国外模型厂', cards: [article] }] },
       { title: '精选推文', cards: [] },
@@ -52,10 +61,13 @@ test('an issue without body slices is composed from chapters and card text', () 
   }));
   const markdown = composeIssueMarkdown(root);
   assert.match(markdown, /^覆盖窗口：2026-11-06 00:00:00 至 2026-11-12 23:59:59（UTC；生成日 2026-11-13，不含当天）。/);
-  assert.match(markdown, /## 一、本周关键词\n\n## 二、模型进展\n\n### Artificial Analysis\n\n!\[Artificial Analysis Intelligence Index Top 15，2026-11-13\]\(aa-intelligence-top15-2026-11-13-marked\.png\)/);
+  assert.match(markdown, /## 一、本周概览\n\n<ol class="weekly-overview">[\s\S]*Example<\/a> 写进这一期。[\s\S]*<\/ol>\n\n## 二、模型进展\n\n### Artificial Analysis\n\n!\[Artificial Analysis Intelligence Index Top 15，2026-11-13\]\(aa-intelligence-top15-2026-11-13-marked\.png\)/);
+  assert.match(markdown, new RegExp(`<!--entry-anchor:${entryAnchor(article)}-->`));
+  fs.rmSync(path.join(root, 'summary', 'overview.json'));
+  assert.throws(() => composeIssueMarkdown(root), /缺少 summary\/overview.json/);
   assert.match(markdown, /这张榜最前面是新模型。/);
   assert.match(markdown, /红圈：Example。/);
-  assert.match(markdown, /## 四、精选文章\n\n<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。[\s\S]*### 国外模型厂\n\n#### \[一篇\]\(https:\/\/example.com\/post\)/);
+  assert.match(markdown, /## 四、精选文章\n\n<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。[\s\S]*### 国外模型厂\n\n<!--entry-anchor:[^>]+-->\n\n#### \[一篇\]\(https:\/\/example.com\/post\)/);
   assert.match(markdown, /## 五、精选推文\n/);
   assert.match(markdown, /<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。/);
 });

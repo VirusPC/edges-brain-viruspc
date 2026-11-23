@@ -32,6 +32,8 @@ def validate(instance: Any, schema: dict, path: str = "$") -> list[str]:
     if isinstance(instance, str):
         if "minLength" in schema and len(instance) < schema["minLength"]:
             fail(f"长度至少 {schema['minLength']}")
+        if "maxLength" in schema and len(instance) > schema["maxLength"]:
+            fail(f"长度至多 {schema['maxLength']}")
         if "pattern" in schema and re.fullmatch(schema["pattern"], instance) is None:
             fail(f"不符合 {schema['pattern']}")
 

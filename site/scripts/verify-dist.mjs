@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { entryAnchor } from '../src/lib/entry-anchor.mjs';
 import { giscusReady } from '../src/lib/reader-feedback.mjs';
 import { FIXTURE_ID, listDatedNoteDirs } from '../src/lib/select.mjs';
 import { buildProjectCatalog, listProjectDocuments } from '../src/lib/projects.mjs';
@@ -55,7 +56,7 @@ function summarySources(issueDate) {
 function assertSourcesCard(html, issueDate) {
   const start = html.indexOf('class="info-card ai-news-sources"');
   const note = html.indexOf('class="info-card"');
-  const end = html.indexOf('id="一本周关键词"');
+  const end = html.indexOf('id="一本周概览"');
   assert.ok(note >= 0 && start > note && end > start, `${issueDate} source card is not under the top note`);
   const card = html.slice(start, end);
   const sources = summarySources(issueDate);
@@ -323,7 +324,7 @@ assert.match(latestIssue, /10-30 08:00 → 11-06 07:59/);
 assert.doesNotMatch(latestIssue, /〇、薅羊毛/);
 const latestToc = latestIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(latestToc, 'latest issue is missing the chapter toc');
-for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章', '五、精选推文', '六、精选播客', '国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
+for (const heading of ['一、本周概览', '二、模型进展', '三、项目开源', '四、精选文章', '五、精选推文', '六、精选播客', '国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
   assert.match(latestToc[0], new RegExp(heading));
 }
 assert.doesNotMatch(latestToc[0], /SWE-2 Flash|####|is-current|&lt;|&#x3C;|data-cat/);
@@ -481,6 +482,8 @@ assert.match(backfillIssue, /<h1>\s*2026-10-23 AI 资讯\s*<\/h1>/);
 assert.doesNotMatch(backfillIssue, /旧版/);
 assert.match(backfillIssue, /10-16 08:00 → 10-23 07:59/);
 assert.doesNotMatch(backfillIssue, /一、本周关键词|Partner Network|class="keyword-cloud"/);
+assert.match(backfillIssue, /<ol class="weekly-overview">/);
+assert.match(backfillIssue, /一、本周概览/);
 assert.match(backfillIssue, /五、精选推文/);
 assert.doesNotMatch(backfillIssue, /文章总结列表/);
 const backfillToc = backfillIssue.match(/<nav class="toc"[\s\S]*?<\/nav>/);
@@ -578,9 +581,16 @@ const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(toc20, '2026-11-20 is missing the chapter toc');
 assert.doesNotMatch(issue20, /薅羊毛/);
 assert.doesNotMatch(toc20[0], /薅羊毛/);
-for (const heading of ['一、本周关键词', '二、模型进展', '三、项目开源', '四、精选文章']) {
+for (const heading of ['一、本周概览', '二、模型进展', '三、项目开源', '四、精选文章']) {
   assert.match(toc20[0], new RegExp(heading));
 }
+const cloud20 = issue20.indexOf('class="keyword-cloud"');
+const overviewAt = issue20.indexOf('class="weekly-overview"');
+assert.ok(cloud20 >= 0 && overviewAt > cloud20, '2026-11-20 puts the word cloud above the overview list');
+assert.doesNotMatch(issue20.slice(overviewAt, issue20.indexOf('二、模型进展', overviewAt)), /本周主线|class="tag"/);
+const neon = entryAnchor('Gemini 4 Neon');
+assert.match(issue20, new RegExp(`href="#${neon}"`));
+assert.match(issue20, new RegExp(`id="${neon}"`));
 for (const heading of ['国内模型厂', '国外模型厂', '国内非模型厂', '国外非模型厂']) {
   assert.match(toc20[0], new RegExp(`>${heading}<`));
 }

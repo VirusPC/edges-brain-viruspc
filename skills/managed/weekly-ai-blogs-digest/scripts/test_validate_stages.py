@@ -172,9 +172,32 @@ def write_issue(root: Path) -> Path:
         {"keywords": [{"name": "Example", "weight": 1.4, "targets": [ARTICLE, BOARD_ITEM]}]},
     )
     write_json(
+        summary / "overview.json",
+        {
+            "skill": {"name": SKILL, "version": "0.0.8"},
+            "themes": [
+                {
+                    "kind": "model",
+                    "text": "Example Model 写进这一期。",
+                    "refs": [{"id": MODEL, "label": "Example Model"}],
+                },
+                {
+                    "kind": "other",
+                    "text": "一篇说明了产品变化。",
+                    "refs": [{"id": ARTICLE, "label": "一篇"}],
+                },
+                {
+                    "kind": "other",
+                    "text": "example/demo 进入周榜。",
+                    "refs": [{"id": REPO, "label": "example/demo"}],
+                },
+            ],
+        },
+    )
+    write_json(
         summary / "index.json",
         {
-            "skill": {"name": SKILL, "version": "0.0.7"},
+            "skill": {"name": SKILL, "version": "0.0.8"},
             "routine": {
                 "repo": "VirusPC/edges-brain-viruspc",
                 "commit": "a" * 40,
@@ -184,7 +207,7 @@ def write_issue(root: Path) -> Path:
             "window": {"issue": ISSUE, "since": "2026-11-13", "until": "2026-11-19"},
             "sources": sources_document(issue),
             "chapters": [
-                {"title": "本周关键词"},
+                {"title": "本周概览"},
                 {"title": "模型进展", "boards": [BOARD], "cards": [MODEL]},
                 {"title": "项目开源", "cards": [REPO]},
                 {"title": "精选文章", "groups": [{"title": "国外非模型厂", "cards": [ARTICLE]}]},

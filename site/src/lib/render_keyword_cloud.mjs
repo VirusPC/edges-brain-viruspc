@@ -2,7 +2,7 @@
 /**
  * 把周报关键词画成透明 SVG，再用同一套字体导出 PNG。
  *
- * 输入是 JSON [{word, weight}]，或周报 markdown 里「一、本周关键词」章。
+ * 输入是 JSON [{word, weight}]，或周报 markdown 里「一、本周概览」章。
  * 章内若有 <!-- keywords-cloud ... -->，其中的 JSON 数组优先。
  * 已有 weight 就直接用；否则按 mentions、sources 算热度。种类分不进字号。
  * theme: true 的词是清洗时写好的主题，渲染只消费这个字段。
@@ -177,8 +177,8 @@ function wordsFromJson(file) {
 }
 
 function sectionText(markdown) {
-  const match = /^##[ \t]*一、本周关键词[ \t]*$/m.exec(markdown);
-  if (!match) fail("找不到「一、本周关键词」");
+  const match = /^##[ \t]*一、本周概览[ \t]*$/m.exec(markdown);
+  if (!match) fail("找不到「一、本周概览」");
   const rest = markdown.slice(match.index + match[0].length);
   const next = rest.search(/^##[ \t]+\S/m);
   return next === -1 ? rest : rest.slice(0, next);
@@ -202,7 +202,7 @@ export function wordsFromMarkdown(file) {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line && !line.startsWith("![") && !/^<br\s*\/?>$/i.test(line) && !/^[-*]{3,}$/.test(line));
-  if (!lines.length) fail("「本周关键词」里没有可画的词");
+  if (!lines.length) fail("「本周概览」里没有可画的词");
   return lines.map((line) => normalizeWord({ word: line.replace(/^[-*]\s+/, ""), weight: 1 }));
 }
 

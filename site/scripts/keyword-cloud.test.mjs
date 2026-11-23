@@ -157,7 +157,10 @@ test('snapshot words lay out twice the same way when the bold font is installed'
     return;
   }
   const body = fs.readFileSync(path.join(repoRoot, 'ai-news/2026-11-20-ai-news.md'), 'utf8');
-  const words = cloud.wordsFromMarkdown(path.join(repoRoot, 'ai-news/2026-11-20-ai-news.md'));
+  const comment = body.match(/<!--\s*keywords-cloud\s*[\s\S]*?-->/)[0];
+  const cloudFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'kw-md-')), '2026-11-20-ai-news.md');
+  fs.writeFileSync(cloudFile, `## 一、本周概览\n\n${comment}\n\n## 二、模型进展\n`);
+  const words = cloud.wordsFromMarkdown(cloudFile);
   assert.equal(words.length, JSON.parse(body.match(/<!--\s*keywords-cloud\s*([\s\S]*?)-->/)[1]).length);
   const first = cloud.renderKeywordCloudSvg(words, font, 1);
   const second = cloud.renderKeywordCloudSvg(words, font, 1);
@@ -179,7 +182,7 @@ test('a themed digest comment is the published word list', () => {
   fs.writeFileSync(path.join(dir, 'issues', issue, 'summary', 'keywords.json'), JSON.stringify({
     keywords: [{ name: 'Gemini 4 Neon', weight: 4.7, targets: ['https://example.com/a'] }],
   }));
-  const markdown = `## 一、本周关键词
+  const markdown = `## 一、本周概览
 
 <!-- keywords-cloud
 [{"word":"常驻 Agent","weight":4.2,"theme":true},{"word":"Gemini 4 Neon","weight":4.2}]

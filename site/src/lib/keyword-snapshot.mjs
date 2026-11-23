@@ -89,7 +89,7 @@ export function keywordAlt(words) {
  * @param {string} markdown
  */
 function keywordSection(markdown) {
-  const match = /^##[ \t]*一、本周关键词[ \t]*$/m.exec(String(markdown || ''));
+  const match = /^##[ \t]*一、本周概览[ \t]*$/m.exec(String(markdown || ''));
   if (!match) return '';
   const rest = markdown.slice(match.index + match[0].length);
   const next = rest.search(/^##[ \t]+\S/m);

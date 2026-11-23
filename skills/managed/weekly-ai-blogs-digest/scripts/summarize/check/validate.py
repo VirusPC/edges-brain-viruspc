@@ -18,9 +18,10 @@ from summarize.merge.sources import CATEGORIES, sources_document, stamp_map  # n
 from summarize.merge.validate import validate as validate_merge  # noqa: E402
 from summarize.merge.write_index import skill_version  # noqa: E402
 from summarize.models.validate import validate as validate_models  # noqa: E402
+from summarize.overview.validate import validate as validate_overview  # noqa: E402
 from summarize.projects.validate import validate as validate_projects  # noqa: E402
 
-CHAPTERS = ["本周关键词", "模型进展", "项目开源", "精选文章", "精选推文", "精选播客"]
+CHAPTERS = ["本周概览", "模型进展", "项目开源", "精选文章", "精选推文", "精选播客"]
 GROUP_ORDER = ["国内模型厂", "国外模型厂", "国内非模型厂", "国外非模型厂"]
 
 
@@ -47,6 +48,8 @@ def validate(issue: Path) -> list[str]:
     known = set(articles) | set(projects) | set(models) | set(board_item_ids)
     keyword_errors, keywords_present = validate_keywords(issue, gaps, known)
     errors.extend(keyword_errors)
+    overview_errors, _overview_warnings = validate_overview(issue)
+    errors.extend(overview_errors)
     errors.extend(_index(issue, set(articles), set(projects), set(models), board_ids, keywords_present))
     return errors
 
@@ -57,7 +60,7 @@ def _index(
     projects: set[str],
     models: set[str],
     board_ids: list[str],
-    keywords_present: bool,
+    _keywords_present: bool,
 ) -> list[str]:
     path = issue / "summary" / "index.json"
     if not path.is_file():
@@ -109,8 +112,6 @@ def _index(
     chapters = data.get("chapters") or []
     titles = [chapter.get("title") for chapter in chapters]
     expected = list(CHAPTERS)
-    if not keywords_present:
-        expected.remove("本周关键词")
     if titles != expected:
         errors.append(
             "summary/index.json 章节顺序应为 "
@@ -120,8 +121,9 @@ def _index(
         )
         return errors
     by = {chapter["title"]: chapter for chapter in chapters}
-    if keywords_present and (by["本周关键词"].get("cards") or by["本周关键词"].get("boards") or by["本周关键词"].get("groups")):
-        errors.append("本周关键词只引用 keywords.json，不在 index 里列卡片")
+    overview = by["本周概览"]
+    if overview.get("cards") or overview.get("boards") or overview.get("groups"):
+        errors.append("本周概览不在 index 里列卡片")
     model_chapter = by["模型进展"]
     if "boards" not in model_chapter or "cards" not in model_chapter:
         errors.append("模型进展要先有 boards，再有卡片 ID")

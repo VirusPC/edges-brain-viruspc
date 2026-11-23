@@ -1,7 +1,7 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
-version: 0.0.7
+version: 0.0.8
 ---
 
 # AI 资讯周报
@@ -39,7 +39,7 @@ flowchart LR
 
 - [数据准备](references/prepare/prepare.md)：窗口、订阅、补录和三路原始抓取，落入 `raw/`。
 - [数据清洗](references/clean/clean.md)：去重、规范链接、核验事实和榜单数字，落入 `cleaned/`。不做选文。
-- [数据总结](references/summarize/summarize.md)：三路展示内容并行写完后，再提炼关键词并做整页校验，落入 `summary/`。
+- [数据总结](references/summarize/summarize.md)：三路展示内容并行写完后，再提炼关键词、撰写本周总结并做整页校验，落入 `summary/`。
 
 每期自包含。对照上一期时，锁定上一期的文件和版本，不建跨期共享目录，也不把上一期文件复制进本期。
 
@@ -90,6 +90,7 @@ issues/YYYY-MM-DD/
     gaps.json
     index.json
     keywords.json
+    overview.json
     articles/
       {id}.json
     projects/

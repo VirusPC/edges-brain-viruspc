@@ -785,6 +785,37 @@ body.is-post.has-toc .sidenote {
 
 .prose p, .prose ul, .prose ol, .prose blockquote, .prose pre, .prose table { margin: 0 0 1rem; }
 
+.prose ol.weekly-overview {
+  font-size: 1em;
+  line-height: 1.7;
+  padding-left: 1.35em;
+  margin: 0.25rem 0 1rem;
+}
+
+.prose ol.weekly-overview li {
+  margin: 0.35rem 0;
+  padding-left: 0.15em;
+}
+
+.prose ol.weekly-overview a {
+  color: var(--prose-link);
+  text-underline-offset: 0.15em;
+}
+
+.entry-flash {
+  animation: entry-flash 2s ease-out;
+  border-radius: var(--ai-news-radius);
+}
+
+@keyframes entry-flash {
+  0% { background-color: color-mix(in srgb, var(--note) 24%, var(--paper)); }
+  100% { background-color: transparent; }
+}
+
+@media (max-width: 560px) {
+  .prose ol.weekly-overview { padding-left: 1.15em; }
+}
+
 .prose h2, .prose h3 {
   font-family: inherit;
   letter-spacing: 0;

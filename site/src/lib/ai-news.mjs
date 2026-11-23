@@ -18,11 +18,11 @@ export function listAiNewsFiles(aiNewsRoot) {
 }
 
 /**
- * Current issues have 「一、本周关键词」, or still use 「二、模型进展」 / 「四、精选文章」 when that chapter is omitted. Older flat digests do not.
+ * Current issues have 「一、本周概览」, or still use 「二、模型进展」 / 「四、精选文章」 when that chapter is omitted. Older flat digests do not.
  * @param {string} body
  */
 export function isLegacyIssue(body) {
-  if (/^##[ \t]*一、本周关键词[ \t]*$/m.test(body)) return false;
+  if (/^##[ \t]*一、本周概览[ \t]*$/m.test(body)) return false;
   // A current issue can omit the keyword chapter when the snapshot has no words.
   if (/^##[ \t]*二、模型进展[ \t]*$/m.test(body)) return false;
   if (/^##[ \t]*四、精选文章[ \t]*$/m.test(body)) return false;
@@ -43,8 +43,8 @@ export function countArticles(body) {
 }
 
 /**
- * One line for the index. New issues use the first keyword line.
- * Legacy issues have no keyword chapter, so the line is the article count.
+ * One line for the index. New issues use the first overview line.
+ * Legacy issues have no overview chapter, so the line is the article count.
  * @param {string} body
  * @param {boolean} legacy
  */
@@ -53,11 +53,13 @@ export function summaryLine(body, legacy) {
     const count = countArticles(body);
     return count > 0 ? `${count} 篇` : '';
   }
-  const heading = /^##[ \t]*一、本周关键词[ \t]*$/m.exec(body);
+  const heading = /^##[ \t]*一、本周概览[ \t]*$/m.exec(body);
   if (!heading || heading.index == null) return '';
   const rest = body.slice(heading.index + heading[0].length);
   const next = rest.search(/^##[ \t]/m);
   const section = next === -1 ? rest : rest.slice(0, next);
+  const item = section.match(/<li>([\s\S]*?)<\/li>/);
+  if (item) return item[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
   let inComment = false;
   for (const raw of section.split(/\r?\n/)) {
     const line = raw.trim();
