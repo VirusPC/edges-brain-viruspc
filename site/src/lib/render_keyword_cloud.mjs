@@ -296,12 +296,32 @@ export function renderKeywordCloudSvg(words, font, seed = 1) {
     const registered = GlobalFonts.registerFromPath(font.fontFile, font.fontFamily);
     if (!registered) throw new Error(`无法注册字体: ${font.fontFile}`);
   }
-  let packed = null;
-  for (const [width, height] of LAYOUT_BOXES) {
-    packed = layoutWords(words, font, seed, width, height);
-    if (packed) break;
+  const ranked = [...withVisualSizes(words)].sort(
+    (a, b) => b.size - a.size || a.word.localeCompare(b.word, "zh"),
+  );
+  const pack = (batch) => {
+    for (const [width, height] of LAYOUT_BOXES) {
+      const packed = layoutWords(batch, font, seed, width, height);
+      if (packed) return packed;
+    }
+    return null;
+  };
+  let packed = pack(ranked);
+  if (!packed && ranked.length > 1) {
+    let low = 1;
+    let high = ranked.length - 1;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const attempt = pack(ranked.slice(0, mid));
+      if (attempt) {
+        packed = attempt;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
   }
-  if (!packed) throw new Error(`放不下: ${words.map((word) => word.word).join("、")}`);
+  if (!packed) throw new Error(`放不下: ${ranked[0]?.word || ""}`);
   return renderPacked({ tiers: INK_TIERS }, font, packed).svg;
 }
 

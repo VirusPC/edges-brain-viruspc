@@ -55,9 +55,9 @@ jobs:
         working-directory: site
         env:
           ASTRO_TELEMETRY_DISABLED: 1
-          # PRs build against the migration branch until it is on main.
-          # Pushes to main always read the default branch.
-          AI_NEWS_DATA_REF: ${{ github.event_name == 'pull_request' && 'cursor/ai-news-three-stage-data-5355' || 'main' }}
+          # The three-stage issues are on ai-news-data main. PRs read that
+          # same branch, so a rerun that lands on main is built here too.
+          AI_NEWS_DATA_REF: main
         run: npm ci && npm test && npm run build
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'

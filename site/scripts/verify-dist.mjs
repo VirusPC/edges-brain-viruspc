@@ -343,7 +343,7 @@ for (const spec of newestSpecs) {
   assert.equal(spec.items.length, 15, spec.kind);
   assert.equal(typeof spec.items[0].value, 'number', spec.kind);
 }
-assert.ok(newestSpecs[1].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.rank === 15 && item.highlight === false));
+assert.ok(newestSpecs[1].items.some((item) => item.name === 'Gemini 4 Hydrogen (High)' && item.rank === 15 && item.highlight === true));
 assert.equal(newestSpecs[1].publishDate, '2026-11-11');
 assert.ok(newestSpecs[0].items.some((item) => item.highlight && item.name.includes('Claude Fable 5.2')));
 assert.equal(newestSpecs[2].scaleZero, true);
@@ -352,23 +352,19 @@ assert.equal(newestSpecs[2].items[0].name.includes('/'), false);
 assert.match(newestSpecs[2].items[0].name, /\s|[A-Z]/);
 const modelProgress = newestIssue.split(/<h2\b[^>]*>\s*二、模型进展\s*<\/h2>/)[1]?.split(/<h2\b/)[0] ?? '';
 assert.doesNotMatch(modelProgress, /<h3\b[^>]*>\s*模型发布\s*<\/h3>/);
-const releaseAt = modelProgress.search(/<h4\b/);
+const releaseAt = modelProgress.search(/发布要点|<h4\b/);
 const boardAt = modelProgress.indexOf('data-model-board');
 assert.ok(boardAt >= 0 && releaseAt > boardAt, '2026-11-13 model entries follow the rankings');
 assertCategoryPills(newestIssue, [
-  ['架构', 'Super-agent 设计探索：迈向更自主的 Agent 系统'],
-  ['实践', 'WorkBuddy'],
+  ['架构', 'Exploring Super-agent Design: Towards a More Autonomous Agent System'],
+  ['产品', 'Your Harness. You Define It. Meet Creator Mode in DeepSeek Harness. Turn ideas i…'],
 ], []);
 assert.doesNotMatch(newestIssue, /\]\(https?:/);
-assert.match(newestIssue, /href="https:\/\/www\.bilibili\.com\/opus\/1265361021143351318"/);
-assert.match(newestIssue, /href="https:\/\/github\.com\/deepseek-ai\/dsh-superagent-prototype"/);
-assert.match(newestIssue, /href="https:\/\/cdn\.deepseek\.com\/harness\/dsh-creator-mode-prompt-collection-en\.html"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2116857257245987236"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2117256196227019194"/);
 assert.match(newestIssue, /href="https:\/\/x\.com\/DeepSeekHarness\/status\/2119431663642153128"/);
-assert.match(newestIssue, /补录 11 月 1 日/);
-assert.match(newestIssue, /补录 11 月 2 日/);
-assert.match(newestIssue, /研究原型/);
+assert.match(newestIssue, /dsh-superagent-prototype/);
+assert.match(newestIssue, /这是补录，日期仍是原发日/);
 for (const alt of [
   'OpenRouter 本周用量 Top 15，2026-11-13',
   'OpenRouter 编程用量 Top 15，2026-11-13',
@@ -486,9 +482,9 @@ assert.match(issue20, /原文写 Extra High 档 61 分、第 3/);
 assert.match(issue20, /输入 \$1\.425 · 输出 \$4\.275 · 缓存读 \$0\.07125/);
 assert.match(issue20, /OpenRouter·Alibaba/);
 assert.match(issue20, /OpenAI 11 月 17 日发布/);
-assert.match(newestIssue, /class="model-facts"/);
+assert.match(newestIssue, /发布要点/);
 assert.match(newestIssue, /class="keyword-cloud"/);
-assert.match(newestIssue, /class="kw-top"[^>]*>Agent Memory</);
+assert.match(newestIssue, />Claude Fable 5\.2</);
 const toc20 = issue20.match(/<nav class="toc"[\s\S]*?<\/nav>/);
 assert.ok(toc20, '2026-11-20 is missing the chapter toc');
 assert.doesNotMatch(issue20, /薅羊毛/);
