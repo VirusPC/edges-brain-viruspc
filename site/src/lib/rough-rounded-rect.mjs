@@ -23,6 +23,7 @@ export const ROUGH_SEEDS = {
   facts: 37,
   release: 41,
   article: 53,
+  overview: 59,
   cloud: 2,
 };
 
@@ -104,5 +105,6 @@ export function seedForCard(className, label = '') {
     return String(label).includes('发布要点') ? ROUGH_SEEDS.release : ROUGH_SEEDS.note;
   }
   if (names.has('article-card') || names.has('note-card')) return ROUGH_SEEDS.article;
+  if (names.has('weekly-overview-card')) return ROUGH_SEEDS.overview;
   return 0;
 }

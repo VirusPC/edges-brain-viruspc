@@ -785,21 +785,38 @@ body.is-post.has-toc .sidenote {
 
 .prose p, .prose ul, .prose ol, .prose blockquote, .prose pre, .prose table { margin: 0 0 1rem; }
 
-.prose ol.weekly-overview {
-  font-size: 1em;
-  line-height: 1.7;
-  padding-left: 1.35em;
+.prose .weekly-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   margin: 0.25rem 0 1rem;
 }
 
-.prose ol.weekly-overview li {
-  margin: 0.35rem 0;
-  padding-left: 0.15em;
+.prose .weekly-overview-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.7rem 0.85rem 0.75rem;
+  border: 1px solid var(--panel-line);
+  border-radius: var(--ai-news-radius);
+  background: var(--panel);
+  color: var(--panel-ink);
+  font-family: var(--serif);
+  font-size: 1em;
+  line-height: 1.7;
+  min-width: 0;
 }
 
-.prose ol.weekly-overview a {
-  color: var(--prose-link);
-  text-underline-offset: 0.15em;
+.prose .weekly-overview-card > .info-card-label {
+  margin: 0.32em 0 0;
+  line-height: 1;
+}
+
+.prose .weekly-overview-card > .weekly-overview-text {
+  margin: 0;
+  min-width: 0;
+  flex: 1;
 }
 
 .entry-flash {
@@ -813,7 +830,21 @@ body.is-post.has-toc .sidenote {
 }
 
 @media (max-width: 560px) {
-  .prose ol.weekly-overview { padding-left: 1.15em; }
+  .prose .weekly-overview-card { padding: 0.6rem 0.7rem 0.65rem; }
+
+  .prose .weekly-overview-card a {
+    position: relative;
+  }
+
+  .prose .weekly-overview-card a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
 }
 
 .prose h2, .prose h3 {
@@ -989,7 +1020,8 @@ body.is-post.has-toc .sidenote {
 .info-card,
 .model-board,
 .model-facts,
-.prose .article-card {
+.prose .article-card,
+.weekly-overview-card {
   position: relative;
 }
 
@@ -1005,7 +1037,8 @@ body.is-post.has-toc .sidenote {
 .info-card > .rough-outline,
 .model-board > .rough-outline,
 .model-facts > .rough-outline,
-.prose .article-card > .rough-outline {
+.prose .article-card > .rough-outline,
+.weekly-overview-card > .rough-outline {
   inset: -1px;
   width: calc(100% + 2px);
   height: calc(100% + 2px);
@@ -1023,7 +1056,8 @@ body.is-post.has-toc .sidenote {
 .info-card.has-rough-outline,
 .model-board.has-rough-outline,
 .model-facts.has-rough-outline,
-.prose .article-card.has-rough-outline {
+.prose .article-card.has-rough-outline,
+.weekly-overview-card.has-rough-outline {
   border-color: transparent;
 }
 

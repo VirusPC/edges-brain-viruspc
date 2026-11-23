@@ -2,7 +2,7 @@
  * Paint one shared Rough.js stroke on each AI News card.
  * CSS keeps the plain border until this runs. Scroll does not repaint.
  */
-const SELECTOR = '.keyword-cloud, .model-board, .model-facts, .info-card, .article-card';
+const SELECTOR = '.keyword-cloud, .model-board, .model-facts, .info-card, .article-card, .weekly-overview-card';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**

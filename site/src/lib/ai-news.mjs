@@ -58,7 +58,7 @@ export function summaryLine(body, legacy) {
   const rest = body.slice(heading.index + heading[0].length);
   const next = rest.search(/^##[ \t]/m);
   const section = next === -1 ? rest : rest.slice(0, next);
-  const item = section.match(/<li>([\s\S]*?)<\/li>/);
+  const item = section.match(/<p class="weekly-overview-text">([\s\S]*?)<\/p>/);
   if (item) return item[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
   let inComment = false;
   for (const raw of section.split(/\r?\n/)) {
@@ -71,7 +71,7 @@ export function summaryLine(body, legacy) {
       if (!line.includes('-->')) inComment = true;
       continue;
     }
-    if (!line || /^<br\s*\/?>$/i.test(line) || /^[-*]{3,}$/.test(line)) continue;
+    if (!line || line.startsWith('<') || /^[-*]{3,}$/.test(line)) continue;
     if (/^!\[[^\]]*\]\([^)]+\)$/.test(line)) continue;
     return line;
   }

@@ -21,6 +21,7 @@ test('plan A uses one seeded stroke and no fill', () => {
     facts: 37,
     release: 41,
     article: 53,
+    overview: 59,
     cloud: 2,
   });
   assert.equal(seedForCard('info-card', '备注'), 11);
@@ -29,6 +30,7 @@ test('plan A uses one seeded stroke and no fill', () => {
   assert.equal(seedForCard('model-facts', ''), 37);
   assert.equal(seedForCard('info-card', '发布要点'), 41);
   assert.equal(seedForCard('note-card article-card', ''), 53);
+  assert.equal(seedForCard('weekly-overview-card', ''), 59);
   assert.equal(seedForCard('keyword-cloud', ''), 2);
   assert.equal(seedForCard('ai-news-filter', ''), 0);
 });
