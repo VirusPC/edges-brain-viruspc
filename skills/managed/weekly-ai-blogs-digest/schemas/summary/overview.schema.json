@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["skill", "themes"],
+  "properties": {
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "weekly-ai-blogs-digest" },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "themes": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "text", "refs"],
+        "properties": {
+          "kind": { "enum": ["model", "other"] },
+          "text": { "type": "string", "minLength": 1, "maxLength": 280 },
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "label"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "label": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

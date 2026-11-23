@@ -162,6 +162,36 @@ def require_board_dir(
     return errors, loaded
 
 
+def parse_version(value: str | None) -> tuple[int, int, int] | None:
+    if not isinstance(value, str):
+        return None
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", value.strip())
+    if not match:
+        return None
+    return tuple(int(part) for part in match.groups())
+
+
+def stage_version(issue: Path, stage: str) -> str | None:
+    path = issue / stage / "stage.json"
+    if not path.is_file():
+        return None
+    try:
+        data = read_json(path)
+    except ValueError:
+        return None
+    version = data.get("version") if isinstance(data, dict) else None
+    return version if isinstance(version, str) else None
+
+
+def version_reached(recorded: str | None, minimum: str) -> bool:
+    """没有记录版本时按现行规则。有记录时，只有达到 minimum 才启用此后新增的规则。"""
+    got = parse_version(recorded)
+    need = parse_version(minimum)
+    if got is None or need is None:
+        return True
+    return got >= need
+
+
 def check_stage_file(issue: Path, stage: str) -> list[str]:
     path = issue / stage / "stage.json"
     display = f"{stage}/stage.json"

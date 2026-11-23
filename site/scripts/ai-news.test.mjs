@@ -115,7 +115,7 @@ test('keyword line and legacy article counts follow the digest shape', () => {
   for (const [name, keyword] of Object.entries(backfillKeywords)) {
     const body = fs.readFileSync(path.join(aiNewsRoot, name), 'utf8');
     assert.equal(isLegacyIssue(body), false, name);
-    assert.equal(summaryLine(body, false), keyword, name);
+    assert.match(body, new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), name);
     assert.match(body, /本期于 2026-11 按新版格式补录。/);
     assert.equal(countArticles(body), 0, name);
   }

@@ -8,7 +8,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from lib.issue import gaps_for_lane, print_result, require_file  # noqa: E402
+from lib.issue import gaps_for_lane, print_result, require_file, stage_version, version_reached  # noqa: E402
+
+# 0.0.7 起文章 feed 不再收录 GitHub Trending。更早的 raw 按自己的 stage.json 版本看。
+FEEDS_EXCLUDE_TRENDING_SINCE = "0.0.7"
 
 
 def validate(issue: Path, gaps: list[dict]) -> list[str]:
@@ -22,7 +25,8 @@ def validate(issue: Path, gaps: list[dict]) -> list[str]:
         gaps,
         optional=True,
     )
-    errors += _trending_only_weekly_all(stage / "articles" / "feeds.json")
+    if version_reached(stage_version(issue, "raw"), FEEDS_EXCLUDE_TRENDING_SINCE):
+        errors += _trending_only_weekly_all(stage / "articles" / "feeds.json")
     return errors
 
 

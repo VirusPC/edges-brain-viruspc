@@ -1,6 +1,6 @@
 # 文章与补录
 
-订阅真源是 [`feeds/ai-coding-blogs.opml`](../../feeds/ai-coding-blogs.opml)，退路和备注在 [`feeds/ai-coding-blogs.meta.json`](../../feeds/ai-coding-blogs.meta.json)。研究向的源不要新加。已经有原生 feed 的站，不再并一份抓同一页的源。GitHub Trending 不在这一步抓，见 [开源项目](projects.md)。
+订阅真源是 [`feeds/ai-coding-blogs.opml`](../../feeds/ai-coding-blogs.opml)，退路和备注在 [`feeds/ai-coding-blogs.meta.json`](../../feeds/ai-coding-blogs.meta.json)。研究向的源不要新加。已经有原生 feed 的站，不再并一份抓同一页的源。GitHub Trending 不在这一步抓，见 [开源项目](projects.md)。`raw/articles/feeds.json` 不得含 Trending 从 skill 0.0.7 起生效。校验看 `raw/stage.json` 的 version：低于 0.0.7 的期次仍可在文章 feed 里保留当时写入的 Trending，不因此失败。
 
 窗口和订阅入口由 [确定窗口与入口](window.md) 写入 `raw/window.json`。先读那份文件里的 `since` 和 `until`。没有生成日、或窗口文件对不上，就停止，不用运行当天补窗口。
 
