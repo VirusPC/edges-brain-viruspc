@@ -209,6 +209,19 @@ class FetchCommand(unittest.TestCase):
         else:
             os.environ["OPENROUTER_API_KEY"] = self.saved
 
+    def test_missing_window_does_not_fetch(self) -> None:
+        def boom(*_args, **_kwargs):
+            raise AssertionError("fetch called")
+
+        cases = [[], ["--since", SINCE], ["--until", UNTIL]]
+        for argv in cases:
+            err = io.StringIO()
+            with redirect_stderr(err):
+                code = main(argv, fetch=boom)
+            self.assertEqual(code, 1, argv)
+            self.assertIn("没有生成日就停止", err.getvalue())
+            self.assertNotIn("fetch called", err.getvalue())
+
     def test_invalid_date_does_not_fetch(self) -> None:
         def boom(*_args, **_kwargs):
             raise AssertionError("fetch called")

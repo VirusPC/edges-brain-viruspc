@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""用现行 skill 重写 summary/index.json 的结构字段，并给 cleaned 补发布方。
+"""用现行 skill 重写 summary/index.json 的结构字段。
 
-不改 raw，不改摘要正文。章节和卡片文字保持原样。数据版本不写进 index，由站点构建时用 git log 计算。
+不改 raw，不改 cleaned，不改摘要正文。章节和卡片文字保持原样。数据版本不写进 index，由站点构建时用 git log 计算。
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from lib.issue import SKILL_ROOT  # noqa: E402
 from summarize.merge.article_coverage import article_coverage  # noqa: E402
-from summarize.merge.sources import apply_stamps, sources_document  # noqa: E402
+from summarize.merge.sources import sources_document  # noqa: E402
 
 
 def skill_version() -> str:
@@ -32,9 +32,6 @@ def write_index(issue: Path, routine: dict) -> None:
     path = issue / "summary" / "index.json"
     data = json.loads(path.read_text(encoding="utf-8"))
     window = json.loads((issue / "raw" / "window.json").read_text(encoding="utf-8"))
-    errors = apply_stamps(issue)
-    if errors:
-        raise ValueError("\n".join(errors))
     updated = {
         "skill": {"name": "weekly-ai-blogs-digest", "version": skill_version()},
         "routine": {

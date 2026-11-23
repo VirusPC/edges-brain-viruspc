@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""把 OPML 上的发布方和分类落到 cleaned，并汇总 summary/index.json 的 sources。
+"""按 OPML 汇总 summary/index.json 的 sources，并算出 cleaned 条目该写的发布方。
 
-不改 raw。发布方显示名、分类和读者看到的网站来自 OPML；模型榜单来自
+不改 raw，也不写 cleaned。发布方戳记由清洗阶段的 stamp_publishers.py 写入。
+发布方显示名、分类和读者看到的网站来自 OPML；模型榜单来自
 feeds/ai-coding-blogs.meta.json 的 boards。备源并进同一个发布方，不单列 feed 名。
 """
 
@@ -17,7 +18,7 @@ from urllib.parse import urlsplit
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from lib.issue import SKILL_ROOT  # noqa: E402
-from prepare.articles.fetch_feeds import normalize_link  # noqa: E402
+from lib.links import normalize_link  # noqa: E402
 
 CATEGORIES = ["模型榜单", "GitHub Trending", "博客", "国内互联网"]
 OPML_PATH = SKILL_ROOT / "feeds" / "ai-coding-blogs.opml"
@@ -117,31 +118,23 @@ def _model_category(issue: Path, boards: list[dict]) -> dict:
     }
 
 
-def stamp_map(issue: Path) -> tuple[dict[str, dict], list[str]]:
-    """cleaned 相对路径 → publisher / category / url。对不上就返回错误。"""
+def stamp_map(issue: Path, *, lanes: tuple[str, ...] = ("articles", "projects", "models")) -> tuple[dict[str, dict], list[str]]:
+    """cleaned 相对路径 → publisher / category / url。对不上就返回错误。只读，不写文件。"""
     issue = Path(issue)
     opml, by_id, boards, meta_by_id = load_catalog()
-    grouped, errors = _grouped_links(issue, opml, by_id, meta_by_id)
+    _grouped, errors = _grouped_links(issue, opml, by_id, meta_by_id)
     if errors:
         return {}, errors
     link_info = _link_info(issue, opml, by_id, meta_by_id)
     out: dict[str, dict] = {}
-    errors.extend(_stamp_lane(issue, "articles", "id", link_info, out))
-    errors.extend(_stamp_lane(issue, "projects", "id", link_info, out))
-    errors.extend(_stamp_models(issue, link_info, boards, opml, by_id, meta_by_id, out))
-    errors.extend(_stamp_boards(issue, boards, out))
+    if "articles" in lanes:
+        errors.extend(_stamp_lane(issue, "articles", "id", link_info, out))
+    if "projects" in lanes:
+        errors.extend(_stamp_lane(issue, "projects", "id", link_info, out))
+    if "models" in lanes:
+        errors.extend(_stamp_models(issue, link_info, boards, opml, by_id, meta_by_id, out))
+        errors.extend(_stamp_boards(issue, boards, out))
     return out, errors
-
-
-def apply_stamps(issue: Path) -> list[str]:
-    mapping, errors = stamp_map(issue)
-    if errors:
-        return errors
-    for rel, info in mapping.items():
-        path = Path(issue) / rel
-        data = json.loads(path.read_text(encoding="utf-8"))
-        _write_fields(path, data, info)
-    return []
 
 
 def _load_opml(path: Path) -> dict[str, dict]:
@@ -553,23 +546,6 @@ def _board_for_source(source: str, boards: list[dict]) -> dict | None:
                     "url": board["url"],
                 }
     return None
-
-
-def _write_fields(path: Path, data: dict, info: dict) -> None:
-    out = {}
-    for key, value in data.items():
-        if key in ("publisher", "category", "url"):
-            continue
-        out[key] = value
-        if key == "source":
-            out["publisher"] = info["publisher"]
-            out["category"] = info["category"]
-            out["url"] = info["url"]
-    if "publisher" not in out:
-        out["publisher"] = info["publisher"]
-        out["category"] = info["category"]
-        out["url"] = info["url"]
-    path.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def _items(path: Path) -> list:

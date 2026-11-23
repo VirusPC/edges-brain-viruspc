@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +44,23 @@ def check_document(path: Path, display: str, schema_rel: str, *, reject_skipped:
     if errors:
         return errors, None
     return [], data
+
+
+def gaps_for_lane(issue: Path, stage: str) -> tuple[list[dict], list[str]]:
+    """子步骤校验用。gaps.json 还没写就当作没有缺口。"""
+    stage_dir = issue / stage
+    if not (stage_dir / "gaps.json").is_file():
+        return [], []
+    return load_gaps(stage_dir, stage)
+
+
+def print_result(errors: list[str], ok: str) -> int:
+    if errors:
+        for item in errors:
+            print(item, file=sys.stderr)
+        return 1
+    print(ok)
+    return 0
 
 
 def load_gaps(stage_dir: Path, stage: str) -> tuple[list[dict], list[str]]:

@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
+import io
 import sys
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -35,13 +37,26 @@ class DateSelection(unittest.TestCase):
         self.assertEqual(choose_publish_date(dates, "2026-11-05"), "2026-10-28")
         self.assertEqual(choose_publish_date(dates, "2026-09-24"), "2026-09-13")
         self.assertEqual(choose_publish_date(dates, "2026-10-28"), "2026-10-28")
-        self.assertEqual(choose_publish_date(dates, None), "2026-11-06")
         self.assertIsNone(choose_publish_date(dates, "2026-01-01"))
+
+    def test_missing_until_exits_before_fetch(self) -> None:
+        from fetch_llm_arena import main
+
+        err = io.StringIO()
+        with redirect_stderr(err):
+            code = main([])
+        self.assertEqual(code, 2)
+        self.assertIn("没有生成日就停止", err.getvalue())
+        self.assertIn("不用 latest", err.getvalue())
 
     def test_invalid_until_does_not_fetch(self) -> None:
         from fetch_llm_arena import main
 
-        self.assertEqual(main(["--until", "2026/11/05"]), 1)
+        err = io.StringIO()
+        with redirect_stderr(err):
+            code = main(["--until", "2026/11/05"])
+        self.assertEqual(code, 1)
+        self.assertIn("YYYY-MM-DD", err.getvalue())
 
     def test_select_rows_drops_later_boards(self) -> None:
         rows = [

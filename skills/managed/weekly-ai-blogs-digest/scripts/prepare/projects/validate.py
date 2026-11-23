@@ -8,8 +8,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from lib.issue import require_file  # noqa: E402
-from prepare.articles.fetch_feeds import WEEKLY_ALL_TRENDING_ID, WEEKLY_ALL_TRENDING_XML  # noqa: E402
+from lib.issue import gaps_for_lane, print_result, require_file  # noqa: E402
+from prepare.projects.trending import WEEKLY_ALL_TRENDING_ID, WEEKLY_ALL_TRENDING_XML  # noqa: E402
 
 ALLOWED_BOARD = "weekly/all"
 ALLOWED_SOURCES = {WEEKLY_ALL_TRENDING_ID, WEEKLY_ALL_TRENDING_XML, ALLOWED_BOARD}
@@ -61,3 +61,16 @@ def _trending_is_weekly_all(path: Path) -> list[str]:
         if extra:
             errors.append(f"raw/projects/github-trending.json 不得保留语言榜或其它榜: {extra}")
     return errors
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 1:
+        print("用法: python3 scripts/prepare/projects/validate.py issues/<生成日>", file=sys.stderr)
+        return 2
+    issue = Path(argv[0])
+    gaps, gap_errors = gaps_for_lane(issue, "raw")
+    return print_result(gap_errors + validate(issue, gaps), "ok raw/projects")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from lib.issue import DATE, check_document, gap_covers  # noqa: E402
+from lib.issue import DATE, check_document, gap_covers, gaps_for_lane, print_result  # noqa: E402
 
 
 def validate(issue: Path, gaps: list[dict]) -> list[str]:
@@ -38,3 +38,16 @@ def validate(issue: Path, gaps: list[dict]) -> list[str]:
             f"raw/window.json 窗口应为 {expect_since} 至 {expect_until}，实际是 {data.get('since')} 至 {data.get('until')}"
         )
     return errors
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 1:
+        print("用法: python3 scripts/prepare/window/validate.py issues/<生成日>", file=sys.stderr)
+        return 2
+    issue = Path(argv[0])
+    gaps, gap_errors = gaps_for_lane(issue, "raw")
+    return print_result(gap_errors + validate(issue, gaps), "ok raw/window")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

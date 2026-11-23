@@ -14,9 +14,9 @@ Parquet files on the dataset repo (one file per config):
     full    {config}/full-00000-of-00001.parquet
             every historical publish date in one file
 
-The 2026-11 backfill of older weekly issues used the full file.
-``--until YYYY-MM-DD`` reads ``full`` and keeps the latest publish date
-that is still on or before that day. Omitting ``--until`` reads ``latest``.
+``--until YYYY-MM-DD`` is required. The script reads ``full`` and keeps the
+latest publish date that is still on or before that day. It does not read
+``latest`` when the date is missing.
 
     https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset/resolve/main/{config}/{split}-00000-of-00001.parquet
 
@@ -35,7 +35,6 @@ import urllib.request
 
 DATASET = "lmarena-ai/leaderboard-dataset"
 DEFAULT_CONFIG = "text_style_control"
-LATEST_SPLIT = "latest"
 FULL_SPLIT = "full"
 PARQUET = (
     "https://huggingface.co/datasets/lmarena-ai/leaderboard-dataset/"
@@ -140,20 +139,16 @@ def neighbor_dates(dates: list[str], chosen: str) -> tuple[str | None, str | Non
     return prior, nxt
 
 
-def choose_publish_date(dates: list[str], until: str | None) -> str | None:
-    """Latest publish date. With until, the latest date that is still <= until."""
+def choose_publish_date(dates: list[str], until: str) -> str | None:
+    """Latest publish date that is still on or before ``until``."""
     unique = sorted({day for day in dates if day})
-    if not unique:
-        return None
-    if until is None:
-        return unique[-1]
     eligible = [day for day in unique if day <= until]
     if not eligible:
         return None
     return eligible[-1]
 
 
-def select_rows(rows: list[dict], until: str | None, limit: int) -> dict:
+def select_rows(rows: list[dict], until: str, limit: int) -> dict:
     dates = [row["leaderboard_publish_date"] for row in rows if row.get("leaderboard_publish_date")]
     chosen = choose_publish_date(dates, until)
     if chosen is None:
@@ -176,15 +171,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--until",
         metavar="YYYY-MM-DD",
-        help="取 leaderboard_publish_date ≤ 该日的最近一份。读 full parquet，不读 latest。",
+        help="必填。取 leaderboard_publish_date ≤ 该日的最近一份。读 full parquet。",
     )
     parser.add_argument("--out")
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args(argv)
-    if args.until is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.until):
+    if not args.until:
+        print("缺少 --until。没有生成日就停止，不用 latest 代替。", file=sys.stderr)
+        return 2
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", args.until):
         print("--until 必须是 YYYY-MM-DD", file=sys.stderr)
         return 1
-    split = FULL_SPLIT if args.until else LATEST_SPLIT
+    split = FULL_SPLIT
     url = PARQUET.format(config=args.config, split=split)
     try:
         payload = download(url, args.timeout)
@@ -198,10 +196,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"parquet: {url}", file=sys.stderr)
         return 1
     if selected["chosen"] is None:
-        if args.until:
-            print(f"full parquet 里没有 publish_date ≤ {args.until} 的 {args.category} 榜。parquet: {url}", file=sys.stderr)
-        else:
-            print(f"parquet 里没有 {args.category} 榜。parquet: {url}", file=sys.stderr)
+        print(f"full parquet 里没有 publish_date ≤ {args.until} 的 {args.category} 榜。parquet: {url}", file=sys.stderr)
         return 1
     result = {
         "source": "Hugging Face dataset",
@@ -223,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"ok config={args.config} split={split} category={args.category} rows={selected['rows']} "
         f"kept={len(selected['items'])} date={selected['chosen']} "
-        f"prior={selected['prior']} next={selected['next']} until={args.until or '-'}",
+        f"prior={selected['prior']} next={selected['next']} until={args.until}",
         file=sys.stderr,
     )
     return 0

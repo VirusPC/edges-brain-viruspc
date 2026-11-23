@@ -1,6 +1,6 @@
 # AI Coding 订阅源
 
-阅读器要导入的是 [`ai-coding-blogs.opml`](ai-coding-blogs.opml)。里面是 feed（`type="rss"` + `xmlUrl`），Folo 或其他 OPML 阅读器可以直接导入。分组是「博客」「国内互联网」「GitHub Trending」。每条 feed 还有 `category`、`publisher`（团队名）和 `htmlUrl`（读者打开的网站，不是 RSS）。备源标 `role="backup"`，汇总时并进同一个发布方。脚本这些分组都拉。周报不再收「薅羊毛」，OPML 里没有这一组。模型榜单不是 RSS，发布方和榜单页写在 [`ai-coding-blogs.meta.json`](ai-coding-blogs.meta.json) 的 `boards`。
+阅读器要导入的是 [`ai-coding-blogs.opml`](ai-coding-blogs.opml)。里面是 feed（`type="rss"` + `xmlUrl`），Folo 或其他 OPML 阅读器可以直接导入。分组是「博客」「国内互联网」「GitHub Trending」。每条 feed 还有 `category`、`publisher`（团队名）和 `htmlUrl`（读者打开的网站，不是 RSS）。备源标 `role="backup"`，汇总时并进同一个发布方。文章抓取只拉点名的博客和国内互联网源；GitHub Trending 由开源项目脚本单独拉每周总榜。周报不再收「薅羊毛」，OPML 里没有这一组。模型榜单不是 RSS，发布方和榜单页写在 [`ai-coding-blogs.meta.json`](ai-coding-blogs.meta.json) 的 `boards`。
 
 GitHub Trending 只用 [mshibanami/GitHubTrendingRSS](https://github.com/mshibanami/GitHubTrendingRSS) 的每周总榜（`weekly/all`），不订任何具体语言的榜，也不订 daily。这是第三方抓页生成的 RSS，不是 GitHub 官方源。`feedOrigin` 为 `third-party-scrape-rss`。条目没有 `pubDate`，日期用 channel 的 `pubDate`。订阅 id 是 `github-trending-weekly-all`。名次以 XML 原始顺序为准。展示哪些仓库由总结阶段决定，见 [开源项目](../references/summarize/projects.md)。
 
@@ -26,6 +26,6 @@ Artificial Analysis 和 LLM Arena 不是 OPML。见 [模型与榜单](../referen
 3. 还没有的话，到 [BestBlogs](https://github.com/ginobefun/BestBlogs) 的 `BestBlogs_RSS_Articles.opml`（以及根目录 `BestBlogs_RSS_ALL.opml`）里按域名找。对上了就写入 OPML。转换源可以订：`feedOrigin` 用 `bestblogs-rsshub`、`bestblogs-xgo` 或 `bestblogs-wechat2rss`，`bestblogs.adopted` 为 true，`fallback` 仍留 `list-page`。
 4. 上面都没有：OPML 不动，meta 里 `xmlUrl` 留空，`fallback` 写 `list-page`。列表页打不开再用浏览器。
 5. 给这条 source 写 `lane`（`product`、`tech` 或 `mixed`）。GitHub Trending 用 `special`。
-6. 改完后，用 skill「运行环境」里的 Python 3.12 跑 `../scripts/prepare/articles/fetch_feeds.py --check`。
+6. 改完后，用 skill「运行环境」里的 Python 3.12 跑 `../scripts/prepare/articles/check_subscription.py`。
 
 播客和推文都不进这份 OPML。周报里「精选推文」「精选播客」先标建设中，不从这里采集。窗口里确有相关播客时，仍只在关键词或相关章节点名。

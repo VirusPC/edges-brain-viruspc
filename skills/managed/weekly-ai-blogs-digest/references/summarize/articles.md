@@ -1,6 +1,18 @@
 # 精选文章
 
-读 `cleaned/articles/` 的候选。ID 沿用清洗阶段的文章 ID。产出 `summary/articles/{id}.json`。
+读 `cleaned/articles/` 的候选。ID 沿用清洗阶段的文章 ID。产出 `summary/articles/{id}.json`。选哪些文章由这一份说明决定，不由脚本决定。
+
+## 契约
+
+输入是 `cleaned/articles/`。输出是入选文章的 `summary/articles/{id}.json`。Schema 是 `schemas/summary/articles/item.schema.json`。
+
+写完立刻校验：
+
+```bash
+python3 scripts/summarize/articles/validate.py issues/<生成日>
+```
+
+在本 skill 目录执行。三路和关键词都齐了之后，再跑 [整页校验](check.md)。
 
 ## 理解候选
 

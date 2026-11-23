@@ -8,8 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from lib.issue import require_file  # noqa: E402
-from prepare.articles.fetch_feeds import WEEKLY_ALL_TRENDING_ID, WEEKLY_ALL_TRENDING_XML  # noqa: E402
+from lib.issue import gaps_for_lane, print_result, require_file  # noqa: E402
 
 
 def validate(issue: Path, gaps: list[dict]) -> list[str]:
@@ -45,7 +44,7 @@ def _trending_only_weekly_all(path: Path) -> list[str]:
         if isinstance(item, dict):
             _collect_extra_trending(item, seen)
     for token in sorted(seen):
-        bad.append(f"raw/articles/feeds.json 只保留 {WEEKLY_ALL_TRENDING_ID}，发现 {token}")
+        bad.append(f"raw/articles/feeds.json 不收 GitHub Trending，发现 {token}。周榜由开源项目脚本写入 raw/projects/github-trending.json")
     return bad
 
 
@@ -57,6 +56,17 @@ def _collect_extra_trending(row: dict, seen: set[str]) -> None:
         is_trending = token.startswith("github-trending") or "GitHubTrendingRSS" in token
         if not is_trending:
             continue
-        if token in {WEEKLY_ALL_TRENDING_ID, WEEKLY_ALL_TRENDING_XML}:
-            continue
         seen.add(token)
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 1:
+        print("用法: python3 scripts/prepare/articles/validate.py issues/<生成日>", file=sys.stderr)
+        return 2
+    issue = Path(argv[0])
+    gaps, gap_errors = gaps_for_lane(issue, "raw")
+    return print_result(gap_errors + validate(issue, gaps), "ok raw/articles")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
