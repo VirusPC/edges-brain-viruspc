@@ -817,6 +817,7 @@ body.is-post.has-toc .sidenote {
   margin: 0;
   min-width: 0;
   flex: 1;
+  overflow-wrap: break-word;
 }
 
 .entry-flash {

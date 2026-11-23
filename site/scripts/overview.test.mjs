@@ -80,6 +80,8 @@ test('overview type matches the prose and the flash fades in both themes', () =>
   assert.match(css, /\.entry-flash\s*\{[^}]*animation:\s*entry-flash 2s/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.prose \.weekly-overview-card\s*\{[^}]*padding:\s*0\.6rem 0\.7rem 0\.65rem/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.prose \.weekly-overview-card a::before\s*\{[^}]*height:\s*44px/);
+  assert.match(css, /\.weekly-overview-text\s*\{[^}]*overflow-wrap:\s*break-word/);
+  assert.doesNotMatch(css, /\.weekly-overview(?:-card|-text)[^{]*\{[^}]*(?:line-clamp|max-height|-webkit-line-clamp|overflow:\s*hidden)/);
   assert.doesNotMatch(css, /\.prose \.weekly-overview-card\s*\{[^}]*0\.8em/);
   assert.doesNotMatch(css, /\.prose \.weekly-overview-card\s*\{[^}]*font-size:\s*var\(--info-card-font-size\)/);
   assert.match(css, /:root\[data-theme="dark"\][\s\S]*--paper:\s*#1c1b19/);

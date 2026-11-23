@@ -592,7 +592,18 @@ assert.ok(cloud20 >= 0 && overviewAt > cloud20, '2026-11-20 puts the word cloud 
 const overviewHtml20 = issue20.slice(overviewAt, issue20.indexOf('二、模型进展', overviewAt));
 assert.match(overviewHtml20, /class="weekly-overview-card"/);
 assert.doesNotMatch(overviewHtml20, /<ol class="weekly-overview">|本周主线|class="tag"/);
-assert.equal((overviewHtml20.match(/class="weekly-overview-card"/g) || []).length, 4);
+const overviewData20 = JSON.parse(fs.readFileSync(
+  path.join(process.env.AI_NEWS_DATA_ROOT || path.join(siteRoot, '.cache/ai-news-data'), 'issues/2026-11-20/summary/overview.json'),
+  'utf8',
+));
+assert.equal(
+  (overviewHtml20.match(/class="weekly-overview-card"/g) || []).length,
+  overviewData20.themes.length,
+);
+const overviewPlain20 = overviewHtml20.replace(/<[^>]+>/g, '');
+for (const theme of overviewData20.themes) {
+  assert.ok(overviewPlain20.includes(theme.text), `2026-11-20 overview is missing ${theme.text.slice(0, 24)}`);
+}
 const neon = entryAnchor('Gemini 4 Neon');
 assert.match(issue20, new RegExp(`href="#${neon}"`));
 assert.match(issue20, new RegExp(`id="${neon}"`));
@@ -664,7 +675,7 @@ assert.doesNotMatch(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
 assert.doesNotMatch(projectHtml20, /data-cat=/);
 assert.match(selectedHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);
-assert.equal((issue20.match(/订阅源里只有这些/g) || []).length, 3);
+assert.equal((selectedHtml20.match(/订阅源里只有这些/g) || []).length, 3);
 assert.equal((issue20.match(/微信原文这次没打开|这次没打开原文/g) || []).length, 0);
 const selectedHeadings20 = issue20.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];
 for (const [cat, tag, title] of [
