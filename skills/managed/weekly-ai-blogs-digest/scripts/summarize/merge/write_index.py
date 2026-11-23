@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """用现行 skill 重写 summary/index.json 的结构字段，并给 cleaned 补发布方。
 
-不改 raw，不改摘要正文。章节、data.commit 和卡片文字保持原样。
+不改 raw，不改摘要正文。章节和卡片文字保持原样。数据版本不写进 index，由站点构建时用 git log 计算。
 """
 
 from __future__ import annotations
@@ -42,7 +42,6 @@ def write_index(issue: Path, routine: dict) -> None:
             "commit": routine["commit"],
             "path": routine["path"],
         },
-        "data": data.get("data") if isinstance(data.get("data"), dict) else {"commit": None},
         "articles_coverage": article_coverage(issue),
         "window": {
             "issue": window.get("issue") or issue.name,

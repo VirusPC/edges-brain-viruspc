@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
  *
  * Set AI_NEWS_DATA_ROOT to skip the clone. The clone is the default branch.
  * Charts and keywords are read from each issue's raw/ and summary/.
+ * History is kept so the page can run git log -1 on issues/<date>/.
  */
 
 const siteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -42,8 +43,8 @@ console.log(`ai-news-data: ${cache} @ ${rev.stdout.trim() || 'unknown'}`);
 function clone(dir) {
   const result = spawnSync(
     'git',
-    ['clone', '--depth', '1', '--branch', dataRef, remote, dir],
-    { stdio: 'inherit', timeout: 120_000 },
+    ['clone', '--filter=blob:none', '--single-branch', '--branch', dataRef, remote, dir],
+    { stdio: 'inherit', timeout: 180_000 },
   );
   return result.status === 0;
 }
@@ -52,10 +53,11 @@ function clone(dir) {
  * @param {string} dir
  */
 function update(dir) {
+  const shallow = spawnSync('git', ['-C', dir, 'rev-parse', '--is-shallow-repository'], { encoding: 'utf8' });
   const fetched = spawnSync(
     'git',
-    ['-C', dir, 'fetch', '--depth', '1', 'origin', dataRef],
-    { stdio: 'inherit', timeout: 120_000 },
+    ['-C', dir, 'fetch', shallow.stdout.trim() === 'true' ? '--unshallow' : '--filter=blob:none', 'origin', dataRef],
+    { stdio: 'inherit', timeout: 180_000 },
   );
   if (fetched.status !== 0) return false;
   spawnSync('git', ['-C', dir, 'clean', '-fd', 'issues'], { stdio: 'inherit', timeout: 30_000 });

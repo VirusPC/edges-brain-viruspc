@@ -181,7 +181,6 @@ def write_issue(root: Path) -> Path:
                 "commit": "a" * 40,
                 "path": ".edges/routines/weekly-ai-blogs-digest/INDEX.md",
             },
-            "data": {"commit": None},
             "articles_coverage": {"raw": 2, "selected": 1},
             "window": {"issue": ISSUE, "since": "2026-11-13", "until": "2026-11-19"},
             "sources": sources_document(issue),

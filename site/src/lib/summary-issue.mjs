@@ -49,9 +49,7 @@ export function withArticlesCoverage(markdown, coverage) {
 }
 
 /**
- * Rebuild the issue markdown from summary/index.json blocks and card text.
- * The slices were copied from the published issue, so a faithful conversion
- * round-trips the same text the current pages render.
+ * Rebuild the issue markdown from summary chapters, the coverage window, and card text.
  * @param {string} issueDir
  * @returns {string | null}
  */

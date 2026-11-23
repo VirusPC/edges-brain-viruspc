@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 汇合脚本给 cleaned 条目补 `publisher`、`category`、`url`，并写入 `sources`：模型榜单、GitHub Trending、博客、国内互联网。每类有总条数，每个发布方有 `{name, url, count}`。补录算进该发布方，不单列。raw 不改。
 - OPML 分组「AI Coding Blogs」改名为「博客」，「国内技术团队」改名为「国内互联网」。发布方用团队名，大淘宝技术记为「大淘宝」。
 - `sources` 列出全部已订阅发布方，本周 0 条也保留。模型榜单没有可数条目时 `count` 为 `null`。不写 RSS 地址。以后的下载按钮只链到脑仓 `feeds/ai-coding-blogs.opml`，页面先不渲染。
+- 去掉 `summary/index.json` 的 `data.commit`。数据版本由站点在构建时对数据仓库执行 `git log -1 -- issues/<生成日>`。
 - 关键词脚本不再把卡片标题原样写成词。
 
 ## [0.0.4] - 2026-11-23

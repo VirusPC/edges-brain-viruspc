@@ -4,7 +4,6 @@
   "required": [
     "skill",
     "routine",
-    "data",
     "articles_coverage",
     "window",
     "sources",
@@ -40,17 +39,6 @@
         },
         "path": {
           "const": ".edges/routines/weekly-ai-blogs-digest/INDEX.md"
-        }
-      }
-    },
-    "data": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["commit"],
-      "properties": {
-        "commit": {
-          "type": ["string", "null"],
-          "pattern": "^[0-9a-f]{40}$"
         }
       }
     },

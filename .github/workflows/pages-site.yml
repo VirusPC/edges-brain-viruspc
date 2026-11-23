@@ -56,6 +56,7 @@ jobs:
         env:
           ASTRO_TELEMETRY_DISABLED: 1
           # This PR is verified against the paired data branch. main reads data main.
+          # The data clone keeps history so 数据版本 can run git log -1 on issues/<date>/.
           AI_NEWS_DATA_REF: ${{ github.head_ref == 'cursor/render-11-13-chapters-5482' && 'cursor/summary-sources-5482' || 'main' }}
         run: npm ci && npm test && npm run build
       - name: Upload Pages artifact
