@@ -19,6 +19,6 @@ python3 scripts/summarize/check/validate.py issues/<生成日>
 5. 精选推文。建设中，没有条目，也不为此改 OPML。
 6. 精选播客。同样建设中。窗口里确有相关播客时，只在已有卡片或关键词里点名，不写入这一章。
 
-`summary/index.json` 记下 skill 名和 `version`，以及本期数据已经落库的 commit。数据 commit 没有就写 `null`。不填数据仓库以外的提交。`summary/stage.json` 的 name 是 `summary`，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/summarize/summarize.md`。缺口和过程说明留在 `summary/gaps.json`，不写进读者能看见的榜单说明。
+`summary/index.json` 记下 skill 名和 `version`，以及本期数据已经落库的 commit。数据 commit 没有就写 `null`。不填数据仓库以外的提交。同一份 index 还要有 `articles_coverage`，数值必须等于 [汇合](merge.md) 里那个统计命令的结果。对不上就不能通过。这个字段不是精选入选数。`summary/stage.json` 的 name 是 `summary`，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/summarize/summarize.md`。缺口和过程说明留在 `summary/gaps.json`，不写进读者能看见的榜单说明。
 
 默认定时只开一个数据 PR，不自动合并。站点渲染不是这一步。

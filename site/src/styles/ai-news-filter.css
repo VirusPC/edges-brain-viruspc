@@ -2,6 +2,14 @@
   display: flow-root;
 }
 
+.prose .ai-news-coverage {
+  margin: 0.15rem 0 0.45rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
 .ai-news-filter {
   --wood-top: #ecd9b8;
   --wood-bot: #e6cfa8;
@@ -159,6 +167,11 @@
     padding: 12px 10px 10px;
   }
 
+  .prose .ai-news-coverage {
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+  }
+
   .ai-news-filter button:focus-visible {
     outline-offset: -3px;
   }
@@ -182,6 +195,7 @@
   font-size: 14px;
   font-weight: 400;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0;
   cursor: pointer;
 }

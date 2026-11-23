@@ -153,6 +153,7 @@ def write_issue(root: Path) -> Path:
             "skill": SKILL,
             "version": VERSION,
             "data": {"commit": None},
+            "articles_coverage": {"raw": 1, "cleaned": 1},
             "chapters": [
                 {"title": "本周关键词"},
                 {"title": "模型进展", "boards": [BOARD], "cards": [MODEL]},
@@ -231,6 +232,14 @@ class ValidateStages(unittest.TestCase):
         write_json(self.issue / "cleaned" / "articles" / "post.json", payload)
         errors = validate_clean(self.issue)
         self.assertTrue(any("不存在" in item for item in errors))
+
+    def test_articles_coverage_must_match_feeds_and_cleaned_ids(self) -> None:
+        index_path = self.issue / "summary" / "index.json"
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        index["articles_coverage"] = {"raw": 9, "cleaned": 1}
+        write_json(index_path, index)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("articles_coverage" in item and "原文 1 篇" in item for item in errors))
 
     def test_keyword_target_must_exist(self) -> None:
         write_json(
