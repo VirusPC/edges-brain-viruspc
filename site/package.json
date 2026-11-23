@@ -19,7 +19,10 @@
     "@astrojs/rss": "^4.0.14",
     "@fontsource/caveat": "^5.2.8",
     "@fontsource/source-serif-4": "^5.2.9",
+    "@napi-rs/canvas": "^1.1.1",
+    "@resvg/resvg-js": "^2.6.2",
     "astro": "^5.16.0",
+    "d3-cloud": "^2.0.0",
     "echarts": "^6.1.0",
     "gray-matter": "^4.0.3",
     "roughjs": "^4.6.6"

@@ -10,7 +10,7 @@ import {
   keywordWeight,
   renderCloudSvg,
   withVisualSizes,
-} from '../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/keyword_cloud_style.mjs';
+} from '../src/lib/keyword_cloud_style.mjs';
 import { loadKeywordWords } from '../src/lib/keyword-snapshot.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -147,7 +147,7 @@ test('a keyword cloud image is inlined from the sibling svg', () => {
 test('snapshot words lay out twice the same way when the bold font is installed', async (t) => {
   let cloud;
   try {
-    cloud = await import('../../skills/managed/weekly-ai-blogs-digest/scripts/summarize/keywords/render_keyword_cloud.mjs');
+    cloud = await import('../src/lib/render_keyword_cloud.mjs');
   } catch {
     cloud = null;
   }

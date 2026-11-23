@@ -12,7 +12,7 @@ import {
   releaseKind,
   textHasWord,
 } from "./build_keywords.mjs";
-import { keywordWeight } from "./keyword_cloud_style.mjs";
+import { keywordWeight } from "./keyword_weight.mjs";
 
 test("a model title keeps the official spans and does not invent the other name", () => {
   assert.deepEqual(modelNamesInTitle("Introducing GPT-6.2 Astra and Sol"), ["GPT-6.2 Astra"]);

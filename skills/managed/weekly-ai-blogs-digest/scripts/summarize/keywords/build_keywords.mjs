@@ -8,7 +8,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { keywordWeight } from "./keyword_cloud_style.mjs";
+import { keywordWeight } from "./keyword_weight.mjs";
 
 export const SCORES = { model: 5, product: 4, concept: 3 };
 

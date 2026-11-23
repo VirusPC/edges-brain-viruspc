@@ -12,7 +12,7 @@
 
 密钥只用环境变量 `AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`）和 `OPENROUTER_API_KEY`。不写进命令、日志或文件。没有密钥就跳过该文件，在 `raw/gaps.json` 写明，不用空文件假装有数据。端点要等 AA 这份文件有了结果再拉；没有密钥就不请求端点。
 
-## 现行命令
+## 命令
 
 ```bash
 PY=/tmp/weekly-ai-blogs-digest-py312/bin/python

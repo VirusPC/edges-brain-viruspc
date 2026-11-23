@@ -13,5 +13,3 @@ python3 scripts/prepare/check/validate.py issues/<生成日>
 `raw/stage.json` 的 name 是 `raw`。skill 名是 `weekly-ai-blogs-digest`，`version` 用写出这份目录时的 Skill 版本。入口路径是 `skills/managed/weekly-ai-blogs-digest/references/prepare/prepare.md`。
 
 同一期再跑准备时，覆盖 `raw/` 里对应文件。Git 保留旧提交。`cleaned/` 和 `summary/` 里引用了这次变化的条目随之失效，按依赖重做；没被引用的分支不动。
-
-根目录有文件，不等于 `raw/` 已经汇合完成。
