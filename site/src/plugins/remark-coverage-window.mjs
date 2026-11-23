@@ -81,6 +81,8 @@ const SOURCE_UNITS = {
   博客: '团队',
   国内互联网: '团队',
 };
+/** 榜单按来源计，不把 summary 里的行数加进「抓取」。识别用类目 title，不用发布方名字。 */
+const BOARD_CATEGORY = '模型榜单';
 const OPML_HREF = 'https://github.com/VirusPC/edges-brain-viruspc/blob/main/skills/managed/weekly-ai-blogs-digest/feeds/ai-coding-blogs.opml';
 const RSS_ICON = '<svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>';
 const CHEVRON_ICON = '<svg class="ai-news-sources-chev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>';
@@ -88,8 +90,9 @@ const DOWNLOAD_ICON = '<svg class="info-card-icon" xmlns="http://www.w3.org/2000
 
 /**
  * Source card under the coverage note. Each category folds on its own.
- * Counts are fetches before selection. null is 未统计. 0 stays a count and
- * those publishers fold under 本期无新增.
+ * Item totals skip the board category. null is 未统计 on counted categories.
+ * 0 stays a count there and those publishers fold under 本期无新增.
+ * Board publishers are listed without a count.
  * GitHub boards render only when summary sources already lists them as
  * publishers. This does not split or invent per-board counts.
  * @param {{ categories?: { title?: string, count?: number | null, publishers?: { name?: string, url?: string, count?: number | null }[] }[] } | null | undefined} sources
@@ -110,13 +113,18 @@ export function sourcesCardHtml(sources) {
 /**
  * @param {{ title: string, count: number | null, publishers: { name?: string, url?: string, count?: number | null }[] }[]} categories
  */
+function countsItems(category) {
+  return category.title !== BOARD_CATEGORY;
+}
+
 function tallyHtml(categories) {
   const sourceTotal = categories.reduce((sum, category) => sum + category.publishers.length, 0);
-  const numbers = categories.filter((category) => typeof category.count === 'number');
+  const counted = categories.filter(countsItems);
+  const numbers = counted.filter((category) => typeof category.count === 'number');
   let items = '抓取未统计';
   if (numbers.length) {
     const sum = numbers.reduce((total, category) => total + category.count, 0);
-    const plus = numbers.length === categories.length ? '' : '+';
+    const plus = numbers.length === counted.length ? '' : '+';
     items = `抓取 <span class="ai-news-sources-tally-sum">${sum}${plus}</span><span class="ai-news-sources-tally-unit"> 条</span>`;
   }
   return `<span class="ai-news-sources-tally"><span class="ai-news-sources-tally-kinds">${categories.length} 类 </span>${sourceTotal} 源 · ${items}</span>`;
@@ -128,6 +136,7 @@ function tallyHtml(categories) {
 function categoryMeta(category) {
   const unit = SOURCE_UNITS[category.title] || '源';
   const label = `${category.publishers.length} ${unit}`;
+  if (!countsItems(category)) return label;
   if (typeof category.count !== 'number') return `${label} · 未统计`;
   return `${label} · <strong>${category.count} 条</strong>`;
 }
@@ -136,13 +145,15 @@ function categoryMeta(category) {
  * @param {{ title: string, count: number | null, publishers: { name?: string, url?: string, count?: number | null }[] }} category
  */
 function categorySection(category) {
-  const active = category.publishers.filter((item) => item.count !== 0);
-  const quiet = category.publishers.filter((item) => item.count === 0);
-  const names = active.length
-    ? `<div class="ai-news-sources-names">${active.map((item) => publisherLink(item)).join('')}</div>`
+  const listed = countsItems(category)
+    ? category.publishers.filter((item) => item.count !== 0)
+    : category.publishers;
+  const quiet = countsItems(category) ? category.publishers.filter((item) => item.count === 0) : [];
+  const names = listed.length
+    ? `<div class="ai-news-sources-names">${listed.map((item) => publisherLink(item, countsItems(category))).join('')}</div>`
     : '';
   const extra = quiet.length
-    ? `<details class="ai-news-sources-quiet"><summary>${CHEVRON_ICON}<span>本期无新增 (${quiet.length})</span></summary><div class="ai-news-sources-names">${quiet.map((item) => publisherLink(item)).join('')}</div></details>`
+    ? `<details class="ai-news-sources-quiet"><summary>${CHEVRON_ICON}<span>本期无新增 (${quiet.length})</span></summary><div class="ai-news-sources-names">${quiet.map((item) => publisherLink(item, true)).join('')}</div></details>`
     : '';
   return `<details class="ai-news-sources-cat"><summary><span class="ai-news-sources-cat-name">${CHEVRON_ICON}<span>${escapeHtml(category.title)}</span></span><span class="ai-news-sources-cat-meta">${categoryMeta(category)}</span></summary>${names}${extra}</details>`;
 }
@@ -150,8 +161,8 @@ function categorySection(category) {
 /**
  * @param {{ name?: string, url?: string, count?: number | null }} publisher
  */
-function publisherLink(publisher) {
-  const count = typeof publisher.count === 'number'
+function publisherLink(publisher, showCount) {
+  const count = showCount && typeof publisher.count === 'number'
     ? `<span class="ai-news-sources-count">${publisher.count}</span>`
     : '';
   return `<a class="ai-news-sources-pub" href="${escapeHtml(publisher.url || '')}" target="_blank" rel="noopener noreferrer"><span class="ai-news-sources-name">${escapeHtml(publisher.name || '')}</span>${count}</a>`;

@@ -43,6 +43,7 @@ const SOURCE_UNITS = {
   博客: '团队',
   国内互联网: '团队',
 };
+const BOARD_CATEGORY = '模型榜单';
 
 function summarySources(issueDate) {
   const dataRoot = process.env.AI_NEWS_DATA_ROOT
@@ -74,20 +75,25 @@ function assertSourcesCard(html, issueDate) {
     const publishers = (category?.publishers || []).filter((item) => item?.name && item?.url);
     publisherTotal += publishers.length;
     const unit = SOURCE_UNITS[title];
-    if (typeof category?.count === 'number') {
+    const board = title === BOARD_CATEGORY;
+    if (board) {
+      assert.match(card, new RegExp(`${title}</span></span><span class="ai-news-sources-cat-meta">${publishers.length} ${unit}</span>`));
+      const boardHtml = card.slice(card.indexOf(title), card.indexOf('GitHub Trending'));
+      assert.doesNotMatch(boardHtml, /未统计|ai-news-sources-count|条/);
+    } else if (typeof category?.count === 'number') {
       sum += category.count;
       assert.match(card, new RegExp(`${title}</span></span><span class="ai-news-sources-cat-meta">${publishers.length} ${unit} · <strong>${category.count} 条</strong>`));
     } else {
       incomplete = true;
       assert.match(card, new RegExp(`${title}</span></span><span class="ai-news-sources-cat-meta">${publishers.length} ${unit} · 未统计`));
     }
-    const quiet = publishers.filter((item) => item.count === 0).length;
+    const quiet = board ? 0 : publishers.filter((item) => item.count === 0).length;
     if (quiet) assert.match(card, new RegExp(`本期无新增 \\(${quiet}\\)`));
     for (const publisher of publishers) {
       names.add(publisher.name);
       const href = String(publisher.url).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const label = String(publisher.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      if (typeof publisher.count === 'number') {
+      if (!board && typeof publisher.count === 'number') {
         assert.match(card, new RegExp(`href="${href}"[^>]*>[\\s\\S]*?${label}</span><span class="ai-news-sources-count">${publisher.count}</span>`));
       } else {
         assert.match(card, new RegExp(`href="${href}"[^>]*>[\\s\\S]*?${label}</span></a>`));
@@ -97,6 +103,13 @@ function assertSourcesCard(html, issueDate) {
   const plus = incomplete ? '\\+' : '';
   assert.match(card, new RegExp(`4 类 </span>${publisherTotal} 源 · 抓取 <span class="ai-news-sources-tally-sum">${sum}${plus}</span>`));
   assert.doesNotMatch(card, /筛前/);
+  const css = fs.readFileSync(path.join(siteRoot, 'src/styles/global.css'), 'utf8');
+  assert.match(css, /--info-card-font-size:\s*0\.8em/);
+  assert.match(css, /--info-card-line-height:\s*1\.5/);
+  assert.match(css, /\.info-card\s*\{[^}]*font-size:\s*var\(--info-card-font-size\)/);
+  assert.match(css, /\.info-card\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
+  assert.match(css, /\.ai-news-sources\s*\{[^}]*font-size:\s*var\(--info-card-font-size\)/);
+  assert.match(css, /\.ai-news-sources\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
   for (const label of ['每周 / TypeScript', '每周 / Python', '每周 / 全部']) {
     if (!names.has(label)) assert.doesNotMatch(card, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }

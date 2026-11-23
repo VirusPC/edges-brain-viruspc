@@ -45,13 +45,14 @@ test('each category folds on its own and zero publishers stay folded', () => {
   assert.match(html, /<path d="M4 11a9 9 0 0 1 9 9"><\/path>/);
   assert.match(html, /<path d="m9 18 6-6-6-6"><\/path>/);
   assert.doesNotMatch(html, /<circle cx="12" cy="12" r="10">/);
-  assert.match(html, /<span class="ai-news-sources-tally-kinds">4 类 <\/span>6 源 · 抓取 <span class="ai-news-sources-tally-sum">5\+<\/span><span class="ai-news-sources-tally-unit"> 条<\/span>/);
+  assert.match(html, /<span class="ai-news-sources-tally-kinds">4 类 <\/span>6 源 · 抓取 <span class="ai-news-sources-tally-sum">5<\/span><span class="ai-news-sources-tally-unit"> 条<\/span>/);
   assert.doesNotMatch(html, /筛前/);
   assert.equal((html.match(/<details class="ai-news-sources-cat"/g) || []).length, 4);
   assert.doesNotMatch(html, /ai-news-sources-fold|<details[^>]* open/);
   const titles = [...html.matchAll(/ai-news-sources-cat-name">[\s\S]*?<span>([^<]+)/g)].map((match) => match[1]);
   assert.deepEqual(titles, ['模型榜单', 'GitHub Trending', '博客', '国内互联网']);
-  assert.match(html, /模型榜单<\/span><\/span><span class="ai-news-sources-cat-meta">2 源 · 未统计/);
+  assert.match(html, /模型榜单<\/span><\/span><span class="ai-news-sources-cat-meta">2 源<\/span>/);
+  assert.doesNotMatch(html, /未统计/);
   assert.match(html, /GitHub Trending<\/span><\/span><span class="ai-news-sources-cat-meta">1 榜 · <strong>2 条<\/strong>/);
   assert.match(html, /博客<\/span><\/span><span class="ai-news-sources-cat-meta">2 团队 · <strong>3 条<\/strong>/);
   assert.match(html, /国内互联网<\/span><\/span><span class="ai-news-sources-cat-meta">1 团队 · <strong>0 条<\/strong>/);
@@ -89,21 +90,51 @@ test('github boards render only when summary already lists them', () => {
   assert.match(html, /href="https:\/\/github.com\/trending\?since=weekly"/);
 });
 
-test('a counted model board shows its number', () => {
+test('model boards count as sources and stay out of the fetch total', () => {
   const html = sourcesCardHtml({
     categories: [
       {
         title: '模型榜单',
-        count: 12,
+        count: 828,
         publishers: [
-          { name: 'OpenRouter', url: 'https://openrouter.ai/rankings', count: 12 },
+          { name: 'Artificial Analysis', url: 'https://artificialanalysis.ai/leaderboards/models', count: 763 },
+          { name: 'LLM Arena', url: 'https://arena.ai/', count: 20 },
+          { name: 'OpenRouter', url: 'https://openrouter.ai/rankings', count: 45 },
+        ],
+      },
+      {
+        title: 'GitHub Trending',
+        count: 35,
+        publishers: [
+          { name: 'GitHub', url: 'https://github.com/trending?since=weekly', count: 35 },
+        ],
+      },
+      {
+        title: '博客',
+        count: 144,
+        publishers: [
+          { name: 'OpenAI', url: 'https://openai.com/news/', count: 144 },
+        ],
+      },
+      {
+        title: '国内互联网',
+        count: 26,
+        publishers: [
+          { name: '阿里', url: 'https://developer.aliyun.com/', count: 26 },
         ],
       },
     ],
   });
-  assert.match(html, /1 源 · <strong>12 条<\/strong>/);
-  assert.match(html, /OpenRouter<\/span><span class="ai-news-sources-count">12<\/span>/);
-  assert.doesNotMatch(html, /模型榜单[\s\S]{0,80}未统计/);
+  assert.match(html, /6 源 · 抓取 <span class="ai-news-sources-tally-sum">205<\/span>/);
+  assert.doesNotMatch(html, /抓取 <span class="ai-news-sources-tally-sum">205\+/);
+  assert.match(html, /模型榜单<\/span><\/span><span class="ai-news-sources-cat-meta">3 源<\/span>/);
+  const board = html.slice(html.indexOf('模型榜单'), html.indexOf('GitHub Trending'));
+  assert.doesNotMatch(board, /未统计|条|ai-news-sources-count/);
+  assert.match(board, /Artificial Analysis<\/span><\/a>/);
+  assert.match(board, /LLM Arena<\/span><\/a>/);
+  assert.match(board, /OpenRouter<\/span><\/a>/);
+  assert.match(html, /1 榜 · <strong>35 条<\/strong>/);
+  assert.match(html, /OpenAI<\/span><span class="ai-news-sources-count">144<\/span>/);
 });
 
 test('a missing sources field does not invent a card', () => {
@@ -111,16 +142,26 @@ test('a missing sources field does not invent a card', () => {
   assert.equal(sourcesCardHtml({}), '');
 });
 
-test('the source card keeps touch size, separators, and the note card colors', () => {
+test('the source card reuses the note card type scale', () => {
   const css = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
-  assert.match(css, /\.ai-news-sources\s*\{[^}]*font-size:\s*1rem/);
+  assert.match(css, /--info-card-font-size:\s*0\.8em/);
+  assert.match(css, /--info-card-line-height:\s*1\.5/);
+  assert.match(css, /--info-card-row-pad:\s*0\.08rem/);
+  assert.match(css, /\.info-card\s*\{[^}]*font-size:\s*var\(--info-card-font-size\)/);
+  assert.match(css, /\.info-card\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
+  assert.match(css, /\.info-card-rows > div\s*\{[^}]*padding:\s*var\(--info-card-row-pad\)/);
+  assert.match(css, /\.ai-news-sources\s*\{[^}]*font-size:\s*var\(--info-card-font-size\)/);
+  assert.match(css, /\.ai-news-sources\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
+  assert.match(css, /\.ai-news-sources-cat > summary\s*\{[^}]*padding:\s*var\(--info-card-row-pad\)/);
+  assert.match(css, /\.ai-news-sources-cat > summary\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
+  assert.match(css, /\.prose a\.ai-news-sources-pub\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
+  assert.match(css, /\.prose \.ai-news-sources-opml\s*\{[^}]*line-height:\s*var\(--info-card-line-height\)/);
   assert.match(css, /\.ai-news-sources-names\s*\{[^}]*flex-wrap:\s*wrap/);
   assert.match(css, /\.ai-news-sources-cat\s*\{[^}]*border-top:\s*1px solid var\(--rule\)/);
-  assert.match(css, /\.ai-news-sources-cat > summary\s*\{[^}]*min-height:\s*44px/);
-  assert.match(css, /\.prose a\.ai-news-sources-pub\s*\{[^}]*min-height:\s*44px/);
-  assert.match(css, /\.prose \.ai-news-sources-opml\s*\{[^}]*min-height:\s*44px/);
   assert.match(css, /\.prose \.ai-news-sources-opml\s*\{[^}]*border:\s*1px solid var\(--panel-line\)/);
   assert.match(css, /\.prose \.ai-news-sources-opml\s*\{[^}]*background:\s*var\(--paper\)/);
-  assert.doesNotMatch(css, /\.ai-news-sources[\w-]*\s*\{[^}]*font-size:\s*0\./);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.prose \.ai-news-sources-opml::before\s*\{[^}]*height:\s*44px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-sources-cat > summary::before,[\s\S]*?height:\s*44px/);
   assert.doesNotMatch(css, /\.ai-news-sources-opml\s*\{[^}]*background:\s*#fff/);
+  assert.doesNotMatch(css, /\.ai-news-sources-cat > summary\s*\{[^}]*min-height:\s*44px/);
 });
