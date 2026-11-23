@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from lib.issue import check_document, gap_covers  # noqa: E402
+from lib.issue import check_document, gap_covers, gaps_for_lane, print_result  # noqa: E402
 
 
 def validate(issue: Path, gaps: list[dict], known_ids: set[str]) -> tuple[list[str], bool]:
@@ -32,3 +32,25 @@ def validate(issue: Path, gaps: list[dict], known_ids: set[str]) -> tuple[list[s
             if target not in known_ids:
                 errors.append(f"summary/keywords.json 的「{name}」指向不存在的 ID {target}")
     return errors, True
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 1:
+        print("用法: python3 scripts/summarize/keywords/validate.py issues/<生成日>", file=sys.stderr)
+        return 2
+    issue = Path(argv[0])
+    gaps, gap_errors = gaps_for_lane(issue, "summary")
+    from summarize.articles.validate import validate as validate_articles
+    from summarize.models.validate import validate as validate_models
+    from summarize.projects.validate import validate as validate_projects
+
+    article_errors, articles = validate_articles(issue)
+    project_errors, projects = validate_projects(issue)
+    model_errors, models, _boards, board_items = validate_models(issue, gaps)
+    known = set(articles) | set(projects) | set(models) | set(board_items)
+    keyword_errors, _present = validate(issue, gaps, known)
+    return print_result(gap_errors + article_errors + project_errors + model_errors + keyword_errors, "ok summary/keywords")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

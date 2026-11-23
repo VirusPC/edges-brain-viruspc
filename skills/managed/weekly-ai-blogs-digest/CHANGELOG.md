@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-11-23
+
+### Changed
+
+- 根 `SKILL.md` 只保留步骤顺序和子步骤链接。每个子步骤说明自己写输入、输出、脚本命令、schema 和校验命令；该步写完立刻校验，阶段汇合仍走 `check.md`。
+- 文章抓取拆成三件工具：`check_subscription.py` 核对 OPML，`fetch_source.py` 按点名的源返回原文和体检，`write_feeds.py` 只合并调用方已经选定的源。脚本不再在主源不可用时自动并入备源，也不再列出全部已配置备源。备源是否启用写在 `references/prepare/articles.md`。
+- 去掉 `feeds.index.json`。目录树里没有这个文件。
+- 缺少 `--since` 或 `--until` 时直接退出，不用运行当天补窗口。
+- GitHub Trending 每周总榜改由 `scripts/prepare/projects/fetch_github_trending.py` 抓取，按 XML 原始顺序写入 `raw/projects/github-trending.json`，不再从 `feeds.json` 抽取。
+- 发布方、分类和网站改在清洗阶段用 `scripts/clean/stamp_publishers.py` 写入 `cleaned/`。汇合脚本 `write_index.py` 只重写 `summary/index.json`，不回写 `cleaned/`。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.7` 先不打，留给维护者。
+
 ## [0.0.6] - 2026-11-23
 
 ### Changed

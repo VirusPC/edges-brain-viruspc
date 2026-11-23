@@ -1,6 +1,6 @@
 # 清洗汇合校验
 
-准备校验通过之后，进入总结之前，再跑清洗校验。通过才算本阶段完成：
+三路各自的校验已经通过、发布方也已写入 cleaned 之后，进入总结之前再跑清洗汇合。通过才算本阶段完成：
 
 ```bash
 python3 scripts/clean/check/validate.py issues/<生成日>

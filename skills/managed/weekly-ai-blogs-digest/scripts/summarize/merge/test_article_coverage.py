@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from prepare.articles.fetch_feeds import normalize_link  # noqa: E402
+from lib.links import normalize_link  # noqa: E402
 from summarize.merge.article_coverage import article_coverage, cleaned_article_count  # noqa: E402
 
 

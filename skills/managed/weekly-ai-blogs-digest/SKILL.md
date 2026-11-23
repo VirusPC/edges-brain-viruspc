@@ -1,7 +1,7 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
-version: 0.0.6
+version: 0.0.7
 ---
 
 # AI 资讯周报
@@ -104,25 +104,7 @@ issues/YYYY-MM-DD/
 
 `{id}.json` 的文件名不是 ID。ID 写在文件里：文章是规范化链接，项目是仓库地址，模型是官方名，榜单条目是榜单名加模型官方名。`index.json` 只列这些 ID。
 
-契约在 `schemas/raw/`、`schemas/cleaned/`、`schemas/summary/`。校验脚本按子阶段放在 `scripts/prepare/`、`scripts/clean/`、`scripts/summarize/`，公共代码在 `scripts/lib/`。
-
-| 子阶段 | 校验脚本 | Schema |
-| --- | --- | --- |
-| [prepare/window.md](references/prepare/window.md) | `scripts/prepare/window/validate.py` | `schemas/raw/window.schema.json` |
-| [prepare/articles.md](references/prepare/articles.md) | `scripts/prepare/articles/validate.py` | `schemas/raw/articles/feeds.schema.json`、`schemas/raw/articles/backfill.schema.json` |
-| [prepare/projects.md](references/prepare/projects.md) | `scripts/prepare/projects/validate.py` | `schemas/raw/projects/github-trending.schema.json`、`schemas/raw/projects/releases.schema.json` |
-| [prepare/models.md](references/prepare/models.md) | `scripts/prepare/models/validate.py` | `schemas/raw/models/*.schema.json` |
-| [prepare/check.md](references/prepare/check.md) | `scripts/prepare/check/validate.py` | `schemas/raw/stage.schema.json`、`schemas/raw/gaps.schema.json` |
-| [clean/articles.md](references/clean/articles.md) | `scripts/clean/articles/validate.py` | `schemas/cleaned/articles/index.schema.json`、`schemas/cleaned/articles/item.schema.json` |
-| [clean/projects.md](references/clean/projects.md) | `scripts/clean/projects/validate.py` | `schemas/cleaned/projects/index.schema.json`、`schemas/cleaned/projects/item.schema.json` |
-| [clean/models.md](references/clean/models.md) | `scripts/clean/models/validate.py` | `schemas/cleaned/models/index.schema.json`、`schemas/cleaned/models/item.schema.json`、`schemas/cleaned/models/board.schema.json` |
-| [clean/check.md](references/clean/check.md) | `scripts/clean/check/validate.py` | `schemas/cleaned/stage.schema.json`、`schemas/cleaned/gaps.schema.json` |
-| [summarize/articles.md](references/summarize/articles.md) | `scripts/summarize/articles/validate.py` | `schemas/summary/articles/item.schema.json` |
-| [summarize/projects.md](references/summarize/projects.md) | `scripts/summarize/projects/validate.py` | `schemas/summary/projects/item.schema.json` |
-| [summarize/models.md](references/summarize/models.md) | `scripts/summarize/models/validate.py` | `schemas/summary/models/item.schema.json`、`schemas/summary/models/board.schema.json` |
-| [summarize/merge.md](references/summarize/merge.md) | `scripts/summarize/merge/validate.py` | 不另建文件，检查三路 ID 不重复 |
-| [summarize/keywords.md](references/summarize/keywords.md) | `scripts/summarize/keywords/validate.py` | `schemas/summary/keywords.schema.json` |
-| [summarize/check.md](references/summarize/check.md) | `scripts/summarize/check/validate.py` | `schemas/summary/index.schema.json`、`schemas/summary/stage.schema.json`、`schemas/summary/gaps.schema.json` |
+契约在 `schemas/raw/`、`schemas/cleaned/`、`schemas/summary/`。每个子步骤说明自己写输入、输出文件、要调用的脚本、对应 schema 和校验命令。那一步的文件写完后立刻跑该步校验。三个阶段目录汇合时仍分别走 [准备汇合](references/prepare/check.md)、[清洗汇合](references/clean/check.md)、[整页校验](references/summarize/check.md)。脚本只做该步写明的那一件事，不代替说明里的判断。
 
 侧重点是 Agent 与产品。研究向、红队、纯学术长文可以不写。融资、IPO、营收、定价套餐和厂商客户案例不收，除非里面有具体技术或产品细节。优惠和白嫖不写。判断依据是内容，不是 URL 路径。不要编造数字、名次或材料里没有的事实。
 

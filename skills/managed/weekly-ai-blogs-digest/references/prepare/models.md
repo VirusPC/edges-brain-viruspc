@@ -12,6 +12,20 @@
 
 密钥只用环境变量 `AA_API_KEY`（或 `ARTIFICIAL_ANALYSIS_API_KEY`）和 `OPENROUTER_API_KEY`。不写进命令、日志或文件。没有密钥就跳过该文件，在 `raw/gaps.json` 写明，不用空文件假装有数据。端点要等 AA 这份文件有了结果再拉；没有密钥就不请求端点。
 
+## 契约
+
+输入是 `raw/window.json` 的 `since`、`until`，以及环境变量里的密钥。没有生成日就停止。
+
+输出是上面列出的 `raw/models/` 文件。Schema 在 `schemas/raw/models/`，文件名与输出文件对应（Arena 用 `llm-arena.schema.json`）。
+
+写完立刻校验：
+
+```bash
+python3 scripts/prepare/models/validate.py issues/<生成日>
+```
+
+在本 skill 目录执行。阶段汇合走 [准备汇合](check.md)。
+
 ## 命令
 
 ```bash

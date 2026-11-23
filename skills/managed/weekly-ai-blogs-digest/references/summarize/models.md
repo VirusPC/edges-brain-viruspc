@@ -2,10 +2,27 @@
 
 把 `cleaned/models/` 的事实和榜单数字写成展示内容。不依赖文章选文，也不把 GitHub 项目榜写进来。
 
-产出：
+## 契约
+
+输入是 `cleaned/models/`。
+
+输出：
 
 - `summary/models/{id}.json`：一张模型卡片。三行是价格、速度、效果，数字和名次只用清洗结果。`rank` 不是正整数就不写名次，没有数字就写「暂无」。发布要点按上线、定位、成绩，最后一条是可用或实测。没有第三方实测就写可用。
 - `summary/models/boards/`：只存绘图数据，包括给读者的一句说明，以及圈谁、Arena 榜单发布日。不另存 SVG 或 PNG。
+
+Schema：
+
+- `schemas/summary/models/item.schema.json`
+- `schemas/summary/models/board.schema.json`
+
+写完立刻校验：
+
+```bash
+python3 scripts/summarize/models/validate.py issues/<生成日>
+```
+
+在本 skill 目录执行。整页汇合走 [整页校验](check.md)。
 
 说明句写这张榜相对上一期可核验的变化；没有对比就只说本期格局。不写「数据取自」「快照」「抓取于」。没有证据就不写上升、下降或新进。Arena 名次变化对照上一期 `summary/` 实际采用的那份榜，不用原始响应里的 `prior_publish_date` 代替。发布日与上一期相同就沿用那张图的数据，说明写榜没有换。对照时锁定上一期文件和版本。
 

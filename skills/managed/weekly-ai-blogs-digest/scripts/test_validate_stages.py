@@ -55,7 +55,6 @@ def write_issue(root: Path) -> Path:
         {
             "items": [
                 {"title": "一篇", "link": ARTICLE, "date": "2026-11-18", "source": "openai-news"},
-                {"title": "仓库", "link": REPO, "date": "2026-11-18", "source": "github-trending-weekly-all"},
             ]
         },
     )
@@ -175,13 +174,13 @@ def write_issue(root: Path) -> Path:
     write_json(
         summary / "index.json",
         {
-            "skill": {"name": SKILL, "version": "0.0.6"},
+            "skill": {"name": SKILL, "version": "0.0.7"},
             "routine": {
                 "repo": "VirusPC/edges-brain-viruspc",
                 "commit": "a" * 40,
                 "path": ".edges/routines/weekly-ai-blogs-digest/INDEX.md",
             },
-            "articles_coverage": {"raw": 2, "selected": 1},
+            "articles_coverage": {"raw": 1, "selected": 1},
             "window": {"issue": ISSUE, "since": "2026-11-13", "until": "2026-11-19"},
             "sources": sources_document(issue),
             "chapters": [
