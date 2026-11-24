@@ -1,21 +1,27 @@
-"""校验 summary/overview.json。Agent 撰写，这里只检查形状和引用。"""
+"""校验 summary/overview.json。Agent 撰写，这里只检查形状、引用和主线 tag。"""
 
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from lib.issue import read_json, schema_for  # noqa: E402
+from lib.issue import parse_version, read_json, schema_for, version_reached  # noqa: E402
 from lib.jsonschema import validate as validate_schema  # noqa: E402
 from summarize.merge.write_index import skill_version  # noqa: E402
 
 NO_MODEL = "本周无重要模型发布"
+NO_MODEL_TAG = "无重要发布"
+TAG_SINCE = "0.0.9"
+THEME_TAG_WEIGHT = 5
 MAX_CHARS = 280
 SHORT_CHARS = 120
 SKIP_FILES = {"overview.json", "keywords.json", "index.json", "stage.json", "gaps.json"}
+_MODEL_LETTERS = re.compile(r"[A-Za-z]")
+_MODEL_DIGITS = re.compile(r"\d")
 
 
 def validate(issue: Path) -> tuple[list[str], list[str]]:
@@ -41,8 +47,11 @@ def validate(issue: Path) -> tuple[list[str], list[str]]:
     if not 3 <= len(themes) <= 5:
         errors.append("summary/overview.json 不是 3 到 5 条")
     skill = data.get("skill") if isinstance(data.get("skill"), dict) else {}
-    if skill.get("version") != skill_version():
-        errors.append(f"summary/overview.json 的 skill.version 不等于当前 skill {skill_version()}")
+    recorded = skill.get("version") if isinstance(skill.get("version"), str) else None
+    errors.extend(_version_errors(recorded))
+    tag_rules = version_reached(recorded, TAG_SINCE)
+    names = _collect_names(issue) if tag_rules else {"articles": set(), "projects": set(), "models": set()}
+    seen_tags: set[str] = set()
     known = _known_ids(issue)
     model_ids = _model_card_ids(issue)
     texts: list[str] = []
@@ -78,6 +87,8 @@ def validate(issue: Path) -> tuple[list[str], list[str]]:
                 warnings.append(
                     f"警告: summary/overview.json 第 {index} 条的 label「{label}」在正文里出现多次，站点只链第一处"
                 )
+        if tag_rules:
+            errors.extend(_tag_errors(index, theme, names, seen_tags))
     body = "\n".join(texts)
     article_ids = _lane_ids(issue, "articles")
     errors.extend(_category_coverage(themes, article_ids, _lane_ids(issue, "projects")))
@@ -86,6 +97,82 @@ def validate(issue: Path) -> tuple[list[str], list[str]]:
         if name not in body:
             warnings.append(f"警告: 关键词「{name}」的 theme 为 true，总结正文里没有出现")
     return errors, warnings
+
+
+def _version_errors(recorded: str | None) -> list[str]:
+    current = skill_version()
+    got = parse_version(recorded)
+    head = parse_version(current)
+    if got is None or head is None:
+        return ["summary/overview.json 的 skill.version 不是 semver"]
+    if got > head:
+        return [f"summary/overview.json 的 skill.version {recorded} 新于当前 skill {current}"]
+    return []
+
+
+def _tag_errors(index: int, theme: dict, names: dict[str, set[str]], seen: set[str]) -> list[str]:
+    errors: list[str] = []
+    prefix = f"summary/overview.json 第 {index} 条"
+    if "tag" not in theme:
+        return [f"{prefix}缺少 tag"]
+    raw = theme.get("tag")
+    if not isinstance(raw, str):
+        return errors
+    if raw != raw.strip() or any(char in raw for char in "\n\r\t"):
+        return [f"{prefix}的 tag 不能有首尾空白或换行"]
+    if not raw:
+        return [f"{prefix}的 tag 为空"]
+    norm = _norm(raw)
+    if norm in seen:
+        errors.append(f"{prefix}的 tag「{raw}」与另一条主线重复")
+    else:
+        seen.add(norm)
+    text = theme.get("text") if isinstance(theme.get("text"), str) else ""
+    refs = theme.get("refs") if isinstance(theme.get("refs"), list) else []
+    if text == NO_MODEL:
+        if raw != NO_MODEL_TAG:
+            errors.append(f"{prefix}的 tag 必须是「{NO_MODEL_TAG}」")
+        return errors
+    if theme.get("kind") == "model":
+        if _looks_like_model_name(raw, refs, names["models"]):
+            errors.append(f"{prefix}的 tag 不得是型号名")
+        return errors
+    if _looks_like_item_name(raw, refs, names):
+        errors.append(f"{prefix}的 tag 不得是单篇文章或单个项目、产品名")
+    return errors
+
+
+def _looks_like_model_name(tag: str, refs: list, model_names: set[str]) -> bool:
+    norm = _norm(tag)
+    if norm in model_names:
+        return True
+    if _ref_matches(norm, refs):
+        return True
+    return _MODEL_LETTERS.search(tag) is not None and _MODEL_DIGITS.search(tag) is not None
+
+
+def _looks_like_item_name(tag: str, refs: list, names: dict[str, set[str]]) -> bool:
+    norm = _norm(tag)
+    if norm in names["articles"] or norm in names["projects"] or norm in names["models"]:
+        return True
+    return _ref_matches(norm, refs)
+
+
+def _ref_matches(norm: str, refs: list) -> bool:
+    if not norm:
+        return False
+    for ref in refs:
+        if not isinstance(ref, dict):
+            continue
+        for key in ("id", "label"):
+            value = ref.get(key)
+            if isinstance(value, str) and _norm(value) == norm:
+                return True
+    return False
+
+
+def _norm(value: str) -> str:
+    return re.sub(r"\s+", " ", value.strip()).casefold()
 
 
 def _cited_ids(theme: dict) -> list[str]:
@@ -181,6 +268,54 @@ def _model_card_ids(issue: Path) -> set[str]:
         if isinstance(data, dict) and isinstance(data.get("id"), str):
             found.add(data["id"])
     return found
+
+
+def _collect_names(issue: Path) -> dict[str, set[str]]:
+    articles: set[str] = set()
+    projects: set[str] = set()
+    models: set[str] = set()
+    for lane, bucket, keys in (
+        ("articles", articles, ("id", "title")),
+        ("projects", projects, ("id",)),
+        ("models", models, ("id", "name", "title")),
+    ):
+        directory = issue / "summary" / lane
+        if not directory.is_dir():
+            continue
+        for path in directory.glob("*.json"):
+            data = _read_object(path)
+            if data is None:
+                continue
+            for key in keys:
+                value = data.get(key)
+                if isinstance(value, str) and value.strip():
+                    bucket.add(_norm(value))
+            if lane == "projects" and isinstance(data.get("id"), str):
+                base = data["id"].rstrip("/").rsplit("/", 1)[-1]
+                if len(base) >= 2:
+                    bucket.add(_norm(base))
+    boards = issue / "summary" / "models" / "boards"
+    if boards.is_dir():
+        for path in boards.glob("*.json"):
+            data = _read_object(path)
+            if data is None:
+                continue
+            for item in data.get("items") or []:
+                if not isinstance(item, dict):
+                    continue
+                for key in ("id", "name"):
+                    value = item.get(key)
+                    if isinstance(value, str) and value.strip():
+                        models.add(_norm(value))
+    return {"articles": articles, "projects": projects, "models": models}
+
+
+def _read_object(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def _theme_words(issue: Path) -> list[str]:

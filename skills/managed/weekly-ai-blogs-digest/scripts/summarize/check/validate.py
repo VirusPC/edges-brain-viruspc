@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""整页校验。清洗校验通过、三路和关键词都对齐之后，这一期 summary 才可交给博客。"""
+"""整页校验。清洗校验通过，三路、本周总结和关键词都对齐之后，这一期 summary 才算写完。"""
 
 from __future__ import annotations
 

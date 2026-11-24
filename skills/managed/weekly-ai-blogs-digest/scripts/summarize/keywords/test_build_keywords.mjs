@@ -1,17 +1,22 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   applyThemeLabel,
   buildKeywordDocument,
   isBlockedProduct,
   isEvaluationTitle,
+  mergeOverviewTags,
   modelNamesInTitle,
+  NO_MODEL_TEXT,
   releaseKind,
   summaryKeywords,
   textHasWord,
+  THEME_TAG_WEIGHT,
 } from "./build_keywords.mjs";
 import { keywordWeight } from "./keyword_weight.mjs";
 
@@ -179,6 +184,116 @@ test("summary keywords keep model names and do not emit the whole title", () => 
   const names = summaryKeywords(root, issue).keywords.map((item) => item.name);
   assert.ok(names.includes("Claude Fable 5.2"));
   assert.equal(names.some((name) => name.includes("very long")), false);
+});
+
+test("theme tags raise weight without replacing extracted names or the theme flag", () => {
+  const merged = mergeOverviewTags(
+    [
+      { name: "常驻 Agent", weight: 4.2, theme: true, targets: ["a"] },
+      { name: "GPT-6.2 Astra", weight: 4.7, targets: ["m"] },
+    ],
+    [
+      { text: "能力往工作流里走。", tag: "进入工作流", refs: [{ id: "m" }] },
+      { text: "值守还在。", tag: "常驻 agent", refs: [{ id: "a" }, { id: "b" }] },
+      { text: NO_MODEL_TEXT, tag: "无重要发布", refs: [] },
+    ],
+  );
+  assert.equal(merged[0].name, "常驻 Agent");
+  assert.equal(merged[0].theme, true);
+  assert.equal(merged[0].weight, THEME_TAG_WEIGHT);
+  assert.deepEqual(merged[0].targets, ["a", "b"]);
+  const added = merged.find((item) => item.name === "进入工作流");
+  assert.equal(added.weight, THEME_TAG_WEIGHT);
+  assert.equal(added.theme, undefined);
+  assert.deepEqual(added.targets, ["m"]);
+  const model = merged.find((item) => item.name === "GPT-6.2 Astra");
+  assert.equal(model.weight, 4.7);
+  assert.equal(model.theme, undefined);
+  assert.equal(merged.some((item) => item.name === "无重要发布"), false);
+  assert.ok(merged.findIndex((item) => item.name === "进入工作流") < merged.findIndex((item) => item.name === "GPT-6.2 Astra"));
+});
+
+test("summary keywords merge theme tags after extraction and keep the model name", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "kw-tags-"));
+  const issue = "2026-11-13";
+  const summary = path.join(root, issue, "summary");
+  fs.mkdirSync(path.join(summary, "articles"), { recursive: true });
+  fs.mkdirSync(path.join(summary, "models"), { recursive: true });
+  fs.writeFileSync(
+    path.join(summary, "articles", "post.json"),
+    JSON.stringify({
+      id: "https://example.com/post",
+      title: "Introducing Claude Fable 5.2 and a very long product announcement title",
+      link: "https://example.com/post",
+      sentence: "Claude Fable 5.2 is the release.",
+      text: "Claude Fable 5.2",
+    }),
+  );
+  fs.writeFileSync(
+    path.join(summary, "models", "fable.json"),
+    JSON.stringify({ id: "Claude Fable 5.2", text: "Claude Fable 5.2" }),
+  );
+  const before = summaryKeywords(root, issue).keywords.find((item) => item.name === "Claude Fable 5.2");
+  assert.ok(before);
+  assert.ok(before.weight < THEME_TAG_WEIGHT);
+  fs.writeFileSync(
+    path.join(summary, "overview.json"),
+    JSON.stringify({
+      skill: { name: "weekly-ai-blogs-digest", version: "0.0.9" },
+      themes: [
+        {
+          kind: "model",
+          tag: "Claude Fable 5.2",
+          text: "Claude Fable 5.2",
+          refs: [{ id: "Claude Fable 5.2", label: "Claude Fable 5.2" }],
+        },
+        {
+          kind: "other",
+          tag: "进入工作流",
+          text: "一篇",
+          refs: [{ id: "https://example.com/post", label: "一篇" }],
+        },
+        { kind: "model", tag: "无重要发布", text: NO_MODEL_TEXT, refs: [] },
+      ],
+    }),
+  );
+  const after = summaryKeywords(root, issue).keywords;
+  const model = after.find((item) => item.name === "Claude Fable 5.2");
+  assert.equal(model.weight, THEME_TAG_WEIGHT);
+  assert.equal(model.theme, undefined);
+  assert.ok(model.targets.includes("Claude Fable 5.2"));
+  const tag = after.find((item) => item.name === "进入工作流");
+  assert.equal(tag.weight, THEME_TAG_WEIGHT);
+  assert.equal(tag.theme, undefined);
+  assert.deepEqual(tag.targets, ["https://example.com/post"]);
+  assert.equal(after.some((item) => item.name === "无重要发布"), false);
+  assert.equal(after.some((item) => item.name.includes("very long")), false);
+});
+
+test("keyword build refuses to run before overview exists and before tags exist", () => {
+  const skillRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+  const script = path.join(skillRoot, "scripts/summarize/keywords/build_keywords.mjs");
+  const missing = fs.mkdtempSync(path.join(os.tmpdir(), "kw-no-overview-"));
+  const missingDir = path.join(missing, "2026-11-20");
+  fs.mkdirSync(missingDir, { recursive: true });
+  const withoutOverview = spawnSync(process.execPath, [script, "--issue-dir", missingDir], { encoding: "utf8" });
+  assert.notEqual(withoutOverview.status, 0);
+  assert.match(withoutOverview.stderr, /overview\.json/);
+
+  const untagged = fs.mkdtempSync(path.join(os.tmpdir(), "kw-no-tag-"));
+  const untaggedDir = path.join(untagged, "2026-11-20");
+  fs.mkdirSync(path.join(untaggedDir, "summary"), { recursive: true });
+  fs.writeFileSync(
+    path.join(untaggedDir, "summary", "overview.json"),
+    JSON.stringify({
+      skill: { name: "weekly-ai-blogs-digest", version: "0.0.9" },
+      themes: [{ kind: "model", text: "x", refs: [] }],
+    }),
+  );
+  const withoutTag = spawnSync(process.execPath, [script, "--issue-dir", untaggedDir], { encoding: "utf8" });
+  assert.notEqual(withoutTag.status, 0);
+  assert.match(withoutTag.stderr, /缺少 tag/);
+  assert.equal(fs.existsSync(path.join(untaggedDir, "summary", "keywords.json")), false);
 });
 
 test("a theme label replaces only the evidenced concept", () => {
