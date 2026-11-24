@@ -14,4 +14,5 @@
 - [site\_dev\_preview\_env](<backlog/2026-11-13--%E4%B8%BA%E4%B8%AA%E4%BA%BA%E5%A4%A7%E8%84%91%E7%AB%99%E7%82%B9%E8%A1%A5%E5%85%85-dev-%E9%A2%84%E8%A7%88%E7%8E%AF%E5%A2%83/INDEX.md>) — 站点现在合并即上线，PR 阶段看不到真实效果；补一个 dev 预览环境，先看预览再合。
 - [按\_dashboard\_思路重构\_ai\_news\_的数据与可视化](<backlog/2026-11-13--%E6%8C%89-Dashboard-%E6%80%9D%E8%B7%AF%E9%87%8D%E6%9E%84-AI-News-%E7%9A%84%E6%95%B0%E6%8D%AE%E4%B8%8E%E5%8F%AF%E8%A7%86%E5%8C%96/INDEX.md>) — 多个模型榜单现在平铺展示。按 dashboard 思路分开数据层和可视化层，榜单改为下拉切换后再看。
 - [site\_github\_reader\_feedback](<in_review/2026-11-21--%E7%BB%99%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93%E7%AB%99%E7%82%B9%E5%8A%A0%E5%9F%BA%E4%BA%8E-GitHub-%E7%9A%84%E8%AF%BB%E8%80%85%E5%8F%8D%E9%A6%88%E6%B8%A0%E9%81%93/INDEX.md>) — 文章页用 Giscus 的 Comments 分类评论，右下角反馈按钮打开预填 Issue；等验收。
+- [ai\_资讯订阅的个性化关键词筛选](<backlog/2026-11-25--AI-%E8%B5%84%E8%AE%AF%E8%AE%A2%E9%98%85%E7%9A%84%E4%B8%AA%E6%80%A7%E5%8C%96%E5%85%B3%E9%94%AE%E8%AF%8D%E7%AD%9B%E9%80%89/INDEX.md>) — 一键订阅第一版全员收到同一份本周总结；后续让订阅者按关键词筛选推送内容。
 <!-- edges-entries-local:end -->
