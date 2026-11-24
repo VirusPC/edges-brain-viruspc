@@ -24,6 +24,31 @@ export function chipText(option) {
 }
 
 /**
+ * The neutral「全部」chip shared by the article plaque and the keyword plaque.
+ * A count uses the same `全部 (n)` label as the article rows. Without one, the
+ * keyword plaque shows the word by itself.
+ * @param {{ selected?: boolean, count?: number, row?: string }} [option]
+ */
+export function allOption(option = {}) {
+  const data = { filter: 'all' };
+  if (option.row) data.row = option.row;
+  return {
+    id: 'all',
+    text: typeof option.count === 'number' ? chipText({ text: '全部', count: option.count }) : '全部',
+    selected: Boolean(option.selected),
+    variant: 'all',
+    data,
+  };
+}
+
+/**
+ * @param {{ dataset?: { filter?: string } } | null | undefined} button
+ */
+export function isAllChip(button) {
+  return button?.dataset?.filter === 'all';
+}
+
+/**
  * One row when the caller passes `options`. Several rows keep the article plaque's dimensions.
  * @param {{ title?: string, options?: object[], rows?: object[] }} spec
  */
