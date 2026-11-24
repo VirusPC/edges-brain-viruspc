@@ -47,7 +47,13 @@ test('the plaque stacks the keyword bar, the chapter title, and the article bar'
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*background:\s*var\(--paper\)/);
   assert.match(css, /\.ai-news-keyword-bar,\s*\n\.ai-news-article-bar\s*\{[^}]*background:\s*var\(--paper\)/);
   assert.match(css, /\.ai-news-keyword-bar\s*\{[^}]*box-shadow:[^;]*var\(--paper\)/);
-  assert.match(css, /\.ai-news-article-bar\s*\{[^}]*box-shadow:[^;]*0 6px 0 var\(--paper\)/);
+  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*background:\s*var\(--paper\)/);
+  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*bottom:\s*-12px/);
+  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*top:\s*calc\(-1 \* var\(--ai-news-article-top, 0px\) - 4px\)/);
+  assert.doesNotMatch(css, /\.ai-news-article-bar::before\s*\{[^}]*transform:/);
+  assert.doesNotMatch(css, /0 6px 0 var\(--paper\)/);
+  assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*8px 12px 6px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter\s*\{[^}]*padding:\s*6px 8px 4px/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) h3\s*\{[^}]*position:\s*static/);
   assert.doesNotMatch(css, /\.prose:has\(\.ai-news-keyword-bar\) h3\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /\.ai-news-filter button::before\s*\{[^}]*height:\s*44px/);

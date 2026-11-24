@@ -59,8 +59,21 @@
   top: var(--ai-news-article-top, var(--ai-news-filter-top, 0px));
   box-shadow:
     -12px 0 0 var(--paper),
-    12px 0 0 var(--paper),
-    0 6px 0 var(--paper);
+    12px 0 0 var(--paper);
+}
+
+/* Unrotated paper behind the whole sticky stack. The wood board tilts -0.5deg,
+   so its corners leave the border box; this layer covers that box plus a few pixels. */
+.ai-news-article-bar::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--paper);
+  left: -14px;
+  right: -14px;
+  top: calc(-1 * var(--ai-news-article-top, 0px) - 4px);
+  bottom: -12px;
 }
 
 .ai-news-filter.is-static {
