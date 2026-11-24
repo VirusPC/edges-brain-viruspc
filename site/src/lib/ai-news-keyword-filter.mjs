@@ -1,6 +1,7 @@
-/** One keyword at a time, shared by the word cloud, overview tags, and chapter chips. */
+/** One keyword at a time, shared by the word cloud, overview tags, and the keyword plaque. */
 
 import { featuredCounts } from './ai-news-category-filter.mjs';
+import { bindFilterStack, createFilterBar } from './ai-news-filter-bar.mjs';
 
 export const EMPTY_LABEL = {
   models: '无相关模型',
@@ -92,11 +93,21 @@ export function mountKeywordFilter(doc) {
   } catch {
     return;
   }
-  const keywords = new Map(
-    (Array.isArray(data?.keywords) ? data.keywords : [])
-      .filter((item) => item && typeof item.name === 'string' && item.name)
-      .map((item) => [item.name, new Set(Array.isArray(item.targets) ? item.targets : [])]),
-  );
+  const list = (Array.isArray(data?.keywords) ? data.keywords : [])
+    .filter((item) => item && typeof item.name === 'string' && item.name);
+  const keywords = new Map();
+  /** @type {{ id: string, text: string, variant: string, data: { keyword: string } }[]} */
+  const options = [];
+  for (const item of list) {
+    if (keywords.has(item.name)) continue;
+    keywords.set(item.name, new Set(Array.isArray(item.targets) ? item.targets : []));
+    options.push({
+      id: item.name,
+      text: item.name,
+      variant: 'word',
+      data: { keyword: item.name },
+    });
+  }
   if (keywords.size === 0) return;
   root.dataset.keywordReady = '1';
 
@@ -126,13 +137,34 @@ export function mountKeywordFilter(doc) {
       paintChapter(chapter, keyword, targets);
     }
     if (root.dataset.filterReady === '1') {
-      root.dispatchEvent(new CustomEvent('ai-news-keyword'));
+      const view = root.ownerDocument?.defaultView;
+      const EventCtor = view?.CustomEvent || view?.Event;
+      if (EventCtor) root.dispatchEvent(new EventCtor('ai-news-keyword'));
     }
   };
 
+  const cloud = root.querySelector('.keyword-cloud');
+  const bar = createFilterBar(doc, {
+    title: '本周关键词',
+    selection: 'single',
+    sticky: true,
+    className: 'ai-news-keyword-bar',
+    options,
+    onSelect({ optionId }) {
+      apply(nextKeyword(root.dataset.activeKeyword || '', optionId));
+    },
+  });
+  if (cloud) cloud.before(bar.element);
+  else {
+    const heading = [...root.querySelectorAll('h2')].find((node) => textOf(node).startsWith('一、本周概览'));
+    if (heading) heading.after(bar.element);
+    else root.prepend(bar.element);
+  }
+  bindFilterStack(doc);
+
   root.addEventListener('click', (event) => {
     const button = event.target?.closest?.('button[data-keyword]');
-    if (!button || !root.contains(button)) return;
+    if (!button || !root.contains(button) || button.closest('.ai-news-keyword-bar')) return;
     event.preventDefault();
     apply(nextKeyword(root.dataset.activeKeyword || '', button.getAttribute('data-keyword') || ''));
   });
@@ -211,10 +243,8 @@ function paintChapter(chapter, keyword, targets) {
   const { heading } = chapter;
   heading.classList.toggle('has-keyword-filter', active);
   let count = heading.querySelector('.keyword-filter-count');
-  let chip = heading.querySelector('.keyword-filter-chip');
   if (!active) {
     count?.remove();
-    chip?.remove();
   } else {
     if (!count) {
       count = heading.ownerDocument.createElement('span');
@@ -222,16 +252,6 @@ function paintChapter(chapter, keyword, targets) {
       heading.append(count);
     }
     count.textContent = `${tally.shown}/${tally.total}`;
-    if (!chip) {
-      chip = heading.ownerDocument.createElement('button');
-      chip.type = 'button';
-      chip.className = 'keyword-filter-chip';
-      heading.append(chip);
-    }
-    chip.textContent = keyword;
-    chip.setAttribute('data-keyword', keyword);
-    chip.setAttribute('aria-pressed', 'true');
-    chip.classList.add('is-on');
   }
   const note = ensureEmpty(heading, chapter.key);
   note.hidden = !tally.empty;

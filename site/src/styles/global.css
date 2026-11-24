@@ -844,24 +844,6 @@ body.is-post.has-toc .sidenote {
   -webkit-tap-highlight-color: transparent;
 }
 
-.keyword-filter-chip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  margin: 0;
-  padding: 0.08em 0.55em 0.1em;
-  border: 1.5px solid var(--tag-on);
-  border-radius: 999px;
-  background: var(--tag-on-wash);
-  color: var(--tag-on);
-  font-family: var(--serif);
-  font-size: 0.86em;
-  font-weight: 700;
-  line-height: 1.3;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
 .keyword-filter-count {
   color: var(--muted);
   font-size: 0.72em;
@@ -887,8 +869,7 @@ body.is-post.has-toc .sidenote {
 .keyword-filter-empty[hidden] { display: none !important; }
 
 .overview-tag.is-on,
-.keyword-cloud button[data-keyword].is-on,
-.keyword-filter-chip {
+.keyword-cloud button[data-keyword].is-on {
   color: var(--tag-on);
   background: var(--tag-on-wash);
   border-color: var(--tag-on);
@@ -900,8 +881,7 @@ body.is-post.has-toc .sidenote {
 }
 
 .keyword-cloud button[data-keyword]::before,
-.overview-tag::before,
-.keyword-filter-chip::before {
+.overview-tag::before {
   content: "";
   position: absolute;
   left: -6px;
@@ -912,8 +892,7 @@ body.is-post.has-toc .sidenote {
 }
 
 .keyword-cloud button[data-keyword]:focus-visible,
-.overview-tag:focus-visible,
-.keyword-filter-chip:focus-visible {
+.overview-tag:focus-visible {
   outline: 2px solid var(--tag-on);
   outline-offset: 2px;
 }
