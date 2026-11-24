@@ -5,9 +5,11 @@ import { parseHTML } from 'linkedom';
 import { countLabel } from '../src/lib/ai-news-category-filter.mjs';
 import { mountCategoryFilter } from '../src/lib/ai-news-category-filter.mjs';
 import {
+  allOption,
   chipText,
   createFilterBar,
   filterRows,
+  isAllChip,
   stackLayout,
   updateFilterBar,
 } from '../src/lib/ai-news-filter-bar.mjs';
@@ -24,6 +26,22 @@ function buttons(bar, row) {
 test('chip text matches the article plaque count, and a single row uses the title', () => {
   assert.equal(chipText({ text: '全部', count: 3 }), countLabel('全部', 3));
   assert.equal(chipText({ text: '常驻 Agent' }), '常驻 Agent');
+  assert.deepEqual(allOption({ selected: true, count: 2, row: 'cat' }), {
+    id: 'all',
+    text: '全部 (2)',
+    selected: true,
+    variant: 'all',
+    data: { filter: 'all', row: 'cat' },
+  });
+  assert.deepEqual(allOption({ selected: false }), {
+    id: 'all',
+    text: '全部',
+    selected: false,
+    variant: 'all',
+    data: { filter: 'all' },
+  });
+  assert.equal(isAllChip({ dataset: { filter: 'all' } }), true);
+  assert.equal(isAllChip({ dataset: { filter: 'cat' } }), false);
   assert.deepEqual(filterRows({ title: '本周关键词', options: [{ id: '常驻 Agent', text: '常驻 Agent' }] }), [
     { id: 'main', label: '本周关键词', options: [{ id: '常驻 Agent', text: '常驻 Agent' }] },
   ]);
@@ -207,6 +225,7 @@ test('the keyword plaque lists every keyword and stays in sync with the cloud an
     <div class="prose">
       <h2>一、本周概览</h2>
       <div class="keyword-cloud">
+        <div class="keyword-cloud-art"></div>
         <button type="button" data-keyword="常驻 Agent">常驻 Agent</button>
         <button type="button" data-keyword="GPT-6.2 Astra">GPT-6.2 Astra</button>
         <script type="application/json" class="keyword-filter-data">${JSON.stringify({
@@ -239,11 +258,17 @@ test('the keyword plaque lists every keyword and stays in sync with the cloud an
   const cloud = document.querySelector('.keyword-cloud');
   assert.equal(bar.nextElementSibling, cloud);
   assert.equal(bar.querySelector('.ai-news-filter-label').textContent, '本周关键词');
-  assert.deepEqual(buttons(bar).map((button) => button.textContent), ['常驻 Agent', 'GPT-6.2 Astra']);
+  assert.deepEqual(buttons(bar).map((button) => button.textContent), ['全部', '常驻 Agent', 'GPT-6.2 Astra']);
   assert.equal(bar.querySelector('.keyword-filter-chip'), null);
+  const all = buttons(bar).find((button) => button.dataset.filter === 'all');
   const word = buttons(bar).find((button) => button.dataset.keyword === '常驻 Agent');
   const other = buttons(bar).find((button) => button.dataset.keyword === 'GPT-6.2 Astra');
+  assert.equal(all.classList.contains('ai-news-filter-all'), true);
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  assert.equal(word.getAttribute('aria-pressed'), 'false');
+  assert.equal(all.compareDocumentPosition(word) & 4, 4);
   click(word.querySelector('.ai-news-filter-face'));
+  assert.equal(all.getAttribute('aria-pressed'), 'false');
   assert.equal(word.getAttribute('aria-pressed'), 'true');
   assert.equal(other.getAttribute('aria-pressed'), 'false');
   assert.equal(cloud.querySelector('button[data-keyword="常驻 Agent"]').classList.contains('is-on'), true);
@@ -266,12 +291,57 @@ test('the keyword plaque lists every keyword and stays in sync with the cloud an
   assert.equal(document.querySelector('.keyword-filter-count').textContent, '0/2');
   click(document.querySelector('.overview-tag[data-keyword="常驻 Agent"]'));
   assert.equal(word.getAttribute('aria-pressed'), 'true');
-  click(word);
+  click(all);
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
   assert.equal(word.getAttribute('aria-pressed'), 'false');
   assert.equal(other.getAttribute('aria-pressed'), 'false');
   assert.equal(cloud.classList.contains('is-filtering'), false);
+  assert.equal(cloud.querySelector('button[data-keyword="常驻 Agent"]').classList.contains('is-on'), false);
   assert.equal(document.querySelector('.keyword-filter-count'), null);
   assert.equal(articles[0].classList.contains('ai-news-filter-hidden'), false);
   assert.equal(articles[1].classList.contains('ai-news-filter-hidden'), false);
   assert.equal(document.querySelector('.ai-news-article-bar .ai-news-filter-all').textContent, '全部 (2)');
+  click(word);
+  click(cloud.querySelector('.keyword-cloud-art') || cloud);
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  assert.equal(word.getAttribute('aria-pressed'), 'false');
+  assert.equal(cloud.classList.contains('is-filtering'), false);
+  assert.equal(articles[0].classList.contains('ai-news-filter-hidden'), false);
+  assert.equal(articles[1].classList.contains('ai-news-filter-hidden'), false);
+  assert.equal(document.querySelector('.ai-news-article-bar .ai-news-filter-all').textContent, '全部 (2)');
+  click(cloud.querySelector('button[data-keyword="常驻 Agent"]'));
+  assert.equal(word.getAttribute('aria-pressed'), 'true');
+  assert.equal(articles[1].classList.contains('ai-news-filter-hidden'), true);
+  const view = document.defaultView;
+  const press = (target, key) => {
+    const event = new view.Event('keydown', { bubbles: true, cancelable: true });
+    event.key = key;
+    target.dispatchEvent(event);
+  };
+  press(view, 'Escape');
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  assert.equal(word.getAttribute('aria-pressed'), 'false');
+  assert.equal(articles[1].classList.contains('ai-news-filter-hidden'), false);
+  click(word);
+  const field = document.createElement('textarea');
+  document.querySelector('.prose').append(field);
+  press(field, 'Escape');
+  assert.equal(word.getAttribute('aria-pressed'), 'true');
+  assert.equal(articles[1].classList.contains('ai-news-filter-hidden'), true);
+  click(word);
+  assert.equal(word.getAttribute('aria-pressed'), 'false');
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  assert.notEqual(cloud.querySelector('button').getAttribute('tabindex'), '-1');
+  assert.notEqual(all.getAttribute('tabindex'), '-1');
+  const articleBar = document.querySelector('.ai-news-article-bar');
+  click(buttons(articleBar, 'cat').find((button) => button.dataset.cat === '产品'));
+  assert.equal(articles[1].classList.contains('ai-news-filter-hidden'), true);
+  click(word);
+  click(all);
+  assert.equal(all.getAttribute('aria-pressed'), 'true');
+  assert.equal(word.getAttribute('aria-pressed'), 'false');
+  assert.equal(articles[0].classList.contains('ai-news-filter-hidden'), false);
+  assert.equal(articles[1].classList.contains('ai-news-filter-hidden'), true);
+  assert.equal(buttons(articleBar, 'cat').find((button) => button.dataset.cat === '产品').getAttribute('aria-pressed'), 'true');
+  assert.equal(buttons(articleBar, 'cat').find((button) => button.dataset.filter === 'all').getAttribute('aria-pressed'), 'false');
 });

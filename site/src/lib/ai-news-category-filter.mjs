@@ -1,6 +1,6 @@
 /** Client-side filter for the AI 资讯「精选文章」 chapter. */
 
-import { createFilterBar, fillChip } from './ai-news-filter-bar.mjs';
+import { allOption, createFilterBar, fillChip, isAllChip } from './ai-news-filter-bar.mjs';
 
 export const PRIMARY_CATEGORIES = ['模型', '架构', '产品', '实践', '开源', '其他'];
 const PRIMARY = new Set(PRIMARY_CATEGORIES);
@@ -439,13 +439,7 @@ export function mountCategoryFilter(doc) {
     id: 'cat',
     label: '文章类型',
     options: [
-      {
-        id: 'all',
-        text: countLabel('全部', counts.total),
-        selected: !filter.cat,
-        variant: 'all',
-        data: { filter: 'all', row: 'cat' },
-      },
+      allOption({ selected: !filter.cat, count: counts.total, row: 'cat' }),
       ...present.map((name) => ({
         id: name,
         text: countLabel(name, counts.cats[name] || 0),
@@ -461,13 +455,7 @@ export function mountCategoryFilter(doc) {
       id: 'src',
       label: '来源类型',
       options: [
-        {
-          id: 'all',
-          text: countLabel('全部', counts.total),
-          selected: !filter.src,
-          variant: 'all',
-          data: { filter: 'all', row: 'src' },
-        },
+        allOption({ selected: !filter.src, count: counts.total, row: 'src' }),
         ...presentGroups.map((group) => ({
           id: group.name,
           text: countLabel(group.name, counts.srcs[group.name] || 0),
@@ -481,13 +469,7 @@ export function mountCategoryFilter(doc) {
       id: 'tag',
       label: '来源公司',
       options: [
-        {
-          id: 'all',
-          text: countLabel('全部', counts.total),
-          selected: !filter.tag,
-          variant: 'all',
-          data: { filter: 'all', row: 'tag' },
-        },
+        allOption({ selected: !filter.tag, count: counts.total, row: 'tag' }),
         ...companies.map((name) => ({
           id: name,
           text: countLabel(name, counts.companies[name] || 0),
@@ -508,7 +490,7 @@ export function mountCategoryFilter(doc) {
     status: '没有匹配的条目',
     onSelect({ button }) {
       const kind = button.dataset.filter;
-      if (kind === 'all') choose({ kind: 'all', row: button.dataset.row });
+      if (isAllChip(button)) choose({ kind: 'all', row: button.dataset.row });
       else if (kind === 'cat') choose({ kind: 'cat', value: button.dataset.cat });
       else if (kind === 'src') choose({ kind: 'src', value: button.dataset.src });
       else if (kind === 'tag') choose({ kind: 'tag', value: button.dataset.tag });

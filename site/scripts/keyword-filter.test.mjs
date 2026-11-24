@@ -5,12 +5,16 @@ import { featuredCounts, itemMatches } from '../src/lib/ai-news-category-filter.
 import {
   EMPTY_LABEL,
   chapterTally,
+  cloudClickKind,
   entryListed,
+  escapeClearsKeyword,
+  keywordAfterSelect,
   keywordCounts,
   matchingEntries,
   nextKeyword,
   overviewCardState,
 } from '../src/lib/ai-news-keyword-filter.mjs';
+import { parseHTML } from 'linkedom';
 
 const themes = ['进入工作流', '常驻 Agent', '验证评测', '软件工厂'];
 const blocks = {
@@ -81,6 +85,31 @@ test('clicking the active word cancels the filter', () => {
   assert.equal(nextKeyword('GPT-6.2 Astra', 'GPT-6.2 Astra'), '');
   assert.deepEqual(overviewCardState('常驻 Agent', nextKeyword('常驻 Agent', '常驻 Agent')), { on: false, dim: false });
   assert.equal(chapterTally(blocks.articles, null).empty, false);
+});
+
+test('全部 clears, and Escape does too unless a field has the key', () => {
+  assert.equal(keywordAfterSelect('常驻 Agent', 'all', { all: true }), '');
+  assert.equal(keywordAfterSelect('', 'all', { all: true }), '');
+  assert.equal(keywordAfterSelect('常驻 Agent', '常驻 Agent'), '');
+  assert.equal(keywordAfterSelect('', 'GPT-6.2 Astra'), 'GPT-6.2 Astra');
+  assert.equal(keywordAfterSelect('常驻 Agent', 'all'), 'all');
+  assert.equal(escapeClearsKeyword({ key: 'Escape', target: { closest: () => null } }, '常驻 Agent'), true);
+  assert.equal(escapeClearsKeyword({ key: 'Escape', target: { closest: () => null } }, ''), false);
+  assert.equal(escapeClearsKeyword({ key: 'Enter', target: { closest: () => null } }, '常驻 Agent'), false);
+  assert.equal(escapeClearsKeyword({ key: 'Escape', defaultPrevented: true, target: { closest: () => null } }, '常驻 Agent'), false);
+  assert.equal(escapeClearsKeyword({ key: 'Escape', target: { closest: () => ({}) } }, '常驻 Agent'), false);
+});
+
+test('empty space in the cloud is a clear, and a word stays a word', () => {
+  const { document } = parseHTML(`<div class="keyword-cloud"><div class="keyword-cloud-art"><button type="button" data-keyword="常驻 Agent">常驻 Agent</button><a href="#x">link</a></div></div><button type="button" data-keyword="外面">外面</button>`);
+  const cloud = document.querySelector('.keyword-cloud');
+  const word = cloud.querySelector('button');
+  assert.equal(cloudClickKind(word, cloud), 'word');
+  assert.equal(cloudClickKind(word.firstChild, cloud), 'word');
+  assert.equal(cloudClickKind(cloud.querySelector('.keyword-cloud-art'), cloud), 'blank');
+  assert.equal(cloudClickKind(cloud, cloud), 'blank');
+  assert.equal(cloudClickKind(cloud.querySelector('a'), cloud), null);
+  assert.equal(cloudClickKind(document.querySelector('button[data-keyword="外面"]'), cloud), null);
 });
 
 test('an empty target list keeps the chapter and reports zero', () => {

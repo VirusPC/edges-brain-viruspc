@@ -1,7 +1,7 @@
 /** One keyword at a time, shared by the word cloud, overview tags, and the keyword plaque. */
 
 import { featuredCounts } from './ai-news-category-filter.mjs';
-import { bindFilterStack, createFilterBar } from './ai-news-filter-bar.mjs';
+import { allOption, bindFilterStack, createFilterBar, isAllChip } from './ai-news-filter-bar.mjs';
 
 export const EMPTY_LABEL = {
   models: '无相关模型',
@@ -24,6 +24,50 @@ export function nextKeyword(current, name) {
   const word = String(name || '');
   if (!word) return current || '';
   return current === word ? '' : word;
+}
+
+/**
+ * The shared「全部」chip always clears. A word still toggles.
+ * @param {string} current
+ * @param {string} optionId
+ * @param {{ all?: boolean }} [choice]
+ */
+export function keywordAfterSelect(current, optionId, choice = {}) {
+  if (choice.all) return '';
+  return nextKeyword(current, optionId);
+}
+
+const FIELD_SELECTOR = 'input, textarea, select, [contenteditable="true"]';
+
+/**
+ * Escape leaves the current word. A focused field keeps the key for itself.
+ * @param {{ key?: string, defaultPrevented?: boolean, target?: { closest?: (selector: string) => unknown } }} event
+ * @param {string} keyword
+ */
+export function escapeClearsKeyword(event, keyword) {
+  if (!keyword) return false;
+  if (!event || event.key !== 'Escape' || event.defaultPrevented) return false;
+  const target = event.target;
+  const field = typeof target?.closest === 'function' ? target.closest(FIELD_SELECTOR) : null;
+  return !field;
+}
+
+/**
+ * A word button keeps its toggle. Empty space inside the cloud clears.
+ * Another control inside the cloud is left alone.
+ * @param {{ closest?: (selector: string) => Element | null } | null | undefined} target
+ * @param {Element | null | undefined} cloud
+ * @returns {'word' | 'blank' | null}
+ */
+export function cloudClickKind(target, cloud) {
+  let node = target;
+  if (node?.nodeType === 3) node = node.parentElement;
+  if (!cloud || !node || typeof node.closest !== 'function' || !cloud.contains(node)) return null;
+  const word = node.closest('button[data-keyword]');
+  if (word && cloud.contains(word)) return 'word';
+  const other = node.closest('a, button, input, textarea, select, label');
+  if (other && cloud.contains(other)) return null;
+  return 'blank';
 }
 
 /**
@@ -97,11 +141,11 @@ export function mountKeywordFilter(doc) {
     .filter((item) => item && typeof item.name === 'string' && item.name);
   const keywords = new Map();
   /** @type {{ id: string, text: string, variant: string, data: { keyword: string } }[]} */
-  const options = [];
+  const words = [];
   for (const item of list) {
     if (keywords.has(item.name)) continue;
     keywords.set(item.name, new Set(Array.isArray(item.targets) ? item.targets : []));
-    options.push({
+    words.push({
       id: item.name,
       text: item.name,
       variant: 'word',
@@ -129,6 +173,8 @@ export function mountKeywordFilter(doc) {
       button.classList.toggle('is-on', on);
       button.setAttribute('aria-pressed', on ? 'true' : 'false');
     }
+    const all = root.querySelector('.ai-news-keyword-bar button[data-filter="all"]');
+    if (all) all.setAttribute('aria-pressed', active ? 'false' : 'true');
     for (const card of root.querySelectorAll('.weekly-overview-card')) {
       const tag = card.querySelector('.overview-tag')?.getAttribute('data-keyword') || '';
       card.classList.toggle('is-dim', overviewCardState(tag, keyword).dim);
@@ -144,14 +190,15 @@ export function mountKeywordFilter(doc) {
   };
 
   const cloud = root.querySelector('.keyword-cloud');
+  const options = [allOption({ selected: true }), ...words];
   const bar = createFilterBar(doc, {
     title: '本周关键词',
     selection: 'single',
     sticky: true,
     className: 'ai-news-keyword-bar',
     options,
-    onSelect({ optionId }) {
-      apply(nextKeyword(root.dataset.activeKeyword || '', optionId));
+    onSelect({ optionId, button }) {
+      apply(keywordAfterSelect(root.dataset.activeKeyword || '', optionId, { all: isAllChip(button) }));
     },
   });
   if (cloud) cloud.before(bar.element);
@@ -163,10 +210,31 @@ export function mountKeywordFilter(doc) {
   bindFilterStack(doc);
 
   root.addEventListener('click', (event) => {
-    const button = event.target?.closest?.('button[data-keyword]');
+    const origin = event.target?.nodeType === 3 ? event.target.parentElement : event.target;
+    const cloudHit = origin?.closest?.('.keyword-cloud');
+    if (cloudHit && root.contains(cloudHit)) {
+      const kind = cloudClickKind(origin, cloudHit);
+      if (kind === 'word') {
+        const button = origin.closest('button[data-keyword]');
+        event.preventDefault();
+        apply(keywordAfterSelect(root.dataset.activeKeyword || '', button.getAttribute('data-keyword') || ''));
+        return;
+      }
+      if (kind === 'blank') {
+        apply('');
+        return;
+      }
+    }
+    const button = origin?.closest?.('button[data-keyword]');
     if (!button || !root.contains(button) || button.closest('.ai-news-keyword-bar')) return;
     event.preventDefault();
-    apply(nextKeyword(root.dataset.activeKeyword || '', button.getAttribute('data-keyword') || ''));
+    apply(keywordAfterSelect(root.dataset.activeKeyword || '', button.getAttribute('data-keyword') || ''));
+  });
+
+  doc.defaultView?.addEventListener?.('keydown', (event) => {
+    if (!escapeClearsKeyword(event, root.dataset.activeKeyword || '')) return;
+    event.preventDefault();
+    apply('');
   });
 }
 

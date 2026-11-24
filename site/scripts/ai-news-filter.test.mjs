@@ -291,7 +291,10 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(source, /createFilterBar/);
   assert.match(wood, /baseFrequency: '0\.02'/);
   assert.match(wood, /scale: '3\.5'/);
-  assert.match(source, /countLabel\('全部', counts\.total\)/);
+  assert.match(source, /allOption\(\{ selected: !filter\.cat, count: counts\.total, row: 'cat' \}\)/);
+  assert.match(source, /allOption\(\{ selected: !filter\.src, count: counts\.total, row: 'src' \}\)/);
+  assert.match(source, /allOption\(\{ selected: !filter\.tag, count: counts\.total, row: 'tag' \}\)/);
+  assert.match(wood, /chipText\(\{ text: '全部', count: option\.count \}\)/);
   assert.match(source, /countLabel\(name, counts\.cats\[name\] \|\| 0\)/);
   assert.match(source, /countLabel\(group\.name, counts\.srcs\[group\.name\] \|\| 0\)/);
   assert.match(source, /countLabel\(name, counts\.companies\[name\] \|\| 0\)/);
