@@ -61,136 +61,19 @@ ${filter}
 <script>
   const root = document.querySelector('.prose');
   const keyword = document.querySelector('.ai-news-keyword-bar');
-  const heading = [...document.querySelectorAll('.prose > h2')].find((node) => node.textContent.includes('精选文章'));
-  root.style.setProperty('--ai-news-keyword-bar-h', keyword.offsetHeight + 'px');
-  root.style.setProperty('--ai-news-heading-top', keyword.offsetHeight + 'px');
-  root.style.setProperty('--ai-news-article-top', (keyword.offsetHeight + heading.offsetHeight) + 'px');
-</script>
-</body>
-</html>`;
-}
-
-/**
- * @param {string} html
- * @param {number} width
- * @param {string} expression
- */
-async function evaluate(html, width, expression) {
-  const bin = chromeBin();
-  assert.ok(bin, 'Set CHROME_PATH to a Chrome or Chromium binary');
-  const dir = await mkdtemp(path.join(tmpdir(), 'sticky-overflow-'));
-  const htmlPath = path.join(dir, 'fixture.html');
-  const userData = path.join(dir, 'profile');
-  await writeFile(htmlPath, html);
-  const port = 9400 + Math.floor(Math.random() * 400);
-  const child = spawn(bin, [
-    '--headless=new',
-    '--disable-gpu',
-    '--no-sandbox',
-    '--disable-dev-shm-usage',
-    `--remote-debugging-port=${port}`,
-    `--user-data-dir=${userData}`,
-    '--remote-allow-origins=*',
-    'about:blank',
-  ], { stdio: 'ignore' });
-  try {
-    const version = await waitVersion(port);
-    const ws = new WebSocket(version.webSocketDebuggerUrl);
-    await new Promise((resolve, reject) => {
-      ws.addEventListener('open', resolve, { once: true });
-      ws.addEventListener('error', reject, { once: true });
-    });
-    let seq = 0;
-    /** @type {Map<number, (message: any) => void>} */
-    const pending = new Map();
-    ws.addEventListener('message', (event) => {
-      const message = JSON.parse(event.data);
-      if (message.id && pending.has(message.id)) {
-        pending.get(message.id)(message);
-        pending.delete(message.id);
-      }
-    });
-    const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => {
-      const id = ++seq;
-      pending.set(id, (message) => {
-        if (message.error) reject(new Error(`${method}: ${JSON.stringify(message.error)}`));
-        else resolve(message.result);
-      });
-      ws.send(JSON.stringify({ id, method, params, sessionId }));
-    });
-    const created = await send('Target.createTarget', { url: 'about:blank' });
-    const attached = await send('Target.attachToTarget', { targetId: created.targetId, flatten: true });
-    const sessionId = attached.sessionId;
-    await send('Page.enable', {}, sessionId);
-    await send('Runtime.enable', {}, sessionId);
-    await send('Emulation.setDeviceMetricsOverride', {
-      width,
-      height: 900,
-      deviceScaleFactor: 1,
-      mobile: false,
-    }, sessionId);
-    await send('Page.navigate', { url: `file://${htmlPath}` }, sessionId);
-    const ready = await send('Runtime.evaluate', {
-      expression: `new Promise((resolve) => {
-        if (document.readyState === 'complete') resolve('complete');
-        else addEventListener('load', () => resolve(document.readyState), { once: true });
-      })`,
-      awaitPromise: true,
-      returnByValue: true,
-    }, sessionId);
-    assert.equal(ready.result.value, 'complete');
-    const evaluated = await send('Runtime.evaluate', {
-      expression,
-      awaitPromise: true,
-      returnByValue: true,
-    }, sessionId);
-    if (evaluated.exceptionDetails) {
-      throw new Error(evaluated.exceptionDetails.text || 'page script failed');
-    }
-    ws.close();
-    return evaluated.result.value;
-  } finally {
-    child.kill('SIGKILL');
-    await new Promise((resolve) => {
-      if (child.exitCode != null) resolve();
-      else child.once('exit', resolve);
-    });
-    await rm(dir, { recursive: true, force: true }).catch(() => {});
-  }
-}
-
-/**
- * @param {number} port
- */
-async function waitVersion(port) {
-  const deadline = Date.now() + 8000;
-  let last = '';
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${port}/json/version`);
-      if (response.ok) return response.json();
-      last = `HTTP ${response.status}`;
-    } catch (error) {
-      last = error instanceof Error ? error.message : String(error);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 80));
-  }
-  throw new Error(`Chrome debugging port did not open (${last})`);
-}
-
-const measure = `(() => {
-  const prose = document.querySelector('.prose');
-  const keyword = document.querySelector('.ai-news-keyword-bar');
   const article = document.querySelector('.ai-news-article-bar');
   const heading = [...document.querySelectorAll('.prose > h2')].find((node) => node.textContent.includes('精选文章'));
   const wrap = document.querySelector('.table-wrap');
   const row = keyword.querySelector('.ai-news-filter-row');
   const chip = keyword.querySelector('button');
   const articleChip = article.querySelector('button');
-  const proseStyle = getComputedStyle(prose);
+  root.style.setProperty('--ai-news-keyword-bar-h', keyword.offsetHeight + 'px');
+  root.style.setProperty('--ai-news-heading-top', keyword.offsetHeight + 'px');
+  root.style.setProperty('--ai-news-article-top', (keyword.offsetHeight + heading.offsetHeight) + 'px');
+  const proseStyle = getComputedStyle(root);
   const rowStyle = getComputedStyle(row);
   const ancestors = [];
-  let node = prose;
+  let node = root;
   while (node) {
     const style = getComputedStyle(node);
     ancestors.push({
@@ -201,10 +84,7 @@ const measure = `(() => {
     });
     node = node.parentElement;
   }
-  const box = (el) => {
-    const rect = el.getBoundingClientRect();
-    return Math.round(rect.top * 100) / 100;
-  };
+  const box = (el) => Math.round(el.getBoundingClientRect().top * 100) / 100;
   const hit = (button, dy) => {
     const rect = button.getBoundingClientRect();
     const found = document.elementFromPoint(rect.left + 8, rect.top + dy);
@@ -215,9 +95,8 @@ const measure = `(() => {
   const pinned = { keyword: box(keyword), heading: box(heading), article: box(article), scrollY: window.scrollY };
   window.scrollTo(0, 980);
   const later = { keyword: box(keyword), heading: box(heading), article: box(article), scrollY: window.scrollY };
-  const scrollBefore = wrap.scrollLeft;
   wrap.scrollLeft = 80;
-  return {
+  const payload = {
     innerWidth: window.innerWidth,
     match960: matchMedia('(max-width: 960px)').matches,
     match560: matchMedia('(max-width: 560px)').matches,
@@ -231,7 +110,6 @@ const measure = `(() => {
       clientWidth: wrap.clientWidth,
       scrollWidth: wrap.scrollWidth,
       scrollLeft: wrap.scrollLeft,
-      scrollBefore,
     },
     keywordRowScrolls: row.scrollWidth > row.clientWidth + 1,
     touch: {
@@ -241,10 +119,64 @@ const measure = `(() => {
       articleAbove: hit(articleChip, -6),
     },
   };
-})()`;
+  const out = document.createElement('pre');
+  out.id = 'out';
+  out.textContent = JSON.stringify(payload);
+  document.body.append(out);
+</script>
+</body>
+</html>`;
+}
+
+/**
+ * @param {string} html
+ * @param {number} width
+ */
+function evaluate(html, width) {
+  const bin = chromeBin();
+  assert.ok(bin, 'Set CHROME_PATH to a Chrome or Chromium binary');
+  return mkdtemp(path.join(tmpdir(), 'sticky-overflow-')).then(async (dir) => {
+    const htmlPath = path.join(dir, 'fixture.html');
+    await writeFile(htmlPath, html);
+    const stdout = await new Promise((resolve, reject) => {
+      const child = spawn(bin, [
+        '--headless=new',
+        '--disable-gpu',
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        `--window-size=${width},900`,
+        '--virtual-time-budget=5000',
+        '--timeout=8000',
+        '--dump-dom',
+        `file://${htmlPath}`,
+      ], { stdio: ['ignore', 'pipe', 'pipe'] });
+      let out = '';
+      let err = '';
+      const timer = setTimeout(() => {
+        child.kill('SIGKILL');
+        reject(new Error(`Chrome dump-dom exceeded 20s\n${err.slice(-500)}`));
+      }, 20000);
+      child.stdout.on('data', (chunk) => { out += chunk; });
+      child.stderr.on('data', (chunk) => { err += chunk; });
+      child.on('error', (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+      child.on('exit', (code) => {
+        clearTimeout(timer);
+        if (!out.includes('id="out"')) reject(new Error(`Chrome exited ${code} without a result\n${err.slice(-800)}`));
+        else resolve(out);
+      });
+    });
+    await rm(dir, { recursive: true, force: true }).catch(() => {});
+    const match = stdout.match(/<pre id="out">([\s\S]*?)<\/pre>/);
+    assert.ok(match, 'missing measurement output');
+    return JSON.parse(match[1]);
+  });
+}
 
 test('at 800px the weekly prose clips both axes and the plaques stay pinned', async () => {
-  const measured = await evaluate(fixtureHtml(), 800, measure);
+  const measured = await evaluate(fixtureHtml(), 800);
   assert.equal(measured.innerWidth, 800);
   assert.equal(measured.match960, true);
   assert.equal(measured.match560, false);
