@@ -125,14 +125,14 @@ test('selected chips, dimming, and touch targets hold in light, dark, and mobile
   assert.match(css, /\.keyword-cloud button\[data-keyword\]\s*\{[^}]*padding:\s*0\.08em 0\.42em 0\.1em/);
   assert.match(css, /\.keyword-cloud button\[data-keyword\]\s*\{[^}]*border:\s*1\.5px solid transparent/);
   assert.match(css, /\.keyword-cloud button\[data-keyword\]\s*\{[^}]*border-radius:\s*999px/);
-  assert.match(css, /\.overview-tag\.is-on,\s*\n\.keyword-cloud button\[data-keyword\]\.is-on,\s*\n\.keyword-filter-chip\s*\{[^}]*color:\s*var\(--tag-on\)/);
-  assert.match(css, /\.overview-tag\.is-on,\s*\n\.keyword-cloud button\[data-keyword\]\.is-on,\s*\n\.keyword-filter-chip\s*\{[^}]*background:\s*var\(--tag-on-wash\)/);
+  assert.match(css, /\.overview-tag\.is-on,\s*\n\.keyword-cloud button\[data-keyword\]\.is-on\s*\{[^}]*color:\s*var\(--tag-on\)/);
+  assert.match(css, /\.overview-tag\.is-on,\s*\n\.keyword-cloud button\[data-keyword\]\.is-on\s*\{[^}]*background:\s*var\(--tag-on-wash\)/);
   assert.match(css, /\.keyword-cloud\.is-filtering button\[data-keyword\]:not\(\.is-on\),\s*\n\.weekly-overview-card\.is-dim\s*\{[^}]*opacity:\s*0\.4/);
-  assert.match(css, /\.keyword-cloud button\[data-keyword\]::before,\s*\n\.overview-tag::before,\s*\n\.keyword-filter-chip::before\s*\{[^}]*height:\s*44px/);
+  assert.match(css, /\.keyword-cloud button\[data-keyword\]::before,\s*\n\.overview-tag::before\s*\{[^}]*height:\s*44px/);
   assert.match(css, /\.model-panel\.is-keyword-hidden\s*\{[^}]*display:\s*none !important/);
   assert.match(filterCss, /\.ai-news-filter-hidden\s*\{[^}]*display:\s*none !important/);
   assert.match(css, /\.keyword-filter-empty\s*\{[^}]*color:\s*var\(--muted\)/);
-  assert.doesNotMatch(css, /换个词试试|keyword-filter-sticky|position:\s*sticky[^}]*keyword-filter-chip/);
+  assert.doesNotMatch(css, /换个词试试|keyword-filter-chip/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.prose \.weekly-overview-card\s*\{[^}]*padding:\s*0\.6rem 0\.7rem 0\.65rem/);
   assert.match(css, /\.prose \.weekly-overview-card\s*\{[^}]*padding:\s*0\.7rem 0\.85rem 0\.75rem/);
   assert.match(css, /\.prose \.weekly-overview-card\s*\{[^}]*border-radius:\s*var\(--ai-news-radius\)/);

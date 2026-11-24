@@ -1,5 +1,7 @@
 /** Client-side filter for the AI 资讯「精选文章」 chapter. */
 
+import { createFilterBar, fillChip } from './ai-news-filter-bar.mjs';
+
 export const PRIMARY_CATEGORIES = ['模型', '架构', '产品', '实践', '开源', '其他'];
 const PRIMARY = new Set(PRIMARY_CATEGORIES);
 
@@ -224,7 +226,7 @@ function encloseChapter(heading) {
 }
 
 function stickyOffset(view, bar) {
-  const top = view.getComputedStyle(bar).top;
+  const top = view.getComputedStyle?.(bar)?.top;
   const value = Number.parseFloat(top);
   return Number.isFinite(value) ? value : 0;
 }
@@ -410,112 +412,9 @@ function applyDom(groups, status, filter) {
   status.hidden = !(filter?.cat || filter?.src || filter?.tag) || plan.any || !anyKeyword;
 }
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-function svgEl(doc, name, attrs) {
-  const node = doc.createElementNS(SVG_NS, name);
-  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-  return node;
-}
-
-const SEAM_GROOVE = 'M0 2.2 C 150 1.4, 300 3.2, 480 2.2 S 800 1.5, 1000 2.6';
-const SEAM_LIP = 'M0 3.9 C 150 3.1, 300 4.9, 480 3.9 S 800 3.2, 1000 4.3';
-
-function fillChip(button, text) {
-  button.dataset.label = text;
-  button.replaceChildren();
-  const face = button.ownerDocument.createElement('span');
-  face.className = 'ai-news-filter-face';
-  face.textContent = text;
-  button.append(face);
-}
-
 function labelHeading(heading, count) {
   const base = textOf(heading).replace(/ \(\d+\)$/, '');
   heading.textContent = countLabel(base, count);
-}
-
-/** Wood plaque filters. Edge jitter is #wood-rough; grain is #wood-grain. */
-function ensureWoodFilters(doc, bar) {
-  if (doc.getElementById('wood-rough')) return;
-  const defs = svgEl(doc, 'svg', { class: 'ai-news-filter-defs', 'aria-hidden': 'true', width: '0', height: '0' });
-  const rough = svgEl(doc, 'filter', {
-    id: 'wood-rough',
-    filterUnits: 'objectBoundingBox',
-    x: '-8%',
-    y: '-20%',
-    width: '116%',
-    height: '150%',
-  });
-  rough.append(
-    svgEl(doc, 'feTurbulence', {
-      type: 'fractalNoise',
-      baseFrequency: '0.02',
-      numOctaves: '2',
-      seed: '7',
-      result: 'noise',
-    }),
-    svgEl(doc, 'feDisplacementMap', {
-      in: 'SourceGraphic',
-      in2: 'noise',
-      scale: '3.5',
-    }),
-  );
-  const grain = svgEl(doc, 'filter', {
-    id: 'wood-grain',
-    x: '0',
-    y: '0',
-    width: '100%',
-    height: '100%',
-  });
-  grain.append(
-    svgEl(doc, 'feTurbulence', {
-      type: 'fractalNoise',
-      baseFrequency: '0.012 0.35',
-      numOctaves: '3',
-      seed: '3',
-      result: 'noise',
-    }),
-    svgEl(doc, 'feColorMatrix', {
-      in: 'noise',
-      type: 'matrix',
-      values: '0 0 0 0 .45  0 0 0 0 .3  0 0 0 0 .15  0 0 0 .6 0',
-      result: 'colored',
-    }),
-    svgEl(doc, 'feComposite', {
-      in: 'colored',
-      in2: 'SourceGraphic',
-      operator: 'in',
-    }),
-  );
-  defs.append(rough, grain);
-  bar.prepend(defs);
-}
-
-function appendBoard(doc, bar) {
-  const board = doc.createElement('div');
-  board.className = 'ai-news-filter-board';
-  board.setAttribute('aria-hidden', 'true');
-  for (const side of ['l', 'r']) {
-    const nail = doc.createElement('i');
-    nail.className = `ai-news-filter-nail ${side}`;
-    board.append(nail);
-  }
-  bar.prepend(board);
-}
-
-function appendSeam(doc, bar) {
-  const seam = svgEl(doc, 'svg', {
-    class: 'ai-news-filter-seam',
-    viewBox: '0 0 1000 6',
-    preserveAspectRatio: 'none',
-    'aria-hidden': 'true',
-  });
-  seam.append(
-    svgEl(doc, 'path', { class: 'groove', d: SEAM_GROOVE }),
-    svgEl(doc, 'path', { class: 'lip', d: SEAM_LIP }),
-  );
-  bar.append(seam);
 }
 
 export function mountCategoryFilter(doc) {
@@ -533,99 +432,96 @@ export function mountCategoryFilter(doc) {
   const counts = featuredCounts(items);
   for (const group of chapter.groups) labelHeading(group.heading, group.items.length);
 
-  const bar = doc.createElement('div');
-  bar.className = 'ai-news-filter';
-  bar.setAttribute('role', 'group');
-  bar.setAttribute('aria-label', '筛选精选文章');
-
-  const addLabel = (row, text) => {
-    const label = doc.createElement('span');
-    label.className = 'ai-news-filter-label';
-    label.textContent = text;
-    label.setAttribute('aria-hidden', 'true');
-    row.append(label);
-  };
-
-  const addAll = (row, rowName) => {
-    const all = doc.createElement('button');
-    all.type = 'button';
-    all.className = 'ai-news-filter-all';
-    all.dataset.filter = 'all';
-    all.dataset.row = rowName;
-    fillChip(all, countLabel('全部', counts.total));
-    row.append(all);
-  };
-
-  const row = doc.createElement('div');
-  row.className = 'ai-news-filter-row';
-  row.setAttribute('role', 'group');
-  row.setAttribute('aria-label', '文章类型');
-  addLabel(row, '文章类型');
-  addAll(row, 'cat');
-  for (const name of present) {
-    const button = doc.createElement('button');
-    button.type = 'button';
-    button.className = 'ai-news-filter-cat';
-    button.dataset.filter = 'cat';
-    button.dataset.cat = name;
-    fillChip(button, countLabel(name, counts.cats[name] || 0));
-    row.append(button);
-  }
-  bar.append(row);
-
+  let filter = parseFilter(doc.defaultView?.location?.search || '');
   const companies = companiesPresent(chapter.groups.map((group) => group.items.flatMap((item) => item.tags)));
+  const presentGroups = SOURCE_GROUPS.filter((group) => companies.some((name) => sourceGroup(name) === group.name));
+  const rows = [{
+    id: 'cat',
+    label: '文章类型',
+    options: [
+      {
+        id: 'all',
+        text: countLabel('全部', counts.total),
+        selected: !filter.cat,
+        variant: 'all',
+        data: { filter: 'all', row: 'cat' },
+      },
+      ...present.map((name) => ({
+        id: name,
+        text: countLabel(name, counts.cats[name] || 0),
+        selected: filter.cat === name,
+        variant: 'category',
+        category: name,
+        data: { filter: 'cat', cat: name },
+      })),
+    ],
+  }];
   if (companies.length > 0) {
-    const presentGroups = SOURCE_GROUPS.filter((group) => companies.some((name) => sourceGroup(name) === group.name));
-    const sourceRow = doc.createElement('div');
-    sourceRow.className = 'ai-news-filter-row';
-    sourceRow.setAttribute('role', 'group');
-    sourceRow.setAttribute('aria-label', '来源类型');
-    addLabel(sourceRow, '来源类型');
-    addAll(sourceRow, 'src');
-    for (const group of presentGroups) {
-      const button = doc.createElement('button');
-      button.type = 'button';
-      button.className = 'ai-news-filter-src';
-      button.dataset.filter = 'src';
-      button.dataset.src = group.name;
-      fillChip(button, countLabel(group.name, counts.srcs[group.name] || 0));
-      sourceRow.append(button);
-    }
-    appendSeam(doc, bar);
-    bar.append(sourceRow);
-
-    const companyRow = doc.createElement('div');
-    companyRow.className = 'ai-news-filter-row';
-    companyRow.setAttribute('role', 'group');
-    companyRow.setAttribute('aria-label', '来源公司');
-    addLabel(companyRow, '来源公司');
-    addAll(companyRow, 'tag');
-    for (const name of companies) {
-      const button = doc.createElement('button');
-      button.type = 'button';
-      button.className = 'ai-news-filter-co';
-      button.dataset.filter = 'tag';
-      button.dataset.tag = name;
-      fillChip(button, countLabel(name, counts.companies[name] || 0));
-      companyRow.append(button);
-    }
-    appendSeam(doc, bar);
-    bar.append(companyRow);
+    rows.push({
+      id: 'src',
+      label: '来源类型',
+      options: [
+        {
+          id: 'all',
+          text: countLabel('全部', counts.total),
+          selected: !filter.src,
+          variant: 'all',
+          data: { filter: 'all', row: 'src' },
+        },
+        ...presentGroups.map((group) => ({
+          id: group.name,
+          text: countLabel(group.name, counts.srcs[group.name] || 0),
+          selected: filter.src === group.name,
+          variant: 'source',
+          data: { filter: 'src', src: group.name },
+        })),
+      ],
+    });
+    rows.push({
+      id: 'tag',
+      label: '来源公司',
+      options: [
+        {
+          id: 'all',
+          text: countLabel('全部', counts.total),
+          selected: !filter.tag,
+          variant: 'all',
+          data: { filter: 'all', row: 'tag' },
+        },
+        ...companies.map((name) => ({
+          id: name,
+          text: countLabel(name, counts.companies[name] || 0),
+          selected: filter.tag === name,
+          variant: 'company',
+          data: { filter: 'tag', tag: name },
+        })),
+      ],
+    });
   }
-  const status = doc.createElement('p');
-  status.className = 'ai-news-filter-status';
-  status.hidden = true;
-  status.textContent = '没有匹配的条目';
-  bar.append(status);
-  ensureWoodFilters(doc, bar);
-  appendBoard(doc, bar);
+  let choose = () => {};
+  const built = createFilterBar(doc, {
+    title: '筛选精选文章',
+    selection: 'multi',
+    sticky: true,
+    className: 'ai-news-article-bar',
+    rows,
+    status: '没有匹配的条目',
+    onSelect({ button }) {
+      const kind = button.dataset.filter;
+      if (kind === 'all') choose({ kind: 'all', row: button.dataset.row });
+      else if (kind === 'cat') choose({ kind: 'cat', value: button.dataset.cat });
+      else if (kind === 'src') choose({ kind: 'src', value: button.dataset.src });
+      else if (kind === 'tag') choose({ kind: 'tag', value: button.dataset.tag });
+    },
+  });
+  const bar = built.element;
+  const status = built.status;
 
   const wrapper = encloseChapter(chapter.heading);
   wrapper.prepend(bar);
   const note = wrapper.querySelector(':scope > .ai-news-coverage');
   if (note) wrapper.insertBefore(note, bar);
 
-  let filter = parseFilter(doc.defaultView?.location?.search || '');
   if (doc.defaultView?.location && !filterQueryMatches(doc.defaultView.location.search || '', filter)) {
     const view = doc.defaultView;
     const url = new URL(view.location.href);
@@ -657,24 +553,17 @@ export function mountCategoryFilter(doc) {
     render();
   });
 
-  const choose = (action) => {
+  choose = (action) => {
     const view = doc.defaultView;
-    const stuck = view ? isFilterStuck(bar.getBoundingClientRect().top, stickyOffset(view, bar)) : false;
+    const rectTop = bar.getBoundingClientRect?.()?.top;
+    const stuck = view && typeof rectTop === 'number'
+      ? isFilterStuck(rectTop, stickyOffset(view, bar))
+      : false;
     filter = nextFilter(filter, action);
     write(filter, false);
     render();
-    if (stuck) chapter.heading.scrollIntoView({ block: 'start' });
+    if (stuck) chapter.heading.scrollIntoView?.({ block: 'start' });
   };
-
-  bar.addEventListener('click', (event) => {
-    const button = event.target.closest('button');
-    if (!button || !bar.contains(button)) return;
-    const kind = button.dataset.filter;
-    if (kind === 'all') choose({ kind: 'all', row: button.dataset.row });
-    else if (kind === 'cat') choose({ kind: 'cat', value: button.dataset.cat });
-    else if (kind === 'src') choose({ kind: 'src', value: button.dataset.src });
-    else if (kind === 'tag') choose({ kind: 'tag', value: button.dataset.tag });
-  });
 
   root.addEventListener('click', (event) => {
     const category = event.target.closest('.ai-news-cat');

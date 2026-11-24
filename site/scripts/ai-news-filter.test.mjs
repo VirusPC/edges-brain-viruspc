@@ -241,8 +241,8 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /\.ai-news-filter-board::before\s*\{[^}]*linear-gradient\(180deg, var\(--wood-top\), var\(--wood-bot\)\)/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*flex-wrap:\s*nowrap/);
   assert.match(css, /overflow-x:\s*auto/);
-  assert.match(css, /\.ai-news-filter-all,\s*\n\.ai-news-filter-co,\s*\n\.ai-news-filter-src\s*\{[^}]*background:\s*var\(--wood-chip\)/);
-  assert.match(css, /\.ai-news-filter-all,\s*\n\.ai-news-filter-co,\s*\n\.ai-news-filter-src\s*\{[^}]*box-shadow:\s*inset 0 0 0 1\.5px var\(--wood-chip-line\)/);
+  assert.match(css, /\.ai-news-filter-all,\s*\n\.ai-news-filter-co,\s*\n\.ai-news-filter-src,\s*\n\.ai-news-filter-word\s*\{[^}]*background:\s*var\(--wood-chip\)/);
+  assert.match(css, /\.ai-news-filter-all,\s*\n\.ai-news-filter-co,\s*\n\.ai-news-filter-src,\s*\n\.ai-news-filter-word\s*\{[^}]*box-shadow:\s*inset 0 0 0 1\.5px var\(--wood-chip-line\)/);
   assert.match(css, /--wood-chip:\s*#fffaf0/);
   assert.match(css, /--wood-chip-line:\s*#bba98f/);
   assert.match(css, /--wood-on-line:\s*#3a2a1c/);
@@ -282,11 +282,13 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-label\s*\{[^}]*background:\s*transparent/);
   assert.doesNotMatch(css, /--wood-label-bg/);
   const source = fs.readFileSync(new URL('../src/lib/ai-news-category-filter.mjs', import.meta.url), 'utf8');
-  assert.match(source, /addLabel\(row,\s*'文章类型'\)/);
-  assert.match(source, /addLabel\(sourceRow,\s*'来源类型'\)/);
-  assert.match(source, /addLabel\(companyRow,\s*'来源公司'\)/);
-  assert.match(source, /baseFrequency: '0\.02'/);
-  assert.match(source, /scale: '3\.5'/);
+  const wood = fs.readFileSync(new URL('../src/lib/ai-news-filter-bar.mjs', import.meta.url), 'utf8');
+  assert.match(source, /label: '文章类型'/);
+  assert.match(source, /label: '来源类型'/);
+  assert.match(source, /label: '来源公司'/);
+  assert.match(source, /createFilterBar/);
+  assert.match(wood, /baseFrequency: '0\.02'/);
+  assert.match(wood, /scale: '3\.5'/);
   assert.match(source, /countLabel\('全部', counts\.total\)/);
   assert.match(source, /countLabel\(name, counts\.cats\[name\] \|\| 0\)/);
   assert.match(source, /countLabel\(group\.name, counts\.srcs\[group\.name\] \|\| 0\)/);
@@ -304,7 +306,7 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   const noteCard = fs.readFileSync(new URL('../src/styles/note-card.css', import.meta.url), 'utf8');
   assert.match(noteCard, /:root\[data-theme="dark"\] \.info-card/);
   assert.match(noteCard, /:root:not\(\[data-theme="light"\]\) \.info-card/);
-  assert.match(source, /preserveAspectRatio: 'none'/);
+  assert.match(wood, /preserveAspectRatio: 'none'/);
   assert.match(css, /\.prose h4 \.ai-news-tag,\s*\n\.prose h4 \.ai-news-src\s*\{[^}]*background:\s*var\(--wood-chip\)/);
   assert.match(css, /\.prose h4 \.ai-news-tag\[aria-pressed='true'\],\s*\n\.prose h4 \.ai-news-src\[aria-pressed='true'\]\s*\{[^}]*box-shadow:\s*inset 0 0 0 2\.5px var\(--wood-on-line\)/);
   assert.match(source, /querySelectorAll\('\.ai-news-cat'\)/);

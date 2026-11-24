@@ -26,5 +26,8 @@
     "echarts": "^6.1.0",
     "gray-matter": "^4.0.3",
     "roughjs": "^4.6.6"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.15"
   }
 }
