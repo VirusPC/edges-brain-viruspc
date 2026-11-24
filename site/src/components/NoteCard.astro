@@ -14,6 +14,7 @@ interface Props {
   title: string;
   href?: string;
   headingId?: string;
+  entryId?: string;
   /** One-line summary HTML. May include `<mark>` for the single highlighter phrase. */
   ledeHtml?: string;
   /** Folded notes. Omitted when the source has no 「完整总结」. */
@@ -28,6 +29,7 @@ const {
   title,
   href = '',
   headingId = '',
+  entryId = '',
   ledeHtml = '',
   sections = [],
   extraHtml = '',
@@ -42,6 +44,7 @@ const sourceType = sourceGroup(sources[0] || '');
   <h4
     class="note-card-title"
     id={headingId || undefined}
+    data-entry-id={entryId || undefined}
     data-cat={category || undefined}
     data-tags={tagList || undefined}
   >

@@ -60,14 +60,59 @@ function overviewIcon(kind) {
   return '';
 }
 
+const TAG_VERSION = [0, 0, 9];
+
 /**
- * One theme card. Full text stays visible. Unknown kind keeps the sentence and drops the icon.
- * @param {{ kind?: string, text?: string, refs?: { id?: string, label?: string }[] }} theme
+ * Tag is required only on overview files recorded at 0.0.9 or newer.
+ * Older files have no tag field. A 0.0.9 file missing a tag still fails.
+ * @param {unknown} version
+ */
+export function overviewRequiresTag(version) {
+  const parts = String(version ?? '').split('.');
+  if (parts.length < 3) return false;
+  const nums = parts.slice(0, 3).map((part) => Number.parseInt(part, 10));
+  if (nums.some((part) => !Number.isInteger(part) || part < 0)) return false;
+  for (let index = 0; index < 3; index += 1) {
+    if (nums[index] !== TAG_VERSION[index]) return nums[index] > TAG_VERSION[index];
+  }
+  return true;
+}
+
+/**
+ * 0.0.9 overview without a tag cannot build. There is no path that skips the tag.
+ * @param {{ skill?: { version?: string }, themes?: { tag?: string }[] }} data
+ * @param {string} issue
+ */
+export function assertOverviewTags(data, issue) {
+  if (!overviewRequiresTag(data?.skill?.version)) return;
+  const themes = Array.isArray(data?.themes) ? data.themes : [];
+  themes.forEach((theme, index) => {
+    const tag = typeof theme?.tag === 'string' ? theme.tag : '';
+    if (!tag.trim() || tag.length > 24) {
+      throw new Error(`summary/overview.json 的 0.0.9 主线缺少 tag：${issue} 第 ${index + 1} 条`);
+    }
+  });
+}
+
+/**
+ * @param {unknown} tag
+ */
+function overviewTagHtml(tag) {
+  const label = typeof tag === 'string' ? tag : '';
+  if (!label.trim()) return '';
+  return `<button type="button" class="overview-tag" data-keyword="${escapeHtml(label)}" aria-pressed="false">${escapeHtml(label)}</button>`;
+}
+
+/**
+ * One theme card. The kind icon stays on the left. The tag sits above the sentence.
+ * Full text stays visible. Unknown kind keeps the sentence and drops the icon.
+ * @param {{ kind?: string, tag?: string, text?: string, refs?: { id?: string, label?: string }[] }} theme
  */
 function overviewCardHtml(theme) {
   const icon = overviewIcon(theme?.kind);
   const mark = icon ? `<p class="info-card-label" aria-hidden="true">${icon}</p>` : '';
-  return `<article class="weekly-overview-card">${mark}<p class="weekly-overview-text">${linkOverviewText(theme?.text, theme?.refs)}</p></article>`;
+  const body = `<div class="weekly-overview-body">${overviewTagHtml(theme?.tag)}<p class="weekly-overview-text">${linkOverviewText(theme?.text, theme?.refs)}</p></div>`;
+  return `<article class="weekly-overview-card">${mark}${body}</article>`;
 }
 
 /**
