@@ -33,6 +33,17 @@ export function filterRows(spec) {
 }
 
 /**
+ * A sticky box is pinned once its border top has reached the sticky offset.
+ * Below that line it is still in normal flow.
+ * @param {number} rectTop
+ * @param {number} stickyTop
+ * @param {number} [tolerance]
+ */
+export function isPinned(rectTop, stickyTop, tolerance = 1) {
+  return rectTop <= stickyTop + tolerance;
+}
+
+/**
  * Sticky tops so the keyword plaque, the chapter title, and the article plaque stack
  * without covering one another. In the page, `top` places the border box, so margins
  * stay outside that box and are not added again.
@@ -345,11 +356,35 @@ export function bindFilterStack(doc) {
     root.style.setProperty('--ai-news-article-top', `${layout.articleTop}px`);
     root.style.setProperty('--ai-news-stack-h', `${layout.stackHeight}px`);
   };
-  const observer = new view.ResizeObserver(apply);
+  const heading = articleHeading(root);
+  const pins = [keyword, heading, article].filter(Boolean);
+  const syncPinned = () => {
+    for (const el of pins) {
+      el.classList.toggle('is-stuck', isPinned(el.getBoundingClientRect().top, stickyTopOf(view, el)));
+    }
+  };
+  const observer = new view.ResizeObserver(() => {
+    apply();
+    syncPinned();
+  });
   observer.observe(keyword);
   if (article) observer.observe(article);
-  const heading = articleHeading(root);
   if (heading) observer.observe(heading);
   apply();
-  view.addEventListener?.('resize', apply);
+  syncPinned();
+  view.addEventListener?.('resize', () => {
+    apply();
+    syncPinned();
+  });
+  view.addEventListener?.('scroll', syncPinned, { passive: true });
+}
+
+/**
+ * @param {Window} view
+ * @param {HTMLElement} el
+ */
+function stickyTopOf(view, el) {
+  const raw = view.getComputedStyle?.(el)?.top;
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : 0;
 }

@@ -31,13 +31,20 @@
 .ai-news-keyword-bar,
 .ai-news-article-bar {
   background: var(--paper);
+}
+
+.ai-news-keyword-bar {
+  z-index: 5;
+}
+
+.ai-news-keyword-bar.is-stuck,
+.ai-news-article-bar.is-stuck {
   box-shadow:
     -12px 0 0 var(--paper),
     12px 0 0 var(--paper);
 }
 
-.ai-news-keyword-bar {
-  z-index: 5;
+.ai-news-keyword-bar.is-stuck {
   box-shadow:
     -12px 0 0 var(--paper),
     12px 0 0 var(--paper),
@@ -57,15 +64,11 @@
 
 .ai-news-article-bar {
   top: var(--ai-news-article-top, var(--ai-news-filter-top, 0px));
-  box-shadow:
-    -12px 0 0 var(--paper),
-    12px 0 0 var(--paper);
 }
 
-/* Unrotated paper behind the whole sticky stack. The wood board tilts -0.5deg.
-   The tail is one h3 (1.12rem * 1.25) plus 8px, so a line crossing the edge
-   stays covered until the whole line has cleared. It does not add layout height. */
-.ai-news-article-bar::before {
+/* Painted only while the plaque is pinned. At rest the coverage card sits
+   a few pixels under the wood, and this tail would cover its first line. */
+.ai-news-article-bar.is-stuck::before {
   content: "";
   position: absolute;
   z-index: 0;
@@ -90,10 +93,13 @@
   margin-bottom: 0.15rem;
   line-height: 1.2;
   background: var(--paper);
+  scroll-margin-top: var(--ai-news-keyword-bar-h, 0px);
+}
+
+.prose:has(.ai-news-keyword-bar) > h2:not(:first-of-type).is-stuck {
   box-shadow:
     0 -4px 0 var(--paper),
     0 4px 0 var(--paper);
-  scroll-margin-top: var(--ai-news-keyword-bar-h, 0px);
 }
 
 .prose:has(.ai-news-keyword-bar) h3 {

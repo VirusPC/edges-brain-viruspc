@@ -8,6 +8,7 @@ import {
   chipText,
   createFilterBar,
   filterRows,
+  isPinned,
   stackLayout,
   updateFilterBar,
 } from '../src/lib/ai-news-filter-bar.mjs';
@@ -29,6 +30,15 @@ test('chip text matches the article plaque count, and a single row uses the titl
   ]);
 });
 
+test('the shield is only for a plaque that has reached its sticky offset', () => {
+  assert.equal(isPinned(80, 62), false);
+  assert.equal(isPinned(63.5, 62), false);
+  assert.equal(isPinned(62, 62), true);
+  assert.equal(isPinned(10, 62), true);
+  assert.equal(isPinned(0, 0), true);
+  assert.equal(isPinned(40, 0), false);
+});
+
 test('the plaque stacks the keyword bar, the chapter title, and the article bar', () => {
   assert.deepEqual(stackLayout({
     keyword: { height: 60, marginTop: 6, marginBottom: 18 },
@@ -46,14 +56,16 @@ test('the plaque stacks the keyword bar, the chapter title, and the article bar'
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*background:\s*var\(--paper\)/);
   assert.match(css, /\.ai-news-keyword-bar,\s*\n\.ai-news-article-bar\s*\{[^}]*background:\s*var\(--paper\)/);
-  assert.match(css, /\.ai-news-keyword-bar\s*\{[^}]*box-shadow:[^;]*var\(--paper\)/);
-  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*background:\s*var\(--paper\)/);
-  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*bottom:\s*calc\(-1 \* \(1\.12rem \* 1\.25 \+ 8px\)\)/);
+  assert.match(css, /\.ai-news-keyword-bar\.is-stuck\s*\{[^}]*box-shadow:[^;]*var\(--paper\)/);
+  assert.match(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*background:\s*var\(--paper\)/);
+  assert.match(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*bottom:\s*calc\(-1 \* \(1\.12rem \* 1\.25 \+ 8px\)\)/);
+  assert.doesNotMatch(css, /\.ai-news-article-bar::before\s*\{/);
+  assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\.is-stuck\s*\{[^}]*box-shadow:/);
   const global = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
   assert.match(global, /\.prose h3\s*\{[^}]*font-size:\s*1\.12rem/);
   assert.match(global, /h1, h2, h3\s*\{[^}]*line-height:\s*1\.25/);
-  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*top:\s*calc\(-1 \* var\(--ai-news-article-top, 0px\) - 4px\)/);
-  assert.doesNotMatch(css, /\.ai-news-article-bar::before\s*\{[^}]*transform:/);
+  assert.match(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*top:\s*calc\(-1 \* var\(--ai-news-article-top, 0px\) - 4px\)/);
+  assert.doesNotMatch(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*transform:/);
   assert.doesNotMatch(css, /0 6px 0 var\(--paper\)/);
   assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*8px 12px 6px/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter\s*\{[^}]*padding:\s*6px 8px 4px/);
