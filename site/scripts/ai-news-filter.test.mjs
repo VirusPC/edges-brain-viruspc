@@ -258,8 +258,10 @@ test('the filter sticks inside the chapter and becomes one scrolling row on a ph
   assert.match(css, /\.ai-news-filter button\s*\{[^}]*font-size:\s*14px/);
   assert.match(css, /\.ai-news-filter button\s*\{[^}]*line-height:\s*1\.2/);
   assert.doesNotMatch(css, /\.ai-news-filter button\s*\{[^}]*font:\s*inherit/);
-  assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*14px 14px 12px/);
-  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*padding:\s*12px 10px 10px/);
+  assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*8px 12px 6px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*padding:\s*6px 8px 4px/);
+  assert.match(css, /\.ai-news-filter button::before\s*\{[^}]*height:\s*44px/);
+  assert.match(css, /\.ai-news-filter button\s*\{[^}]*font-size:\s*14px/);
   assert.match(css, /transform:\s*rotate\(-0\.5deg\)/);
   assert.match(css, /filter:\s*url\("#wood-rough"\)/);
   assert.match(css, /\.ai-news-filter-seam path\s*\{[^}]*vector-effect:\s*non-scaling-stroke/);

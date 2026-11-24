@@ -520,7 +520,7 @@ export function mountCategoryFilter(doc) {
   const wrapper = encloseChapter(chapter.heading);
   wrapper.prepend(bar);
   const note = wrapper.querySelector(':scope > .ai-news-coverage');
-  if (note) wrapper.insertBefore(note, bar);
+  if (note) bar.after(note);
 
   if (doc.defaultView?.location && !filterQueryMatches(doc.defaultView.location.search || '', filter)) {
     const view = doc.defaultView;
