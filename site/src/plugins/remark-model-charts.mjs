@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {
+  boardEntryIds,
   chartAnchor,
   chartLabel,
   classifyChart,
@@ -77,12 +78,14 @@ export function remarkModelCharts(options = {}) {
         const spec = dataRoot
           ? loadSeries(dataRoot, issueDate, chart.kind, caption, { imageUrl: chart.image.url || '' })
           : null;
+        const entryIds = boardEntryIds(dataRoot, issueDate, chart.kind);
         stamp(chart.host, {
           'data-chart-index': String(index),
           'data-chart-role': 'media',
           'data-chart-label': chartLabel(chart.kind),
           'data-chart-anchor': anchor,
           'data-chart-kind': chart.kind,
+          ...(entryIds.length ? { dataEntryIds: JSON.stringify(entryIds) } : {}),
         });
         if (spec) {
           const props = hProps(chart.image);

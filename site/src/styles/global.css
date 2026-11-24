@@ -42,6 +42,8 @@
   --info-card-font-size: 0.8em;
   --info-card-line-height: 1.5;
   --info-card-row-pad: 0.08rem;
+  --tag-on: var(--note);
+  --tag-on-wash: var(--note-wash);
   --kw-top: #b4541f;
   --kw-high: #1c1b19;
   --kw-mid: #5c574e;
@@ -813,11 +815,107 @@ body.is-post.has-toc .sidenote {
   line-height: 1;
 }
 
-.prose .weekly-overview-card > .weekly-overview-text {
+.prose .weekly-overview-card > .weekly-overview-body {
   margin: 0;
   min-width: 0;
   flex: 1;
+}
+
+.weekly-overview-text {
+  margin: 0;
   overflow-wrap: break-word;
+}
+
+.overview-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 0.4em;
+  padding: 0.08em 0.55em 0.1em;
+  border: 1.5px solid var(--panel-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--panel-ink);
+  font-family: var(--serif);
+  font-size: 0.95em;
+  font-weight: 650;
+  line-height: 1.3;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.keyword-filter-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.08em 0.55em 0.1em;
+  border: 1.5px solid var(--tag-on);
+  border-radius: 999px;
+  background: var(--tag-on-wash);
+  color: var(--tag-on);
+  font-family: var(--serif);
+  font-size: 0.86em;
+  font-weight: 700;
+  line-height: 1.3;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.keyword-filter-count {
+  color: var(--muted);
+  font-size: 0.72em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.prose h2.has-keyword-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+}
+
+.keyword-filter-empty {
+  margin: 0 0 0.85rem;
+  color: var(--muted);
+  font-family: var(--serif);
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.keyword-filter-empty[hidden] { display: none !important; }
+
+.overview-tag.is-on,
+.keyword-cloud button[data-keyword].is-on,
+.keyword-filter-chip {
+  color: var(--tag-on);
+  background: var(--tag-on-wash);
+  border-color: var(--tag-on);
+}
+
+.keyword-cloud.is-filtering button[data-keyword]:not(.is-on),
+.weekly-overview-card.is-dim {
+  opacity: 0.4;
+}
+
+.keyword-cloud button[data-keyword]::before,
+.overview-tag::before,
+.keyword-filter-chip::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+.keyword-cloud button[data-keyword]:focus-visible,
+.overview-tag:focus-visible,
+.keyword-filter-chip:focus-visible {
+  outline: 2px solid var(--tag-on);
+  outline-offset: 2px;
 }
 
 .entry-flash {
@@ -1073,10 +1171,32 @@ body.is-post.has-toc .sidenote {
   max-width: 100%;
 }
 
-.keyword-cloud .kw-top { fill: var(--kw-top); font-weight: 700; }
-.keyword-cloud .kw-high { fill: var(--kw-high); font-weight: 700; }
-.keyword-cloud .kw-mid { fill: var(--kw-mid); font-weight: 400; }
-.keyword-cloud .kw-low { fill: var(--kw-low); font-weight: 400; }
+div.keyword-cloud-art {
+  position: relative;
+  container-type: inline-size;
+}
+
+.keyword-cloud button[data-keyword] {
+  position: absolute;
+  margin: 0;
+  padding: 0.08em 0.42em 0.1em;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  font-family: "Noto Sans CJK SC", "Noto Sans SC", sans-serif;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.keyword-cloud .kw-top { fill: var(--kw-top); color: var(--kw-top); font-weight: 700; }
+.keyword-cloud .kw-high { fill: var(--kw-high); color: var(--kw-high); font-weight: 700; }
+.keyword-cloud .kw-mid { fill: var(--kw-mid); color: var(--kw-mid); font-weight: 400; }
+.keyword-cloud .kw-low { fill: var(--kw-low); color: var(--kw-low); font-weight: 400; }
+
+.model-panel.is-keyword-hidden { display: none !important; }
 
 .info-card {
   margin: 0.15rem 0 1.15rem;
@@ -1806,6 +1926,8 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   --kw-mid: #c4bdb2;
   --kw-low: #9c958a;
   --kw-outline: #c4a27a;
+  --tag-on: #e09a62;
+  --tag-on-wash: color-mix(in srgb, #e09a62 22%, var(--paper));
   --star-ink: #e09a62;
   --star-bg: #40291a;
   --star-line: #5c331c;
@@ -1856,6 +1978,8 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
     --kw-mid: #c4bdb2;
     --kw-low: #9c958a;
     --kw-outline: #c4a27a;
+    --tag-on: #e09a62;
+    --tag-on-wash: color-mix(in srgb, #e09a62 22%, var(--paper));
     --star-ink: #e09a62;
     --star-bg: #40291a;
     --star-line: #5c331c;

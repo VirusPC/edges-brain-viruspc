@@ -93,8 +93,9 @@ function cloudNode(image, dir) {
 /**
  * @param {string} svg
  * @param {string} alt
+ * @param {string} [extra]
  */
-export function cloudHtml(svg, alt) {
+export function cloudHtml(svg, alt, extra = '') {
   const label = escapeHtml(alt.trim() || '本周关键词');
   let art = String(svg).replace(/^\uFEFF?<\?xml[^>]*\?>\s*/, '');
   if (!art.includes('class="keyword-cloud-art"')) {
@@ -103,14 +104,31 @@ export function cloudHtml(svg, alt) {
       '<svg class="keyword-cloud-art" focusable="false" aria-hidden="true"',
     );
   }
+  const interactive = art.includes('data-keyword');
+  const role = interactive ? 'group' : 'img';
+  const tail = extra ? `\n${extra}` : '';
   return `<div class="keyword-cloud">
 <svg class="keyword-cloud-outline" aria-hidden="true" focusable="false">
 <rect></rect>
 </svg>
-<div class="keyword-cloud-art-wrap" role="img" aria-label="${label}">
+<div class="keyword-cloud-art-wrap" role="${role}" aria-label="${label}">
 ${art}
-</div>
+</div>${tail}
 </div>`;
+}
+
+/**
+ * @param {{ word: string, targets?: string[] }[]} words
+ */
+export function keywordFilterData(words) {
+  const payload = {
+    keywords: words.map((word) => ({
+      name: word.word,
+      targets: Array.isArray(word.targets) ? word.targets : [],
+    })),
+  };
+  const json = JSON.stringify(payload).replaceAll('<', '\\u003c');
+  return `<script type="application/json" class="keyword-filter-data">${json}</script>`;
 }
 
 /**

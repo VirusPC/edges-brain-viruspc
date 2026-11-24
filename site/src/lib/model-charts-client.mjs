@@ -42,14 +42,22 @@ function mountBoard(board) {
   const fromHash = panelValueForHash(board);
   if (select && fromHash) select.value = fromHash;
   const show = (value) => {
-    for (const panel of board.querySelectorAll('[data-panel]')) {
-      panel.hidden = panel.getAttribute('data-panel') !== value;
+    const panels = [...board.querySelectorAll('[data-panel]')];
+    const visible = panels.filter((panel) => !panel.classList.contains('is-keyword-hidden'));
+    const wanted = visible.some((panel) => panel.getAttribute('data-panel') === value)
+      ? value
+      : (visible[0]?.getAttribute('data-panel') || '');
+    if (select && wanted && select.value !== wanted) select.value = wanted;
+    for (const panel of panels) {
+      const on = Boolean(wanted) && panel.getAttribute('data-panel') === wanted && !panel.classList.contains('is-keyword-hidden');
+      panel.hidden = !on;
     }
-    const panel = board.querySelector(`[data-panel="${CSS.escape(value)}"]`);
-    if (panel) requestAnimationFrame(() => ensureChart(panel));
+    const panel = wanted ? board.querySelector(`[data-panel="${CSS.escape(wanted)}"]`) : null;
+    if (panel && !panel.classList.contains('is-keyword-hidden')) requestAnimationFrame(() => ensureChart(panel));
   };
   show(select?.value || '0');
   select?.addEventListener('change', () => show(select.value));
+  board.addEventListener('keyword-board-sync', () => show(select?.value || '0'));
 }
 
 /**

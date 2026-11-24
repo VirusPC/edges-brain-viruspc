@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { entryAnchor } from './entry-anchor.mjs';
-import { overviewListHtml } from './overview.mjs';
+import { assertOverviewTags, overviewListHtml } from './overview.mjs';
 import { selectedArticlesRemarkHtml } from '../plugins/remark-coverage-window.mjs';
 
 /**
@@ -148,7 +148,8 @@ function pushCards(parts, cards, ids) {
   for (const id of ids || []) {
     const card = cards.get(id);
     if (!card || typeof card.text !== 'string') return false;
-    parts.push(`<!--entry-anchor:${entryAnchor(id)}-->\n\n${card.text.trimEnd()}\n\n`);
+    const anchor = entryAnchor(id);
+    parts.push(`<!--entry-anchor:${anchor} entry-id:${encodeURIComponent(id)}-->\n\n${card.text.trimEnd()}\n\n`);
   }
   return true;
 }
@@ -214,6 +215,7 @@ function readOverview(issueDir) {
   if (!Array.isArray(data?.themes) || data.themes.length < 3) {
     throw new Error(`summary/overview.json 没有本周总结：${path.basename(issueDir)}`);
   }
+  assertOverviewTags(data, path.basename(issueDir));
   return overviewListHtml(data);
 }
 

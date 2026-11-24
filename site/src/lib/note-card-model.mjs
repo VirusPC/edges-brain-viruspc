@@ -39,6 +39,7 @@ export function parseArticleCard(inner) {
   let title = '';
   let href = '';
   let headingId = '';
+  let entryId = '';
   /** @type {string[]} */
   const lede = [];
   /** @type {string[]} */
@@ -53,6 +54,7 @@ export function parseArticleCard(inner) {
       category = decode(attrs['data-cat'] || '');
       sources = splitTags(decode(attrs['data-tags'] || ''));
       headingId = decode(attrs.id || '');
+      entryId = decode(attrs['data-entry-id'] || '');
       const link = topNodes(node.inner).find((child) => child.tag === 'a');
       if (link) {
         href = decode(parseAttrs(link.attrText).href || '');
@@ -82,6 +84,7 @@ export function parseArticleCard(inner) {
     title,
     href,
     headingId,
+    entryId,
     ledeHtml: lede.filter(Boolean).map((html) => `<p class="note-card-lede">${html}</p>`).join(''),
     sections: sections.filter((section) => section.label || section.html),
     extraHtml: extra.join(''),

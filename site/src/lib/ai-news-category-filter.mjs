@@ -168,6 +168,7 @@ export function isFilterStuck(barTop, stickyTop, tolerance = 2) {
 }
 
 export function itemMatches(item, filter) {
+  if (item?.keywordMatch === false) return false;
   if (filter?.cat && item.cat !== filter.cat) return false;
   if (filter?.src && item.src !== filter.src) return false;
   if (filter?.tag && !(item.tags || []).map(canonicalCompany).includes(canonicalCompany(filter.tag))) return false;
@@ -361,8 +362,42 @@ function syncPressed(bar, groups, filter) {
   }
 }
 
+function withKeyword(item) {
+  const card = item.nodes?.[0];
+  if (card?.getAttribute?.('data-keyword-match') === '0') return { ...item, keywordMatch: false };
+  return item;
+}
+
+function keywordItems(items) {
+  return items.filter((item) => item.nodes?.[0]?.getAttribute?.('data-keyword-match') !== '0');
+}
+
+function updateCountLabels(bar, counts) {
+  for (const button of bar.querySelectorAll('button')) {
+    const kind = button.dataset.filter;
+    let name = '';
+    let count = null;
+    if (kind === 'all') {
+      name = '全部';
+      count = counts.total;
+    } else if (kind === 'cat') {
+      name = button.dataset.cat || '';
+      count = counts.cats[name] || 0;
+    } else if (kind === 'src') {
+      name = button.dataset.src || '';
+      count = counts.srcs[name] || 0;
+    } else if (kind === 'tag') {
+      name = button.dataset.tag || '';
+      count = counts.companies[name] || 0;
+    }
+    if (count == null || !name) continue;
+    fillChip(button, countLabel(name, count));
+  }
+}
+
 function applyDom(groups, status, filter) {
-  const plan = sectionPlan(groups, filter);
+  const live = groups.map((group) => ({ ...group, items: group.items.map(withKeyword) }));
+  const plan = sectionPlan(live, filter);
   groups.forEach((group, index) => {
     const planned = plan.sections[index];
     setShown(group.heading, planned.show);
@@ -371,7 +406,8 @@ function applyDom(groups, status, filter) {
       for (const node of item.nodes) setShown(node, show);
     });
   });
-  status.hidden = !(filter?.cat || filter?.src || filter?.tag) || plan.any;
+  const anyKeyword = groups.some((group) => group.items.some((item) => item.nodes?.[0]?.getAttribute?.('data-keyword-match') !== '0'));
+  status.hidden = !(filter?.cat || filter?.src || filter?.tag) || plan.any || !anyKeyword;
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -612,9 +648,14 @@ export function mountCategoryFilter(doc) {
   };
 
   const render = () => {
+    updateCountLabels(bar, featuredCounts(keywordItems(items)));
     syncPressed(bar, chapter.groups, filter);
     applyDom(chapter.groups, status, filter);
   };
+
+  root.addEventListener('ai-news-keyword', () => {
+    render();
+  });
 
   const choose = (action) => {
     const view = doc.defaultView;

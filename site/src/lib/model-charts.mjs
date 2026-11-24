@@ -101,6 +101,35 @@ export function chartAnchor(kind) {
   return ANCHORS[kind] || kind;
 }
 
+const BOARD_FILES = {
+  aa: 'aa.json',
+  'llm-arena': 'llm-arena.json',
+  'openrouter-usage': 'openrouter-usage.json',
+  'openrouter-programming': 'openrouter-programming.json',
+  'openrouter-apps': 'openrouter-apps.json',
+};
+
+/**
+ * Content ids of one leaderboard. Keyword targets point at these rows.
+ * @param {string | null} dataRoot
+ * @param {string} issueDate
+ * @param {string} kind
+ * @returns {string[]}
+ */
+export function boardEntryIds(dataRoot, issueDate, kind) {
+  const file = BOARD_FILES[kind];
+  if (!dataRoot || !issueDate || !file) return [];
+  const full = path.join(dataRoot, 'issues', issueDate, 'summary', 'models', 'boards', file);
+  if (!fs.existsSync(full)) return [];
+  try {
+    const data = JSON.parse(fs.readFileSync(full, 'utf8'));
+    if (!Array.isArray(data?.items)) return [];
+    return data.items.map((item) => item?.id).filter((id) => typeof id === 'string' && id);
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Names after 「红圈：」. 「不圈」 and 「图中无红圈」 have no colon, so they
  * yield nothing. Parentheses stay attached to the name.

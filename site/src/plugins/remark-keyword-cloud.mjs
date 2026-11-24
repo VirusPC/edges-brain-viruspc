@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { inkMeasurementFont, renderKeywordCloudSvg } from '../lib/render_keyword_cloud.mjs';
+import { inkMeasurementFont, renderKeywordCloudButtons } from '../lib/render_keyword_cloud.mjs';
 import { markdownPath, resolveAiNewsDataRoot } from '../lib/model-charts.mjs';
 import { keywordAlt, loadKeywordWords } from '../lib/keyword-snapshot.mjs';
-import { cloudHtml } from './rehype-keyword-cloud.mjs';
+import { cloudHtml, keywordFilterData } from './rehype-keyword-cloud.mjs';
 
 /**
  * Draw the word cloud under 「一、本周概览」 from the snapshot's keywords.json.
@@ -29,7 +29,11 @@ export function remarkKeywordCloud(options = {}) {
     if (!range) return;
     const font = inkMeasurementFont();
     if (!font) throw new Error('词云找不到 Noto Sans CJK SC 粗体。安装 fonts-noto-cjk 后再构建。');
-    const html = cloudHtml(renderKeywordCloudSvg(words, font, 1), keywordAlt(words));
+    const html = cloudHtml(
+      renderKeywordCloudButtons(words, font, 1),
+      keywordAlt(words),
+      keywordFilterData(words),
+    );
     tree.children.splice(range.start + 1, range.end - range.start - 1, { type: 'html', value: html });
   };
 }
