@@ -33,20 +33,10 @@ export function filterRows(spec) {
 }
 
 /**
- * A sticky box is pinned once its border top has reached the sticky offset.
- * Below that line it is still in normal flow.
- * @param {number} rectTop
- * @param {number} stickyTop
- * @param {number} [tolerance]
- */
-export function isPinned(rectTop, stickyTop, tolerance = 1) {
-  return rectTop <= stickyTop + tolerance;
-}
-
-/**
  * Sticky tops so the keyword plaque, the chapter title, and the article plaque stack
- * without covering one another. In the page, `top` places the border box, so margins
- * stay outside that box and are not added again.
+ * without covering one another. `top` places each border box against the previous one.
+ * The title and the article plaque have no vertical margin between them; that join is
+ * padding on the title, and the height here already includes it.
  * @param {{ keyword?: { height?: number }, heading?: { height?: number }, article?: { height?: number } }} boxes
  */
 export function stackLayout(boxes) {
@@ -335,6 +325,8 @@ function articleHeading(root) {
 
 /**
  * Measure the keyword plaque and the chapter title, then pin the article plaque beneath them.
+ * Offsets come from layout size only. Reading geometry on scroll and toggling paint from it
+ * moves the stack on the same frame it pins.
  * @param {Document} doc
  */
 export function bindFilterStack(doc) {
@@ -357,34 +349,10 @@ export function bindFilterStack(doc) {
     root.style.setProperty('--ai-news-stack-h', `${layout.stackHeight}px`);
   };
   const heading = articleHeading(root);
-  const pins = [keyword, heading, article].filter(Boolean);
-  const syncPinned = () => {
-    for (const el of pins) {
-      el.classList.toggle('is-stuck', isPinned(el.getBoundingClientRect().top, stickyTopOf(view, el)));
-    }
-  };
-  const observer = new view.ResizeObserver(() => {
-    apply();
-    syncPinned();
-  });
+  const observer = new view.ResizeObserver(apply);
   observer.observe(keyword);
   if (article) observer.observe(article);
   if (heading) observer.observe(heading);
   apply();
-  syncPinned();
-  view.addEventListener?.('resize', () => {
-    apply();
-    syncPinned();
-  });
-  view.addEventListener?.('scroll', syncPinned, { passive: true });
-}
-
-/**
- * @param {Window} view
- * @param {HTMLElement} el
- */
-function stickyTopOf(view, el) {
-  const raw = view.getComputedStyle?.(el)?.top;
-  const value = Number.parseFloat(raw);
-  return Number.isFinite(value) ? value : 0;
+  view.addEventListener?.('resize', apply);
 }

@@ -3,6 +3,8 @@
 }
 
 .ai-news-filter {
+  --plaque-gap: 0.45rem;
+  --plaque-side: 8px;
   --wood-top: #ecd9b8;
   --wood-bot: #e6cfa8;
   --wood-edge: #8a5a34;
@@ -23,37 +25,29 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin: 2px 8px 0.45rem;
-  padding: 8px 12px 6px;
+  margin: 2px var(--plaque-side) var(--plaque-gap);
+  padding: 8px 12px 10px;
   background: transparent;
 }
 
 .ai-news-keyword-bar,
 .ai-news-article-bar {
   background: var(--paper);
+  box-shadow:
+    calc(-1 * var(--plaque-side)) 0 0 var(--paper),
+    var(--plaque-side) 0 0 var(--paper);
 }
 
 .ai-news-keyword-bar {
   z-index: 5;
 }
 
-.ai-news-keyword-bar.is-stuck,
-.ai-news-article-bar.is-stuck {
-  box-shadow:
-    -12px 0 0 var(--paper),
-    12px 0 0 var(--paper);
-}
-
-.ai-news-keyword-bar.is-stuck {
-  box-shadow:
-    -12px 0 0 var(--paper),
-    12px 0 0 var(--paper),
-    0 -4px 0 var(--paper);
-}
-
 .ai-news-keyword-bar .ai-news-filter-row {
   flex-wrap: nowrap;
+  align-items: center;
+  min-height: 44px;
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
 }
@@ -64,20 +58,20 @@
 
 .ai-news-article-bar {
   top: var(--ai-news-article-top, var(--ai-news-filter-top, 0px));
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-bottom: calc(10px + var(--plaque-gap));
 }
 
-/* Painted only while the plaque is pinned. At rest the coverage card sits
-   a few pixels under the wood, and this tail would cover its first line. */
-.ai-news-article-bar.is-stuck::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  background: var(--paper);
-  left: -14px;
-  right: -14px;
-  top: calc(-1 * var(--ai-news-article-top, 0px) - 4px);
-  bottom: calc(-1 * (1.12rem * 1.25 + 8px));
+/* The tilted wood stays inside this box. The old margin under the plaque is
+   now padding, so the page color is part of the sticky border and text meets
+   that edge. A cover drawn from scroll position was covering the next line. */
+.ai-news-article-bar .ai-news-filter-board {
+  bottom: calc(7px + var(--plaque-gap));
+}
+
+.ai-news-article-bar + .ai-news-coverage {
+  margin-top: 0;
 }
 
 .ai-news-filter.is-static {
@@ -90,16 +84,11 @@
   top: var(--ai-news-heading-top, var(--ai-news-keyword-bar-h, 0px));
   z-index: 4;
   margin-top: 0.7rem;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0;
+  padding-bottom: 0.15rem;
   line-height: 1.2;
   background: var(--paper);
   scroll-margin-top: var(--ai-news-keyword-bar-h, 0px);
-}
-
-.prose:has(.ai-news-keyword-bar) > h2:not(:first-of-type).is-stuck {
-  box-shadow:
-    0 -4px 0 var(--paper),
-    0 4px 0 var(--paper);
 }
 
 .prose:has(.ai-news-keyword-bar) h3 {
@@ -129,7 +118,7 @@
 
 .ai-news-filter-board {
   position: absolute;
-  inset: 0;
+  inset: 4px 4px 7px;
   z-index: 0;
   pointer-events: none;
   transform: rotate(-0.5deg);
@@ -206,14 +195,34 @@
   stroke-width: 1px;
 }
 
+/* Both axes stay clip. overflow-x: auto would compute a paired clip to hidden
+   and turn this box into the sticky scrollport. Wide tables scroll inside
+   .table-wrap; code blocks scroll inside pre. */
+@media (max-width: 960px) {
+  .post.has-toc .prose:has(.ai-news-keyword-bar) {
+    overflow-x: clip;
+    overflow-y: clip;
+  }
+}
+
+.prose:has(.ai-news-keyword-bar) .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 @media (max-width: 560px) {
   .post.has-toc .prose:has(.ai-news-selected) {
     overflow-x: clip;
+    overflow-y: clip;
   }
 
   .ai-news-filter-row {
     flex-wrap: nowrap;
+    align-items: center;
+    min-height: 44px;
     overflow-x: auto;
+    overflow-y: hidden;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     scroll-padding-inline: 4px;
@@ -233,8 +242,15 @@
   }
 
   .ai-news-filter {
-    margin: 2px 4px 0.35rem;
-    padding: 6px 8px 4px;
+    --plaque-side: 4px;
+    margin: 2px var(--plaque-side) var(--plaque-gap);
+    padding: 8px 10px 10px;
+  }
+
+  .ai-news-article-bar {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-bottom: calc(10px + var(--plaque-gap));
   }
 
   .ai-news-filter button:focus-visible {

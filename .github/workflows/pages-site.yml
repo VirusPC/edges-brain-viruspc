@@ -36,8 +36,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: pages-site
-  cancel-in-progress: false
+  group: pages-site-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   build:
@@ -51,12 +51,18 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: site/package-lock.json
+      - name: Install Chrome
+        run: |
+          wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get update
+          sudo apt-get install -y /tmp/chrome.deb
       - name: Install, test, and build
         working-directory: site
         env:
           ASTRO_TELEMETRY_DISABLED: 1
           # The site build reads ai-news-data main. History is kept so 数据版本 can run git log -1 on issues/<date>/.
           AI_NEWS_DATA_REF: main
+          CHROME_PATH: /usr/bin/google-chrome
         run: npm ci && npm test && npm run build
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'

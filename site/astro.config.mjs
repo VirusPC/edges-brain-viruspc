@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import { rehypeArticleCards } from './src/plugins/rehype-article-cards.mjs';
 import { rehypeChapterWip } from './src/plugins/rehype-chapter-wip.mjs';
+import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables.mjs';
 import { rehypeKeywordCloud } from './src/plugins/rehype-keyword-cloud.mjs';
 import { rehypeModelCharts } from './src/plugins/rehype-model-charts.mjs';
 import { rehypeSidenotes } from './src/plugins/rehype-sidenotes.mjs';
@@ -33,6 +34,6 @@ export default defineConfig({
     gfm: true,
     smartypants: false,
     remarkPlugins: [remarkEntryAnchor, [remarkCoverageWindow, { repoRoot }], remarkCategoryPills, [remarkLocalAssets, { repoRoot }], [remarkKeywordCloud, { repoRoot }], [remarkModelCharts, { repoRoot }], [remarkModelFacts, { repoRoot }], remarkSelectedArticles],
-    rehypePlugins: [rehypeKeywordCloud, rehypeSidenotes, rehypeModelCharts, rehypeArticleCards, rehypeChapterWip],
+    rehypePlugins: [rehypeKeywordCloud, rehypeSidenotes, rehypeModelCharts, rehypeArticleCards, rehypeChapterWip, rehypeWrapTables],
   },
 });
