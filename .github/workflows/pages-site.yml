@@ -36,8 +36,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: pages-site
-  cancel-in-progress: false
+  group: pages-site-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   build:
