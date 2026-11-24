@@ -62,8 +62,9 @@
     12px 0 0 var(--paper);
 }
 
-/* Unrotated paper behind the whole sticky stack. The wood board tilts -0.5deg,
-   so its corners leave the border box; this layer covers that box plus a few pixels. */
+/* Unrotated paper behind the whole sticky stack. The wood board tilts -0.5deg.
+   The tail is one h3 (1.12rem * 1.25) plus 8px, so a line crossing the edge
+   stays covered until the whole line has cleared. It does not add layout height. */
 .ai-news-article-bar::before {
   content: "";
   position: absolute;
@@ -73,7 +74,7 @@
   left: -14px;
   right: -14px;
   top: calc(-1 * var(--ai-news-article-top, 0px) - 4px);
-  bottom: -12px;
+  bottom: calc(-1 * (1.12rem * 1.25 + 8px));
 }
 
 .ai-news-filter.is-static {

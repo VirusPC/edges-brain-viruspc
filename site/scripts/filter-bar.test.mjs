@@ -48,7 +48,10 @@ test('the plaque stacks the keyword bar, the chapter title, and the article bar'
   assert.match(css, /\.ai-news-keyword-bar,\s*\n\.ai-news-article-bar\s*\{[^}]*background:\s*var\(--paper\)/);
   assert.match(css, /\.ai-news-keyword-bar\s*\{[^}]*box-shadow:[^;]*var\(--paper\)/);
   assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*background:\s*var\(--paper\)/);
-  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*bottom:\s*-12px/);
+  assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*bottom:\s*calc\(-1 \* \(1\.12rem \* 1\.25 \+ 8px\)\)/);
+  const global = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
+  assert.match(global, /\.prose h3\s*\{[^}]*font-size:\s*1\.12rem/);
+  assert.match(global, /h1, h2, h3\s*\{[^}]*line-height:\s*1\.25/);
   assert.match(css, /\.ai-news-article-bar::before\s*\{[^}]*top:\s*calc\(-1 \* var\(--ai-news-article-top, 0px\) - 4px\)/);
   assert.doesNotMatch(css, /\.ai-news-article-bar::before\s*\{[^}]*transform:/);
   assert.doesNotMatch(css, /0 6px 0 var\(--paper\)/);
