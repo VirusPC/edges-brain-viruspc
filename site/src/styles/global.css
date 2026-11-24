@@ -1633,7 +1633,7 @@ pre.model-chart-spec { display: none !important; }
 }
 .prose th { font-weight: 600; }
 
-.table-wrap { overflow-x: auto; }
+.table-wrap { overflow-x: auto; max-width: 100%; }
 
 .fn-toggle {
   position: absolute;

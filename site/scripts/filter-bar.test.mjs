@@ -54,8 +54,11 @@ test('the plaque stacks the keyword bar, the chapter title, and the article bar'
   assert.doesNotMatch(css, /\.ai-news-article-bar::before\s*\{/);
   assert.match(css, /\.ai-news-filter-board\s*\{[^}]*inset:\s*4px 4px 7px/);
   assert.match(css, /\.ai-news-filter-board\s*\{[^}]*transform:\s*rotate\(-0\.5deg\)/);
-  assert.match(css, /@media \(max-width:\s*960px\)[\s\S]*overflow-y:\s*clip/);
-  assert.match(css, /\.ai-news-keyword-bar \.ai-news-filter-row\s*\{[^}]*overflow-y:\s*clip/);
+  assert.match(css, /@media \(max-width:\s*960px\)[\s\S]*\.post\.has-toc \.prose:has\(\.ai-news-keyword-bar\)\s*\{[^}]*overflow-x:\s*clip/);
+  assert.match(css, /@media \(max-width:\s*960px\)[\s\S]*\.post\.has-toc \.prose:has\(\.ai-news-keyword-bar\)\s*\{[^}]*overflow-y:\s*clip/);
+  assert.doesNotMatch(css, /\.post\.has-toc \.prose:has\(\.ai-news-keyword-bar\)\s*\{[^}]*overflow-x:\s*auto/);
+  assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) \.table-wrap\s*\{[^}]*overflow-x:\s*auto/);
+  assert.match(css, /\.ai-news-keyword-bar \.ai-news-filter-row\s*\{[^}]*overflow-y:\s*hidden/);
   const source = fs.readFileSync(new URL('../src/lib/ai-news-filter-bar.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /addEventListener\(\s*['"]scroll['"]/);
   assert.doesNotMatch(css, /0 6px 0 var\(--paper\)/);

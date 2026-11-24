@@ -45,7 +45,7 @@
 .ai-news-keyword-bar .ai-news-filter-row {
   flex-wrap: nowrap;
   overflow-x: auto;
-  overflow-y: clip;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
 }
@@ -193,14 +193,20 @@
   stroke-width: 1px;
 }
 
-/* overflow-x: auto on .prose also computes overflow-y to auto and becomes the
-   sticky scrollport, so the plaques scroll away with the page. clip keeps the
-   horizontal behavior without a vertical scrollport. */
+/* Both axes stay clip. overflow-x: auto would compute a paired clip to hidden
+   and turn this box into the sticky scrollport. Wide tables scroll inside
+   .table-wrap; code blocks scroll inside pre. */
 @media (max-width: 960px) {
   .post.has-toc .prose:has(.ai-news-keyword-bar) {
-    overflow-x: auto;
+    overflow-x: clip;
     overflow-y: clip;
   }
+}
+
+.prose:has(.ai-news-keyword-bar) .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 @media (max-width: 560px) {
@@ -212,7 +218,7 @@
   .ai-news-filter-row {
     flex-wrap: nowrap;
     overflow-x: auto;
-    overflow-y: clip;
+    overflow-y: hidden;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     scroll-padding-inline: 4px;
