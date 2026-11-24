@@ -8,7 +8,6 @@ import {
   chipText,
   createFilterBar,
   filterRows,
-  isPinned,
   stackLayout,
   updateFilterBar,
 } from '../src/lib/ai-news-filter-bar.mjs';
@@ -30,15 +29,6 @@ test('chip text matches the article plaque count, and a single row uses the titl
   ]);
 });
 
-test('the shield is only for a plaque that has reached its sticky offset', () => {
-  assert.equal(isPinned(80, 62), false);
-  assert.equal(isPinned(63.5, 62), false);
-  assert.equal(isPinned(62, 62), true);
-  assert.equal(isPinned(10, 62), true);
-  assert.equal(isPinned(0, 0), true);
-  assert.equal(isPinned(40, 0), false);
-});
-
 test('the plaque stacks the keyword bar, the chapter title, and the article bar', () => {
   assert.deepEqual(stackLayout({
     keyword: { height: 60, marginTop: 6, marginBottom: 18 },
@@ -53,22 +43,25 @@ test('the plaque stacks the keyword bar, the chapter title, and the article bar'
   const css = fs.readFileSync(new URL('../src/styles/ai-news-filter.css', import.meta.url), 'utf8');
   assert.match(css, /\.ai-news-keyword-bar\s*\{[^}]*z-index:\s*5/);
   assert.match(css, /\.ai-news-article-bar\s*\{[^}]*top:\s*var\(--ai-news-article-top/);
+  assert.match(css, /\.ai-news-article-bar\s*\{[^}]*margin-top:\s*0/);
+  assert.match(css, /\.ai-news-article-bar\s*\{[^}]*margin-bottom:\s*0/);
+  assert.match(css, /\.ai-news-article-bar\s*\{[^}]*padding-bottom:\s*calc\(10px \+ var\(--plaque-gap\)\)/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*background:\s*var\(--paper\)/);
+  assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*margin-bottom:\s*0/);
   assert.match(css, /\.ai-news-keyword-bar,\s*\n\.ai-news-article-bar\s*\{[^}]*background:\s*var\(--paper\)/);
-  assert.match(css, /\.ai-news-keyword-bar\.is-stuck\s*\{[^}]*box-shadow:[^;]*var\(--paper\)/);
-  assert.match(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*background:\s*var\(--paper\)/);
-  assert.match(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*bottom:\s*calc\(-1 \* \(1\.12rem \* 1\.25 \+ 8px\)\)/);
+  assert.doesNotMatch(css, /is-stuck/);
   assert.doesNotMatch(css, /\.ai-news-article-bar::before\s*\{/);
-  assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\.is-stuck\s*\{[^}]*box-shadow:/);
-  const global = fs.readFileSync(new URL('../src/styles/global.css', import.meta.url), 'utf8');
-  assert.match(global, /\.prose h3\s*\{[^}]*font-size:\s*1\.12rem/);
-  assert.match(global, /h1, h2, h3\s*\{[^}]*line-height:\s*1\.25/);
-  assert.match(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*top:\s*calc\(-1 \* var\(--ai-news-article-top, 0px\) - 4px\)/);
-  assert.doesNotMatch(css, /\.ai-news-article-bar\.is-stuck::before\s*\{[^}]*transform:/);
+  assert.match(css, /\.ai-news-filter-board\s*\{[^}]*inset:\s*4px 4px 7px/);
+  assert.match(css, /\.ai-news-filter-board\s*\{[^}]*transform:\s*rotate\(-0\.5deg\)/);
+  assert.match(css, /@media \(max-width:\s*960px\)[\s\S]*overflow-y:\s*clip/);
+  assert.match(css, /\.ai-news-keyword-bar \.ai-news-filter-row\s*\{[^}]*overflow-y:\s*clip/);
+  const source = fs.readFileSync(new URL('../src/lib/ai-news-filter-bar.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(source, /addEventListener\(\s*['"]scroll['"]/);
   assert.doesNotMatch(css, /0 6px 0 var\(--paper\)/);
-  assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*8px 12px 6px/);
-  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter\s*\{[^}]*padding:\s*6px 8px 4px/);
+  assert.match(css, /\.ai-news-filter\s*\{[^}]*padding:\s*8px 12px 10px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter\s*\{[^}]*padding:\s*8px 10px 10px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-article-bar\s*\{[^}]*margin-top:\s*0/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) h3\s*\{[^}]*position:\s*static/);
   assert.doesNotMatch(css, /\.prose:has\(\.ai-news-keyword-bar\) h3\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /\.ai-news-filter button::before\s*\{[^}]*height:\s*44px/);
