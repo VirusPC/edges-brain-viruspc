@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-11-24
+
+### Changed
+
+- 总结阶段的顺序改为汇合、本周总结、关键词、整页校验。先定主线并为每条选一枚 `tag`，再从三路卡片抽词，把这些 tag 加回 `keywords.json` 并提到权重下限 5。词云仍只读合并后的这份文件。
+- 有模型时，模型主线写能力方向，tag 不得是型号名。其他主线的 tag 是主题，不得是单篇文章或单个项目、产品名。正文为「本周无重要模型发布」且 refs 为空时，tag 固定为「无重要发布」，不进入词云。
+- `theme: true` 仍是抽词阶段的概念高亮。主线 tag 不因此全部标成 true，也不替换已经抽出的型号和产品名。
+- tag 规则只作用于记录版本 >= 0.0.9 的 overview。仍锁在 0.0.8、没有 tag 的历史 overview 不因此失败。本次不改站点。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.9` 先不打，留给维护者。
+
 ## [0.0.8] - 2026-11-23
 
 ### Added

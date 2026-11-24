@@ -25,9 +25,11 @@
             "exclusiveMinimum": 0
           },
           "theme": {
+            "description": "抽词阶段选出的唯一概念高亮。主线 tag 并入词表时不得只因自己是主线 tag 就写成 true；原先已是 true 的保持 true。",
             "type": "boolean"
           },
           "targets": {
+            "description": "至少一条内容 ID。主线 tag 的 targets 要盖住该主线的 refs.id。正文为「本周无重要模型发布」且 refs 为空的那条 tag 不进入本文件，因此不把 minItems 放宽为 0。",
             "type": "array",
             "minItems": 1,
             "uniqueItems": true,

@@ -11,6 +11,8 @@
 然后按这个顺序：
 
 1. [汇合三路展示内容](merge.md)
-2. [关键词](keywords.md)
-3. [本周总结](overview.md)
+2. [本周总结](overview.md)
+3. [关键词](keywords.md)
 4. [整页校验](check.md)
+
+先定主线，并为每条选一枚代表性 tag。再从三路卡片抽词，把这些 tag 加回 `keywords.json` 并提高权重。词云只读合并后的这份关键词。

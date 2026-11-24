@@ -23,6 +23,12 @@
         "required": ["kind", "text", "refs"],
         "properties": {
           "kind": { "enum": ["model", "other"] },
+          "tag": {
+            "description": "一枚代表性词，1 到 24 个字符。记录版本 >= 0.0.9 时校验器要求每条都有且只有这一个非空 tag。本 schema 不把 tag 放进 required：0.0.8 的历史 overview 没有这个字段，不能因 schema 被误杀。0.0.9 缺 tag 仍由校验器拒绝，不是缺 tag 也能通过的旧格式。",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24
+          },
           "text": { "type": "string", "minLength": 1, "maxLength": 280 },
           "refs": {
             "type": "array",

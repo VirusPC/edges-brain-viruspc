@@ -313,6 +313,31 @@ class ValidateStages(unittest.TestCase):
         errors = validate_summary(self.issue)
         self.assertTrue(any("少于清洗后 3 篇" in item for item in errors), errors)
 
+    def test_overview_tag_rules_follow_the_recorded_version(self) -> None:
+        self.assertEqual(validate_summary(self.issue), [])
+        overview_path = self.issue / "summary" / "overview.json"
+        overview = json.loads(overview_path.read_text(encoding="utf-8"))
+        overview["skill"]["version"] = "0.0.9"
+        write_json(overview_path, overview)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("缺少 tag" in item for item in errors), errors)
+        overview["themes"][0]["tag"] = "能力方向"
+        overview["themes"][1]["tag"] = "产品实践"
+        overview["themes"][2]["tag"] = "开源变化"
+        write_json(overview_path, overview)
+        write_json(
+            self.issue / "summary" / "keywords.json",
+            {
+                "keywords": [
+                    {"name": "Example", "weight": 1.4, "targets": [ARTICLE, BOARD_ITEM]},
+                    {"name": "能力方向", "weight": 5, "targets": [MODEL]},
+                    {"name": "产品实践", "weight": 5, "targets": [ARTICLE]},
+                    {"name": "开源变化", "weight": 5, "targets": [REPO]},
+                ]
+            },
+        )
+        self.assertEqual(validate_summary(self.issue), [])
+
     def test_keyword_target_must_exist(self) -> None:
         write_json(
             self.issue / "summary" / "keywords.json",

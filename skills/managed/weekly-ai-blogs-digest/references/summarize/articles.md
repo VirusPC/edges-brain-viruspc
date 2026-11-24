@@ -12,7 +12,7 @@
 python3 scripts/summarize/articles/validate.py issues/<生成日>
 ```
 
-在本 skill 目录执行。三路和关键词都齐了之后，再跑 [整页校验](check.md)。
+在本 skill 目录执行。三路、本周总结和关键词都齐了之后，再跑 [整页校验](check.md)。
 
 ## 理解候选
 
@@ -28,4 +28,4 @@ python3 scripts/summarize/articles/validate.py issues/<生成日>
 
 另有 `category` 和 `company`。主类只能是模型、架构、产品、实践、开源、其他。发文公司按 `site/src/lib/ai-news-category-filter.mjs` 归并。
 
-候选或某篇正文变了，重写受影响的卡片，以及映射到这些 ID 的关键词。项目筛选和模型榜的变化不重写没引用它们的文章。
+候选或某篇正文变了，重写受影响的卡片。卡片变了就重写本周总结，再重算关键词。项目筛选和模型榜的变化不重写没引用它们的文章。
