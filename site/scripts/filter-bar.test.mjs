@@ -45,6 +45,15 @@ test('the plaque stacks the keyword bar, the chapter title, and the article bar'
   assert.match(css, /\.ai-news-article-bar\s*\{[^}]*top:\s*var\(--ai-news-article-top/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*position:\s*sticky/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) > h2:not\(:first-of-type\)\s*\{[^}]*background:\s*var\(--paper\)/);
+  assert.match(css, /\.ai-news-keyword-bar,\s*\n\.ai-news-article-bar\s*\{[^}]*background:\s*var\(--paper\)/);
+  assert.match(css, /\.ai-news-keyword-bar\s*\{[^}]*box-shadow:[^;]*var\(--paper\)/);
+  assert.match(css, /\.ai-news-article-bar\s*\{[^}]*box-shadow:[^;]*0 6px 0 var\(--paper\)/);
+  assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) h3\s*\{[^}]*position:\s*static/);
+  assert.doesNotMatch(css, /\.prose:has\(\.ai-news-keyword-bar\) h3\s*\{[^}]*position:\s*sticky/);
+  assert.match(css, /\.ai-news-filter button::before\s*\{[^}]*height:\s*44px/);
+  assert.match(css, /\.ai-news-keyword-bar \.ai-news-filter-row\s*\{[^}]*flex-wrap:\s*nowrap/);
+  assert.match(css, /\.ai-news-filter-label\s*\{[^}]*font-size:\s*16px/);
+  assert.match(css, /\.ai-news-filter button\s*\{[^}]*font-size:\s*14px/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-row\s*\{[^}]*flex-wrap:\s*nowrap/);
   assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*overflow-x:\s*auto/);
   assert.match(css, /:root\[data-theme="dark"\] \.ai-news-filter\s*\{[^}]*--wood-top:\s*#4a3526/);
