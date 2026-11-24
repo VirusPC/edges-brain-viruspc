@@ -44,6 +44,8 @@
 
 .ai-news-keyword-bar .ai-news-filter-row {
   flex-wrap: nowrap;
+  align-items: center;
+  min-height: 44px;
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
@@ -217,6 +219,8 @@
 
   .ai-news-filter-row {
     flex-wrap: nowrap;
+    align-items: center;
+    min-height: 44px;
     overflow-x: auto;
     overflow-y: hidden;
     overscroll-behavior-x: contain;

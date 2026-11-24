@@ -59,6 +59,8 @@ test('the plaque stacks the keyword bar, the chapter title, and the article bar'
   assert.doesNotMatch(css, /\.post\.has-toc \.prose:has\(\.ai-news-keyword-bar\)\s*\{[^}]*overflow-x:\s*auto/);
   assert.match(css, /\.prose:has\(\.ai-news-keyword-bar\) \.table-wrap\s*\{[^}]*overflow-x:\s*auto/);
   assert.match(css, /\.ai-news-keyword-bar \.ai-news-filter-row\s*\{[^}]*overflow-y:\s*hidden/);
+  assert.match(css, /\.ai-news-keyword-bar \.ai-news-filter-row\s*\{[^}]*min-height:\s*44px/);
+  assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*\.ai-news-filter-row\s*\{[^}]*min-height:\s*44px/);
   const source = fs.readFileSync(new URL('../src/lib/ai-news-filter-bar.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(source, /addEventListener\(\s*['"]scroll['"]/);
   assert.doesNotMatch(css, /0 6px 0 var\(--paper\)/);
