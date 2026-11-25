@@ -29,7 +29,7 @@ status: accepted
 
 ## Consequences
 
-- 现状：站点有 `/ai-news/rss.xml`，没有 `latest.json`。上线时间不固定，因为周五 09:00（Asia/Shanghai）的周报 routine 只打开数据仓 PR、不合并，数据仓合并也不会触发本仓 Pages 部署。`latest.json` 要在后续实现里于构建、部署时写入，并且只指向这次部署已经上线的期。本篇不添加这个文件，也不规定它的字段形状。
+- 现状：站点有 `/ai-news/rss.xml`，没有 `latest.json`。上线时间不固定，因为周五 09:00（Asia/Shanghai）的周报 routine 只打开数据仓 PR、不合并，数据仓合并也不会触发本仓 Pages 部署。`latest.json` 要在后续实现里于构建、部署时写入，并且只指向这次部署已经上线的期。本篇不添加这个文件，也不规定它的字段形状。本篇不规定部署路径；路径见 [0007](0007-subscribe-ui-copy-button-and-guide-page.md)。
 - 订阅端确定最新已上线期，只读这份已部署的 `latest.json`。推送取该期本周概览的文字和当期页 URL，都来自已部署的站点，不读数据仓 raw。说明页写给通用 Agent 的步骤以这个入口为准。
 - 推送正文来自当期 `overview.json` 的 `text`。`refs` 在推送里做成站内链接。另给当期页 URL。不附词云图。
 - 说明页的地址、页面版式、站点上的复制按钮和订阅入口位置，本轮都不定。那些属于 UI，留到下一轮。
