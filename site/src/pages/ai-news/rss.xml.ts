@@ -1,23 +1,31 @@
 import rss from '@astrojs/rss';
 import { getAiNews } from '../../lib/entries';
-import { formatCoverage } from '../../lib/ai-news.mjs';
+import { aiNewsIssueRecords } from '../../lib/ai-news.mjs';
 import { siteUrl } from '../../lib/paths';
 
 export async function GET(context: { site?: string | URL }) {
   const origin = context.site ?? 'https://viruspc.github.io';
   const site = new URL(import.meta.env.BASE_URL, origin);
   const issues = await getAiNews();
-  const items = issues.map((issue) => {
-    const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverageEnd);
-    const description = issue.data.summary ? `${windowLabel} · ${issue.data.summary}` : windowLabel;
-    return {
+  const records = aiNewsIssueRecords(
+    issues.map((issue) => ({
+      id: issue.id,
       title: issue.data.title,
-      pubDate: issue.data.date,
-      description,
-      link: siteUrl(`/ai-news/${issue.id}`),
-      categories: issue.data.legacy ? ['ai-news', 'legacy'] : ['ai-news'],
-    };
-  });
+      date: issue.data.date,
+      summary: issue.data.summary,
+      legacy: issue.data.legacy,
+      coverageStart: issue.data.coverageStart,
+      coverageEnd: issue.data.coverageEnd,
+    })),
+    (id) => siteUrl(`/ai-news/${id}`),
+  );
+  const items = records.map((record) => ({
+    title: record.title,
+    pubDate: record.date,
+    description: record.description,
+    link: record.link,
+    categories: record.legacy ? ['ai-news', 'legacy'] : ['ai-news'],
+  }));
 
   return rss({
     title: 'AI 资讯',

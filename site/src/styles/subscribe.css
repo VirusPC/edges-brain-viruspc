@@ -1,0 +1,198 @@
+/* 一键订阅。默认胶囊沿用顶栏 Star 的 token。绿和红只用于已复制和复制失败。 */
+
+.sub-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.9rem;
+  margin: 0.75rem 0 0;
+}
+
+.dek .sub-row { margin: 0.75rem 0 0; }
+.post-head .sub-row { margin: 0.15rem 0 0; }
+.sub-page .sub-row { margin: 0.2rem 0 0.4rem; }
+
+.sub-copy {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.25rem;
+  min-width: 10.8em;
+  margin: 0;
+  padding: 0 0.85rem 0 0.75rem;
+  color: var(--star-ink);
+  background: var(--star-bg);
+  border: 1px solid var(--star-line);
+  border-radius: 999px;
+  font: 600 0.9rem/1 var(--sans, ui-sans-serif, system-ui, sans-serif);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  appearance: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sub-copy::before {
+  content: "";
+  position: absolute;
+  inset: -4px -2px;
+}
+
+.sub-copy svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  display: block;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sub-copy:hover {
+  color: var(--star-ink-hover);
+  background: var(--star-bg-hover);
+  border-color: var(--star-line-hover);
+}
+
+.sub-copy:focus-visible {
+  outline: 2px solid var(--note);
+  outline-offset: 2px;
+}
+
+.sub-copy .i-check,
+.sub-copy .i-alert { display: none; }
+
+.sub-copy.is-copied {
+  color: var(--sub-ok);
+  background: var(--sub-ok-wash);
+  border-color: var(--sub-ok-line);
+}
+
+.sub-copy.is-copied .i-copy { display: none; }
+.sub-copy.is-copied .i-check { display: block; }
+
+.sub-copy.is-failed {
+  color: var(--sub-err);
+  background: transparent;
+  border-color: var(--sub-err-line);
+}
+
+.sub-copy.is-failed .i-copy { display: none; }
+.sub-copy.is-failed .i-alert { display: block; }
+
+.sub-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 0.22em;
+}
+
+.sub-help::before {
+  content: "";
+  position: absolute;
+  inset: -4px -6px;
+}
+
+.sub-help:hover {
+  color: var(--note);
+  text-decoration-color: currentColor;
+}
+
+.sub-fallback {
+  display: none;
+  flex-basis: 100%;
+  margin: 0.15rem 0 0;
+  max-width: 40rem;
+}
+
+.sub-row.is-failed .sub-fallback { display: block; }
+
+.sub-fallback-label {
+  margin: 0 0 0.3rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-family: var(--sans, ui-sans-serif, system-ui, sans-serif);
+}
+
+.sub-fallback-text {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--panel-line);
+  border-radius: var(--ai-news-radius, 0.7rem);
+  background: var(--panel);
+  color: var(--panel-ink, var(--ink));
+  font: 400 0.9rem/1.6 var(--sans, ui-sans-serif, system-ui, sans-serif);
+  user-select: all;
+  -webkit-user-select: all;
+  overflow-wrap: anywhere;
+}
+
+.sub-fallback-text::selection {
+  background: color-mix(in srgb, var(--note) 32%, transparent);
+  color: inherit;
+}
+
+.sub-page { max-width: 40rem; }
+.sub-page .post-head { margin-bottom: 1rem; }
+.sub-page .prose h2 { margin-top: 2.1rem; }
+.sub-page .sub-steps { padding-left: 1.4rem; }
+.sub-page .sub-steps li { margin: 0.3rem 0; }
+.sub-page code { font-size: 0.86em; overflow-wrap: anywhere; }
+
+.sub-url {
+  display: block;
+  margin: 0.25rem 0 0;
+  padding: 0.3rem 0.5rem;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.sub-example {
+  margin: 0.4rem 0 1rem;
+  padding: 0.8rem 0.95rem 0.85rem;
+}
+
+.prose .sub-example .info-card-label { margin-bottom: 0.45rem; }
+
+.prose .sub-example .sub-example-title {
+  margin: 0.1rem 0 0.35rem;
+  font-family: var(--serif, serif);
+  font-size: 1.02rem;
+  font-weight: 650;
+}
+
+.prose .sub-example .sub-example-text {
+  margin: 0 0 0.55rem;
+  font-family: var(--serif, serif);
+  font-size: 0.98rem;
+  line-height: 1.75;
+}
+
+.sub-example-link {
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.sub-note { color: var(--ink-soft); }
+
+.sub-rss {
+  margin-top: 2rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.95rem;
+}

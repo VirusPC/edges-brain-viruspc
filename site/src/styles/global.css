@@ -14,6 +14,11 @@
   --star-ink-hover: var(--summary-hover);
   --star-bg-hover: #f3e3d4;
   --star-line-hover: #d7a88c;
+  --sub-ok: #3f6b3a;
+  --sub-ok-wash: #eef3e8;
+  --sub-ok-line: #b9ccaa;
+  --sub-err: #a3392b;
+  --sub-err-line: #e0b0a6;
   --panel: color-mix(in srgb, var(--note-wash) 45%, var(--paper));
   --panel-line: var(--rule);
   --wood-chip: #fffaf0;
@@ -1913,6 +1918,11 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   --star-ink-hover: #f0b48a;
   --star-bg-hover: #4f3424;
   --star-line-hover: #8a5638;
+  --sub-ok: #9cc48d;
+  --sub-ok-wash: #1f2a1d;
+  --sub-ok-line: #4d6844;
+  --sub-err: #e58f7f;
+  --sub-err-line: #7a4339;
 }
 
 :root[data-theme="dark"] .info-card-label {
@@ -1965,6 +1975,11 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
     --star-ink-hover: #f0b48a;
     --star-bg-hover: #4f3424;
     --star-line-hover: #8a5638;
+    --sub-ok: #9cc48d;
+    --sub-ok-wash: #1f2a1d;
+    --sub-ok-line: #4d6844;
+    --sub-err: #e58f7f;
+    --sub-err-line: #7a4339;
   }
 
   :root:not([data-theme="light"]) .info-card-label {
