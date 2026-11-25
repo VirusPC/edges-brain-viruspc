@@ -74,6 +74,8 @@
 - [整理\_notes\_根下不带日期前缀的语雀主题草稿](<backlog/2026-11-22--%E6%95%B4%E7%90%86-notes-%E6%A0%B9%E4%B8%8B%E4%B8%8D%E5%B8%A6%E6%97%A5%E6%9C%9F%E5%89%8D%E7%BC%80%E7%9A%84%E8%AF%AD%E9%9B%80%E4%B8%BB%E9%A2%98%E8%8D%89%E7%A8%BF/INDEX.md>) — notes/ 根下 22 个不带日期前缀的语雀式主题目录既不在笔记索引里，也不像项目。逐个定去向并完成迁移，索引登记齐全。
 - [ai\_资讯内嵌阅读容器与\_ai\_侧边栏](<backlog/2026-11-24--AI-%E8%B5%84%E8%AE%AF%E5%86%85%E5%B5%8C%E9%98%85%E8%AF%BB%E5%AE%B9%E5%99%A8%E4%B8%8E-AI-%E4%BE%A7%E8%BE%B9%E6%A0%8F/INDEX.md>) — 评估并确定 AI 资讯站点阅读原文的内嵌容器方案（含 iframe 之外与自研浏览器扩展），并与 AI 侧边栏、Langfuse 上传和笔记沉淀串起来。
 - [ai\_资讯一键订阅能力](<backlog/2026-11-24--AI-%E8%B5%84%E8%AE%AF%E4%B8%80%E9%94%AE%E8%AE%A2%E9%98%85%E8%83%BD%E5%8A%9B/INDEX.md>) — 交付一句可复制提示词，让任意支持定时任务的 agent 订阅 AI 资讯周报，并返回文字总结和详情链接。
+- [收敛\_edges\_skill\_入口并修订材料硬约束](<backlog/2026-11-26--%E6%94%B6%E6%95%9B-Edges-skill-%E5%85%A5%E5%8F%A3%E5%B9%B6%E4%BF%AE%E8%AE%A2%E6%9D%90%E6%96%99%E7%A1%AC%E7%BA%A6%E6%9D%9F/INDEX.md>) — 完成整体 grill 后，把对外 skill 入口收敛为 edges\-onboarding、edges\-langfuse\-agent\-tracing 和日常入口 edges，并把 AGENTS.md 硬约束改为覆盖全部已登记材料类型。
+- [清理\_herdr\_会话失效分屏以消除耳机提示音](<backlog/2026-11-26--%E6%B8%85%E7%90%86-herdr-%E4%BC%9A%E8%AF%9D%E5%A4%B1%E6%95%88%E5%88%86%E5%B1%8F%E4%BB%A5%E6%B6%88%E9%99%A4%E8%80%B3%E6%9C%BA%E6%8F%90%E7%A4%BA%E9%9F%B3/INDEX.md>) — 在用户确认后清理 herdr 会话里指向已删除目录的分屏，结束卡住的 zsh，使耳机不再隔几秒响提示音，且恢复会话时不再拉起这些失效分屏。
 <!-- edges-entries-local:end -->
 
 <!-- edges-migrated-task-default:start -->
