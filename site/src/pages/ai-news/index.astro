@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import SubscribeCopy from '../../components/SubscribeCopy.astro';
 import { getAiNews } from '../../lib/entries';
 import { formatCoverage } from '../../lib/ai-news.mjs';
 import { siteUrl } from '../../lib/paths';
@@ -11,11 +12,12 @@ const feed = { title: 'AI 资讯', href: siteUrl('/ai-news/rss.xml') };
 
 <BaseLayout title="AI News" description="AI 资讯周报。" rss={feed}>
   <h1>AI News</h1>
-  <p class="dek">
+  <div class="dek">
     每周一篇 AI 资讯，覆盖发布日前的 7 天。
     <a href={feed.href}>RSS</a>
     <span class="ai-news-cadence">每周五上午 9 点开始生成（北京时间）</span>
-  </p>
+    <SubscribeCopy helpHref={siteUrl('/ai-news/subscribe/')} />
+  </div>
   {
     issues.length === 0 ? (
       <p class="empty">还没有周报。</p>

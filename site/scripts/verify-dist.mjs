@@ -178,6 +178,8 @@ exists('projects/index.html');
 exists('about/index.html');
 exists('ai-news/index.html');
 exists('ai-news/rss.xml');
+exists('ai-news/latest.json');
+exists('ai-news/subscribe/index.html');
 exists('favicon.svg');
 
 const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
@@ -714,6 +716,79 @@ assert.match(aiFeed, /<title>2026-11-20 AI 资讯<\/title>/);
 assert.doesNotMatch(aiFeed, /data-cat|&lt;研发提效&gt;|&lt;交付闭环&gt;/);
 assert.equal((aiFeed.match(/<item>/g) || []).length, issuePages.length);
 
+const newestIssueDate = issuePages
+  .map((rel) => rel.slice('ai-news/'.length, 'ai-news/'.length + 10))
+  .sort()
+  .at(-1);
+const latestDoc = JSON.parse(fs.readFileSync(path.join(dist, 'ai-news/latest.json'), 'utf8'));
+const subscribePrompt = '请打开这个说明页，按里面的规则建立一条定时任务，查询最新的 AI 资讯：https://viruspc.github.io/edges-brain-viruspc/ai-news/subscribe/';
+assert.equal(latestDoc.id, newestIssueDate, 'latest.json must point at the deployed newest issue');
+assert.equal(latestDoc.issues[0].id, newestIssueDate);
+assert.equal(latestDoc.issues.length, issuePages.length);
+assert.equal(latestDoc.url, `https://viruspc.github.io/edges-brain-viruspc/ai-news/${newestIssueDate}/`);
+assert.equal(latestDoc.rss, 'https://viruspc.github.io/edges-brain-viruspc/ai-news/rss.xml');
+assert.equal(latestDoc.date, newestIssueDate);
+assert.ok(Array.isArray(latestDoc.overview) && latestDoc.overview.length > 0, 'latest.json is missing the overview');
+assert.equal(typeof latestDoc.overview[0].text, 'string');
+assert.ok(latestDoc.overview[0].text.length > 0);
+const firstFeedTitle = aiFeed.match(/<item>[\s\S]*?<title>([^<]+)<\/title>/);
+assert.equal(firstFeedTitle?.[1], latestDoc.title, 'RSS and latest.json disagree on the newest issue');
+const overviewPath = path.join(
+  process.env.AI_NEWS_DATA_ROOT || path.join(siteRoot, '.cache/ai-news-data'),
+  'issues',
+  newestIssueDate,
+  'summary',
+  'overview.json',
+);
+const newestOverview = JSON.parse(fs.readFileSync(overviewPath, 'utf8'));
+const leadText = newestOverview.themes.find((theme) => typeof theme?.text === 'string' && theme.text.trim()).text.trim();
+assert.equal(latestDoc.overview[0].text, leadText);
+for (const link of latestDoc.overview[0].links || []) {
+  assert.ok(link.url.startsWith(`${latestDoc.url}#entry-`), link.url);
+}
+
+function assertSubscribeEntry(html, label) {
+  const proseAt = html.indexOf('<div class="prose">');
+  const head = html.slice(0, proseAt);
+  assert.match(head, /复制订阅提示词/, `${label} button`);
+  assert.match(head, /class="sub-help" href="\/edges-brain-viruspc\/ai-news\/subscribe\/">说明<\/a>/, `${label} help link`);
+  assert.ok(head.includes(subscribePrompt), `${label} prompt`);
+  assert.doesNotMatch(html.slice(proseAt), /sub-copy|复制订阅提示词/, `${label} body stays free of the button`);
+  const top = html.match(/<header class="top">[\s\S]*?<\/header>/);
+  assert.doesNotMatch(top[0], /sub-copy|复制订阅提示词/, `${label} top bar`);
+}
+
+assert.match(aiNewsList, /class="ai-news-cadence"[\s\S]*class="sub-row"[\s\S]*class="issue-list"|class="empty"/);
+const listHead = aiNewsList.slice(0, aiNewsList.indexOf('<ol class="issue-list">') === -1 ? aiNewsList.indexOf('class="empty"') : aiNewsList.indexOf('<ol class="issue-list">'));
+assert.ok(listHead.includes('每周五上午 9 点开始生成（北京时间）'));
+assert.ok(listHead.indexOf('每周五上午 9 点开始生成（北京时间）') < listHead.indexOf('class="sub-row"'));
+assert.ok(listHead.includes(subscribePrompt));
+assert.match(aiNewsList, /<a class="sub-help" href="\/edges-brain-viruspc\/ai-news\/subscribe\/">说明<\/a>/);
+assert.doesNotMatch(aiNewsList.match(/<header class="top">[\s\S]*?<\/header>/)[0], /sub-copy/);
+for (const rel of issuePages) {
+  assertSubscribeEntry(fs.readFileSync(path.join(dist, rel), 'utf8'), rel);
+}
+const guide = fs.readFileSync(path.join(dist, 'ai-news/subscribe/index.html'), 'utf8');
+assert.match(guide, /<h1>订阅 AI 资讯<\/h1>/);
+assert.match(guide, /class="post-kicker"[\s\S]*href="\/edges-brain-viruspc\/ai-news\/"/);
+assert.match(guide, /https:\/\/viruspc\.github\.io\/edges-brain-viruspc\/ai-news\/latest\.json/);
+assert.match(guide, /北京时间（Asia\/Shanghai）10:00/);
+assert.match(guide, /周五 21:00/);
+assert.match(guide, /周六 21:00/);
+assert.match(guide, /记住上次推过的期/);
+assert.match(guide, /本周概览的文字，加当期页链接/);
+assert.match(guide, /不发“今天没有更新”/);
+assert.match(guide, /也可以让它按关键词筛选；第一版默认推送整期。/);
+assert.match(guide, /不用 Agent，也可以用 <a href="\/edges-brain-viruspc\/ai-news\/rss\.xml">RSS<\/a> 订阅。/);
+assert.ok(guide.includes(leadText), 'subscribe sample is not the latest overview');
+assert.match(guide, new RegExp(`href="https://viruspc\\.github\\.io/edges-brain-viruspc/ai-news/${newestIssueDate}/"`));
+assert.doesNotMatch(guide, /class="sub-help"/);
+assert.doesNotMatch(guide, /data-reader-comments|class="toc"|nav class="toc"/);
+assert.ok(guide.includes(subscribePrompt));
+for (const rel of ['index.html', 'about/index.html', 'posts/index.html']) {
+  assert.equal(fs.readFileSync(path.join(dist, rel), 'utf8').includes('复制订阅提示词'), false, rel);
+}
+
 assert.match(home, /href="\/edges-brain-viruspc\/ai-news\/"/);
 assert.doesNotMatch(home, /ai-news\/2026-/);
 assert.equal(rels.includes('archive/index.html'), false);
@@ -736,6 +811,7 @@ function chapterToc(html) {
 const detailPages = rels.filter((rel) => {
   if (!rel.endsWith('/index.html')) return false;
   if (projectBrowserRels.has(rel)) return false;
+  if (rel === 'ai-news/subscribe/index.html') return false;
   const [section, ...rest] = rel.split('/');
   if (!['posts', 'notes', 'projects', 'ai-news'].includes(section)) return false;
   return rest.join('/') !== 'index.html';
@@ -782,6 +858,7 @@ for (const rel of [
   'notes/index.html',
   'projects/index.html',
   'ai-news/index.html',
+  'ai-news/subscribe/index.html',
   'about/index.html',
 ]) {
   assert.equal(chapterToc(fs.readFileSync(path.join(dist, rel), 'utf8')), null, `${rel} has a chapter toc`);
@@ -862,7 +939,7 @@ for (const rel of detailPages) {
   assert.match(html, /data-giscus/, `${rel} giscus slot`);
   assert.match(html, /留言使用 GitHub 账号/, `${rel} login note`);
 }
-for (const rel of ['index.html', 'posts/index.html', 'notes/index.html', 'projects/index.html', 'ai-news/index.html', 'about/index.html']) {
+for (const rel of ['index.html', 'posts/index.html', 'notes/index.html', 'projects/index.html', 'ai-news/index.html', 'ai-news/subscribe/index.html', 'about/index.html']) {
   const html = fs.readFileSync(path.join(dist, rel), 'utf8');
   assert.doesNotMatch(html, /data-reader-comments/, `${rel} is not an article`);
 }

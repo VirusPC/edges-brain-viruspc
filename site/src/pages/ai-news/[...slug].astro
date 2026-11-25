@@ -4,6 +4,7 @@ import { render } from 'astro:content';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import AiNewsProse from '../../components/AiNewsProse.astro';
 import ArticlePage from '../../components/ArticlePage.astro';
+import SubscribeCopy from '../../components/SubscribeCopy.astro';
 import { getAiNews } from '../../lib/entries';
 import { formatCoverage } from '../../lib/ai-news.mjs';
 import { githubBlob, siteUrl } from '../../lib/paths';
@@ -34,6 +35,7 @@ const windowLabel = formatCoverage(issue.data.coverageStart, issue.data.coverage
   source={githubBlob(issue.data.sourcePath)}
   rss={{ title: 'AI 资讯', href: siteUrl('/ai-news/rss.xml') }}
 >
+  <SubscribeCopy slot="subscribe" helpHref={siteUrl('/ai-news/subscribe/')} />
   <AiNewsProse html={html} />
 </ArticlePage>
 

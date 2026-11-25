@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SubscribeCopy from '../../components/SubscribeCopy.astro';
+import { getAiNews } from '../../lib/entries';
+import {
+  absoluteSiteUrl,
+  brainRepoRoot,
+  pushSample,
+  readIssueOverview,
+} from '../../lib/ai-news.mjs';
+import { resolveAiNewsDataRoot } from '../../lib/model-charts.mjs';
+import { PAGES_ORIGIN, siteUrl } from '../../lib/paths';
+import { LATEST_JSON_URL } from '../../lib/subscribe-copy.mjs';
+
+const issues = await getAiNews();
+const latest = issues[0];
+const pageUrl = latest
+  ? absoluteSiteUrl(`ai-news/${latest.id}/`, PAGES_ORIGIN, import.meta.env.BASE_URL)
+  : '';
+const overview = latest
+  ? readIssueOverview(resolveAiNewsDataRoot(brainRepoRoot()), latest.id)
+  : null;
+const sample = latest && pageUrl
+  ? pushSample(overview, { title: latest.data.title, pageUrl })
+  : null;
+const sampleLabel = sample ? sample.url.replace(/^https:\/\//, '') : '';
+const feed = { title: 'AI 资讯', href: siteUrl('/ai-news/rss.xml') };
+---
+
+<BaseLayout
+  title="订阅 AI 资讯"
+  description="把订阅提示词交给自己的 AI 助手。新一期上线后，它推送本周概览和当期链接。"
+  rss={feed}
+>
+  <article class="post sub-page">
+    <header class="post-head">
+      <p class="post-kicker"><a href={siteUrl('/ai-news/')}>AI News</a></p>
+      <h1>订阅 AI 资讯</h1>
+    </header>
+    <div class="prose">
+      <p>把下面这段话复制给你常用的 AI 助手，它会替你建一条定时任务：每周新一期上线后，把本周概览和链接推给你；没有新一期就不打扰。</p>
+      <SubscribeCopy />
+      <h2>给 Agent 的步骤</h2>
+      <ol class="sub-steps">
+        <li>读取已上线的最新一期：<code class="sub-url">{LATEST_JSON_URL}</code></li>
+        <li>每天查一次，北京时间（Asia/Shanghai）10:00；周五 21:00 和周六 21:00 各再加查一次。</li>
+        <li>只有出现新的已上线期才推送；记住上次推过的期，重复的不推。</li>
+        <li>推送内容：本周概览的文字，加当期页链接。</li>
+        <li>没有新的一期就保持安静，不发“今天没有更新”。</li>
+      </ol>
+      {sample ? <h2>推送示例</h2> : null}
+      {
+        sample ? (
+          <aside class="info-card sub-example">
+            <p class="info-card-label">
+              <svg class="info-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>示例</span>
+            </p>
+            <p class="sub-example-title">{sample.title}</p>
+            <p class="sub-example-text">{sample.text}</p>
+            <a class="sub-example-link" href={sample.url}>{sampleLabel}</a>
+          </aside>
+        ) : null
+      }
+      <p class="sub-note">也可以让它按关键词筛选；第一版默认推送整期。</p>
+      <p class="sub-rss">不用 Agent，也可以用 <a href={feed.href}>RSS</a> 订阅。</p>
+    </div>
+  </article>
+</BaseLayout>
