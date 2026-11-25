@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.10] - 2026-11-25
+
+### Changed
+
+- 整页校验之后增加发布收尾。本期内容 PR 和相关数据仓 PR 在 CI 绿后由 routine squash 合并，数据仓在前。随后若 `.github/workflows/pages-site.yml` 没有在数据进入 main 之后被触发，就 workflow_dispatch 它。等部署成功，再核验线上 `latest.json` 的 id 和 url 指向这一期，且该期页面返回 200。任一步失败就停下报告，不换方法重试。
+- 核验由 `scripts/publish/verify_latest.py` 执行。不改站点，不改数据契约。生成时刻仍是周五 09:00（Asia/Shanghai）。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.10` 先不打，留给维护者。
+
 ## [0.0.9] - 2026-11-24
 
 ### Changed

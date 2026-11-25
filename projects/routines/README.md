@@ -13,7 +13,7 @@ Routine 调研与实现材料。现行例程定义统一登记在根 [.edges/rou
 - [日复盘](../../.edges/routines/daily-conversation-deposit/INDEX.md) — 每日沉淀扫描；定义引用同目录 Skill，产出经 PR 写入对应子仓。
 - [周复盘](../../.edges/routines/weekly-retrospective/INDEX.md) — 回顾上一个自然周；结果写入 [`retrospectives/weekly/`](../../retrospectives/weekly/README.md)。
 - [Grok Bot → Langfuse 导出](../../.edges/routines/grokbot-langfuse-export/INDEX.md) — 每小时导出全部助手会话；[Skill](grokbot-langfuse-export/SKILL.md) 与 [代码说明](grokbot-langfuse-export/README.md) 保留在现有实现目录。
-- [AI 资讯周报](../../.edges/routines/weekly-ai-blogs-digest/INDEX.md) — 每周五 09:00；定义引用 [weekly-ai-blogs-digest](../../skills/managed/weekly-ai-blogs-digest/SKILL.md)，周报与快照各开 PR、不合并。
+- [AI 资讯周报](../../.edges/routines/weekly-ai-blogs-digest/INDEX.md) — 每周五 09:00；定义引用 [weekly-ai-blogs-digest](../../skills/managed/weekly-ai-blogs-digest/SKILL.md)。CI 绿后 squash 合并本期内容 PR 与相关数据仓 PR，部署成功且线上 latest.json 指向新期才算结束。
 
 ## 改名对照
 
