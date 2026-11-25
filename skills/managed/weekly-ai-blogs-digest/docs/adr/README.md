@@ -9,3 +9,5 @@
 - [0005 订阅端只读已上线的 latest.json，推送本周概览文字和当期页](0005-subscribe-reads-published-latest-json.md)
 - [0006 AI 资讯 routine 改为自动合并并部署，部署成功才算结束](0006-ai-news-routine-ends-on-successful-deploy.md)
 - [0007 一键订阅用复制按钮和说明页，提示词只带说明页 URL](0007-subscribe-ui-copy-button-and-guide-page.md)
+
+0006 的发布收尾已经写进 skill 和 routine 入口：CI 绿后 squash 合并本期内容 PR 与相关数据仓 PR，若 `pages-site.yml` 未被触发则 workflow_dispatch，部署成功且线上 `latest.json` 的 id/url 指向新期、该期页面 200 才算结束。

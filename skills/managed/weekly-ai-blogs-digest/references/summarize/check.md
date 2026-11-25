@@ -29,4 +29,4 @@ python3 scripts/summarize/check/validate.py issues/<生成日>
 
 `summary/index.json` 的 `skill` 是 `{name, version}`。这个版本记录写出总结结构时的 skill，可以早于当前 skill；只补 overview 时不要把它改成当前版本。它不能新于当前 skill，也必须是 semver。`overview.json` 自己的 `skill.version` 按那份文件记录的版本校验：必须是 semver，不能新于当前 skill，可以早于当前 skill。tag 规则从 0.0.9 起，只作用于记录版本达到 0.0.9 的那份 overview。`routine` 是调用方给出的仓库、commit 和入口路径。不再写顶层 `version`，也不写 `blocks`。summary 里不能留 `<!-- provenance`。同一份 index 还要有 `articles_coverage` 和 `sources`。`articles_coverage` 的 `raw` 和 `selected` 必须等于 [汇合](merge.md) 里那个统计命令的结果。`selected` 还要等于 summary 文章数。`raw` 不能小于 `cleaned/articles/index.json` 的 id 数，清洗后不能比原文多。`sources` 必须等于汇合脚本按 raw 和 OPML 算出的四类发布方。cleaned 条目上的 `publisher`、`category`、`url` 也必须和这次汇总一致。对不上就不能通过。`summary/stage.json` 的 name 是 `summary`，入口路径是 `skills/managed/weekly-ai-blogs-digest/references/summarize/summarize.md`。缺口和过程说明留在 `summary/gaps.json`，不写进读者能看见的榜单说明。
 
-默认定时只开一个数据 PR，不自动合并。站点渲染不是这一步。
+整页校验通过只说明 `summary/` 写完。发布收尾见 [发布收尾](../publish/publish.md)。站点渲染不是这一步。

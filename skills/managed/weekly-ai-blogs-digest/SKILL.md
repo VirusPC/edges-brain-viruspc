@@ -1,7 +1,7 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
-version: 0.0.9
+version: 0.0.10
 ---
 
 # AI 资讯周报
@@ -35,11 +35,13 @@ flowchart LR
   clean --> cleaned["cleaned/"]
   cleaned --> summarize["数据总结"]
   summarize --> summary["summary/"]
+  summary --> publish["发布收尾"]
 ```
 
 - [数据准备](references/prepare/prepare.md)：窗口、订阅、补录和三路原始抓取，落入 `raw/`。
 - [数据清洗](references/clean/clean.md)：去重、规范链接、核验事实和榜单数字，落入 `cleaned/`。不做选文。
 - [数据总结](references/summarize/summarize.md)：三路展示内容并行写完后，先汇合，再撰写本周总结、提炼关键词并做整页校验，落入 `summary/`。
+- [发布收尾](references/publish/publish.md)：整页校验通过后，CI 绿了再 squash 合并，部署成功并且线上 `latest.json` 指向这一期，这一期才算发布完成。
 
 每期自包含。对照上一期时，锁定上一期的文件和版本，不建跨期共享目录，也不把上一期文件复制进本期。
 
@@ -109,4 +111,4 @@ issues/YYYY-MM-DD/
 
 侧重点是 Agent 与产品。研究向、红队、纯学术长文可以不写。融资、IPO、营收、定价套餐和厂商客户案例不收，除非里面有具体技术或产品细节。优惠和白嫖不写。判断依据是内容，不是 URL 路径。不要编造数字、名次或材料里没有的事实。
 
-默认定时交到一个打开的数据 PR，不自动合并。日程、仓库、密钥和交接见 routine 入口。站点如果要渲染，只读 `summary/`，那不是本 skill 的步骤。
+整页校验通过之后做发布收尾。日程、仓库、密钥和交接见 routine 入口。三阶段不写站点。站点如果要渲染，只读 `summary/`。
