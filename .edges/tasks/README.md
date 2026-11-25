@@ -72,6 +72,8 @@
 - [把\_edges\_的\_super\_材料面识别收成一条简单原则并按它重构\_pr\_120\_涉及的\_skill](<backlog/2026-11-10--%E6%8A%8A-edges-%E7%9A%84-super-%E6%9D%90%E6%96%99%E9%9D%A2%E8%AF%86%E5%88%AB%E6%94%B6%E6%88%90%E4%B8%80%E6%9D%A1%E7%AE%80%E5%8D%95%E5%8E%9F%E5%88%99%E5%B9%B6%E6%8C%89%E5%AE%83%E9%87%8D%E6%9E%84-PR-120-%E6%B6%89%E5%8F%8A%E7%9A%84-skill/INDEX.md>) — edges \#120 的 skill 把 super 材料面识别写成了分散规则。定稿一条简单原则，并按它收口 CLI 与相关 skill。
 - [给个人大脑单独的\_tasks\_看板页](<backlog/2026-11-15--%E7%BB%99%E4%B8%AA%E4%BA%BA%E5%A4%A7%E8%84%91%E5%8D%95%E7%8B%AC%E7%9A%84-tasks-%E7%9C%8B%E6%9D%BF%E9%A1%B5/INDEX.md>) — 现在的 /tasks/ 只展示框架仓库的任务。给个人大脑单独一页，展示大脑自己的任务（含 routines 等子 scope）。
 - [整理\_notes\_根下不带日期前缀的语雀主题草稿](<backlog/2026-11-22--%E6%95%B4%E7%90%86-notes-%E6%A0%B9%E4%B8%8B%E4%B8%8D%E5%B8%A6%E6%97%A5%E6%9C%9F%E5%89%8D%E7%BC%80%E7%9A%84%E8%AF%AD%E9%9B%80%E4%B8%BB%E9%A2%98%E8%8D%89%E7%A8%BF/INDEX.md>) — notes/ 根下 22 个不带日期前缀的语雀式主题目录既不在笔记索引里，也不像项目。逐个定去向并完成迁移，索引登记齐全。
+- [ai\_资讯内嵌阅读容器与\_ai\_侧边栏](<backlog/2026-11-24--AI-%E8%B5%84%E8%AE%AF%E5%86%85%E5%B5%8C%E9%98%85%E8%AF%BB%E5%AE%B9%E5%99%A8%E4%B8%8E-AI-%E4%BE%A7%E8%BE%B9%E6%A0%8F/INDEX.md>) — 评估并确定 AI 资讯站点阅读原文的内嵌容器方案（含 iframe 之外与自研浏览器扩展），并与 AI 侧边栏、Langfuse 上传和笔记沉淀串起来。
+- [ai\_资讯一键订阅能力](<backlog/2026-11-24--AI-%E8%B5%84%E8%AE%AF%E4%B8%80%E9%94%AE%E8%AE%A2%E9%98%85%E8%83%BD%E5%8A%9B/INDEX.md>) — 交付一句可复制提示词，让任意支持定时任务的 agent 订阅 AI 资讯周报，并返回文字总结和详情链接。
 <!-- edges-entries-local:end -->
 
 <!-- edges-migrated-task-default:start -->
