@@ -74,6 +74,7 @@
 - [整理\_notes\_根下不带日期前缀的语雀主题草稿](<backlog/2026-11-22--%E6%95%B4%E7%90%86-notes-%E6%A0%B9%E4%B8%8B%E4%B8%8D%E5%B8%A6%E6%97%A5%E6%9C%9F%E5%89%8D%E7%BC%80%E7%9A%84%E8%AF%AD%E9%9B%80%E4%B8%BB%E9%A2%98%E8%8D%89%E7%A8%BF/INDEX.md>) — notes/ 根下 22 个不带日期前缀的语雀式主题目录既不在笔记索引里，也不像项目。逐个定去向并完成迁移，索引登记齐全。
 - [ai\_资讯内嵌阅读容器与\_ai\_侧边栏](<backlog/2026-11-24--AI-%E8%B5%84%E8%AE%AF%E5%86%85%E5%B5%8C%E9%98%85%E8%AF%BB%E5%AE%B9%E5%99%A8%E4%B8%8E-AI-%E4%BE%A7%E8%BE%B9%E6%A0%8F/INDEX.md>) — 评估并确定 AI 资讯站点阅读原文的内嵌容器方案（含 iframe 之外与自研浏览器扩展），并与 AI 侧边栏、Langfuse 上传和笔记沉淀串起来。
 - [ai\_资讯一键订阅能力](<backlog/2026-11-24--AI-%E8%B5%84%E8%AE%AF%E4%B8%80%E9%94%AE%E8%AE%A2%E9%98%85%E8%83%BD%E5%8A%9B/INDEX.md>) — 交付一句可复制提示词，让任意支持定时任务的 agent 订阅 AI 资讯周报，并返回文字总结和详情链接。
+- [把时序数据分析和实时阴影渲染笔记起草成\_post\_稿](<backlog/2026-11-27--%E6%8A%8A%E6%97%B6%E5%BA%8F%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E5%92%8C%E5%AE%9E%E6%97%B6%E9%98%B4%E5%BD%B1%E6%B8%B2%E6%9F%93%E7%AC%94%E8%AE%B0%E8%B5%B7%E8%8D%89%E6%88%90-post-%E7%A8%BF/INDEX.md>) — 把「时序数据分析」和「实时阴影渲染」两篇已有笔记按 posts/ 格式起草成稿，放在 posts/ 之外，由本人审阅后自己贴入。
 <!-- edges-entries-local:end -->
 
 <!-- edges-migrated-task-default:start -->

@@ -14,4 +14,5 @@
 - [AI 资讯是准备、清洗、总结三阶段](<feedback_ai_news_three_stages/INDEX.md>) — 改 AI 资讯周报流程时打开：产物是 raw、cleaned、summary；规则版本是 Skill 的 semver；数据仓库只写 URL，站点不是 Skill 输入。
 - [AI 资讯一次迁移同时更新 skill、数仓和站点](<feedback_ai_news_migration_updates_skill_data_and_site/INDEX.md>) — 改 AI 资讯 skill 或迁数据时打开：不留旧格式兼容层，要兼容就改数据；一次迁移同时让 skill、数仓和站点渲染用上最新版。
 - [数据处理流程以 skill 串联步骤并调用脚本](<feedback_data_processing_skill_leads_scripts/INDEX.md>) — 写或改数据处理类流程时打开：skill 串联步骤并调用脚本；根 SKILL.md 只写顺序和子步骤链接；命令、schema 和输入输出写在各子步骤 md。
+- [一轮 grill 的修订叠在同一个 PR，讨论完再合并](<feedback_grill_revisions_stack_on_one_pr/INDEX.md>) — 多回合设计讨论（grill）时打开：文档修订都叠在同一个分支和 PR，讨论全部结束后一次性合并，不要每回合合一次。
 <!-- edges-entries-local:end -->
