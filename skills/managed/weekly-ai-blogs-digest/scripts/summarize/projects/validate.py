@@ -23,7 +23,7 @@ def trending_top(issue: Path, count: int = TOP) -> list[str]:
         return []
     found: list[str] = []
     for item in data.get("items") or [] if isinstance(data, dict) else []:
-        link = str((item or {}).get("link") or "").split("?", 1)[0].rstrip("/")
+        link = str((item or {}).get("link") or (item or {}).get("url") or "").split("?", 1)[0].rstrip("/")
         if not link.startswith("https://github.com/") or link in found:
             continue
         found.append(link)

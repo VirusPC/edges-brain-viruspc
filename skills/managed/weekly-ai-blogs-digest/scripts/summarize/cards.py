@@ -7,7 +7,7 @@ import re
 LABELS = ("解决什么问题", "如何解决", "效果怎样", "洞察与启发", "相关工作")
 MARK_RE = re.compile(r'<mark class="note-card-hl">([^<>]+)</mark>')
 LINK_RE = re.compile(r'<a href="(https?://[^"]+)">([^<>]+)</a>')
-MARKDOWN_RE = re.compile(r"(\*\*|__|`|!?\[[^\]]*\]\()")
+MARKDOWN_RE = re.compile(r"(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|!?\[[^\]]*\]\()")
 PLAIN_TEXT_KEYS = ("id", "title", "link", "category", "company", "purpose", "change", "license")
 
 

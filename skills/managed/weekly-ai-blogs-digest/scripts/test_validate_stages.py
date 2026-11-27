@@ -294,7 +294,35 @@ class ValidateStages(unittest.TestCase):
         errors = validate_summary(self.issue)
         self.assertTrue(any("summary/articles" in item and "相关工作" in item for item in errors), errors)
 
+    def test_trending_top_accepts_url_or_link(self) -> None:
+        from summarize.projects.validate import trending_top
+
+        with tempfile.TemporaryDirectory() as tmp:
+            issue = Path(tmp) / "issue"
+            path = issue / "raw" / "projects" / "github-trending.json"
+            write_json(path, {"items": [{"url": link} for link in REPOS]})
+            self.assertEqual(trending_top(issue), list(REPOS))
+            write_json(path, {"items": [{"link": link} for link in REPOS]})
+            self.assertEqual(trending_top(issue), list(REPOS))
+
+    def test_weixin_biz_in_article_id_is_not_markdown(self) -> None:
+        from summarize.cards import card_problems
+
+        url = "https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ==&mid=2247485884"
+        item = {
+            "id": url,
+            "source": "cleaned/articles/post.json",
+            "title": "一篇",
+            "link": url,
+            "lede": "一句已经写在材料里的变化。",
+            "category": "产品",
+            "company": "Example",
+            "sections": card_sections(),
+        }
+        self.assertEqual(card_problems(item, "weixin"), [])
+
     def test_project_stars_and_license_must_match_cleaned(self) -> None:
+
         cleaned_path = self.issue / "cleaned" / "projects" / "demo.json"
         cleaned = json.loads(cleaned_path.read_text(encoding="utf-8"))
         cleaned["stars"] = 1200
