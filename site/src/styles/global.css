@@ -90,24 +90,10 @@ a { color: inherit; }
 .skip:focus { transform: none; }
 
 .frame {
-  width: min(48rem, 100%);
+  width: min(1200px, 100%);
+  max-width: 1200px;
   margin-inline: auto;
-  padding: 1.75rem 1.25rem calc(5.75rem + env(safe-area-inset-bottom, 0px));
-}
-
-body.is-home .frame { width: min(80rem, 100%); }
-
-body.is-post .frame,
-body.has-toc .frame {
-  width: min(980px, 100%);
-}
-
-body.is-post .frame {
-  padding-right: 300px;
-}
-
-body.has-toc .frame {
-  padding-right: 1.25rem;
+  padding: 1.75rem clamp(1.25rem, 3vw, 3rem) calc(5.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 .top {
@@ -223,7 +209,7 @@ h2 {
   margin: 0 0 0.8rem;
 }
 
-.dek { margin: -0.2rem 0 1.6rem; color: var(--ink-soft); max-width: 40rem; }
+.dek { margin: -0.2rem 0 1.6rem; color: var(--ink-soft); }
 
 .ai-news-cadence {
   display: block;
@@ -365,7 +351,7 @@ h2 {
 
 .post.has-toc {
   display: grid;
-  grid-template-columns: minmax(0, 40rem) 12rem;
+  grid-template-columns: minmax(0, 1fr) 12rem;
   column-gap: 1.75rem;
   align-items: start;
 }
@@ -390,15 +376,11 @@ h2 {
   top: 1.25rem;
 }
 
-/* Posts already reserve a right gutter for sidenotes. Keep that gutter past the chapter list. */
-body.is-post.has-toc .frame {
-  width: min(calc(55rem + 300px), 100%);
-  padding-right: 300px;
+body.is-post.has-toc .sidenote {
+  margin-right: 1rem;
 }
 
-body.is-post.has-toc .sidenote {
-  margin-right: calc(-270px - 12rem - 1.75rem);
-}
+body.is-post .sidenote { margin-right: 1rem; }
 
 .archive-year { margin-top: 2rem; }
 .archive-year:first-child { margin-top: 0; }
@@ -449,7 +431,6 @@ body.is-post.has-toc .sidenote {
 .project-intro {
   margin: 0 0 0.45rem;
   color: var(--ink-soft);
-  max-width: 42rem;
 }
 
 .project-summary {
@@ -780,10 +761,9 @@ body.is-post.has-toc .sidenote {
   font-variant-numeric: tabular-nums;
 }
 
-.post-head { max-width: 40rem; margin-bottom: 1.4rem; }
+.post-head { margin-bottom: 1.4rem; }
 
 .prose {
-  max-width: 40rem;
   font-size: 1.125rem;
   line-height: 1.7;
 }
@@ -1146,18 +1126,20 @@ body.is-post.has-toc .sidenote {
 
 .keyword-cloud.has-rough-outline .keyword-cloud-outline rect { display: none; }
 
-.keyword-cloud-art-wrap { position: relative; }
+.keyword-cloud-art-wrap { position: relative; display: flex; justify-content: center; }
 
 .keyword-cloud-art {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 100%;
+  max-width: calc(40rem - 32px);
+  margin-inline: auto;
 }
 
 div.keyword-cloud-art {
   position: relative;
   container-type: inline-size;
+  max-width: calc(40rem - 32px);
 }
 
 .keyword-cloud button[data-keyword] {
@@ -1685,7 +1667,7 @@ body.is-post .sidenote {
   float: right;
   clear: right;
   width: 220px;
-  margin: 0.15rem -270px 1rem 1rem;
+  margin: 0.15rem 1rem 1rem 1rem;
   padding-left: 0;
   border-left: 0;
   font-family: var(--hand);
@@ -1736,8 +1718,9 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   margin: 2.5rem 0 0;
   padding-top: 1.25rem;
   border-top: 1px solid var(--rule);
-  max-width: 40rem;
 }
+
+.keyword-cloud { max-width: none; }
 
 .reader-comments p {
   margin: 0 0 0.7rem;
@@ -1783,6 +1766,10 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
   outline-offset: 3px;
 }
 
+@media (max-width: 1399px) and (min-width: 961px) {
+  body.has-toc .site-feedback { right: auto; left: 0.85rem; }
+}
+
 .colophon-links {
   display: flex;
   flex-wrap: wrap;
@@ -1801,10 +1788,20 @@ body.is-post .fn-toggle:checked + .fn-label + .sidenote { background: var(--side
 }
 
 @media (max-width: 960px) {
+  .frame,
   body.is-post .frame,
   body.has-toc .frame,
   body.is-post.has-toc .frame {
     width: min(48rem, 100%);
+    max-width: none;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  body.is-home .frame {
+    width: min(80rem, 100%);
+    max-width: none;
+    padding-left: 1.25rem;
     padding-right: 1.25rem;
   }
 
