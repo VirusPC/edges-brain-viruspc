@@ -229,7 +229,7 @@ def write_issue(root: Path) -> Path:
     write_json(
         summary / "index.json",
         {
-            "skill": {"name": SKILL, "version": "0.0.8"},
+            "skill": {"name": SKILL, "version": "0.0.11"},
             "routine": {
                 "repo": "VirusPC/edges-brain-viruspc",
                 "commit": "a" * 40,
@@ -280,6 +280,46 @@ class ValidateStages(unittest.TestCase):
         write_json(project, data)
         errors = validate_summary(self.issue)
         self.assertTrue(any("缺少「洞察与启发」" in item for item in errors), errors)
+
+        article = self.issue / "summary" / "articles" / "post.json"
+        data = json.loads(article.read_text(encoding="utf-8"))
+        data["text"] = data["text"].replace("<strong>相关工作：</strong>", "")
+        write_json(article, data)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("summary/articles" in item and "缺少「相关工作」" in item for item in errors), errors)
+
+    def test_old_summary_version_keeps_previous_project_and_card_rules(self) -> None:
+        index_path = self.issue / "summary" / "index.json"
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        index["skill"]["version"] = "0.0.10"
+        project_chapter = next(item for item in index["chapters"] if item["title"] == "项目开源")
+        project_chapter["cards"] = list(reversed(project_chapter["cards"]))
+        write_json(index_path, index)
+
+        project = self.issue / "summary" / "projects" / "demo.json"
+        data = json.loads(project.read_text(encoding="utf-8"))
+        data["text"] = "#### [demo](https://github.com/example/demo)\n\n旧版简短卡片。"
+        write_json(project, data)
+        article = self.issue / "summary" / "articles" / "post.json"
+        data = json.loads(article.read_text(encoding="utf-8"))
+        data["text"] = "#### [一篇](https://example.com/post)\n\n旧版文章卡片。"
+        write_json(article, data)
+        self.assertEqual(validate_summary(self.issue), [])
+
+        project_chapter["cards"] = project_chapter["cards"][:-1]
+        write_json(index_path, index)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("项目开源的卡片 ID 和 summary/projects 对不上" in item for item in errors), errors)
+
+    def test_invalid_summary_version_does_not_enable_legacy_rules(self) -> None:
+        index_path = self.issue / "summary" / "index.json"
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        index["skill"]["version"] = "unknown"
+        chapter = next(item for item in index["chapters"] if item["title"] == "项目开源")
+        chapter["cards"] = list(reversed(chapter["cards"]))
+        write_json(index_path, index)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("skill.version" in item and "不符合" in item for item in errors), errors)
 
     def test_cli_exits_zero(self) -> None:
         script = SCRIPTS / "summarize" / "check" / "validate.py"
