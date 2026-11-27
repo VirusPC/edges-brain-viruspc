@@ -201,7 +201,8 @@ test('the selected-articles plaque keeps its rows, counts, and source linkage', 
   );
   assert.equal(buttons(bar, 'cat').find((button) => button.dataset.filter === 'all').textContent, '全部 (2)');
   assert.equal(buttons(bar, 'cat').find((button) => button.dataset.cat === '产品').textContent, '产品 (1)');
-  assert.equal(buttons(bar, 'cat').find((button) => button.dataset.cat === '模型').textContent, '模型 (0)');
+  assert.equal(buttons(bar, 'cat').find((button) => button.dataset.cat === '架构').textContent, '架构 (0)');
+  assert.ok(!buttons(bar, 'cat').some((button) => button.dataset.cat === '模型' || button.dataset.cat === '开源'));
   assert.equal(document.querySelector('h3').textContent, '国内 (2)');
   assert.equal(bar.querySelectorAll('.ai-news-filter-seam').length, 2);
   assert.equal(bar.querySelectorAll('.ai-news-filter-nail').length, 2);
