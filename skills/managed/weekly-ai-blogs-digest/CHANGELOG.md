@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- 卡片完整总结统一写成 `<details class="article-more">`；校验器对 0.0.11 及以前期次只警告、之后的版本报错；站点按「完整总结」识别无 class 的 details；已合并数据不改。
 - 按期次记录的 skill 版本启用 0.0.11 项目榜单和卡片段落校验，保留旧期次原有校验规则。
 
 ## [0.0.11] - 2026-11-27

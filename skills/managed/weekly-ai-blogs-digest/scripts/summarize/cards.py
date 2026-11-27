@@ -3,8 +3,30 @@
 from __future__ import annotations
 
 import re
+from html import unescape
+
+from lib.issue import parse_version
 
 LABELS = ("解决什么问题", "如何解决", "效果怎样", "洞察与启发", "相关工作")
+DETAILS_CLASS_REQUIRED_AFTER = "0.0.11"
+
+
+def details_class_problem(text: str, where: str, version: str | None) -> tuple[str | None, str | None]:
+    """Return (error, warning) when a full-summary details block lacks its class."""
+    for match in re.finditer(r"<details\b([^>]*)>([\s\S]*?)</details\s*>", str(text or ""), re.I):
+        summary = re.search(r"<summary\b[^>]*>([\s\S]*?)</summary\s*>", match.group(2), re.I)
+        if not summary or re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", summary.group(1)))).strip() != "完整总结":
+            continue
+        classes = re.search(r"\bclass\s*=\s*(['\"])(.*?)\1", match.group(1), re.I)
+        if classes and "article-more" in classes.group(2).split():
+            continue
+        problem = f"{where} 的完整总结 <details> 缺少 class=\"article-more\""
+        got = parse_version(version)
+        required_after = parse_version(DETAILS_CLASS_REQUIRED_AFTER)
+        if got is not None and required_after is not None and got <= required_after:
+            return None, f"warning: {problem}（记录版本 {version}，仅警告）"
+        return problem, None
+    return None, None
 
 
 def card_problems(text: str, where: str) -> list[str]:

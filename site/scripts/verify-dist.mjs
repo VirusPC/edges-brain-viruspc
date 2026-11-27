@@ -129,6 +129,62 @@ function decodeHtml(value) {
     .replace(/&#39;/g, "'");
 }
 
+function articleCards(html) {
+  return [...html.matchAll(/<article\b(?=[^>]*class="note-card article-card")[^>]*>[\s\S]*?<\/article>/g)]
+    .map((match) => match[0]);
+}
+
+const FULL_SUMMARY = /<summary\b[^>]*>\s*完整总结\s*<\/summary>/;
+
+/** Raw leftover body of a card: from note-card-extra up to the parsed fold (or card end). */
+function extraHtml(card) {
+  const start = card.search(/<div\b[^>]*class="note-card-extra"/);
+  if (start === -1) return '';
+  const fold = card.indexOf('<details class="article-more"', start);
+  return card.slice(start, fold === -1 ? card.length : fold);
+}
+
+function cardTitle(card, index) {
+  const title = card.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/)?.[0]
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .trim();
+  return title || `#${index + 1}`;
+}
+
+for (const rel of rels.filter((item) => /^ai-news\/\d{4}-\d{2}-\d{2}\/index\.html$/.test(item))) {
+  const issueDate = rel.split('/')[1];
+  const html = fs.readFileSync(path.join(dist, rel), 'utf8');
+  for (const [index, card] of articleCards(html).entries()) {
+    // A card that ships a 「完整总结」 fold must render it as parsed sections, not as raw extra HTML.
+    if (!FULL_SUMMARY.test(card)) continue;
+    const folded = card.match(/<details\s+class="article-more"[^>]*>[\s\S]*?<\/details>/g) || [];
+    const hasSections = folded.some((details) => /class="note-card-sec"/.test(details));
+    const summaryInExtra = FULL_SUMMARY.test(extraHtml(card));
+    assert.ok(
+      folded.length > 0 && hasSections && !summaryInExtra,
+      `${issueDate} card ${cardTitle(card, index)} (#${index + 1}) has an invalid full summary render`,
+    );
+  }
+}
+
+const issue27Rel = 'ai-news/2026-11-27/index.html';
+if (rels.includes(issue27Rel)) {
+  const issue27 = fs.readFileSync(path.join(dist, issue27Rel), 'utf8');
+  const cards27 = articleCards(issue27);
+  assert.ok(cards27.length > 0, '2026-11-27 has no article cards');
+  const labels27 = ['什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作'];
+  for (const [index, card] of cards27.entries()) {
+    const labelMatches = [...card.matchAll(/class="note-card-k">([^<]*)<\/div>/g)].map((match) => match[1]);
+    assert.deepEqual(labelMatches, labels27, `2026-11-27 card ${cardTitle(card, index)} (#${index + 1}) labels`);
+    assert.doesNotMatch(
+      extraHtml(card),
+      FULL_SUMMARY,
+      `2026-11-27 card ${cardTitle(card, index)} (#${index + 1}) has 完整总结 in note-card-extra`,
+    );
+  }
+}
+
 function optionLabels(html) {
   return [...html.matchAll(/<option\b[^>]*>([^<]*)<\/option>/g)].map((match) => match[1].trim());
 }

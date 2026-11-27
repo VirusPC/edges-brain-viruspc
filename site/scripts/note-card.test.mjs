@@ -51,6 +51,32 @@ test('a project card can omit category, source, and later sections', () => {
   assert.equal(card.sections[0].label, '什么问题');
 });
 
+test('a plain details block titled 完整总结 parses into the five card sections', () => {
+  const card = parseArticleCard(`
+    <h4><a href="https://example.com/post">一篇文章</a></h4>
+    <p>一句导语。</p>
+    <details><summary> 完整总结 </summary>
+      <p><strong>解决什么问题：</strong>背景。</p>
+      <p><strong>如何解决：</strong>做法。</p>
+      <p><strong>效果怎样：</strong>效果。</p>
+      <p><strong>洞察与启发：</strong>启发。</p>
+      <p><strong>相关工作：</strong>相关内容。</p>
+    </details>
+  `);
+  assert.deepEqual(card.sections.map((section) => section.label), [
+    '什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作',
+  ]);
+  assert.equal(card.sections[3].highlight, true);
+  assert.equal(card.extraHtml, '');
+});
+
+test('a plain details block with another summary stays in extraHtml', () => {
+  const raw = '<details><summary>补充说明</summary><p>额外内容。</p></details>';
+  const card = parseArticleCard(`<h4><a href="https://example.com/post">一篇文章</a></h4>${raw}`);
+  assert.equal(card.sections.length, 0);
+  assert.equal(card.extraHtml, raw);
+});
+
 test('a card without a fold keeps the paragraph and does not invent sections', () => {
   const card = parseArticleCard('<h4 data-cat="产品"><a href="https://x">只有标题</a></h4><p>订阅源里只有这些。</p>');
   assert.equal(card.category, '产品');

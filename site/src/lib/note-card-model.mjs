@@ -65,8 +65,15 @@ export function parseArticleCard(inner) {
       phase = 'lead';
       continue;
     }
-    if (node.tag === 'details' && phase === 'lead' && hasClass(node.attrText, 'article-more')) {
-      for (const child of topNodes(node.inner)) {
+    if (node.tag === 'details' && phase === 'lead') {
+      const children = topNodes(node.inner);
+      const summary = children.find((child) => child.tag === 'summary');
+      const isSummary = summary && stripTags(summary.inner).replace(/\s+/g, ' ').trim() === '完整总结';
+      if (!hasClass(node.attrText, 'article-more') && !isSummary) {
+        extra.push(node.raw);
+        continue;
+      }
+      for (const child of children) {
         if (child.tag === 'summary') continue;
         if (child.tag === 'p') sections.push(parseParagraph(child.inner));
         else extra.push(child.raw);

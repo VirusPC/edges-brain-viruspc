@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from lib.issue import SUMMARY_RULES_SINCE, collect_items, print_result, read_json, summary_version, version_reached  # noqa: E402
-from summarize.cards import card_problems, title_line_problems  # noqa: E402
+from summarize.cards import card_problems, details_class_problem, title_line_problems  # noqa: E402
 
 REPO_ID = r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
 TOP = 5
@@ -41,7 +41,15 @@ def validate(issue: Path) -> tuple[list[str], dict]:
         id_pattern=REPO_ID,
         source_id=True,
     )
-    if version_reached(summary_version(issue), SUMMARY_RULES_SINCE):
+    version = summary_version(issue)
+    for item_id, item in items.items():
+        where = f"summary/projects {item_id}"
+        detail_error, warning = details_class_problem(item.get("text"), where, version)
+        if detail_error:
+            errors.append(detail_error)
+        if warning:
+            print(warning, file=sys.stderr)
+    if version_reached(version, SUMMARY_RULES_SINCE):
         expected = trending_top(issue)
         if len(expected) != TOP:
             errors.append(f"GitHub Trending 每周总榜不足 {TOP} 个仓库")

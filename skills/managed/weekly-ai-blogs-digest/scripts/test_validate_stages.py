@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import json
+import contextlib
+import io
 import shutil
 import subprocess
 import sys
@@ -18,6 +20,7 @@ from clean.check.validate import validate as validate_clean  # noqa: E402
 from prepare.check.validate import validate as validate_prepare  # noqa: E402
 from summarize.check.validate import validate as validate_summary  # noqa: E402
 from summarize.merge.sources import sources_document  # noqa: E402
+from summarize.cards import details_class_problem  # noqa: E402
 
 ISSUE = "2026-11-20"
 SKILL = "weekly-ai-blogs-digest"
@@ -320,6 +323,33 @@ class ValidateStages(unittest.TestCase):
         write_json(index_path, index)
         errors = validate_summary(self.issue)
         self.assertTrue(any("skill.version" in item and "不符合" in item for item in errors), errors)
+
+    def test_plain_full_summary_at_011_warns_and_passes(self) -> None:
+        index_path = self.issue / "summary" / "index.json"
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        index["skill"]["version"] = "0.0.11"
+        write_json(index_path, index)
+        article = self.issue / "summary" / "articles" / "post.json"
+        data = json.loads(article.read_text(encoding="utf-8"))
+        data["text"] = data["text"].replace('<details class="article-more">', "<details>", 1)
+        write_json(article, data)
+
+        warnings = io.StringIO()
+        with contextlib.redirect_stderr(warnings):
+            errors = validate_summary(self.issue)
+        self.assertEqual(errors, [])
+        self.assertIn("warning:", warnings.getvalue())
+        self.assertIn('class="article-more"', warnings.getvalue())
+
+    def test_plain_full_summary_after_011_is_an_error(self) -> None:
+        error, warning = details_class_problem(
+            '<details><summary>完整总结</summary><p>正文</p></details>',
+            "summary/articles https://example.com/post",
+            "0.0.12",
+        )
+        self.assertIsNone(warning)
+        self.assertIsNotNone(error)
+        self.assertIn('class="article-more"', error)
 
     def test_cli_exits_zero(self) -> None:
         script = SCRIPTS / "summarize" / "check" / "validate.py"
