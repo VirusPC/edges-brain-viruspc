@@ -5,6 +5,9 @@ import { allOption, createFilterBar, fillChip, isAllChip } from './ai-news-filte
 export const PRIMARY_CATEGORIES = ['模型', '架构', '产品', '实践', '开源', '其他'];
 const PRIMARY = new Set(PRIMARY_CATEGORIES);
 
+// 模型/开源在正文中各有独立章节，精选文章筛选栏不再重复这两项。
+const FILTER_BAR_CATEGORIES = PRIMARY_CATEGORIES.filter((name) => name !== '模型' && name !== '开源');
+
 export function splitTags(value) {
   if (!value) return [];
   return String(value)
@@ -21,7 +24,7 @@ export function categoriesPresent(names) {
 export function filterChips(date, names) {
   const present = categoriesPresent(names);
   if (present.length === 0) return [];
-  if (date >= '2026-11-20') return [...PRIMARY_CATEGORIES];
+  if (date >= '2026-11-20') return [...FILTER_BAR_CATEGORIES];
   return present;
 }
 

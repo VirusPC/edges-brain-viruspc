@@ -43,14 +43,9 @@ test('a page with no primary category offers no filter chips', () => {
   assert.deepEqual(filterChips('2026-11-13', ['其他', '架构', '实践']), ['架构', '实践', '其他']);
   assert.deepEqual(filterChips('2026-11-06', ['审查', '云端']), []);
   assert.deepEqual(filterChips('2026-11-06', ['Agent 与 Harness', '工程实践', '行业']), []);
-  assert.deepEqual(filterChips('2026-11-20', ['产品', '开源']), [
-    '模型',
-    '架构',
-    '产品',
-    '实践',
-    '开源',
-    '其他',
-  ]);
+  assert.deepEqual(filterChips('2026-11-20', ['产品', '开源']), ['架构', '产品', '实践', '其他']);
+  assert.deepEqual(filterChips('2026-11-27', ['实践', '架构', '产品', '模型', '模型']), ['架构', '产品', '实践', '其他']);
+  assert.deepEqual(filterChips('2026-12-04', ['产品', '模型']), ['架构', '产品', '实践', '其他']);
 });
 
 test('the query string keeps a primary, a source type, and a company apart', () => {
