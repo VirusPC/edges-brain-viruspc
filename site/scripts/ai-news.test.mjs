@@ -303,7 +303,7 @@ test('model release notes use the shared info card', () => {
     path.join(repoRoot, 'skills/managed/weekly-ai-blogs-digest/references/summarize/models.md'),
     'utf8',
   );
-  assert.match(rules, /<aside class="info-card">/);
+  assert.match(rules, /发布要点写进 `points` 字段/);
   assert.match(rules, /note-card-hl/);
   assert.doesNotMatch(rules, /release-points/);
 });

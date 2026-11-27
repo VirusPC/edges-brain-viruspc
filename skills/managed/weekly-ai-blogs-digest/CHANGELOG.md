@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- 按期次记录的 skill 版本启用 0.0.11 项目榜单和卡片段落校验，保留旧期次原有校验规则。
+## [0.0.12] - 2026-11-27
+
+### Changed
+
+- 总结卡片只存结构化字段，不再存 `text` HTML，也不再按 skill 版本切换卡片段落规则。文章卡、项目卡的校验器直接检查 `lede` 和 `sections` 五段；模型卡校验 `lede` 和 `points`。
+- 文章卡 required 改为 `id`、`source`、`title`、`link`、`lede`、`category`、`company`、`sections`，删掉 `sentence` 和 `text`。`lede` 是导语，不能与「如何解决」重复；`sections` 五段全必填且非空。
+- 项目卡包含文章卡全部字段，补 `stars`、`license`、`purpose`、`change`。`category` 固定「开源」，`company` 是仓库所有者。`stars` 是整数或 null、可选；`license` 是非空字符串、可选。两者只沿用 cleaned 里的事实：cleaned 有就必须一致，没有就省略或 null，不编造。星标和许可证不再写在标题行。
+- 模型卡 required 改为 `id`、`source`、`title`、`link`、`lede`、`price`、`speed`、`effect`、`points`，删掉 `text`。`points` 是 `{label, text}` 数组，允许空数组，有元素则 `label` 和 `text` 都非空；「上线」「定位」「成绩」「实测」「可用」只是推荐 label。发布要点不再写成 aside HTML 模板。
+- 行内标记只出现在 `lede`、`sections` 各段和 `points[].text`：只允许一处 `<mark class="note-card-hl">`（每段最多一处）和 `<a href="https://...">`（http 也可以），不允许 markdown 和其它标签。`title`、`category`、`company`、`purpose`、`change`、`license`、`label`、`id`、`link` 必须是纯文本。
+- 整页校验和项目校验不再按记录版本判断是否启用卡片规则：项目榜单永远按本周 GitHub Trending 前 5 的顺序检查，字段校验对所有期次生效。`SUMMARY_RULES_SINCE` 和 `summary_version` 从 `scripts/lib/issue.py` 删除。
+- 关键词抽词从 `lede`、`sections` 各段和 `points[].text` 取正文，连同已有的 `title`、`purpose`、`change`，不再读 `sentence` 和 `text`。
 
 ## [0.0.11] - 2026-11-27
 

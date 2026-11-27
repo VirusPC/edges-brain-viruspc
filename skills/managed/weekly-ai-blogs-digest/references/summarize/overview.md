@@ -6,7 +6,7 @@
 
 ## 契约
 
-- 输入：`summary/articles/` 的 id、title、sentence；`summary/projects/` 的 id、标题和摘要；`summary/models/` 的模型卡片（不含 `boards/`）以及卡片要点。有没有模型发布只看模型卡片，不含榜单。不读 `summary/keywords.json`。
+- 输入：`summary/articles/` 的 id、title、lede；`summary/projects/` 的 id、title、lede、purpose、change；`summary/models/` 的模型卡片（不含 `boards/`）以及卡片要点。有没有模型发布只看模型卡片，不含榜单。不读 `summary/keywords.json`。
 - 输出：`summary/overview.json`。
 - 生成命令：无。由 Agent 按下面的提示词写入 `summary/overview.json`。不要写生成脚本，也不要调用 LLM API。
 - 校验器：`scripts/summarize/overview/validate.py`
@@ -38,9 +38,9 @@ python3 scripts/summarize/overview/validate.py issues/<生成日>
 
 输入只有本期 summary 里已经精选的内容：
 
-- summary/articles/*.json 的 id、title、sentence
-- summary/projects/*.json 的 id、标题和摘要
-- summary/models/*.json 的 id 和模型卡要点
+- summary/articles/*.json 的 id、title、lede
+- summary/projects/*.json 的 id、title、lede、purpose、change
+- summary/models/*.json 的 id、lede 和模型卡要点
 
 不要读 cleaned/ 或 raw/。不要写入页面上看不到的条目、数字或事实。
 

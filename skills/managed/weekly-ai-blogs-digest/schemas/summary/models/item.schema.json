@@ -4,9 +4,13 @@
   "required": [
     "id",
     "source",
+    "title",
+    "link",
+    "lede",
     "price",
     "speed",
-    "effect"
+    "effect",
+    "points"
   ],
   "properties": {
     "id": {
@@ -14,6 +18,18 @@
       "minLength": 1
     },
     "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "link": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lede": {
       "type": "string",
       "minLength": 1
     },
@@ -49,9 +65,6 @@
         }
       }
     },
-    "text": {
-      "type": "string"
-    },
     "effect": {
       "type": "object",
       "required": [
@@ -65,6 +78,27 @@
         "rank": {
           "type": "integer",
           "minimum": 1
+        }
+      }
+    },
+    "points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "text"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     }

@@ -8,7 +8,7 @@
 
 输出：
 
-- `summary/models/{id}.json`：一张模型卡片。三行是价格、速度、效果，数字和名次只用清洗结果。`rank` 不是正整数就不写名次，没有数字就写「暂无」。发布要点按上线、定位、成绩，最后一条是可用或实测。没有第三方实测就写可用。
+- `summary/models/{id}.json`：一张模型卡片，字段是 `id`、`source`、`title`、`link`、`lede`、`price`、`speed`、`effect`、`points`。三行是价格、速度、效果，数字和名次只用清洗结果。`rank` 不是正整数就不写名次，没有数字就写「暂无」。`lede` 是这张卡的一句话导语。`points` 是发布要点数组，每项是 `{label, text}`，`label` 和 `text` 都非空；允许空数组。上线、定位、成绩、实测、可用只是推荐 label，不是必填，也不限制只能用这五个。没有第三方实测就写可用。
 - `summary/models/boards/`：只存绘图数据，包括给读者的一句说明，以及圈谁、Arena 榜单发布日。不另存 SVG 或 PNG。
 
 Schema：
@@ -30,17 +30,6 @@ Artificial Analysis 按智力指数取 Top 15。红圈只圈窗口内新发布�
 
 「GitHub Trending（weekly / all 前 5）」标题下面不要写概括前五名字的介绍句。那一组不属于模型榜。
 
-发布要点写成这张卡片。关键数字用一处 `<mark class="note-card-hl">` 包住原句里已有的数字。
-
-```html
-<aside class="info-card">
-<p class="info-card-label"><span>发布要点</span></p>
-<ul>
-<li><strong>上线</strong> 哪一天、在哪发布。</li>
-<li><strong>成绩</strong> 原文里的数字，用 <mark class="note-card-hl">一处数字</mark> 标出来。</li>
-</ul>
-<p class="info-card-note">来源：<a href="{{url}}">{{标题}}</a></p>
-</aside>
-```
+发布要点写进 `points` 字段，一项一条，关键数字用一处 `<mark class="note-card-hl">` 包住原句里已有的数字。`lede` 和每条 `text` 里也可以放 `<a href="https://...">` 链接；每段最多一处 mark；不写 markdown，不写别的标签。`title`、`link` 和每条 `label` 是纯文本。
 
 榜单数字或模型事实变了，重写对应卡片和榜单数据。这些卡片变了就重写本周总结，再重算关键词。

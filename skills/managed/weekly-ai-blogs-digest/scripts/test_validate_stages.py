@@ -48,20 +48,29 @@ def stage(name: str, entry: str) -> dict:
     return {"name": name, "skill": SKILL, "version": VERSION, "path": entry}
 
 
-def card_text(title: str, link: str, intro: str) -> str:
-    sections = (
-        ("解决什么问题", "它要处理一件已经写在材料里的事。"),
-        ("如何解决", "它换了一种做法，而不是把导语再写一遍。"),
-        ("效果怎样", "材料没有新的数字，只能定性地说它能用。"),
-        ("洞察与启发", "值得记住的是做法和场景怎么连在一起。"),
-        ("相关工作", "它和这一期别的条目处理的是相近的问题。"),
-    )
-    body = "".join(f"<p><strong>{name}：</strong>{text}</p>" for name, text in sections)
-    return (
-        f"#### [{title}]({link})\n\n{intro}\n\n"
-        "<details class=\"article-more\">\n<summary>完整总结</summary>\n"
-        f"{body}\n</details>\n"
-    )
+def card_sections() -> dict:
+    return {
+        "解决什么问题": "它要处理一件已经写在材料里的事。",
+        "如何解决": "它换了一种做法，而不是把导语再写一遍。",
+        "效果怎样": "材料没有新的数字，只能定性地说它能用。",
+        "洞察与启发": "值得记住的是做法和场景怎么连在一起。",
+        "相关工作": "它和这一期别的条目处理的是相近的问题。",
+    }
+
+
+def project_card(slug: str, link: str) -> dict:
+    return {
+        "id": link,
+        "source": f"cleaned/projects/{slug}.json",
+        "title": slug,
+        "link": link,
+        "lede": f"{slug} 这周出现在总榜上。",
+        "category": "开源",
+        "company": "example",
+        "sections": card_sections(),
+        "purpose": "给 Agent 用的仓库。",
+        "change": "这一期进了周榜。",
+    }
 
 
 def write_issue(root: Path) -> Path:
@@ -160,32 +169,27 @@ def write_issue(root: Path) -> Path:
             "source": "cleaned/articles/post.json",
             "title": "一篇",
             "link": ARTICLE,
-            "sentence": "一句。",
+            "lede": "一句已经写在材料里的变化。",
             "category": "产品",
             "company": "Example",
-            "text": card_text("一篇", ARTICLE, "一句已经写在材料里的变化。"),
+            "sections": card_sections(),
         },
     )
     for link in REPOS:
         slug = link.rsplit("/", 1)[-1]
-        write_json(
-            summary / "projects" / f"{slug}.json",
-            {
-                "id": link,
-                "source": f"cleaned/projects/{slug}.json",
-                "purpose": "给 Agent 用的仓库。",
-                "change": "这一期进了周榜。",
-                "text": card_text(slug, link, f"{slug} 这周出现在总榜上。"),
-            },
-        )
+        write_json(summary / "projects" / f"{slug}.json", project_card(slug, link))
     write_json(
         summary / "models" / "example-model.json",
         {
             "id": MODEL,
             "source": "cleaned/models/example-model.json",
+            "title": MODEL,
+            "link": "https://example.com/example-model",
+            "lede": "Example Model 这周发布。",
             "price": {"text": "暂无"},
             "speed": {"text": "暂无"},
             "effect": {"text": "暂无"},
+            "points": [{"label": "上线", "text": "这周发布。"}],
         },
     )
     write_json(
@@ -229,7 +233,7 @@ def write_issue(root: Path) -> Path:
     write_json(
         summary / "index.json",
         {
-            "skill": {"name": SKILL, "version": "0.0.11"},
+            "skill": {"name": SKILL, "version": "0.0.12"},
             "routine": {
                 "repo": "VirusPC/edges-brain-viruspc",
                 "commit": "a" * 40,
@@ -276,19 +280,80 @@ class ValidateStages(unittest.TestCase):
         write_json(index_path, index)
         project = self.issue / "summary" / "projects" / "demo.json"
         data = json.loads(project.read_text(encoding="utf-8"))
-        data["text"] = data["text"].replace("<strong>洞察与启发：</strong>", "")
+        del data["sections"]["洞察与启发"]
         write_json(project, data)
         errors = validate_summary(self.issue)
-        self.assertTrue(any("缺少「洞察与启发」" in item for item in errors), errors)
+        self.assertTrue(any("洞察与启发" in item for item in errors), errors)
+        data["sections"]["洞察与启发"] = "值得记住的是做法和场景怎么连在一起。"
+        write_json(project, data)
 
         article = self.issue / "summary" / "articles" / "post.json"
         data = json.loads(article.read_text(encoding="utf-8"))
-        data["text"] = data["text"].replace("<strong>相关工作：</strong>", "")
+        data["sections"]["相关工作"] = ""
         write_json(article, data)
         errors = validate_summary(self.issue)
-        self.assertTrue(any("summary/articles" in item and "缺少「相关工作」" in item for item in errors), errors)
+        self.assertTrue(any("summary/articles" in item and "相关工作" in item for item in errors), errors)
 
-    def test_old_summary_version_keeps_previous_project_and_card_rules(self) -> None:
+    def test_trending_top_accepts_url_or_link(self) -> None:
+        from summarize.projects.validate import trending_top
+
+        with tempfile.TemporaryDirectory() as tmp:
+            issue = Path(tmp) / "issue"
+            path = issue / "raw" / "projects" / "github-trending.json"
+            write_json(path, {"items": [{"url": link} for link in REPOS]})
+            self.assertEqual(trending_top(issue), list(REPOS))
+            write_json(path, {"items": [{"link": link} for link in REPOS]})
+            self.assertEqual(trending_top(issue), list(REPOS))
+
+    def test_weixin_biz_in_article_id_is_not_markdown(self) -> None:
+        from summarize.cards import card_problems
+
+        url = "https://mp.weixin.qq.com/s?__biz=Mzk0OTYwNzc3NQ==&mid=2247485884"
+        item = {
+            "id": url,
+            "source": "cleaned/articles/post.json",
+            "title": "一篇",
+            "link": url,
+            "lede": "一句已经写在材料里的变化。",
+            "category": "产品",
+            "company": "Example",
+            "sections": card_sections(),
+        }
+        self.assertEqual(card_problems(item, "weixin"), [])
+
+    def test_project_stars_and_license_must_match_cleaned(self) -> None:
+
+        cleaned_path = self.issue / "cleaned" / "projects" / "demo.json"
+        cleaned = json.loads(cleaned_path.read_text(encoding="utf-8"))
+        cleaned["stars"] = 1200
+        cleaned["license"] = "MIT"
+        write_json(cleaned_path, cleaned)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("stars" in item and "cleaned" in item for item in errors), errors)
+
+        project_path = self.issue / "summary" / "projects" / "demo.json"
+        project = json.loads(project_path.read_text(encoding="utf-8"))
+        project["stars"] = 1200
+        project["license"] = "MIT"
+        write_json(project_path, project)
+        self.assertEqual(validate_summary(self.issue), [])
+
+        project["stars"] = 1201
+        project["license"] = "Apache-2.0"
+        write_json(project_path, project)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("stars" in item for item in errors), errors)
+        self.assertTrue(any("license" in item for item in errors), errors)
+
+    def test_project_category_is_open_source(self) -> None:
+        project_path = self.issue / "summary" / "projects" / "demo.json"
+        project = json.loads(project_path.read_text(encoding="utf-8"))
+        project["category"] = "产品"
+        write_json(project_path, project)
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("category" in item and "开源" in item for item in errors), errors)
+
+    def test_summary_field_rules_apply_to_every_recorded_version(self) -> None:
         index_path = self.issue / "summary" / "index.json"
         index = json.loads(index_path.read_text(encoding="utf-8"))
         index["skill"]["version"] = "0.0.10"
@@ -298,20 +363,18 @@ class ValidateStages(unittest.TestCase):
 
         project = self.issue / "summary" / "projects" / "demo.json"
         data = json.loads(project.read_text(encoding="utf-8"))
-        data["text"] = "#### [demo](https://github.com/example/demo)\n\n旧版简短卡片。"
+        del data["sections"]["如何解决"]
         write_json(project, data)
-        article = self.issue / "summary" / "articles" / "post.json"
-        data = json.loads(article.read_text(encoding="utf-8"))
-        data["text"] = "#### [一篇](https://example.com/post)\n\n旧版文章卡片。"
-        write_json(article, data)
-        self.assertEqual(validate_summary(self.issue), [])
+        errors = validate_summary(self.issue)
+        self.assertTrue(any("如何解决" in item for item in errors), errors)
+        self.assertTrue(any("榜单顺序" in item for item in errors), errors)
 
         project_chapter["cards"] = project_chapter["cards"][:-1]
         write_json(index_path, index)
         errors = validate_summary(self.issue)
-        self.assertTrue(any("项目开源的卡片 ID 和 summary/projects 对不上" in item for item in errors), errors)
+        self.assertTrue(any("榜单顺序" in item for item in errors), errors)
 
-    def test_invalid_summary_version_does_not_enable_legacy_rules(self) -> None:
+    def test_invalid_summary_version_does_not_relax_summary_rules(self) -> None:
         index_path = self.issue / "summary" / "index.json"
         index = json.loads(index_path.read_text(encoding="utf-8"))
         index["skill"]["version"] = "unknown"

@@ -75,7 +75,7 @@ def build(root: Path, *, model: bool = True, theme_flag: bool = False) -> Path:
     issue = root / "2026-11-20"
     write_json(
         issue / "summary" / "articles" / "post.json",
-        {"id": ARTICLE, "title": "一篇", "sentence": "一句。"},
+        {"id": ARTICLE, "title": "一篇", "lede": "一句。"},
     )
     if model:
         write_json(issue / "summary" / "models" / "example.json", {"id": MODEL})
@@ -219,11 +219,11 @@ class OverviewValidate(unittest.TestCase):
     def test_three_articles_need_one_other_theme_and_the_first_theme_stays_a_model(self) -> None:
         write_json(
             self.issue / "summary" / "articles" / "second.json",
-            {"id": "https://example.com/second", "title": "第二篇", "sentence": "二。"},
+            {"id": "https://example.com/second", "title": "第二篇", "lede": "二。"},
         )
         write_json(
             self.issue / "summary" / "articles" / "third.json",
-            {"id": "https://example.com/third", "title": "第三篇", "sentence": "三。"},
+            {"id": "https://example.com/third", "title": "第三篇", "lede": "三。"},
         )
         themes = valid_themes()
         self.save(overview(themes))

@@ -32,7 +32,7 @@ class KeywordThemeTags(unittest.TestCase):
         self.issue = Path(self.tmp.name) / "2026-11-20"
         write_json(
             self.issue / "summary" / "articles" / "post.json",
-            {"id": ARTICLE, "title": "一篇", "sentence": "一句。"},
+            {"id": ARTICLE, "title": "一篇", "lede": "一句。"},
         )
         write_json(self.issue / "summary" / "models" / "example.json", {"id": MODEL})
 

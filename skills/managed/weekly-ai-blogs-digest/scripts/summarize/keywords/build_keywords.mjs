@@ -910,7 +910,7 @@ function readSummaryCorpus(issueDir) {
       const card = JSON.parse(readFileSync(full, "utf8"));
       if (!card?.id) continue;
       const title = String(card.title || card.name || card.id);
-      const text = [title, card.sentence, card.purpose, card.change, stripTags(card.text)].filter(Boolean).join("\n");
+      const text = cardText(card);
       const link = String(card.link || (String(card.id).startsWith("http") ? card.id : ""));
       if (lane === "models") models.push(String(card.id));
       entries.push({ title, text, link });
@@ -920,8 +920,20 @@ function readSummaryCorpus(issueDir) {
   return { entries, mentions, models };
 }
 
-function stripTags(value) {
-  return String(value || "").replace(/<[^>]+>/g, " ");
+function cardText(card) {
+  const parts = [card.title, card.lede, card.purpose, card.change];
+  for (const section of Object.values(card.sections || {})) parts.push(section);
+  for (const point of card.points || []) parts.push(point && point.text);
+  return parts
+    .filter((part) => typeof part === "string" && part.trim())
+    .map(stripInlineMarkup)
+    .join("\n");
+}
+
+function stripInlineMarkup(value) {
+  return String(value || "")
+    .replace(/<mark class="note-card-hl">([^<>]*)<\/mark>/g, "$1")
+    .replace(/<a href="https?:\/\/[^"]+">([^<>]*)<\/a>/g, "$1");
 }
 
 function main() {

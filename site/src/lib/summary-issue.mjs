@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { canonicalCompany } from './ai-news-category-filter.mjs';
 import { entryAnchor } from './entry-anchor.mjs';
 import { assertOverviewTags, overviewListHtml } from './overview.mjs';
 import { selectedArticlesRemarkHtml } from '../plugins/remark-coverage-window.mjs';
@@ -51,7 +52,7 @@ export function withArticlesCoverage(markdown, coverage) {
 }
 
 /**
- * Rebuild the issue markdown from summary chapters, the coverage window, and card text.
+ * Rebuild the issue markdown from summary chapters, the coverage window, and card fields.
  * @param {string} issueDir
  * @returns {string | null}
  */
@@ -130,28 +131,121 @@ function composeFromChapters(issueDir, index) {
       for (const group of chapter.groups || []) {
         if (!group?.title) continue;
         parts.push(`### ${group.title}\n\n`);
-        if (!pushCards(parts, cards, group.cards)) return null;
+        if (!pushCards(parts, cards, group.cards, 'article')) return null;
       }
       continue;
     }
-    if (!pushCards(parts, cards, chapter.cards)) return null;
+    const kind = chapter.title === '模型进展' ? 'model' : 'article';
+    if (!pushCards(parts, cards, chapter.cards, kind)) return null;
   }
   return parts.join('');
 }
 
 /**
+ * Cards are structured fields only. Article and project cards carry
+ * title/link/lede/category/company plus the five sections; model cards
+ * carry title/link/lede and a points list. Anything missing fails the
+ * whole compose instead of rendering a partial card.
  * @param {string[]} parts
  * @param {Map<string, any>} cards
  * @param {string[] | undefined} ids
+ * @param {'article' | 'model'} kind
  */
-function pushCards(parts, cards, ids) {
+function pushCards(parts, cards, ids, kind) {
   for (const id of ids || []) {
     const card = cards.get(id);
-    if (!card || typeof card.text !== 'string') return false;
+    if (!card) return false;
     const anchor = entryAnchor(id);
-    parts.push(`<!--entry-anchor:${anchor} entry-id:${encodeURIComponent(id)}-->\n\n${card.text.trimEnd()}\n\n`);
+    const markdown = kind === 'model' ? modelCardMarkdown(card) : articleCardMarkdown(card);
+    if (markdown == null) return false;
+    parts.push(`<!--entry-anchor:${anchor} entry-id:${encodeURIComponent(id)}-->\n\n${markdown}\n\n`);
   }
   return true;
+}
+
+const SECTION_LABELS = ['解决什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作'];
+
+/**
+ * @param {any} card
+ */
+function articleCardMarkdown(card) {
+  const title = plainField(card.title);
+  const link = plainField(card.link);
+  const category = plainField(card.category);
+  const company = plainField(card.company);
+  const lede = richField(card.lede);
+  if (!title || !link || !lede || !category || !company) return null;
+  const sections = card.sections;
+  if (!sections || typeof sections !== 'object') return null;
+  for (const label of SECTION_LABELS) {
+    if (!richField(sections[label])) return null;
+  }
+  const payload = {
+    category,
+    company: canonicalCompany(company),
+    lede,
+    sections: Object.fromEntries(SECTION_LABELS.map((label) => [label, sections[label]])),
+  };
+  const comment = `<!--summary-card:${Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url')}-->`;
+  return `${comment}\n\n#### [${escapeLinkText(title)}](${link})\n\n${lede}`;
+}
+
+/**
+ * @param {any} card
+ */
+function modelCardMarkdown(card) {
+  const title = plainField(card.title);
+  const link = plainField(card.link);
+  const lede = richField(card.lede);
+  if (!title || !link || !lede) return null;
+  const points = card.points ?? [];
+  if (!Array.isArray(points)) return null;
+  const items = [];
+  for (const point of points) {
+    const label = plainField(point?.label);
+    const text = richField(point?.text);
+    if (!label || !text) return null;
+    items.push(`<li><strong>${escapeHtml(label)}</strong> ${text}</li>`);
+  }
+  const aside = [
+    '<aside class="info-card">',
+    '<p class="info-card-label"><span>发布要点</span></p>',
+    `<ul>\n${items.join('\n')}\n</ul>`,
+    `<p class="info-card-note">来源：<a href="${escapeHtml(link)}">${escapeHtml(title)}</a></p>`,
+    '</aside>',
+  ];
+  return `#### [${escapeLinkText(title)}](${link})\n\n${lede}\n\n${aside.join('\n')}`;
+}
+
+/**
+ * @param {unknown} value
+ */
+function plainField(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+/**
+ * Lede, section bodies, and point text keep their inline mark and link
+ * markup, so they are written as stored. Only emptiness is checked.
+ * @param {unknown} value
+ */
+function richField(value) {
+  return typeof value === 'string' && value.trim() ? value : '';
+}
+
+/**
+ * @param {string} title
+ */
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escapeLinkText(title) {
+  return title.replace(/[[\]]/g, '\\$&');
 }
 
 /**

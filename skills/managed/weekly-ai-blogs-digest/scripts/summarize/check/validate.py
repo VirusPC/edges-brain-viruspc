@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from clean.check.validate import validate as validate_clean  # noqa: E402
-from lib.issue import SUMMARY_RULES_SINCE, check_document, check_stage_file, load_gaps, parse_version, summary_version, version_reached  # noqa: E402
+from lib.issue import check_document, check_stage_file, load_gaps, parse_version  # noqa: E402
 from summarize.articles.validate import validate as validate_articles  # noqa: E402
 from summarize.keywords.validate import validate as validate_keywords  # noqa: E402
 from summarize.merge.article_coverage import article_coverage, cleaned_article_count  # noqa: E402
@@ -141,12 +141,9 @@ def _index(
         if set(model_chapter["cards"]) != models:
             errors.append("模型进展的卡片 ID 和 summary/models 对不上")
     project_cards = list(by["项目开源"].get("cards") or [])
-    if version_reached(summary_version(issue), SUMMARY_RULES_SINCE):
-        expected_projects = trending_top(issue)
-        if project_cards != expected_projects:
-            errors.append("项目开源应按本周 GitHub Trending 前 5 的榜单顺序排列")
-    elif set(project_cards) != projects:
-        errors.append("项目开源的卡片 ID 和 summary/projects 对不上")
+    expected_projects = trending_top(issue)
+    if project_cards != expected_projects:
+        errors.append("项目开源应按本周 GitHub Trending 前 5 的榜单顺序排列")
     groups = by["精选文章"].get("groups") or []
     group_titles = [group.get("title") for group in groups]
     if group_titles != [title for title in GROUP_ORDER if title in group_titles]:

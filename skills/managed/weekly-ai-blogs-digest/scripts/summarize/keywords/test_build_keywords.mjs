@@ -173,13 +173,19 @@ test("summary keywords keep model names and do not emit the whole title", () => 
       id: "https://example.com/post",
       title: "Introducing Claude Fable 5.2 and a very long product announcement title",
       link: "https://example.com/post",
-      sentence: "Claude Fable 5.2 is the release.",
-      text: "Claude Fable 5.2",
+      lede: "Claude Fable 5.2 is the release.",
+      sections: { 解决什么问题: "Claude Fable 5.2 要换更强的模型。", 如何解决: "它改了训练配方。", 效果怎样: "它能用。", 洞察与启发: "做法值得记住。", 相关工作: "和别的条目相近。" },
     }),
   );
   fs.writeFileSync(
     path.join(summary, "models", "fable.json"),
-    JSON.stringify({ id: "Claude Fable 5.2", text: "Claude Fable 5.2" }),
+    JSON.stringify({
+      id: "Claude Fable 5.2",
+      title: "Claude Fable 5.2",
+      link: "https://example.com/fable",
+      lede: "Claude Fable 5.2 这周发布。",
+      points: [{ label: "上线", text: "Claude Fable 5.2 上线。" }],
+    }),
   );
   const names = summaryKeywords(root, issue).keywords.map((item) => item.name);
   assert.ok(names.includes("Claude Fable 5.2"));
@@ -225,13 +231,19 @@ test("summary keywords merge theme tags after extraction and keep the model name
       id: "https://example.com/post",
       title: "Introducing Claude Fable 5.2 and a very long product announcement title",
       link: "https://example.com/post",
-      sentence: "Claude Fable 5.2 is the release.",
-      text: "Claude Fable 5.2",
+      lede: "Claude Fable 5.2 is the release.",
+      sections: { 解决什么问题: "Claude Fable 5.2 要换更强的模型。", 如何解决: "它改了训练配方。", 效果怎样: "它能用。", 洞察与启发: "做法值得记住。", 相关工作: "和别的条目相近。" },
     }),
   );
   fs.writeFileSync(
     path.join(summary, "models", "fable.json"),
-    JSON.stringify({ id: "Claude Fable 5.2", text: "Claude Fable 5.2" }),
+    JSON.stringify({
+      id: "Claude Fable 5.2",
+      title: "Claude Fable 5.2",
+      link: "https://example.com/fable",
+      lede: "Claude Fable 5.2 这周发布。",
+      points: [{ label: "上线", text: "Claude Fable 5.2 上线。" }],
+    }),
   );
   const before = summaryKeywords(root, issue).keywords.find((item) => item.name === "Claude Fable 5.2");
   assert.ok(before);

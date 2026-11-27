@@ -1,7 +1,7 @@
 ---
 name: weekly-ai-blogs-digest
 description: 当用户想要汇总一段时间内（默认过去一周）AI / AI Coding 领域的新进展时使用。按数据准备、数据清洗、数据总结三阶段写入数据仓库，产出到 summary/ 为止。具体仓库由 routine 提供。栏目名是「AI 资讯」。触发短语：「本周 AI 资讯」「AI Coding 资讯」「汇总一下 AI 博客」「weekly AI digest」「看看这周 AI Coding 有什么新东西」。不要为单篇文章总结（用 summarize-ai-article）。
-version: 0.0.11
+version: 0.0.12
 ---
 
 # AI 资讯周报
