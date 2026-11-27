@@ -21,7 +21,7 @@ interface Props {
   badge?: string;
   headings?: Heading[];
   rss?: { title: string; href: string };
-  /** Chapter list uses h2. AI news also lists h3, such as 国内 and 国际 under 精选文章. */
+  /** Chapter list uses h2. Posts and AI news also list h3; AI news uses it for 国内 and 国际 under 精选文章. */
   tocDepth?: number;
   crumbs?: { label: string; href?: string; current?: boolean }[];
   /** Teaching lessons opt out. Posts, notes, and project articles keep comments. */

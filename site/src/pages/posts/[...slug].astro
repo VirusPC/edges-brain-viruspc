@@ -22,6 +22,7 @@ const { Content, headings } = await render(post);
   date={post.data.date}
   source={githubBlob(post.data.sourcePath)}
   headings={headings}
+  tocDepth={3}
   wide
 >
   <Content />
