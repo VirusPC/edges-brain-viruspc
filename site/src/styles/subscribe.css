@@ -111,7 +111,6 @@
   display: none;
   flex-basis: 100%;
   margin: 0.15rem 0 0;
-  max-width: 40rem;
 }
 
 .sub-row.is-failed .sub-fallback { display: block; }
@@ -144,7 +143,7 @@
   color: inherit;
 }
 
-.sub-page { max-width: 40rem; }
+.sub-page { max-width: none; }
 .sub-page .post-head { margin-bottom: 1rem; }
 .sub-page .prose h2 { margin-top: 2.1rem; }
 .sub-page .sub-steps { padding-left: 1.4rem; }
