@@ -6,9 +6,10 @@
     "source",
     "title",
     "link",
-    "sentence",
+    "lede",
     "category",
-    "company"
+    "company",
+    "sections"
   ],
   "properties": {
     "id": {
@@ -27,7 +28,7 @@
       "type": "string",
       "minLength": 1
     },
-    "sentence": {
+    "lede": {
       "type": "string",
       "minLength": 1
     },
@@ -45,27 +46,36 @@
       "type": "string",
       "minLength": 1
     },
-    "text": {
-      "type": "string"
-    },
     "sections": {
       "type": "object",
       "additionalProperties": false,
+      "required": [
+        "解决什么问题",
+        "如何解决",
+        "效果怎样",
+        "洞察与启发",
+        "相关工作"
+      ],
       "properties": {
         "解决什么问题": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "如何解决": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "效果怎样": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "洞察与启发": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "相关工作": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         }
       }
     }

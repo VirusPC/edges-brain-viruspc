@@ -12,7 +12,6 @@ from lib.jsonschema import validate
 
 SKILL_ROOT = Path(__file__).resolve().parents[2]
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
-SUMMARY_RULES_SINCE = "0.0.11"
 
 
 def schema_for(rel: str) -> dict:
@@ -191,20 +190,6 @@ def version_reached(recorded: str | None, minimum: str) -> bool:
     if got is None or need is None:
         return True
     return got >= need
-
-
-def summary_version(issue: Path) -> str | None:
-    """Read the version that governs summary rules; only fall back if index is absent."""
-    index = issue / "summary" / "index.json"
-    if index.is_file():
-        try:
-            data = read_json(index)
-        except ValueError:
-            return None
-        skill = data.get("skill") if isinstance(data, dict) else None
-        version = skill.get("version") if isinstance(skill, dict) else None
-        return version if isinstance(version, str) else None
-    return stage_version(issue, "summary")
 
 
 def check_stage_file(issue: Path, stage: str) -> list[str]:

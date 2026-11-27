@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from lib.issue import collect_items, gaps_for_lane, print_result, read_json, require_board_dir, source_file  # noqa: E402
+from summarize.cards import model_card_problems  # noqa: E402
 
 
 def validate(issue: Path, gaps: list[dict]) -> tuple[list[str], dict, list[str], set[str]]:
@@ -19,6 +20,8 @@ def validate(issue: Path, gaps: list[dict]) -> tuple[list[str], dict, list[str],
         source_prefix="cleaned/",
         source_id=True,
     )
+    for item_id, item in cards.items():
+        errors.extend(model_card_problems(item, f"summary/models {item_id}"))
     board_errors, boards = require_board_dir(
         issue / "summary",
         "summary",

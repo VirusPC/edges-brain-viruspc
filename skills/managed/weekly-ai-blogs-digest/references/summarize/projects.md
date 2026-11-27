@@ -16,8 +16,8 @@ python3 scripts/summarize/projects/validate.py issues/<生成日>
 
 「GitHub Trending（weekly / all 前 5）」取本周榜单的前 5 个仓库，顺序就是榜单顺序。上周入选过的不因此跳过。标题下面不要写概括前五名字的介绍句。只收每周总榜上的 GitHub 仓库。
 
-每张卡片和精选文章同一套：标题、导语，然后五段都要写：解决什么问题、如何解决、效果怎样、洞察与启发、相关工作。不能省略。页面上「解决什么问题」显示成「什么问题」。导语是标题下面、完整总结之前的那一句，不能把「如何解决」再写一遍。一句话里用一处 `mark` 标出句中已有的词。
+每张卡片和精选文章同一套字段：`title`、`link`、`lede`、`category`、`company`、`sections`，外加 `purpose` 和 `change`。`category` 固定「开源」，`company` 是仓库所有者，从仓库地址的 owner 取。`sections` 五段都要写且非空：解决什么问题、如何解决、效果怎样、洞察与启发、相关工作。不能省略。页面上「解决什么问题」显示成「什么问题」。`lede` 是导语，不能把「如何解决」再写一遍。`lede` 和每一段里用一处 `mark` 标出句中已有的词，也可以放 `<a href="https://...">` 链接；每段最多一处 mark；不写 markdown，不写别的标签。`title`、`category`、`company`、`purpose`、`change` 是纯文本。
 
-星标和许可证写在标题行，紧跟链接，先星标后许可证。清洗结果里没有的那一项不写，也不编造。
+`stars` 和 `license` 是卡片字段，不写在正文里。cleaned 里有整数 `stars` 时 `stars` 必须与之一致，没有就省略或写 null，不编造。cleaned 里有 `license` 时必须一致，没有就省略这个字段。
 
 项目候选变了，重写受影响的项目卡片。卡片变了就重写本周总结，再重算关键词。文章选文的变化不自动改写项目卡。
