@@ -19,6 +19,19 @@ ISSUE = "2026-11-27"
 ORIGIN = "https://viruspc.github.io"
 LATEST = f"{ORIGIN}/edges-brain-viruspc/ai-news/latest.json"
 PAGE = f"{ORIGIN}/edges-brain-viruspc/ai-news/{ISSUE}/"
+CARD_LABELS = ("什么问题", "如何解决", "效果怎样", "洞察与启发", "相关工作")
+
+
+def issue_page(*, degraded: bool = False) -> str:
+    sections = "".join(f'<div class="note-card-k">{name}</div><p>正文</p>' for name in CARD_LABELS)
+    card = f'<article class="note-card article-card"><h4>一张</h4>{sections}</article>'
+    projects = "".join(card for _ in range(5))
+    residue = "[LLM Arena Top 15，2026-11-27]" if degraded else ""
+    return (
+        '<div data-model-board=""><select aria-label="切换模型榜单"></select></div>'
+        f"{residue}"
+        f"<h2>三、项目开源</h2>{projects}<h2>四、精选文章</h2>{card}<h2>五、精选推文</h2>"
+    )
 
 
 def document(issue: str = ISSUE, url: str = PAGE) -> dict:
@@ -142,7 +155,7 @@ class LiveCheckTest(unittest.TestCase):
             None,
             json.dumps({"id": ISSUE, "url": host + page}),
         )
-        server.routes[page] = (200, None, "ok")  # type: ignore[attr-defined]
+        server.routes[page] = (200, None, issue_page())  # type: ignore[attr-defined]
         result = subprocess.run(
             [
                 sys.executable,
@@ -180,6 +193,19 @@ class LiveCheckTest(unittest.TestCase):
         errors = run(ISSUE, host + "/ai-news/latest.json", 5)
         self.assertTrue(errors)
         self.assertEqual(server.hits, 1)  # type: ignore[attr-defined]
+
+    def test_run_rejects_bracket_chart_text(self) -> None:
+        page = f"/ai-news/{ISSUE}/"
+        server = self.serve({})
+        host = f"http://127.0.0.1:{server.server_port}"
+        server.routes["/ai-news/latest.json"] = (  # type: ignore[attr-defined]
+            200,
+            None,
+            json.dumps({"id": ISSUE, "url": host + page}),
+        )
+        server.routes[page] = (200, None, issue_page(degraded=True))  # type: ignore[attr-defined]
+        errors = run(ISSUE, host + "/ai-news/latest.json", 5)
+        self.assertTrue(any("方括号" in item for item in errors))
 
 
 if __name__ == "__main__":

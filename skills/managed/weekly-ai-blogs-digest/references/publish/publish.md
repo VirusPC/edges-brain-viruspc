@@ -32,4 +32,4 @@ python3 scripts/publish/verify_latest.py \
   --latest https://viruspc.github.io/edges-brain-viruspc/ai-news/latest.json
 ```
 
-退出码 0 才算这一期发布完成。脚本只读已经部署的站点，不用数据仓里的 JSON 代替。
+退出码 0 才算这一期发布完成。脚本只读已经部署的站点，不用数据仓里的 JSON 代替。同一条命令还核对页面：有可切换的模型榜单，没有方括号形式的 Top 15 残留，项目卡和文章卡都有导语和五段。

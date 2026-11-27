@@ -7,13 +7,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from lib.issue import collect_items, print_result  # noqa: E402
+from lib.issue import SUMMARY_RULES_SINCE, collect_items, print_result, summary_version, version_reached  # noqa: E402
+from summarize.cards import card_problems  # noqa: E402
 
 ARTICLE_ID = r"https?://\S+"
 
 
 def validate(issue: Path) -> tuple[list[str], dict]:
-    return collect_items(
+    errors, items = collect_items(
         issue,
         "summary",
         "articles",
@@ -22,6 +23,10 @@ def validate(issue: Path) -> tuple[list[str], dict]:
         id_pattern=ARTICLE_ID,
         source_id=True,
     )
+    if version_reached(summary_version(issue), SUMMARY_RULES_SINCE):
+        for item_id, item in items.items():
+            errors.extend(card_problems(item.get("text"), f"summary/articles {item_id}"))
+    return errors, items
 
 
 def main(argv: list[str]) -> int:

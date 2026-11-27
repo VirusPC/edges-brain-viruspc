@@ -76,6 +76,8 @@ export function coverageForIssueDate(issueDate) {
  * @param {string} heading
  */
 export function classifyChart(url, alt, heading) {
+  const marker = /^board-chart:([a-z0-9-]+)/.exec(String(url || ''));
+  if (marker && Object.hasOwn(LABELS, marker[1])) return marker[1];
   const hay = `${url} ${alt}`.toLowerCase();
   if (hay.includes('openrouter-usage') || hay.includes('本周用量')) return 'openrouter-usage';
   if (hay.includes('openrouter-programming') || hay.includes('编程用量')) return 'openrouter-programming';

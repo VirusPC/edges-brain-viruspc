@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- 按期次记录的 skill 版本启用 0.0.11 项目榜单和卡片段落校验，保留旧期次原有校验规则。
+
+## [0.0.11] - 2026-11-27
+
+### Changed
+
+- 开源项目只取本周 GitHub Trending 每周总榜的前 5，顺序跟榜单，不跳过上周已经入选的。卡片和精选文章一样，导语加五段都要写，导语不重复如何解决。星标和许可证写在标题链接后面。
+- 精选文章的五段不能省略。
+- 整页校验按榜单顺序比较项目卡片。发布收尾同时核对线上页面有可切换榜单、没有方括号 Top 15 残留、项目卡和文章卡五段齐全。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.11` 先不打，留给维护者。
+
 ## [0.0.10] - 2026-11-25
 
 ### Changed

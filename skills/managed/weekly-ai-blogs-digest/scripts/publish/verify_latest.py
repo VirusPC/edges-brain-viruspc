@@ -49,6 +49,7 @@ def evaluate(
     latest_url: str,
     page_status: int | None,
     final_url: str | None,
+    page_html: str | None = None,
 ) -> list[str]:
     if not ISSUE_ID.fullmatch(issue_id or ""):
         return [f"期号不是 YYYY-MM-DD: {issue_id}"]
@@ -68,6 +69,8 @@ def evaluate(
         return errors
     if not final_url or not points_at_issue(final_url, issue_id) or not same_origin(final_url, latest_url):
         errors.append(f"该期页面最终地址不是这一期: {final_url!r}")
+    if page_html is not None:
+        errors.extend(page_problems(page_html))
     return errors
 
 
@@ -111,16 +114,52 @@ def run(issue_id: str, latest_url: str, timeout: float) -> list[str]:
     final_page = None
     if isinstance(url, str) and points_at_issue(url, issue_id) and same_origin(url, latest_url):
         try:
-            page_status, final_page, _body = fetch_once(url, timeout)
+            page_status, final_page, page_body = fetch_once(url, timeout)
         except Exception as exc:  # noqa: BLE001
             return [f"读不到该期页面: {exc}"]
+        page_html = page_body.decode("utf-8", errors="replace") if page_status == 200 else None
+    else:
+        page_html = None
     return evaluate(
         document,
         issue_id,
         latest_url=latest_url,
         page_status=page_status,
         final_url=final_page,
+        page_html=page_html,
     )
+
+
+def page_problems(html: str) -> list[str]:
+    errors: list[str] = []
+    if "data-model-board" not in html or "切换模型榜单" not in html:
+        errors.append("页面没有可切换的模型榜单")
+    if re.search(r"\[[^\]]{0,160}Top 15，", html):
+        errors.append("页面把榜单退化成了方括号文字")
+    labels = ("什么问题", "如何解决", "效果怎样", "洞察与启发", "相关工作")
+    for title, expect in (("三、项目开源", 5), ("四、精选文章", None)):
+        block = _chapter(html, title)
+        if not block:
+            errors.append(f"页面没有{title}")
+            continue
+        cards = re.findall(r"<article\b[^>]*\bnote-card\b[^>]*>[\s\S]*?</article>", block)
+        if expect is not None and len(cards) != expect:
+            errors.append(f"{title}应有 {expect} 张卡片，实际 {len(cards)} 张")
+        for index, card in enumerate(cards, 1):
+            found = re.findall(r'class="note-card-k"[^>]*>\s*([^<]+)', card)
+            for name in labels:
+                if name not in [item.strip() for item in found]:
+                    errors.append(f"{title}第 {index} 张缺少「{name}」")
+    return errors
+
+
+def _chapter(html: str, title: str) -> str:
+    match = re.search(rf"<h2\b[^>]*>\s*{re.escape(title)}\s*</h2>", html)
+    if not match:
+        return ""
+    rest = html[match.end():]
+    nxt = re.search(r"<h2\b", rest)
+    return rest if not nxt else rest[: nxt.start()]
 
 
 def main(argv: list[str] | None = None) -> int:

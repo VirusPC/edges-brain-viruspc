@@ -30,7 +30,7 @@ description: >-
 
 鸡毛小事不写，比如 PR 合并时间刚好跨过周边界。对事不对人，不编造，公开仓库内容必须脱敏。篇幅以足够支撑决策为准。
 
-敏感内容如有，在私密脑 `VirusPC/edges-brain-viruspc-private` 另开一个到 main 的 PR。公开仓只写「有 N 条敏感内容已在 edges-brain-viruspc-private 开 PR」，并附该 PR 链接，不写私人正文。拿不到私密脑时，公开清单写明未落成及原因，私人正文仍不写入公开仓。两个仓都不自动合并。Commit 带一行 `Co-authored-by: 周复盘 <grok-bot@users.noreply.github.com>`。
+公开周复盘一律不写面试相关内容；若有，只进私密仓，或完全不出现在公开正文。敏感内容如有，在私密脑 `VirusPC/edges-brain-viruspc-private` 另开一个到 main 的 PR。公开仓只写「有 N 条敏感内容已在 edges-brain-viruspc-private 开 PR」，并附该 PR 链接，不写私人正文。拿不到私密脑时，公开清单写明未落成及原因，私人正文仍不写入公开仓。两个仓都不自动合并。Commit 带一行 `Co-authored-by: 周复盘 <grok-bot@users.noreply.github.com>`。
 
 ## 对话层
 
