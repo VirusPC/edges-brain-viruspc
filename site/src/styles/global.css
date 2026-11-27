@@ -1598,6 +1598,9 @@ div.keyword-cloud-art {
 .model-chart { width: 100%; height: 0; overflow: hidden; }
 .model-chart.is-ready { height: 560px; overflow: visible; }
 
+.model-panel p:empty { display: none; margin: 0; }
+
+.model-panel img[src^="board-chart:"],
 .model-panel:has(.model-chart.is-ready) img {
   position: absolute !important;
   width: 1px !important;
