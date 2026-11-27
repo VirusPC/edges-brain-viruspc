@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- 按期次记录的 skill 版本启用 0.0.11 项目榜单和卡片段落校验，保留旧期次原有校验规则。
+
 ## [0.0.11] - 2026-11-27
 
 ### Changed
