@@ -96,6 +96,17 @@
   scroll-margin-top: calc(var(--ai-news-stack-h, var(--ai-news-keyword-bar-h, 0px)) + 0.35rem);
 }
 
+/* Overview jumps land on the card title. Outside the featured section only the
+   keyword plaque and the chapter title are pinned, so leave room for those two. */
+.prose:has(.ai-news-keyword-bar) [id^="entry-"] {
+  scroll-margin-top: calc(var(--ai-news-article-top, var(--ai-news-heading-top, var(--ai-news-keyword-bar-h, 0px))) + 0.35rem);
+}
+
+/* Inside the featured section the article plaque is pinned too. */
+.prose:has(.ai-news-keyword-bar) .ai-news-selected [id^="entry-"] {
+  scroll-margin-top: calc(var(--ai-news-stack-h, var(--ai-news-keyword-bar-h, 0px)) + 0.35rem);
+}
+
 .ai-news-filter-row {
   position: relative;
   z-index: 1;
