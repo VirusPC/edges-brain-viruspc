@@ -19,7 +19,7 @@ from summarize.merge.validate import validate as validate_merge  # noqa: E402
 from summarize.merge.write_index import skill_version  # noqa: E402
 from summarize.models.validate import validate as validate_models  # noqa: E402
 from summarize.overview.validate import validate as validate_overview  # noqa: E402
-from summarize.projects.validate import validate as validate_projects  # noqa: E402
+from summarize.projects.validate import trending_top, validate as validate_projects  # noqa: E402
 
 CHAPTERS = ["本周概览", "模型进展", "项目开源", "精选文章", "精选推文", "精选播客"]
 GROUP_ORDER = ["国内模型厂", "国外模型厂", "国内非模型厂", "国外非模型厂"]
@@ -140,9 +140,10 @@ def _index(
             errors.append("模型进展的 boards 有重复")
         if set(model_chapter["cards"]) != models:
             errors.append("模型进展的卡片 ID 和 summary/models 对不上")
-    project_cards = set(by["项目开源"].get("cards") or [])
-    if project_cards != projects:
-        errors.append("项目开源的卡片 ID 和 summary/projects 对不上")
+    project_cards = list(by["项目开源"].get("cards") or [])
+    expected_projects = trending_top(issue)
+    if project_cards != expected_projects:
+        errors.append("项目开源应按本周 GitHub Trending 前 5 的榜单顺序排列")
     groups = by["精选文章"].get("groups") or []
     group_titles = [group.get("title") for group in groups]
     if group_titles != [title for title in GROUP_ORDER if title in group_titles]:
