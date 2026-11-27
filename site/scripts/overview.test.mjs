@@ -4,7 +4,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { summaryLine } from '../src/lib/ai-news.mjs';
 import { entryAnchor } from '../src/lib/entry-anchor.mjs';
-import { linkOverviewText, overviewListHtml } from '../src/lib/overview.mjs';
+import { assertOverviewTags, linkOverviewText, overviewListHtml } from '../src/lib/overview.mjs';
 import { seedForCard } from '../src/lib/rough-rounded-rect.mjs';
 
 test('entry anchors are stable and do not keep spaces from the id', () => {
@@ -59,7 +59,37 @@ test('overview themes are cards in the existing frame, with the sentence left in
   assert.match(html, /<path d="M15 18h-5"><\/path>/);
   assert.match(html, new RegExp(`href="#${entryAnchor('astra')}">GPT-6\\.2 Astra</a>`));
   assert.match(html, /没有种类时只留句子。/);
-  assert.doesNotMatch(html, /<ol|本周主线|编号/);
+  assert.doesNotMatch(html, /<ol|本周主线|编号|overview-tag|data-keyword/);
+  const tagged = overviewListHtml({
+    themes: [
+      { kind: 'model', tag: '进入工作流', text: '型号收在方向里。GPT-6.2 Astra 在正文。', refs: [{ id: 'astra', label: 'GPT-6.2 Astra' }] },
+      { kind: 'other', tag: '常驻 Agent', text: '常驻 Agent 大部分时间在睡。', refs: [{ id: 'post', label: '常驻 Agent' }] },
+      { kind: 'other', tag: '验证评测', text: '第三条。', refs: [] },
+    ],
+  });
+  assert.equal((tagged.match(/class="overview-tag"/g) || []).length, 3);
+  assert.match(tagged, /data-keyword="进入工作流"/);
+  assert.match(tagged, /class="weekly-overview-body"/);
+  assert.doesNotMatch(tagged, /data-keyword="GPT-6\.2 Astra"/);
+  assert.throws(
+    () => assertOverviewTags({
+      skill: { version: '0.0.9' },
+      themes: [
+        { kind: 'model', text: '有方向。' },
+        { kind: 'other', tag: '常驻 Agent', text: '第二条。' },
+        { kind: 'other', tag: '验证评测', text: '第三条。' },
+      ],
+    }, '2026-11-20'),
+    /0\.0\.9 主线缺少 tag：2026-11-20 第 1 条/,
+  );
+  assert.doesNotThrow(() => assertOverviewTags({
+    skill: { version: '0.0.8' },
+    themes: [
+      { kind: 'model', text: '没有 tag 的旧稿。' },
+      { kind: 'other', text: '第二条。' },
+      { kind: 'other', text: '第三条。' },
+    ],
+  }, '2026-10-23'));
   const unmarked = html.slice(html.lastIndexOf('<article'));
   assert.doesNotMatch(unmarked, /info-card-icon|info-card-label/);
 });

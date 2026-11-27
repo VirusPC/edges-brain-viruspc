@@ -76,6 +76,8 @@ export function coverageForIssueDate(issueDate) {
  * @param {string} heading
  */
 export function classifyChart(url, alt, heading) {
+  const marker = /^board-chart:([a-z0-9-]+)/.exec(String(url || ''));
+  if (marker && Object.hasOwn(LABELS, marker[1])) return marker[1];
   const hay = `${url} ${alt}`.toLowerCase();
   if (hay.includes('openrouter-usage') || hay.includes('本周用量')) return 'openrouter-usage';
   if (hay.includes('openrouter-programming') || hay.includes('编程用量')) return 'openrouter-programming';
@@ -99,6 +101,35 @@ export function chartLabel(kind) {
  */
 export function chartAnchor(kind) {
   return ANCHORS[kind] || kind;
+}
+
+const BOARD_FILES = {
+  aa: 'aa.json',
+  'llm-arena': 'llm-arena.json',
+  'openrouter-usage': 'openrouter-usage.json',
+  'openrouter-programming': 'openrouter-programming.json',
+  'openrouter-apps': 'openrouter-apps.json',
+};
+
+/**
+ * Content ids of one leaderboard. Keyword targets point at these rows.
+ * @param {string | null} dataRoot
+ * @param {string} issueDate
+ * @param {string} kind
+ * @returns {string[]}
+ */
+export function boardEntryIds(dataRoot, issueDate, kind) {
+  const file = BOARD_FILES[kind];
+  if (!dataRoot || !issueDate || !file) return [];
+  const full = path.join(dataRoot, 'issues', issueDate, 'summary', 'models', 'boards', file);
+  if (!fs.existsSync(full)) return [];
+  try {
+    const data = JSON.parse(fs.readFileSync(full, 'utf8'));
+    if (!Array.isArray(data?.items)) return [];
+    return data.items.map((item) => item?.id).filter((id) => typeof id === 'string' && id);
+  } catch {
+    return [];
+  }
 }
 
 /**

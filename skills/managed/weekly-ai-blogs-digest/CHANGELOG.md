@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- 按期次记录的 skill 版本启用 0.0.11 项目榜单和卡片段落校验，保留旧期次原有校验规则。
+
+## [0.0.11] - 2026-11-27
+
+### Changed
+
+- 开源项目只取本周 GitHub Trending 每周总榜的前 5，顺序跟榜单，不跳过上周已经入选的。卡片和精选文章一样，导语加五段都要写，导语不重复如何解决。星标和许可证写在标题链接后面。
+- 精选文章的五段不能省略。
+- 整页校验按榜单顺序比较项目卡片。发布收尾同时核对线上页面有可切换榜单、没有方括号 Top 15 残留、项目卡和文章卡五段齐全。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.11` 先不打，留给维护者。
+
+## [0.0.10] - 2026-11-25
+
+### Changed
+
+- 整页校验之后增加发布收尾。本期内容 PR 和相关数据仓 PR 在 CI 绿后由 routine squash 合并，数据仓在前。随后若 `.github/workflows/pages-site.yml` 没有在数据进入 main 之后被触发，就 workflow_dispatch 它。等部署成功，再核验线上 `latest.json` 的 id 和 url 指向这一期，且该期页面返回 200。任一步失败就停下报告，不换方法重试。
+- 核验由 `scripts/publish/verify_latest.py` 执行。不改站点，不改数据契约。生成时刻仍是周五 09:00（Asia/Shanghai）。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.10` 先不打，留给维护者。
+
+## [0.0.9] - 2026-11-24
+
+### Changed
+
+- 总结阶段的顺序改为汇合、本周总结、关键词、整页校验。先定主线并为每条选一枚 `tag`，再从三路卡片抽词，把这些 tag 加回 `keywords.json` 并提到权重下限 5。词云仍只读合并后的这份文件。
+- 有模型时，模型主线写能力方向，tag 不得是型号名。其他主线的 tag 是主题，不得是单篇文章或单个项目、产品名。正文为「本周无重要模型发布」且 refs 为空时，tag 固定为「无重要发布」，不进入词云。
+- `theme: true` 仍是抽词阶段的概念高亮。主线 tag 不因此全部标成 true，也不替换已经抽出的型号和产品名。
+- tag 规则只作用于记录版本 >= 0.0.9 的 overview。仍锁在 0.0.8、没有 tag 的历史 overview 不因此失败。本次不改站点。
+- 合进 main 之后的 annotated tag `skill/weekly-ai-blogs-digest@0.0.9` 先不打，留给维护者。
+
 ## [0.0.8] - 2026-11-23
 
 ### Added

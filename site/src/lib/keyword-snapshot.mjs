@@ -13,6 +13,7 @@ export function wordsFromKeywords(data) {
     word: item?.name,
     weight: item?.weight,
     theme: item?.theme === true,
+    targets: item?.targets,
   })));
 }
 
@@ -27,6 +28,7 @@ export function wordsFromDocument(data) {
       word,
       weight: keywordWeight({ ...item, word }),
       theme: item.theme === true,
+      targets: targetIds(item?.targets),
     });
   }
   return words;
@@ -45,6 +47,15 @@ export function wordsFromComment(markdown) {
   } catch {
     return [];
   }
+}
+
+/**
+ * @param {unknown} value
+ * @returns {string[]}
+ */
+function targetIds(value) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((id) => typeof id === 'string' && id);
 }
 
 function hasTheme(words) {

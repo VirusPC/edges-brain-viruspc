@@ -3,6 +3,8 @@
 }
 
 .ai-news-filter {
+  --plaque-gap: 0.45rem;
+  --plaque-side: 8px;
   --wood-top: #ecd9b8;
   --wood-bot: #e6cfa8;
   --wood-edge: #8a5a34;
@@ -23,9 +25,75 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin: 6px 8px 1.15rem;
-  padding: 14px 14px 12px;
+  margin: 2px var(--plaque-side) var(--plaque-gap);
+  padding: 8px 12px 10px;
   background: transparent;
+}
+
+.ai-news-keyword-bar,
+.ai-news-article-bar {
+  background: var(--paper);
+  box-shadow:
+    calc(-1 * var(--plaque-side)) 0 0 var(--paper),
+    var(--plaque-side) 0 0 var(--paper);
+}
+
+.ai-news-keyword-bar {
+  z-index: 5;
+}
+
+.ai-news-keyword-bar .ai-news-filter-row {
+  flex-wrap: nowrap;
+  align-items: center;
+  min-height: 44px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.ai-news-keyword-bar .ai-news-filter-row::-webkit-scrollbar {
+  display: none;
+}
+
+.ai-news-article-bar {
+  top: var(--ai-news-article-top, var(--ai-news-filter-top, 0px));
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-bottom: calc(10px + var(--plaque-gap));
+}
+
+/* The tilted wood stays inside this box. The old margin under the plaque is
+   now padding, so the page color is part of the sticky border and text meets
+   that edge. A cover drawn from scroll position was covering the next line. */
+.ai-news-article-bar .ai-news-filter-board {
+  bottom: calc(7px + var(--plaque-gap));
+}
+
+.ai-news-article-bar + .ai-news-coverage {
+  margin-top: 0;
+}
+
+.ai-news-filter.is-static {
+  position: static;
+  top: auto;
+}
+
+.prose:has(.ai-news-keyword-bar) > h2:not(:first-of-type) {
+  position: sticky;
+  top: var(--ai-news-heading-top, var(--ai-news-keyword-bar-h, 0px));
+  z-index: 4;
+  margin-top: 0.7rem;
+  margin-bottom: 0;
+  padding-bottom: 0.15rem;
+  line-height: 1.2;
+  background: var(--paper);
+  scroll-margin-top: var(--ai-news-keyword-bar-h, 0px);
+}
+
+.prose:has(.ai-news-keyword-bar) h3 {
+  position: static;
+  scroll-margin-top: calc(var(--ai-news-stack-h, var(--ai-news-keyword-bar-h, 0px)) + 0.35rem);
 }
 
 .ai-news-filter-row {
@@ -34,7 +102,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 6px;
+  gap: 2px 6px;
 }
 
 .ai-news-filter-label {
@@ -50,7 +118,7 @@
 
 .ai-news-filter-board {
   position: absolute;
-  inset: 0;
+  inset: 4px 4px 7px;
   z-index: 0;
   pointer-events: none;
   transform: rotate(-0.5deg);
@@ -104,8 +172,8 @@
   z-index: 1;
   display: block;
   width: 100%;
-  height: 6px;
-  margin: 2px 0;
+  height: 5px;
+  margin: 0;
   overflow: visible;
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
@@ -127,18 +195,37 @@
   stroke-width: 1px;
 }
 
+/* Both axes stay clip. overflow-x: auto would compute a paired clip to hidden
+   and turn this box into the sticky scrollport. Wide tables scroll inside
+   .table-wrap; code blocks scroll inside pre. */
+@media (max-width: 960px) {
+  .post.has-toc .prose:has(.ai-news-keyword-bar) {
+    overflow-x: clip;
+    overflow-y: clip;
+  }
+}
+
+.prose:has(.ai-news-keyword-bar) .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 @media (max-width: 560px) {
   .post.has-toc .prose:has(.ai-news-selected) {
     overflow-x: clip;
+    overflow-y: clip;
   }
 
   .ai-news-filter-row {
     flex-wrap: nowrap;
+    align-items: center;
+    min-height: 44px;
     overflow-x: auto;
+    overflow-y: hidden;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     scroll-padding-inline: 4px;
-    padding-bottom: 2px;
   }
 
   .ai-news-filter-row::-webkit-scrollbar {
@@ -155,8 +242,15 @@
   }
 
   .ai-news-filter {
-    margin-inline: 4px;
-    padding: 12px 10px 10px;
+    --plaque-side: 4px;
+    margin: 2px var(--plaque-side) var(--plaque-gap);
+    padding: 8px 10px 10px;
+  }
+
+  .ai-news-article-bar {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-bottom: calc(10px + var(--plaque-gap));
   }
 
   .ai-news-filter button:focus-visible {
@@ -169,6 +263,16 @@
 
 .ai-news-filter button[hidden] {
   display: none !important;
+}
+
+.ai-news-filter button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
 }
 
 .ai-news-filter button {
@@ -216,7 +320,8 @@
 
 .ai-news-filter-all,
 .ai-news-filter-co,
-.ai-news-filter-src {
+.ai-news-filter-src,
+.ai-news-filter-word {
   border: 0;
   border-radius: 999px;
   background: var(--wood-chip);
@@ -234,13 +339,15 @@
 }
 
 .ai-news-filter-co,
-.ai-news-filter-src {
+.ai-news-filter-src,
+.ai-news-filter-word {
   padding: 0.12em 0.5em 0.14em;
 }
 
 .ai-news-filter .ai-news-filter-all[aria-pressed='true'],
 .ai-news-filter .ai-news-filter-co[aria-pressed='true'],
-.ai-news-filter .ai-news-filter-src[aria-pressed='true'] {
+.ai-news-filter .ai-news-filter-src[aria-pressed='true'],
+.ai-news-filter .ai-news-filter-word[aria-pressed='true'] {
   color: var(--wood-on-ink);
   box-shadow: inset 0 0 0 2.5px var(--wood-on-line);
   font-weight: 600;

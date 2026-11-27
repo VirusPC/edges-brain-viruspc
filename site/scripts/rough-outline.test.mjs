@@ -104,7 +104,7 @@ test('cards keep a plain border fallback and the rough stroke does not take clic
   const plugin = fs.readFileSync(new URL('../src/plugins/rehype-keyword-cloud.mjs', import.meta.url), 'utf8');
   assert.match(plugin, /<rect><\/rect>/);
   assert.doesNotMatch(plugin, /feTurbulence|feDisplacementMap|id="rough"/);
-  const wood = fs.readFileSync(new URL('../src/lib/ai-news-category-filter.mjs', import.meta.url), 'utf8');
+  const wood = fs.readFileSync(new URL('../src/lib/ai-news-filter-bar.mjs', import.meta.url), 'utf8');
   assert.match(wood, /id: 'wood-rough'/);
   assert.match(wood, /baseFrequency: '0\.02'/);
 });

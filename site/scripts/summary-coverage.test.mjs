@@ -61,13 +61,33 @@ test('an issue without body slices is composed from chapters and card text', () 
   }));
   const markdown = composeIssueMarkdown(root);
   assert.match(markdown, /^覆盖窗口：2026-11-06 00:00:00 至 2026-11-12 23:59:59（UTC；生成日 2026-11-13，不含当天）。/);
-  assert.match(markdown, /## 一、本周概览\n\n<div class="weekly-overview">[\s\S]*<article class="weekly-overview-card">[\s\S]*Example<\/a> 写进这一期。[\s\S]*<\/div>\n\n## 二、模型进展\n\n### Artificial Analysis\n\n!\[Artificial Analysis Intelligence Index Top 15，2026-11-13\]\(aa-intelligence-top15-2026-11-13-marked\.png\)/);
-  assert.match(markdown, new RegExp(`<!--entry-anchor:${entryAnchor(article)}-->`));
+  assert.match(markdown, /## 一、本周概览\n\n<div class="weekly-overview">[\s\S]*<article class="weekly-overview-card">[\s\S]*Example<\/a> 写进这一期。[\s\S]*<\/div>\n\n## 二、模型进展\n\n### Artificial Analysis\n\n!\[Artificial Analysis Intelligence Index Top 15，2026-11-13\]\(board-chart:aa:2026-11-13\)/);
+  assert.doesNotMatch(markdown, /marked\.png/);
+  assert.match(markdown, new RegExp(`<!--entry-anchor:${entryAnchor(article)} entry-id:`));
+  fs.writeFileSync(path.join(root, 'summary', 'overview.json'), JSON.stringify({
+    skill: { name: 'weekly-ai-blogs-digest', version: '0.0.9' },
+    themes: [
+      { kind: 'model', text: 'Example 写进这一期。', refs: [{ id: 'Example', label: 'Example' }] },
+      { kind: 'other', text: '一篇说明了变化。', refs: [{ id: article, label: '一篇' }] },
+      { kind: 'other', tag: '验证评测', text: '另一条主线也在。', refs: [{ id: article, label: '另一条' }] },
+    ],
+  }));
+  assert.throws(() => composeIssueMarkdown(root), /0\.0\.9 主线缺少 tag/);
+  fs.writeFileSync(path.join(root, 'summary', 'overview.json'), JSON.stringify({
+    skill: { name: 'weekly-ai-blogs-digest', version: '0.0.9' },
+    themes: [
+      { kind: 'model', tag: '进入工作流', text: 'Example 写进这一期。', refs: [{ id: 'Example', label: 'Example' }] },
+      { kind: 'other', tag: '常驻 Agent', text: '一篇说明了变化。', refs: [{ id: article, label: '一篇' }] },
+      { kind: 'other', tag: '验证评测', text: '另一条主线也在。', refs: [{ id: article, label: '另一条' }] },
+    ],
+  }));
+  assert.match(composeIssueMarkdown(root), /data-keyword="进入工作流"/);
   fs.rmSync(path.join(root, 'summary', 'overview.json'));
   assert.throws(() => composeIssueMarkdown(root), /缺少 summary\/overview.json/);
   assert.match(markdown, /这张榜最前面是新模型。/);
   assert.match(markdown, /红圈：Example。/);
   assert.match(markdown, /## 四、精选文章\n\n<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。[\s\S]*### 国外模型厂\n\n<!--entry-anchor:[^>]+-->\n\n#### \[一篇\]\(https:\/\/example.com\/post\)/);
+  assert.match(markdown, new RegExp(`<!--entry-anchor:${entryAnchor(article)} entry-id:${encodeURIComponent(article)}-->`));
   assert.match(markdown, /## 五、精选推文\n/);
   assert.match(markdown, /<aside class="info-card ai-news-coverage">[\s\S]*原文 2 篇，精选 1 篇。/);
 });

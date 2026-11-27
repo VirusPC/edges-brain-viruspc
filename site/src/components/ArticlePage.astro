@@ -74,6 +74,7 @@ for (const heading of headings) {
         ) : null
       }
       {badge ? <h1>{title}<span class="tag">{badge}</span></h1> : <h1>{title}</h1>}
+      <slot name="subscribe" />
     </header>
     <div class="prose">
       <slot />
@@ -134,6 +135,8 @@ for (const heading of headings) {
 
 <script>
   import { mountCategoryFilter } from '../lib/ai-news-category-filter.mjs';
+  import { mountKeywordFilter } from '../lib/ai-news-keyword-filter.mjs';
 
   mountCategoryFilter(document);
+  mountKeywordFilter(document);
 </script>

@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {
+  boardEntryIds,
   chartAnchor,
   chartLabel,
   classifyChart,
@@ -75,18 +76,24 @@ export function remarkModelCharts(options = {}) {
         const anchor = uniqueAnchor(chartAnchor(chart.kind), index, usedAnchors);
         const caption = chart.captions.map((node) => [plainText(node), chartMeta(node)].filter(Boolean).join('\n')).join('\n');
         const spec = dataRoot
-          ? loadSeries(dataRoot, issueDate, chart.kind, caption, { imageUrl: chart.image.url || '' })
+          ? loadSeries(dataRoot, issueDate, chart.kind, caption, { imageUrl: chartImageUrl(chart.image.url || '') })
           : null;
+        const entryIds = boardEntryIds(dataRoot, issueDate, chart.kind);
         stamp(chart.host, {
           'data-chart-index': String(index),
           'data-chart-role': 'media',
           'data-chart-label': chartLabel(chart.kind),
           'data-chart-anchor': anchor,
           'data-chart-kind': chart.kind,
+          ...(entryIds.length ? { dataEntryIds: JSON.stringify(entryIds) } : {}),
         });
         if (spec) {
-          const props = hProps(chart.image);
+          const marker = isBoardChart(chart.image.url);
+          const props = hProps(marker ? chart.host : chart.image);
           props['data-chart-spec'] = JSON.stringify(spec);
+          if (marker && chart.host !== chart.image && Array.isArray(chart.host.children)) {
+            chart.host.children = chart.host.children.filter((child) => child !== chart.image);
+          }
         }
         for (const captionNode of chart.captions) {
           if (!canStamp(captionNode)) continue;
@@ -201,9 +208,19 @@ function chartsIn(nodes, heading) {
 }
 
 /**
- * @param {any} node
- * @param {string} heading
+ * @param {string} url
  */
+function isBoardChart(url) {
+  return /^board-chart:/.test(String(url || ''));
+}
+
+function chartImageUrl(url) {
+  const marker = /^board-chart:([^:]+):(\d{4}-\d{2}-\d{2})$/.exec(String(url || ''));
+  if (!marker) return String(url || '');
+  if (marker[1] === 'llm-arena') return `llm-arena-top15-${marker[2]}-marked.png`;
+  return '';
+}
+
 function findChart(node, heading) {
   if (node?.type === 'image') {
     const kind = classifyChart(node.url || '', node.alt || '', heading);

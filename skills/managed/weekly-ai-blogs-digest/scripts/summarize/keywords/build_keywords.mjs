@@ -689,8 +689,112 @@ function parseArgs(argv) {
   return out;
 }
 
+/** 与 references/summarize/keywords.md 一致。权重 5 是 keywordWeight 的上限。 */
+export const THEME_TAG_WEIGHT = 5;
+
+/** 与 overview/validate.py 的 NO_MODEL 一致。refs 为空时这枚 tag 不进词云。 */
+export const NO_MODEL_TEXT = "本周无重要模型发布";
+
+export const TAG_RULES_SINCE = "0.0.9";
+
+/**
+ * 没有记录版本时按现行规则。有记录时，只有达到 minimum 才启用此后新增的规则。
+ * @param {string | null | undefined} recorded
+ * @param {string} minimum
+ */
+export function versionReached(recorded, minimum) {
+  const got = parseVersion(recorded);
+  const need = parseVersion(minimum);
+  if (!got || !need) return true;
+  for (let index = 0; index < 3; index += 1) {
+    if (got[index] !== need[index]) return got[index] > need[index];
+  }
+  return true;
+}
+
+/**
+ * @param {string | null | undefined} value
+ * @returns {number[] | null}
+ */
+function parseVersion(value) {
+  const match = String(value ?? "").trim().match(/^(\d+)\.(\d+)\.(\d+)$/);
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
+/**
+ * 抽词并标好 theme 之后调用。只提高权重、并入 targets，或追加新词。
+ * 不删除已有词，也不因为 tag 本身把 theme 写成 true。
+ * @param {{ name: string, weight: number, targets: string[], theme?: boolean }[]} keywords
+ * @param {{ text?: string, tag?: string, refs?: { id?: string }[] }[]} themes
+ */
+export function mergeOverviewTags(keywords, themes) {
+  const next = keywords.map((item) => ({
+    ...item,
+    targets: [...(item.targets || [])],
+  }));
+  for (const theme of themes || []) {
+    if (!theme || typeof theme.tag !== "string") continue;
+    const tag = theme.tag.trim();
+    if (!tag) continue;
+    const ids = [];
+    for (const ref of theme.refs || []) {
+      if (ref && typeof ref.id === "string" && ref.id && !ids.includes(ref.id)) ids.push(ref.id);
+    }
+    if (theme.text === NO_MODEL_TEXT && ids.length === 0) continue;
+    if (!ids.length) continue;
+    const existing = next.find((item) => item.name.trim().toLowerCase() === tag.toLowerCase());
+    if (existing) {
+      existing.weight = Math.max(Number(existing.weight) || 0, THEME_TAG_WEIGHT);
+      for (const id of ids) {
+        if (!existing.targets.includes(id)) existing.targets.push(id);
+      }
+    } else {
+      next.push({ name: tag, weight: THEME_TAG_WEIGHT, targets: ids });
+    }
+  }
+  next.sort(
+    (a, b) =>
+      Number(Boolean(b.theme)) - Number(Boolean(a.theme)) ||
+      b.weight - a.weight ||
+      a.name.localeCompare(b.name, "zh"),
+  );
+  return next;
+}
+
+/**
+ * @param {string} issueDir
+ */
+function readOverview(issueDir) {
+  const file = path.join(issueDir, "summary", "overview.json");
+  if (!existsSync(file)) return null;
+  let data;
+  try {
+    data = JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    throw new Error(`summary/overview.json 无法解析: ${error instanceof Error ? error.message : error}`);
+  }
+  if (!data || !Array.isArray(data.themes)) throw new Error("summary/overview.json 没有 themes");
+  return data;
+}
+
+/**
+ * @param {{ skill?: { version?: string }, themes?: { tag?: string }[] }} overview
+ */
+function assertThemeTags(overview) {
+  if (!versionReached(overview?.skill?.version, TAG_RULES_SINCE)) return;
+  const themes = Array.isArray(overview.themes) ? overview.themes : [];
+  for (let index = 0; index < themes.length; index += 1) {
+    const tag = themes[index]?.tag;
+    if (typeof tag !== "string" || !tag.trim()) {
+      throw new Error(`第 ${index + 1} 条主线缺少 tag`);
+    }
+  }
+}
+
 /**
  * 从 summary 卡片提炼词，不把整条标题当成一个词。
+ * 有 overview.json 时，在抽词和 theme 标记之后把主线 tag 并入。
  * @param {string} issuesRoot
  * @param {string} issue
  */
@@ -767,13 +871,14 @@ export function summaryKeywords(issuesRoot, issue) {
   const rest = words.filter((item) => item.kind !== "model" && !item.theme);
   const kept = [...theme, ...models, ...rest.slice(0, Math.max(0, 16 - models.length - theme.length))];
   kept.sort((a, b) => Number(b.theme) - Number(a.theme) || b.weight - a.weight || a.name.localeCompare(b.name, "zh"));
-  return {
-    keywords: kept.map((item) => {
-      const word = { name: item.name, weight: item.weight, targets: item.targets };
-      if (item.theme) word.theme = true;
-      return word;
-    }),
-  };
+  let keywords = kept.map((item) => {
+    const word = { name: item.name, weight: item.weight, targets: item.targets };
+    if (item.theme) word.theme = true;
+    return word;
+  });
+  const overview = readOverview(path.join(issuesRoot, issue));
+  if (overview) keywords = mergeOverviewTags(keywords, overview.themes);
+  return { keywords };
 }
 
 function readSummaryCorpus(issueDir) {
@@ -820,13 +925,20 @@ function stripTags(value) {
 }
 
 function main() {
-  const dir = process.argv[process.argv.indexOf("--issue-dir") + 1];
-  if (!dir || dir.startsWith("--")) fail("需要 --issue-dir issues/YYYY-MM-DD");
-  const issue = path.basename(dir);
-  const doc = summaryKeywords(path.dirname(dir), issue);
-  const out = path.join(dir, "summary", "keywords.json");
-  writeFileSync(out, `${JSON.stringify(doc, null, 2)}\n`);
-  console.log(`${doc.keywords.length} keywords -> ${out}`);
+  try {
+    const dir = process.argv[process.argv.indexOf("--issue-dir") + 1];
+    if (!dir || dir.startsWith("--")) fail("需要 --issue-dir issues/YYYY-MM-DD");
+    const overview = readOverview(dir);
+    if (!overview) fail("关键词要在本周总结之后写，缺少 summary/overview.json");
+    assertThemeTags(overview);
+    const issue = path.basename(dir);
+    const doc = summaryKeywords(path.dirname(dir), issue);
+    const out = path.join(dir, "summary", "keywords.json");
+    writeFileSync(out, `${JSON.stringify(doc, null, 2)}\n`);
+    console.log(`${doc.keywords.length} keywords -> ${out}`);
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
+  }
 }
 
 const entry = process.argv[1];

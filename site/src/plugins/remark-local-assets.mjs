@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { classifyChart } from '../lib/model-charts.mjs';
 
 /**
  * Resolve local markdown images (including URL-encoded paths and Obsidian
@@ -87,14 +88,31 @@ function splitWiki(value, dir, repoRoot) {
  */
 function normalizeImage(node, parent, index, dir, repoRoot) {
   if (typeof node.url !== 'string') return;
-  if (/^(https?:|data:|mailto:|#)/.test(node.url)) return;
+  if (/^(https?:|data:|mailto:|#|board-chart:)/.test(node.url)) return;
   const resolved = resolveLocal(node.url, dir, repoRoot);
   if (resolved) {
     node.url = resolved;
     return;
   }
+  const kept = chartMarker(node.url, node.alt || '');
+  if (kept) {
+    node.url = kept;
+    return;
+  }
   const alt = typeof node.alt === 'string' && node.alt.trim() ? `[${node.alt.trim()}]` : '';
   parent.children.splice(index, 1, { type: 'text', value: alt });
+}
+
+/**
+ * A missing leaderboard PNG stays a chart marker. It must not become `[alt]`.
+ * @param {string} url
+ * @param {string} alt
+ */
+function chartMarker(url, alt) {
+  const kind = classifyChart(url, alt, '');
+  if (!kind) return '';
+  const day = (String(url).match(/(\d{4}-\d{2}-\d{2})/) || String(alt).match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || '';
+  return day ? `board-chart:${kind}:${day}` : `board-chart:${kind}`;
 }
 
 /**

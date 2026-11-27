@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { entryAnchor } from './entry-anchor.mjs';
-import { overviewListHtml } from './overview.mjs';
+import { assertOverviewTags, overviewListHtml } from './overview.mjs';
 import { selectedArticlesRemarkHtml } from '../plugins/remark-coverage-window.mjs';
 
 /**
@@ -80,27 +80,27 @@ const CHAPTER_NUMBERS = {
 const BOARD_CHARTS = {
   'Artificial Analysis': {
     heading: 'Artificial Analysis',
-    file: 'aa-intelligence-top15',
+    kind: 'aa',
     alt: 'Artificial Analysis Intelligence Index Top 15',
   },
   'LLM Arena': {
     heading: 'LLM Arena',
-    file: 'llm-arena-top15',
+    kind: 'llm-arena',
     alt: 'LLM Arena Top 15',
   },
   'OpenRouter 本周用量': {
     heading: 'OpenRouter',
-    file: 'openrouter-usage-top15',
+    kind: 'openrouter-usage',
     alt: 'OpenRouter 本周用量 Top 15',
   },
   'OpenRouter 编程用量': {
     heading: 'OpenRouter',
-    file: 'openrouter-programming-top15',
+    kind: 'openrouter-programming',
     alt: 'OpenRouter 编程用量 Top 15',
   },
   'OpenRouter 应用用量': {
     heading: 'OpenRouter',
-    file: 'openrouter-apps-top15',
+    kind: 'openrouter-apps',
     alt: 'OpenRouter 应用用量 Top 15',
   },
 };
@@ -148,7 +148,8 @@ function pushCards(parts, cards, ids) {
   for (const id of ids || []) {
     const card = cards.get(id);
     if (!card || typeof card.text !== 'string') return false;
-    parts.push(`<!--entry-anchor:${entryAnchor(id)}-->\n\n${card.text.trimEnd()}\n\n`);
+    const anchor = entryAnchor(id);
+    parts.push(`<!--entry-anchor:${anchor} entry-id:${encodeURIComponent(id)}-->\n\n${card.text.trimEnd()}\n\n`);
   }
   return true;
 }
@@ -177,7 +178,7 @@ function chapterBoards(issueDate, chapter, cards) {
     const day = spec.heading === 'LLM Arena' && board.arena_publish_date
       ? board.arena_publish_date
       : issueDate;
-    parts.push(`![${spec.alt}，${day}](${spec.file}-${day}-marked.png)\n\n`);
+    parts.push(`![${spec.alt}，${day}](board-chart:${spec.kind}:${day})\n\n`);
     if (board.caption) parts.push(`${board.caption.trim()}\n\n`);
     const meta = [];
     if (board.arena_publish_date) meta.push(`榜单发布日 ${board.arena_publish_date}`);
@@ -214,6 +215,7 @@ function readOverview(issueDir) {
   if (!Array.isArray(data?.themes) || data.themes.length < 3) {
     throw new Error(`summary/overview.json 没有本周总结：${path.basename(issueDir)}`);
   }
+  assertOverviewTags(data, path.basename(issueDir));
   return overviewListHtml(data);
 }
 

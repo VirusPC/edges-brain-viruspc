@@ -14,6 +14,7 @@ import {
   seriesFromPayload,
 } from '../src/lib/model-charts.mjs';
 import { rehypeModelCharts } from '../src/plugins/rehype-model-charts.mjs';
+import { remarkLocalAssets } from '../src/plugins/remark-local-assets.mjs';
 import { remarkModelCharts } from '../src/plugins/remark-model-charts.mjs';
 
 const fixtureRoot = path.resolve(
@@ -49,12 +50,68 @@ test('coverage and chart kinds follow the weekly filenames', () => {
   assert.equal(classifyChart('openrouter-usage-top15.png', '本周用量', 'OpenRouter'), 'openrouter-usage');
   assert.equal(classifyChart('openrouter-programming-top15.png', '', ''), 'openrouter-programming');
   assert.equal(classifyChart('openrouter-apps-top15.png', '', ''), 'openrouter-apps');
+  assert.equal(classifyChart('board-chart:llm-arena:2026-11-18', '', ''), 'llm-arena');
+  assert.equal(classifyChart('board-chart:aa:2026-11-20', '', ''), 'aa');
+  assert.equal(classifyChart('board-chart:openrouter-usage:2026-11-13', '', ''), 'openrouter-usage');
   assert.equal(classifyChart('keywords-cloud.png', '关键词', ''), null);
   assert.deepEqual(highlightsFromCaption('本期 Top 15 没有窗口内新发布的模型，不圈。'), []);
   assert.deepEqual(highlightsFromCaption('榜单发布日 2026-08-12。图中无红圈。'), []);
   assert.deepEqual(highlightsFromCaption('红圈：Gemini 4 Hydrogen (High)。名次另写。'), [
     'Gemini 4 Hydrogen (High)',
   ]);
+});
+
+test('a missing leaderboard png stays a chart and does not become bracket text', async () => {
+  const previous = process.env.AI_NEWS_DATA_ROOT;
+  process.env.AI_NEWS_DATA_ROOT = fixtureRoot;
+  try {
+    const processor = await createMarkdownProcessor({
+      gfm: true,
+      smartypants: false,
+      syntaxHighlight: false,
+      remarkPlugins: [
+        [remarkLocalAssets, { repoRoot: '/tmp/unused' }],
+        [remarkModelCharts, { repoRoot: '/tmp/unused' }],
+      ],
+      rehypePlugins: [rehypeModelCharts],
+    });
+    const source = [
+      '![笔记插图](missing-note.png)',
+      '',
+      '## 二、模型进展',
+      '',
+      '### LLM Arena',
+      '',
+      '![LLM Arena Top 15，2026-11-11](llm-arena-top15-2026-11-11-marked.png)',
+      '',
+      '<!-- chart-meta',
+      '榜单发布日 2026-11-11',
+      '红圈：Gemini 4 Hydrogen (High)。',
+      '-->',
+      '',
+      '### OpenRouter',
+      '',
+      '![OpenRouter 本周用量 Top 15，2026-11-13](board-chart:openrouter-usage:2026-11-13)',
+      '',
+    ].join('\n');
+    const result = await processor.render(source, {
+      fileURL: new URL('file:///tmp/ai-news/2026-11-13-ai-news.md'),
+    });
+    const html = result.code;
+    assert.match(html, /\[笔记插图\]/);
+    assert.doesNotMatch(html, /\[[^\]]{0,160}Top 15，/);
+    assert.doesNotMatch(html, /marked\.png/);
+    assert.match(html, /data-model-board/);
+    assert.deepEqual(optionLabels(html), ['LLM Arena', 'OpenRouter 本周用量']);
+    const specs = chartSpecs(html);
+    assert.deepEqual(specs.map((spec) => spec.kind), ['llm-arena', 'openrouter-usage']);
+    assert.equal(specs[0].publishDate, '2026-11-11');
+    assert.equal(specs[0].items[1].highlight, true);
+    assert.doesNotMatch(html, /榜单发布日|chart-meta/);
+  } finally {
+    if (previous == null) delete process.env.AI_NEWS_DATA_ROOT;
+    else process.env.AI_NEWS_DATA_ROOT = previous;
+  }
 });
 
 test('snapshots become top-15 series, with release dates or the 红圈 line as the highlight', () => {

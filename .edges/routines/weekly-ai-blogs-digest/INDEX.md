@@ -1,10 +1,10 @@
 ---
 name: weekly-ai-blogs-digest
-description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-digest，周报与数据快照各开 PR、不合并。'
+description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-digest。CI 绿后 squash 合并本期内容 PR 与相关数据仓 PR，部署成功且线上 latest.json 指向新期才算结束。'
 ---
 # 日程
 
-这条 Grok Bot routine 何时跑、密钥留在哪、结果交到哪。流程只看 [SKILL.md](../../../skills/managed/weekly-ai-blogs-digest/SKILL.md)。这里不另写三阶段。这不是跨厂商共用格式。
+这条 Grok Bot routine 何时跑、密钥留在哪、结果交到哪。三阶段和发布步骤的细节只看 [SKILL.md](../../../skills/managed/weekly-ai-blogs-digest/SKILL.md)。这里写完成标准。这不是跨厂商共用格式。
 
 - cron: `0 9 * * 5`
 - timezone: Asia/Shanghai
@@ -28,10 +28,10 @@ description: '每周五 09:00 运行 AI 资讯周报，调用 weekly-ai-blogs-di
 
 ## 平台接入
 
-只记 `ai-coding` 这条定时任务怎么跑。窗口和三阶段以 Skill 为准。
+只记 `ai-coding` 这条定时任务怎么跑。窗口、三阶段和发布收尾以 Skill 为准。
 
 - 交付：回到这条定时任务所在的对话。
-- 结果：一个打开的数据 PR，写在 [VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data) 的 `issues/<生成日>/`。不合并。回复里给出链接，以及这份快照缺了什么。Skill 不写站点，也不开周报 markdown PR。
+- 结果：按 Skill 的[发布收尾](../../../skills/managed/weekly-ai-blogs-digest/references/publish/publish.md)做完，这一期才算发布完成。整页校验通过后，相关数据仓 PR 写在 [VirusPC/ai-news-data](https://github.com/VirusPC/ai-news-data) 的 `issues/<生成日>/`；这次运行若在本仓为这一期打开了内容 PR，一并纳入。两类都等 CI 绿，再由本 routine squash 合并，数据仓在前。合并后若 `.github/workflows/pages-site.yml` 没有在数据已进入 main 之后被触发，就 workflow_dispatch 它，等部署成功，再核验线上 https://viruspc.github.io/edges-brain-viruspc/ai-news/latest.json 的 id 和 url 指向这一期，且该期页面返回 200。任一步失败就停下并报告，不换方法重试。回复里给出 PR、部署和线上链接，以及这份快照缺了什么。三阶段不写站点，也不另开周报 markdown PR。
 - 生成来源：动手前仍把所选 ref 解析成 commit，用来读取本入口和 Skill。`summary/index.json` 的 `skill` 记 skill 名和版本，`routine` 记本入口的仓库、这次解析出的 commit 和路径 `.edges/routines/weekly-ai-blogs-digest/INDEX.md`。数据版本不写进 index，站点构建时对数据仓库执行 `git log -1 -- issues/<生成日>`。不要把周报稿自己的提交填进 routine。格式见 Skill 的总结阶段。
 
 ## 输入
@@ -66,4 +66,4 @@ box 把不含密钥的 JSON 写到：
 
 ## 流程
 
-准备、清洗、总结和订阅退路只写在 Skill。关键词不在这里重复。
+准备、清洗、总结和发布收尾只写在 Skill。关键词不在这里重复。发布收尾在整页校验通过之后。

@@ -24,6 +24,7 @@ import {
   CROP_PADDING,
   INK_TIERS,
   assignWeightTiers,
+  escapeXml,
   fontSize,
   keywordWeight,
   renderCloudSvg,
@@ -286,12 +287,11 @@ export function placeKeywords(words, font, seed = 1) {
 }
 
 /**
- * 站点构建用。测量字体是 Noto Sans CJK SC 粗体，中低档只在上色时改字重。
- * @param {{ word: string, weight: number }[]} words
+ * @param {{ word: string, weight?: number, theme?: boolean }[]} words
  * @param {{ fontFile: string, fontFamily: string, fontWeight: number }} font
- * @param {number} [seed]
+ * @param {number} seed
  */
-export function renderKeywordCloudSvg(words, font, seed = 1) {
+function packCloud(words, font, seed) {
   if (!GlobalFonts.has(font.fontFamily)) {
     const registered = GlobalFonts.registerFromPath(font.fontFile, font.fontFamily);
     if (!registered) throw new Error(`无法注册字体: ${font.fontFile}`);
@@ -305,7 +305,52 @@ export function renderKeywordCloudSvg(words, font, seed = 1) {
     if (packed) break;
   }
   if (!packed) throw new Error(`放不下: ${ranked[0]?.word || ""}`);
-  return renderPacked({ tiers: INK_TIERS }, font, packed).svg;
+  return packed;
+}
+
+/**
+ * 站点构建用。测量字体是 Noto Sans CJK SC 粗体，中低档只在上色时改字重。
+ * @param {{ word: string, weight: number }[]} words
+ * @param {{ fontFile: string, fontFamily: string, fontWeight: number }} font
+ * @param {number} [seed]
+ */
+export function renderKeywordCloudSvg(words, font, seed = 1) {
+  return renderPacked({ tiers: INK_TIERS }, font, packCloud(words, font, seed)).svg;
+}
+
+/**
+ * The same layout as the SVG, drawn as buttons so each word can be a filter chip.
+ * Positions are percentages of the laid-out box, and the font size is in cqw,
+ * so the cloud scales with the column. Padding and the transparent border are
+ * reserved on every word.
+ * @param {{ word: string, weight?: number, theme?: boolean }[]} words
+ * @param {{ fontFile: string, fontFamily: string, fontWeight: number }} font
+ * @param {number} [seed]
+ */
+export function renderKeywordCloudButtons(words, font, seed = 1) {
+  const packed = packCloud(words, font, seed);
+  const [min, max] = packed.bounds;
+  const width = Math.ceil(max.x - min.x) + CROP_PADDING * 2;
+  const height = Math.ceil(max.y - min.y) + CROP_PADDING * 2;
+  const originX = CROP_PADDING - min.x;
+  const originY = CROP_PADDING - min.y;
+  const tiered = assignWeightTiers(
+    packed.placed.map((word) => ({
+      word: word.text,
+      weight: word.datum?.weight ?? word.weight,
+      theme: word.datum?.theme === true || word.theme === true,
+    })),
+  );
+  const tierOf = new Map(tiered.map((word) => [word.word, word.tier]));
+  const buttons = packed.placed.map((word) => {
+    const tier = tierOf.get(word.text);
+    const left = ((word.x + originX) / width) * 100;
+    const top = ((word.y + originY) / height) * 100;
+    const size = (word.size / width) * 100;
+    const label = escapeXml(word.text);
+    return `<button type="button" class="kw-${tier}" data-keyword="${label}" aria-pressed="false" style="left:${left.toFixed(4)}%;top:${top.toFixed(4)}%;font-size:${size.toFixed(4)}cqw">${label}</button>`;
+  });
+  return `<div class="keyword-cloud-art" style="aspect-ratio:${width} / ${height}">${buttons.join("")}</div>`;
 }
 
 /**
