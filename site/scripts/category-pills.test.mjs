@@ -1,73 +1,101 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import { createMarkdownProcessor } from '@astrojs/markdown-remark';
-import { remarkCategoryPills } from '../src/plugins/remark-category-pills.mjs';
+import { parseArticleCard, splitNoteCards } from '../src/lib/note-card-model.mjs';
+import { composeIssueMarkdown } from '../src/lib/summary-issue.mjs';
+import { rehypeArticleCards } from '../src/plugins/rehype-article-cards.mjs';
+import { remarkEntryAnchor } from '../src/plugins/remark-entry-anchor.mjs';
 
-const source = [
-  '## 四、国内进展',
-  '',
-  '#### &lt;研发提效&gt;[阿里：对企业级 AI 研发提效的思考与实践](https://example.com/a)',
-  '',
-  '#### &lt;Data Agent&gt;[高德：从业务问题到可信数据](https://example.com/b)',
-  '',
-  '#### &lt;开源&gt; MiniMax 没有包进链接',
-  '',
-  '#### 整体排名',
-  '',
-  '#### [没有前缀的标题](https://example.com/c)',
-  '',
-  '#### 见 &lt;开源&gt; 这种不是开头',
-  '',
-  '#### &lt;架构&gt;&lt;DeepSeek&gt;&lt;MCP&gt;[带自由标签](https://example.com/d)',
-  '',
-  '#### &lt;OpenAI&gt;[只有公司标签](https://example.com/e)',
-  '',
-].join('\n');
+const SECTIONS = {
+  解决什么问题: '问题。',
+  如何解决: '做法。',
+  效果怎样: '结果。',
+  洞察与启发: '启发。',
+  相关工作: '相关。',
+};
 
-test('leading heading labels become a data attribute and leave the title text', async () => {
+function writeIssue() {
+  const root = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ai-news-fields-')), '2026-11-27');
+  fs.mkdirSync(path.join(root, 'summary', 'articles'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'summary', 'projects'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'summary', 'articles', 'post.json'), JSON.stringify({
+    id: 'https://example.com/a',
+    title: '阿里：对企业级 AI 研发提效的思考与实践',
+    link: 'https://example.com/a',
+    lede: '一句导语。',
+    category: '实践',
+    company: '淘宝',
+    sections: SECTIONS,
+  }));
+  fs.writeFileSync(path.join(root, 'summary', 'projects', 'repo.json'), JSON.stringify({
+    id: 'https://github.com/a/b',
+    title: 'a/b',
+    link: 'https://github.com/a/b',
+    lede: '项目导语。',
+    category: '开源',
+    company: '腾讯',
+    sections: SECTIONS,
+  }));
+  fs.writeFileSync(path.join(root, 'summary', 'overview.json'), JSON.stringify({
+    skill: { name: 'weekly-ai-blogs-digest', version: '0.0.8' },
+    themes: [
+      { kind: 'other', text: '一篇说明了变化。', refs: [{ id: 'https://example.com/a', label: '一篇' }] },
+      { kind: 'other', text: '项目也在。', refs: [{ id: 'https://github.com/a/b', label: 'a/b' }] },
+      { kind: 'other', text: '另一条主线也在。', refs: [{ id: 'https://example.com/a', label: '另一条' }] },
+    ],
+  }));
+  fs.writeFileSync(path.join(root, 'summary', 'index.json'), JSON.stringify({
+    chapters: [
+      { title: '本周概览' },
+      { title: '项目开源', cards: ['https://github.com/a/b'] },
+      { title: '精选文章', groups: [{ title: '国内非模型厂', cards: ['https://example.com/a'] }] },
+    ],
+  }));
+  return root;
+}
+
+test('card fields become the category and company, with no heading prefix', async () => {
+  const markdown = composeIssueMarkdown(writeIssue());
+  assert.ok(markdown, '字段齐全的 issue 能 compose');
+  assert.match(markdown, /#### \[阿里：对企业级 AI 研发提效的思考与实践\]\(https:\/\/example\.com\/a\)/);
+  assert.match(markdown, /#### \[a\/b\]\(https:\/\/github\.com\/a\/b\)/);
+  assert.doesNotMatch(markdown, /&lt;|&#x3C;|details class="article-more"/);
+  for (const line of markdown.split('\n').filter((item) => item.startsWith('####'))) {
+    assert.doesNotMatch(line, /<|>/, `标题行没有 <分类><公司> 前缀：${line}`);
+  }
+
   const processor = await createMarkdownProcessor({
     gfm: true,
     smartypants: false,
     syntaxHighlight: false,
-    remarkPlugins: [remarkCategoryPills],
+    remarkPlugins: [remarkEntryAnchor],
+    rehypePlugins: [rehypeArticleCards],
   });
-  const result = await processor.render(source, {
-    fileURL: new URL('file:///tmp/ai-news/sample.md'),
+  const rendered = await processor.render(markdown, {
+    fileURL: new URL('file:///tmp/ai-news/2026-11-27-ai-news.md'),
   });
-  const html = result.code;
+  assert.doesNotMatch(rendered.code, /<h4\b[^>]*\bdata-cat=/, 'data-cat 不再由 remark 插件写到 h4 上');
+  const cards = splitNoteCards(rendered.code).filter((block) => block.kind === 'card');
+  assert.equal(cards.length, 2);
+  const [project, article] = cards.map((block) => block.card);
+  assert.equal(article.category, '实践');
+  assert.deepEqual(article.sources, ['阿里'], '淘宝在 compose 时归并成阿里');
+  assert.equal(article.title, '阿里：对企业级 AI 研发提效的思考与实践');
+  assert.equal(article.sections.length, 5);
+  assert.equal(project.category, '开源');
+  assert.deepEqual(project.sources, ['腾讯']);
+  assert.equal(project.sections.length, 5);
+});
 
-  assert.match(html, /<h4\b[^>]*\bdata-cat="研发提效"[^>]*>\s*<a href="https:\/\/example.com\/a">阿里：对企业级 AI 研发提效的思考与实践<\/a>\s*<\/h4>/);
-  assert.match(html, /<h4\b[^>]*\bdata-cat="Data Agent"[^>]*>\s*<a href="https:\/\/example.com\/b">高德：从业务问题到可信数据<\/a>\s*<\/h4>/);
-  assert.match(html, /<h4\b[^>]*\bdata-cat="开源"[^>]*>\s*MiniMax 没有包进链接\s*<\/h4>/);
-  assert.match(html, /<h4\b[^>]*\bdata-cat="架构"[^>]*\bdata-tags="DeepSeek · MCP"[^>]*>\s*<a href="https:\/\/example.com\/d">带自由标签<\/a>\s*<\/h4>/);
-  assert.match(html, /<h4\b(?![^>]*data-cat)[^>]*\bdata-tags="OpenAI"[^>]*>\s*<a href="https:\/\/example.com\/e">只有公司标签<\/a>\s*<\/h4>/);
-  assert.match(html, /<h4\b[^>]*>\s*整体排名\s*<\/h4>/);
-  assert.match(html, /<h4\b[^>]*>\s*<a href="https:\/\/example.com\/c">没有前缀的标题<\/a>\s*<\/h4>/);
-  assert.match(html, /<h4 id="见-开源-这种不是开头">见 (?:&lt;|&#x3C;)开源(?:>|&gt;) 这种不是开头<\/h4>/);
-  assert.doesNotMatch(html, /data-cat="整体排名"|data-cat="没有前缀的标题"|data-cat="四、国内进展"|data-cat="开源"[^>]*>见/);
-
-  const labeled = [...html.matchAll(/<h4\b[^>]*\bdata-cat="[^"]+"[^>]*>[\s\S]*?<\/h4>/g)].map((match) => match[0]);
-  assert.equal(labeled.length, 4);
-  assert.equal(labeled.filter((heading) => heading.includes('data-tags=')).length, 1);
-  for (const heading of labeled) {
-    const visible = heading.replace(/<h4\b[^>]*>/, '').replace(/<\/h4>$/, '');
-    assert.doesNotMatch(visible, /&lt;|&#x3C;|data-cat/, heading);
-  }
-
-  const texts = result.metadata.headings.map((heading) => heading.text);
-  assert.deepEqual(texts, [
-    '四、国内进展',
-    '阿里：对企业级 AI 研发提效的思考与实践',
-    '高德：从业务问题到可信数据',
-    'MiniMax 没有包进链接',
-    '整体排名',
-    '没有前缀的标题',
-    '见 <开源> 这种不是开头',
-    '带自由标签',
-    '只有公司标签',
-  ]);
-  assert.equal(texts.filter((text) => text.startsWith('<')).length, 0);
-  assert.equal(texts.includes('研发提效'), false);
-  assert.equal(texts.includes('Data Agent'), false);
-  assert.equal(texts.includes('开源'), false);
+test('the company alias is canonicalized when the card is composed', () => {
+  const markdown = composeIssueMarkdown(writeIssue());
+  const payload = markdown.match(/<!--summary-card:([A-Za-z0-9_-]+)-->\n\n#### \[阿里/);
+  assert.ok(payload, '文章卡的 payload 注释在标题前');
+  const card = JSON.parse(Buffer.from(payload[1], 'base64url').toString('utf8'));
+  assert.equal(card.company, '阿里');
+  const parsed = parseArticleCard(`${payload[0].split('\n\n####')[0]}\n<h4><a href="https://example.com/a">阿里：对企业级 AI 研发提效的思考与实践</a></h4>`);
+  assert.deepEqual(parsed.sources, ['阿里']);
 });

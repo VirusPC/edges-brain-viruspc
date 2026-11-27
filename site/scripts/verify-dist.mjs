@@ -664,7 +664,7 @@ assert.doesNotMatch(podcastHeading, /href=/);
 const projectFolded20 = [...projectHtml20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
 const selectedFolded20 = [...selectedHtml20.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
 assert.equal(projectFolded20.length, 5);
-assert.equal(selectedFolded20.length, 33);
+assert.equal(selectedFolded20.length, 36);
 for (const block of projectFolded20) {
   assert.match(block[1], /<summary>完整总结<\/summary>/);
   for (const label of ['什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作']) {
@@ -686,7 +686,7 @@ for (const block of selectedFolded20) {
 assert.equal((projectHtml20.match(/class="note-card article-card"/g) || []).length, 5);
 assert.equal((selectedHtml20.match(/class="note-card article-card"/g) || []).length, 36);
 assert.doesNotMatch(projectHtml20, /GitHub Trending（weekly \/ all 前 5）/);
-assert.doesNotMatch(projectHtml20, /data-cat=/);
+assert.match(projectHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /data-cat="开源"/);
 assert.match(selectedHtml20, /llama\.cpp v1\.0\.0/);
 assert.equal((selectedHtml20.match(/订阅源里只有这些/g) || []).length, 3);
@@ -706,6 +706,39 @@ for (const [cat, tag, title] of [
 }
 assert.doesNotMatch(toc20[0], /模型发布|LLM Arena/);
 assertModelProgressToc(toc20[0]);
+
+const issue27 = fs.readFileSync(path.join(dist, 'ai-news/2026-11-27/index.html'), 'utf8');
+assert.match(issue27, /<h1>\s*2026-11-27 AI 资讯\s*<\/h1>/);
+const headingAt27 = [...issue27.matchAll(/<h2\b[^>]*>[\s\S]*?<\/h2>/g)];
+const projectAt27 = headingAt27.find((match) => match[0].includes('三、项目开源'))?.index ?? -1;
+const selectedAt27 = headingAt27.find((match) => match[0].includes('四、精选文章'))?.index ?? -1;
+const tweetsAt27 = headingAt27.find((match) => match[0].includes('五、精选推文'))?.index ?? -1;
+assert.ok(projectAt27 > 0 && selectedAt27 > projectAt27 && tweetsAt27 > selectedAt27, '2026-11-27 chapter headings are out of order');
+const projectHtml27 = issue27.slice(projectAt27, selectedAt27);
+const selectedHtml27 = issue27.slice(selectedAt27, tweetsAt27);
+assert.equal((selectedHtml27.match(/class="note-card article-card"/g) || []).length, 29);
+assert.equal((projectHtml27.match(/class="note-card article-card"/g) || []).length, 5);
+assert.match(projectHtml27, /data-cat="开源"/);
+const selectedFolded27 = [...selectedHtml27.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
+const projectFolded27 = [...projectHtml27.matchAll(/<details class="article-more">([\s\S]*?)<\/details>/g)];
+assert.equal(selectedFolded27.length, 29);
+assert.equal(projectFolded27.length, 5);
+for (const block of [...selectedFolded27, ...projectFolded27]) {
+  assert.match(block[1], /<summary>完整总结<\/summary>/);
+  for (const label of ['什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作']) {
+    assert.match(block[1], new RegExp(`class="note-card-k">${label}</div>`));
+  }
+  assert.doesNotMatch(block[1], /class="note-card-k">解决什么问题<\/div>/);
+  assert.match(block[1], /class="note-card-hl"/);
+}
+const selectedHeadings27 = selectedHtml27.match(/<h4\b[^>]*>[\s\S]*?<\/h4>/g) || [];
+assert.equal(selectedHeadings27.length, 29);
+for (const heading of selectedHeadings27) {
+  assert.match(heading, /data-cat="(?:模型|架构|产品|实践|开源|其他)"/, heading.slice(0, 160));
+}
+assert.match(selectedHtml27, /class="ai-news-filter-cat ai-news-cat"/);
+assert.match(selectedHtml27, /class="ai-news-filter-co ai-news-tag"/);
+assert.match(projectHtml27, /class="ai-news-filter-cat ai-news-cat"/);
 
 const aiFeed = fs.readFileSync(path.join(dist, 'ai-news/rss.xml'), 'utf8');
 assert.match(aiFeed, /<title>AI 资讯<\/title>/);

@@ -1,11 +1,15 @@
 /**
  * Turn a wrapped 「项目开源」 or 「精选文章」 card into NoteCard props.
- * Sections and the one-line summary are optional. Source markdown stays as written.
+ * Category, source, lede, and the five sections come from the
+ * `<!--summary-card:...-->` payload that compose writes before the heading.
+ * A card without a payload keeps its paragraphs and invents nothing.
  */
 
-import { splitTags } from './ai-news-category-filter.mjs';
-
 const VOID = new Set(['br', 'img', 'hr', 'wbr', 'source']);
+
+const PAYLOAD_COMMENT = /<!--summary-card:([A-Za-z0-9_-]+)-->/;
+
+const SECTION_LABELS = ['解决什么问题', '如何解决', '效果怎样', '洞察与启发', '相关工作'];
 
 /**
  * @param {string} html
@@ -21,8 +25,16 @@ export function splitNoteCards(html) {
       if (rest) blocks.push({ kind: 'html', html: rest });
       break;
     }
-    if (found.start > cursor) blocks.push({ kind: 'html', html: html.slice(cursor, found.start) });
-    blocks.push({ kind: 'card', card: parseArticleCard(found.inner) });
+    // The payload comment sits right before the wrapped card, outside the div.
+    let start = found.start;
+    let inner = found.inner;
+    const payload = html.slice(cursor, start).match(/<!--summary-card:[A-Za-z0-9_-]+-->\s*$/);
+    if (payload) {
+      start -= payload[0].length;
+      inner = `${payload[0].trim()}\n${inner}`;
+    }
+    if (start > cursor) blocks.push({ kind: 'html', html: html.slice(cursor, start) });
+    blocks.push({ kind: 'card', card: parseArticleCard(inner) });
     cursor = found.end;
   }
   return blocks;
@@ -32,10 +44,8 @@ export function splitNoteCards(html) {
  * @param {string} inner
  */
 export function parseArticleCard(inner) {
+  const payload = readPayload(inner);
   const nodes = topNodes(inner);
-  let category = '';
-  /** @type {string[]} */
-  let sources = [];
   let title = '';
   let href = '';
   let headingId = '';
@@ -44,15 +54,12 @@ export function parseArticleCard(inner) {
   const lede = [];
   /** @type {string[]} */
   const extra = [];
-  /** @type {{ label: string, html: string, highlight: boolean }[]} */
-  const sections = [];
   let phase = 'before';
+  let renderedLede = false;
 
   for (const node of nodes) {
     if (node.tag === 'h4' && phase === 'before') {
       const attrs = parseAttrs(node.attrText);
-      category = decode(attrs['data-cat'] || '');
-      sources = splitTags(decode(attrs['data-tags'] || ''));
       headingId = decode(attrs.id || '');
       entryId = decode(attrs['data-entry-id'] || '');
       const link = topNodes(node.inner).find((child) => child.tag === 'a');
@@ -65,41 +72,59 @@ export function parseArticleCard(inner) {
       phase = 'lead';
       continue;
     }
-    if (node.tag === 'details' && phase === 'lead' && hasClass(node.attrText, 'article-more')) {
-      for (const child of topNodes(node.inner)) {
-        if (child.tag === 'summary') continue;
-        if (child.tag === 'p') sections.push(parseParagraph(child.inner));
-        else extra.push(child.raw);
-      }
-      phase = 'after';
+    if (phase === 'lead' && node.tag === 'p' && payload && !renderedLede) {
+      // The first paragraph is the rendered copy of payload.lede.
+      renderedLede = true;
       continue;
     }
-    if (phase === 'lead' && node.tag === 'p') lede.push(node.inner.trim());
+    if (phase === 'lead' && node.tag === 'p' && !payload) lede.push(node.inner.trim());
     else extra.push(node.raw);
   }
 
+  const company = payload ? String(payload.company ?? '').trim() : '';
   return {
-    category,
-    sources,
+    category: payload ? String(payload.category ?? '') : '',
+    sources: company ? [company] : [],
     title,
     href,
     headingId,
     entryId,
-    ledeHtml: lede.filter(Boolean).map((html) => `<p class="note-card-lede">${html}</p>`).join(''),
-    sections: sections.filter((section) => section.label || section.html),
+    ledeHtml: payload
+      ? (typeof payload.lede === 'string' && payload.lede.trim()
+        ? `<p class="note-card-lede">${payload.lede}</p>`
+        : '')
+      : lede.filter(Boolean).map((html) => `<p class="note-card-lede">${html}</p>`).join(''),
+    sections: payload ? payloadSections(payload.sections) : [],
     extraHtml: extra.join(''),
   };
 }
 
 /**
- * @param {string} inner
+ * @param {string} html
  */
-function parseParagraph(inner) {
-  const match = inner.match(/^\s*<strong>([\s\S]*?)<\/strong>\s*/);
-  if (!match) return { label: '', html: inner.trim(), highlight: false };
-  const rawLabel = stripTags(match[1]).replace(/[:：]\s*$/, '').trim();
-  const html = inner.slice(match[0].length).trim();
-  return { label: displayLabel(rawLabel), html, highlight: rawLabel === '洞察与启发' };
+function readPayload(html) {
+  const match = PAYLOAD_COMMENT.exec(String(html));
+  if (!match) return null;
+  try {
+    const data = JSON.parse(Buffer.from(match[1], 'base64url').toString('utf8'));
+    return data && typeof data === 'object' ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @param {any} sections
+ */
+function payloadSections(sections) {
+  if (!sections || typeof sections !== 'object') return [];
+  return SECTION_LABELS
+    .filter((label) => typeof sections[label] === 'string' && sections[label].trim())
+    .map((label) => ({
+      label: displayLabel(label),
+      html: sections[label].trim(),
+      highlight: label === '洞察与启发',
+    }));
 }
 
 /** Source copy keeps the long first label. The card shows the shorter one. */

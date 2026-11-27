@@ -67,6 +67,7 @@ function wrapRange(nodes, options = {}) {
       && !isHeading(nodes[end], 'h2')
       && !isHeading(nodes[end], 'h3')
       && !isHeading(nodes[end], 'h4')
+      && !isSummaryCardMark(nodes[end])
     ) {
       end += 1;
     }
@@ -80,6 +81,18 @@ function wrapRange(nodes, options = {}) {
     index = end - 1;
   }
   return out;
+}
+
+/**
+ * The `<!--summary-card:...-->` comment belongs to the heading after it,
+ * so a card range stops before it instead of swallowing it.
+ * @param {any} node
+ */
+function isSummaryCardMark(node) {
+  const value = String(node?.value || '').trim();
+  if (node?.type === 'raw') return /^<!--summary-card:[A-Za-z0-9_-]+-->$/.test(value);
+  if (node?.type === 'comment') return /^summary-card:[A-Za-z0-9_-]+$/.test(value);
+  return false;
 }
 
 /**

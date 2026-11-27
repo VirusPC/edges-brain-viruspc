@@ -50,6 +50,30 @@ test('selected-article items become one card and other chapters stay loose', () 
   assert.equal(tree.children.at(-1).children[0].value, '五、其他');
 });
 
+test('a summary-card comment between items stays outside the previous card', () => {
+  const first = heading('h4', '一篇');
+  const second = heading('h4', '二篇');
+  const ledeOne = { type: 'element', tagName: 'p', properties: {}, children: [text('一')] };
+  const ledeTwo = { type: 'element', tagName: 'p', properties: {}, children: [text('二')] };
+  const mark = { type: 'raw', value: '<!--summary-card:QUJD-->' };
+  const tree = {
+    type: 'root',
+    children: [
+      heading('h2', '四、精选文章'),
+      heading('h3', '国际'),
+      first,
+      ledeOne,
+      mark,
+      second,
+      ledeTwo,
+    ],
+  };
+  wrapArticleCards(tree);
+  assert.deepEqual(tree.children[2].children, [first, ledeOne]);
+  assert.equal(tree.children[3], mark);
+  assert.deepEqual(tree.children[4].children, [second, ledeTwo]);
+});
+
 function element(tag, attrs = {}, children = []) {
   const node = {
     tagName: tag.toUpperCase(),
