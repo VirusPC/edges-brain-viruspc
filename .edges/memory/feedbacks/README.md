@@ -16,4 +16,5 @@
 - [数据处理流程以 skill 串联步骤并调用脚本](<feedback_data_processing_skill_leads_scripts/INDEX.md>) — 写或改数据处理类流程时打开：skill 串联步骤并调用脚本；根 SKILL.md 只写顺序和子步骤链接；命令、schema 和输入输出写在各子步骤 md。
 - [公开周复盘一律不写面试相关内容](<feedback_weekly_retro_omit_interview/INDEX.md>) — 写或更新 retrospectives/weekly、或运行 weekly\-retrospective 时打开：公开周复盘一律不写面试相关内容；相关材料只进私密仓，或完全不出现在公开正文。
 - [一轮 grill 的修订叠在同一个 PR，讨论完再合并](<feedback_grill_revisions_stack_on_one_pr/INDEX.md>) — 多回合设计讨论（grill）时打开：文档修订都叠在同一个分支和 PR，讨论全部结束后一次性合并，不要每回合合一次。
+- [本机已有 clone 时不要再开第二份克隆](<feedback_local_repo_no_second_clone/INDEX.md>) — 在本机对某个仓库做任何操作之前打开：先找已有的本地 clone，从这份仓库开 worktree；不要再克隆第二份，包括云端 Agent 不可用的时候。
 <!-- edges-entries-local:end -->
