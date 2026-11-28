@@ -17,4 +17,5 @@
 - [ai\_资讯订阅的个性化关键词筛选](<backlog/2026-11-25--AI-%E8%B5%84%E8%AE%AF%E8%AE%A2%E9%98%85%E7%9A%84%E4%B8%AA%E6%80%A7%E5%8C%96%E5%85%B3%E9%94%AE%E8%AF%8D%E7%AD%9B%E9%80%89/INDEX.md>) — 一键订阅第一版全员收到同一份本周总结；后续让订阅者按关键词筛选推送内容。
 - [自研扩展为\_ai\_资讯站点做分屏阅读与会话沉淀](<backlog/2026-11-24--%E8%87%AA%E7%A0%94%E6%89%A9%E5%B1%95%E4%B8%BA-AI-%E8%B5%84%E8%AE%AF%E7%AB%99%E7%82%B9%E5%81%9A%E5%88%86%E5%B1%8F%E9%98%85%E8%AF%BB%E4%B8%8E%E4%BC%9A%E8%AF%9D%E6%B2%89%E6%B7%80/INDEX.md>) — 浏览 AI 资讯站点时，常要点进原文并用侧边栏 AI 辅助理解。做一个自研的 Chrome 与 Edge 扩展，让点击文章后左右分屏打开原文，并在侧边栏里问答、把会话传到自建 Langfuse、把笔记沉淀回个人大脑。
 - [ai\_资讯补充播客数据与多\_tab\_卡片](<backlog/2026-11-27--AI-%E8%B5%84%E8%AE%AF%E8%A1%A5%E5%85%85%E6%92%AD%E5%AE%A2%E6%95%B0%E6%8D%AE%E4%B8%8E%E5%A4%9A-Tab-%E5%8D%A1%E7%89%87/INDEX.md>) — 给 AI 资讯补上播客类型的数据和卡片。内容主要从 Podwise 取中文摘要，用多 Tab 卡片展示。
+- [纠正\_weekly\_ai\_blogs\_digest\_未进\_opml\_的列表页源不应算进扫描](<backlog/2026-11-28--%E7%BA%A0%E6%AD%A3-weekly-ai-blogs-digest-%E6%9C%AA%E8%BF%9B-OPML-%E7%9A%84%E5%88%97%E8%A1%A8%E9%A1%B5%E6%BA%90%E4%B8%8D%E5%BA%94%E7%AE%97%E8%BF%9B%E6%89%AB%E6%8F%8F/INDEX.md>) — 扫描只应计入已在 OPML 中的订阅源；无官方 RSS、未进入 OPML 的列表页源不能被悄悄纳入。
 <!-- edges-entries-local:end -->
